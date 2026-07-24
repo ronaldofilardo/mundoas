@@ -6,13 +6,17 @@ import { read, utils } from "xlsx";
 
 const UPLOAD_DIR = join(process.cwd(), "uploads", "backoffice");
 
+function normalizarCpf(cpf: string): string {
+  return cpf.replace(/\D/g, "");
+}
+
 /**
  * Processa upload de planilha PF em background
  */
 export async function processarUploadPlanilhaPF(
   uploadId: string,
   file: File,
-  backofficeId: string
+  backofficeId: string,
 ): Promise<void> {
   try {
     // Salvar arquivo temporariamente
@@ -33,17 +37,23 @@ export async function processarUploadPlanilhaPF(
     const workbook = read(buffer, { type: "array" });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-    
+
     // Converter planilha para array de arrays
-    const jsonData: any[][] = utils.sheet_to_json(worksheet, { 
+    const jsonData: any[][] = utils.sheet_to_json(worksheet, {
       header: 1,
       defval: "",
-      raw: false 
+      raw: false,
     });
 
-    console.log("[processarUploadPlanilhaPF] Total de linhas:", jsonData.length);
+    console.log(
+      "[processarUploadPlanilhaPF] Total de linhas:",
+      jsonData.length,
+    );
     console.log("[processarUploadPlanilhaPF] Linha 1:", jsonData[0]);
-    console.log("[processarUploadPlanilhaPF] Linha 2 (cabeçalhos):", jsonData[1]);
+    console.log(
+      "[processarUploadPlanilhaPF] Linha 2 (cabeçalhos):",
+      jsonData[1],
+    );
 
     if (!jsonData || jsonData.length < 2) {
       throw new Error("Planilha vazia ou sem cabeçalhos");
@@ -51,24 +61,27 @@ export async function processarUploadPlanilhaPF(
 
     // Cabeçalhos estão na linha 2 (índice 1)
     const headersRaw = jsonData[1] || [];
-    const headers = headersRaw.reduce((acc, h, idx) => {
-      const headerStr = h ? String(h).trim() : "";
-      if (headerStr) {
-        acc[String(idx)] = headerStr;
-      }
-      return acc;
-    }, {} as Record<string, string>);
-    
+    const headers: Record<string, string> = headersRaw.reduce(
+      (acc, h, idx) => {
+        const headerStr = h ? String(h).trim() : "";
+        if (headerStr) {
+          acc[String(idx)] = headerStr;
+        }
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
     console.log("[processarUploadPlanilhaPF] Headers mapeados:", headers);
-    
+
     const colunasEncontradas = Object.values(headers).map((h) =>
-      h.toLowerCase()
+      h.toLowerCase(),
     );
 
     // Mapear índices das colunas
     const getColIndex = (nome: string) =>
       Object.values(headers).findIndex(
-        (h) => String(h).trim().toLowerCase() === nome.toLowerCase()
+        (h) => String(h).trim().toLowerCase() === nome.toLowerCase(),
       );
 
     const idxDataRef = getColIndex("Data de Referência");
@@ -88,45 +101,49 @@ export async function processarUploadPlanilhaPF(
     });
     const liderancaIds = liderancas.map((l) => l.id);
 
-    const [comerciais, gestores] = await Promise.all([
+    const [comerciais, consultoresPf] = await Promise.all([
       prisma.comercial.findMany({
         where: { liderancaId: { in: liderancaIds } },
         select: { id: true, nome: true },
       }),
-      prisma.gestor.findMany({
-        where: { liderancaId: { in: liderancaIds } },
+      prisma.consultorPf.findMany({
+        where: { liderancaId: { in: liderancaIds }, status: "ATIVO" },
         select: { id: true, nome: true },
       }),
     ]);
 
     const comercialIds = comerciais.map((c) => c.id);
-    const gestorIds = gestores.map((g) => g.id);
+
+    const consultorPorNome = new Map(
+      consultoresPf.map((c) => [normalizarNome(c.nome), c.id]),
+    );
 
     // Buscar parceiros do backoffice com seus indicados
     const parceiros = await prisma.parceiro.findMany({
-      where: {
-        OR: [
-          { comercialId: { in: comercialIds } },
-          { gestorId: { in: gestorIds } },
-        ],
-      },
-      select: { 
-        id: true, 
-        nome: true, 
-        cpf: true, 
-        comercialId: true, 
+      where: { backofficeId },
+      select: {
+        id: true,
+        nome: true,
+        cpf: true,
+        comercialId: true,
         gestorId: true,
         indicacoes: {
           select: {
             id: true,
             cpf: true,
-          }
-        }
+          },
+        },
       },
     });
 
-    console.log("[processarUploadPlanilhaPF] Parceiros encontrados:", parceiros.length);
-    console.log("[processarUploadPlanilhaPF] Total de indicados:", parceiros.reduce((sum, p) => sum + p.indicacoes.length, 0));
+    console.log(
+      "[processarUploadPlanilhaPF] Parceiros encontrados:",
+      parceiros.length,
+    );
+    console.log(
+      "[processarUploadPlanilhaPF] Total de indicados:",
+      parceiros.reduce((sum, p) => sum + p.indicacoes.length, 0),
+    );
 
     // Processar linhas (começa do índice 2 para pular título e cabeçalho)
     let totalRows = 0;
@@ -148,7 +165,10 @@ export async function processarUploadPlanilhaPF(
       const procedimento = String(row[idxProcedimento] || "").trim();
       const totalPagoRaw = row[idxTotalPago];
       const usuarioDaConta = String(row[idxUsuarioConta] || "").trim();
-      const unidade = idxUnidade >= 0 ? String(row[idxUnidade] || "").trim() : "NÃO INFORMADA";
+      const unidade =
+        idxUnidade >= 0
+          ? String(row[idxUnidade] || "").trim()
+          : "NÃO INFORMADA";
       const tipoProcedimento =
         idxTipoProcedimento >= 0
           ? String(row[idxTipoProcedimento] || "").trim()
@@ -162,12 +182,10 @@ export async function processarUploadPlanilhaPF(
       let rejected = false;
       let orphaned = false;
 
-      // Validar CPF
+      // Validar CPF — sem CPF ou CPF inválido NÃO rejeita mais a linha,
+      // apenas impede a busca de parceiro. A linha vai ser marcada como órfã.
       const cpf = cpfRaw.replace(/\D/g, "");
-      if (!cpf || cpf.length !== 11) {
-        rejected = true;
-        rejectedRows++;
-      }
+      const cpfValido = cpf.length === 11;
 
       // Validar data
       let dataReferencia: Date | null = null;
@@ -208,35 +226,54 @@ export async function processarUploadPlanilhaPF(
       // Verificar se é órfão (não tem parceiro/indicado)
       let parceiroEncontrado = null;
       let indicadoId: string | null = null;
-      
-      // Primeiro tenta achar pelo CPF do parceiro
-      parceiroEncontrado = parceiros.find((p) => p.cpf === cpf);
-      
-      // Se não achou, procura entre os indicados de todos os parceiros
-      if (!parceiroEncontrado) {
-        for (const parceiro of parceiros) {
-          const indicado = parceiro.indicacoes.find((ind) => ind.cpf === cpf);
-          if (indicado) {
-            parceiroEncontrado = parceiro;
-            indicadoId = indicado.id;
-            break;
+      let consultorPfId: string | null = null;
+
+      if (!cpfValido) {
+        // Sem CPF válido: marca como órfão sem tentar buscar parceiro
+        orphaned = true;
+        orphanedRows++;
+      } else {
+        // Primeiro tenta achar pelo CPF do parceiro (normaliza CPF para comparar)
+        parceiroEncontrado = parceiros.find(
+          (p) => normalizarCpf(p.cpf) === cpf,
+        );
+
+        // Se não achou, procura entre os indicados de todos os parceiros
+        if (!parceiroEncontrado) {
+          for (const parceiro of parceiros) {
+            const indicado = parceiro.indicacoes.find(
+              (ind) => normalizarCpf(ind.cpf) === cpf,
+            );
+            if (indicado) {
+              parceiroEncontrado = parceiro;
+              indicadoId = indicado.id;
+              break;
+            }
           }
+        }
+
+        if (!parceiroEncontrado) {
+          orphaned = true;
+          orphanedRows++;
         }
       }
 
-      if (!parceiroEncontrado) {
-        orphaned = true;
-        orphanedRows++;
+      if (orphaned || !parceiroEncontrado) {
         continue;
+      }
+
+      if (usuarioDaConta) {
+        consultorPfId =
+          consultorPorNome.get(normalizarNome(usuarioDaConta)) ?? null;
       }
 
       // Calcular comissão (será processada pelas regras do sistema posteriormente)
       const valorComissao = 0;
 
       // Extrair mês de referência da data
-      const mesReferencia = dataReferencia 
+      const mesReferencia = dataReferencia
         ? `${dataReferencia.getFullYear()}-${String(dataReferencia.getMonth() + 1).padStart(2, "0")}`
-        : '';
+        : "";
 
       procedimentosToCreate.push({
         dataReferencia,
@@ -255,6 +292,7 @@ export async function processarUploadPlanilhaPF(
         statusComissao: "PENDENTE",
         comercialId: parceiroEncontrado.comercialId,
         gestorId: parceiroEncontrado.gestorId,
+        consultorPfId,
       });
 
       processedRows++;
@@ -284,7 +322,9 @@ export async function processarUploadPlanilhaPF(
       },
     });
 
-    console.log(`[processarUploadPlanilhaPF] Upload ${uploadId} processado: ${processedRows} procedimentos criados`);
+    console.log(
+      `[processarUploadPlanilhaPF] Upload ${uploadId} processado: ${processedRows} procedimentos criados`,
+    );
   } catch (error) {
     console.error("[processarUploadPlanilhaPF] Erro:", error);
     await prisma.uploadPlanilhaBackoffice.update({
@@ -298,18 +338,13 @@ export async function processarUploadPlanilhaPF(
 function parseDate(dateRaw: any): Date | null {
   if (!dateRaw) return null;
 
-  // Se for objeto Date do Excel
   if (typeof dateRaw === "number") {
     const excelEpoch = new Date(1899, 11, 30);
-    return new Date(
-      excelEpoch.getTime() + dateRaw * 24 * 60 * 60 * 1000
-    );
+    return new Date(excelEpoch.getTime() + dateRaw * 24 * 60 * 60 * 1000);
   }
 
-  // Se for string
   const str = String(dateRaw).trim();
 
-  // Tentar parsear vários formatos
   const patterns = [
     /^(\d{2})\/(\d{2})\/(\d{4})$/, // DD/MM/YYYY
     /^(\d{4})-(\d{2})-(\d{2})$/, // YYYY-MM-DD
@@ -331,11 +366,18 @@ function parseDate(dateRaw: any): Date | null {
     }
   }
 
-  // Tentar Date.parse
   const date = new Date(str);
   if (!isNaN(date.getTime())) {
     return date;
   }
 
   return null;
+}
+
+function normalizarNome(nome: string): string {
+  return nome
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }

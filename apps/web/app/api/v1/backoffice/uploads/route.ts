@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
-import { badRequest, created, requireBackofficeWithScope } from "@/lib/api-helpers";
+import {
+  badRequest,
+  created,
+  requireBackofficeWithScope,
+} from "@/lib/api-helpers";
 import { processarUploadPlanilhaPF } from "@/lib/processar-upload-pf";
 
 export async function POST(req: NextRequest) {
@@ -21,7 +25,8 @@ export async function POST(req: NextRequest) {
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/vnd.ms-excel",
     ];
-    if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls)$/)) {
+    const fileName = String(file.name).toLowerCase();
+    if (!validTypes.includes(file.type) && !fileName.match(/\.(xlsx|xls)$/i)) {
       return badRequest("Apenas arquivos Excel (.xlsx ou .xls) são permitidos");
     }
 

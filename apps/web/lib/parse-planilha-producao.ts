@@ -17,6 +17,7 @@ interface PreviewRow {
   parceiroNome?: string;
   comercialNome?: string;
   gestorNome?: string;
+  consultorPfNome?: string;
 }
 
 interface ParseResult {
@@ -39,13 +40,13 @@ interface ParseResult {
 const COLUNAS_OBRIGATORIAS = [
   "Data de Referência",
   "Paciente",
-  "CPF",
   "Procedimento",
   "Total Pago",
   "Usuário da conta",
 ];
 
 const COLUNAS_OPCIONAIS = [
+  "CPF",
   "Forma Pagamento",
   "Unidade",
   "Tipo Procedimento",
@@ -53,18 +54,18 @@ const COLUNAS_OPCIONAIS = [
 
 export async function parsePlanilhaProducao(
   file: File,
-  backofficeId: string
+  backofficeId: string,
 ): Promise<ParseResult> {
   const buffer = await file.arrayBuffer();
   const workbook = read(buffer, { type: "array" });
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
-  
+
   // Converter planilha para array de arrays
-  const jsonData: any[][] = utils.sheet_to_json(worksheet, { 
+  const jsonData: any[][] = utils.sheet_to_json(worksheet, {
     header: 1,
     defval: "",
-    raw: false 
+    raw: false,
   });
 
   console.log("[parsePlanilhaProducao] Total de linhas:", jsonData.length);
@@ -77,40 +78,42 @@ export async function parsePlanilhaProducao(
 
   // Cabeçalhos estão na linha 2 (índice 1)
   const headersRaw = jsonData[1] || [];
-  const headers = headersRaw.reduce((acc, h, idx) => {
-    const headerStr = h ? String(h).trim() : "";
-    if (headerStr) {
-      acc[String(idx)] = headerStr;
-    }
-    return acc;
-  }, {} as Record<string, string>);
-
-  console.log("[parsePlanilhaProducao] Headers mapeados:", headers);
-  
-  const colunasEncontradas = Object.values(headers).map((h) =>
-    h.toLowerCase()
+  const headers: Record<string, string> = headersRaw.reduce(
+    (acc, h, idx) => {
+      const headerStr = h ? String(h).trim() : "";
+      if (headerStr) {
+        acc[String(idx)] = headerStr;
+      }
+      return acc;
+    },
+    {} as Record<string, string>,
   );
 
-  console.log("[parsePlanilhaProducao] Colunas encontradas:", colunasEncontradas);
+  console.log("[parsePlanilhaProducao] Headers mapeados:", headers);
+
+  const colunasEncontradas = Object.values(headers).map((h) => h.toLowerCase());
+
+  console.log(
+    "[parsePlanilhaProducao] Colunas encontradas:",
+    colunasEncontradas,
+  );
 
   // Validar colunas obrigatórias
   const colunasObrigatoriasEncontradas = COLUNAS_OBRIGATORIAS.filter((col) =>
-    colunasEncontradas.includes(col.toLowerCase())
+    colunasEncontradas.includes(col.toLowerCase()),
   );
 
   if (colunasObrigatoriasEncontradas.length !== COLUNAS_OBRIGATORIAS.length) {
     const faltantes = COLUNAS_OBRIGATORIAS.filter(
-      (col) => !colunasEncontradas.includes(col.toLowerCase())
+      (col) => !colunasEncontradas.includes(col.toLowerCase()),
     );
-    throw new Error(
-      `Colunas obrigatórias faltando: ${faltantes.join(", ")}`
-    );
+    throw new Error(`Colunas obrigatórias faltando: ${faltantes.join(", ")}`);
   }
 
   // Mapear índices das colunas
   const getColIndex = (nome: string) =>
     Object.values(headers).findIndex(
-      (h) => String(h).trim().toLowerCase() === nome.toLowerCase()
+      (h) => String(h).trim().toLowerCase() === nome.toLowerCase(),
     );
 
   const idxDataRef = getColIndex("Data de Referência");
@@ -131,55 +134,62 @@ export async function parsePlanilhaProducao(
   const liderancaIds = liderancas.map((l) => l.id);
 
   console.log("[parsePlanilhaProducao] Backoffice ID:", backofficeId);
-  console.log("[parsePlanilhaProducao] Lideranças encontradas:", liderancas.length);
+  console.log(
+    "[parsePlanilhaProducao] Lideranças encontradas:",
+    liderancas.length,
+  );
   console.log("[parsePlanilhaProducao] IDs das lideranças:", liderancaIds);
 
-  const [comerciais, gestores] = await Promise.all([
+  const [comerciais, consultoresPf] = await Promise.all([
     prisma.comercial.findMany({
       where: { liderancaId: { in: liderancaIds } },
       select: { id: true, nome: true },
     }),
-    prisma.gestor.findMany({
-      where: { liderancaId: { in: liderancaIds } },
+    prisma.consultorPf.findMany({
+      where: { liderancaId: { in: liderancaIds }, status: "ATIVO" },
       select: { id: true, nome: true },
     }),
   ]);
 
-  console.log("[parsePlanilhaProducao] Comerciais encontrados:", comerciais.length);
-  console.log("[parsePlanilhaProducao] Gestores encontrados:", gestores.length);
+  const consultorPorNome = new Map(
+    consultoresPf.map((c) => [normalizarNome(c.nome), c]),
+  );
 
-  const comercialIds = comerciais.map((c) => c.id);
-  const gestorIds = gestores.map((g) => g.id);
+  const comercialPorId = new Map(comerciais.map((c) => [c.id, c.nome]));
 
   // Buscar parceiros do backoffice
   const parceiros = await prisma.parceiro.findMany({
-    where: comercialIds.length > 0 || gestorIds.length > 0 ? {
-      OR: [
-        { comercialId: { in: comercialIds } },
-        { gestorId: { in: gestorIds } },
-      ],
-    } : {},
-    select: { 
-      id: true, 
-      nome: true, 
-      cpf: true, 
-      comercial: true, 
-      gestor: true,
+    where: { backofficeId },
+    select: {
+      id: true,
+      nome: true,
+      cpf: true,
+      comercialId: true,
+      gestorId: true,
       indicacoes: {
         select: {
           id: true,
           cpf: true,
           nome: true,
-        }
-      }
+        },
+      },
     },
   });
 
-  console.log("[parsePlanilhaProducao] Parceiros encontrados:", parceiros.length);
-  console.log("[parsePlanilhaProducao] Total de indicados:", parceiros.reduce((sum, p) => sum + p.indicacoes.length, 0));
+  console.log(
+    "[parsePlanilhaProducao] Parceiros encontrados:",
+    parceiros.length,
+  );
+  console.log(
+    "[parsePlanilhaProducao] Total de indicados:",
+    parceiros.reduce((sum, p) => sum + p.indicacoes.length, 0),
+  );
   if (parceiros.length > 0) {
     console.log("[parsePlanilhaProducao] Exemplo de parceiro:", parceiros[0]);
-    console.log("[parsePlanilhaProducao] Exemplo de indicado:", parceiros[0]?.indicacoes[0]);
+    console.log(
+      "[parsePlanilhaProducao] Exemplo de indicado:",
+      parceiros[0]?.indicacoes[0],
+    );
   }
 
   // Processar linhas (começa do índice 2 para pular título e cabeçalho)
@@ -215,12 +225,10 @@ export async function parsePlanilhaProducao(
     let status: "VALIDO" | "ORFAO" | "REJEITADO" = "VALIDO";
     let motivo: string | undefined;
 
-    // Validar CPF
+    // Validar CPF — linhas sem CPF (ou com CPF inválido) caem para a lógica
+    // de "não encontrado" e são marcadas como órfãs, em vez de rejeitadas.
     const cpf = cpfRaw.replace(/\D/g, "");
-    if (!cpf || cpf.length !== 11) {
-      status = "REJEITADO";
-      motivo = "CPF inválido";
-    }
+    const cpfValido = cpf.length === 11;
 
     // Validar data
     let dataReferencia: string | null = null;
@@ -257,31 +265,49 @@ export async function parsePlanilhaProducao(
     // Validar procedimento
     if (!procedimento) {
       status = "REJEITADO";
-      motivo = motivo ? `${motivo}; Procedimento ausente` : "Procedimento ausente";
+      motivo = motivo
+        ? `${motivo}; Procedimento ausente`
+        : "Procedimento ausente";
     }
 
     // Verificar se é órfão (não tem parceiro/indicado)
     let parceiroEncontrado: any | undefined;
     let indicadoEncontrado: any | undefined;
+    let consultorPf: any = null;
 
     if (status === "VALIDO") {
-      // Primeiro tenta achar pelo CPF do parceiro
-      parceiroEncontrado = parceiros.find((p) => p.cpf === cpf);
-      
-      // Se não achou, procura entre os indicados de todos os parceiros
-      if (!parceiroEncontrado) {
-        for (const parceiro of parceiros) {
-          indicadoEncontrado = parceiro.indicacoes.find((ind) => ind.cpf === cpf);
-          if (indicadoEncontrado) {
-            parceiroEncontrado = parceiro;
-            break;
+      if (!cpfValido) {
+        // Sem CPF válido: marca como órfão sem tentar buscar parceiro
+        status = "ORFAO";
+        motivo = !cpf ? "CPF ausente" : "CPF inválido";
+      } else {
+        // Primeiro tenta achar pelo CPF do parceiro (normaliza CPF para comparar)
+        parceiroEncontrado = parceiros.find(
+          (p) => normalizarCpf(p.cpf) === cpf,
+        );
+
+        // Se não achou, procura entre os indicados de todos os parceiros
+        if (!parceiroEncontrado) {
+          for (const parceiro of parceiros) {
+            indicadoEncontrado = parceiro.indicacoes.find(
+              (ind) => normalizarCpf(ind.cpf) === cpf,
+            );
+            if (indicadoEncontrado) {
+              parceiroEncontrado = parceiro;
+              break;
+            }
           }
+        }
+
+        if (!parceiroEncontrado) {
+          status = "ORFAO";
+          motivo = "Parceiro não encontrado";
         }
       }
 
-      if (!parceiroEncontrado) {
-        status = "ORFAO";
-        motivo = "Parceiro não encontrado";
+      if (status === "VALIDO" && usuarioDaConta) {
+        consultorPf =
+          consultorPorNome.get(normalizarNome(usuarioDaConta)) ?? null;
       }
     }
 
@@ -309,8 +335,11 @@ export async function parsePlanilhaProducao(
         status,
         motivo,
         parceiroNome: parceiroEncontrado?.nome,
-        comercialNome: parceiroEncontrado?.comercial?.nome,
-        gestorNome: parceiroEncontrado?.gestor?.nome,
+        comercialNome: parceiroEncontrado
+          ? comercialPorId.get(parceiroEncontrado.comercialId ?? "")
+          : undefined,
+        gestorNome: undefined,
+        consultorPfNome: consultorPf?.nome,
         valorComissao: 0,
       });
     }
@@ -340,45 +369,35 @@ export async function parsePlanilhaProducao(
 function parseData(dataRaw: any): string | null {
   if (!dataRaw) return null;
 
-  // Se for objeto Date do Excel
   if (typeof dataRaw === "number") {
-    // Data serial do Excel
     const excelEpoch = new Date(1899, 11, 30);
-    const date = new Date(
-      excelEpoch.getTime() + dataRaw * 24 * 60 * 60 * 1000
-    );
+    const date = new Date(excelEpoch.getTime() + dataRaw * 24 * 60 * 60 * 1000);
     return formatDate(date);
   }
 
-  // Se for string
   const str = String(dataRaw).trim();
 
-  // Tentar parsear vários formatos
   const patterns = [
-    /^(\d{2})\/(\d{2})\/(\d{4})$/, // DD/MM/YYYY
-    /^(\d{4})-(\d{2})-(\d{2})$/, // YYYY-MM-DD
-    /^(\d{2})-(\d{2})-(\d{4})$/, // DD-MM-YYYY
+    /^(\d{2})\/(\d{2})\/(\d{4})$/,
+    /^(\d{4})-(\d{2})-(\d{2})$/,
+    /^(\d{2})-(\d{2})-(\d{4})$/,
   ];
 
   for (const pattern of patterns) {
     const match = str.match(pattern);
     if (match) {
       if (pattern === patterns[0]) {
-        // DD/MM/YYYY
         const [, day, month, year] = match;
         return `${year}-${month}-${day}`;
       } else if (pattern === patterns[1]) {
-        // YYYY-MM-DD
         return str;
       } else if (pattern === patterns[2]) {
-        // DD-MM-YYYY
         const [, day, month, year] = match;
         return `${year}-${month}-${day}`;
       }
     }
   }
 
-  // Tentar Date.parse
   const date = new Date(str);
   if (!isNaN(date.getTime())) {
     return formatDate(date);
@@ -392,4 +411,16 @@ function formatDate(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function normalizarNome(nome: string): string {
+  return nome
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function normalizarCpf(cpf: string): string {
+  return cpf.replace(/\D/g, "");
 }

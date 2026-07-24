@@ -2,6 +2,11 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import {
+  sondarStatusUpload,
+  UPLOAD_POLL_INTERVAL_MS,
+  UPLOAD_POLL_MAX_ATTEMPTS,
+} from "@/lib/upload-status-poll";
 
 interface PreviewRow {
   rowNumber: number;
@@ -41,6 +46,8 @@ interface PreviewData {
 interface UploadResult {
   mensagem?: string;
   upload?: any;
+  id?: string;
+  status?: "PROCESSANDO" | "CONCLUIDO" | "ERRO";
   summary?: {
     totalRows?: number;
     processedRows?: number;
@@ -49,7 +56,11 @@ interface UploadResult {
   };
 }
 
-export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: () => void }) {
+export function UploadPlanilhaPreview({
+  onUploadSuccess,
+}: {
+  onUploadSuccess?: () => void;
+}) {
   const [file, setFile] = useState<File | null>(null);
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -57,53 +68,61 @@ export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: (
   const [showAllRows, setShowAllRows] = useState(false);
   const [mesReferencia, setMesReferencia] = useState("");
 
-  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
+  const handleFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const selectedFile = e.target.files?.[0];
+      if (!selectedFile) return;
 
-    if (!selectedFile.name.endsWith(".xlsx") && !selectedFile.name.endsWith(".xls")) {
-      toast.error("Apenas arquivos Excel (.xlsx, .xls) são permitidos");
-      return;
-    }
-
-    setFile(selectedFile);
-    setPreviewData(null);
-    setMesReferencia("");
-    setShowAllRows(false);
-    setLoading(true);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-
-      const res = await fetch("/api/v1/backoffice/uploads/preview", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Erro ao processar arquivo");
+      const fileName = selectedFile.name.toLowerCase();
+      if (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls")) {
+        toast.error("Apenas arquivos Excel (.xlsx, .xls) são permitidos");
+        return;
       }
 
-      const data = await res.json();
-      setPreviewData(data);
-      
-      // Extrair mês de referência da primeira linha válida
-      const primeiraLinhaValida = data.previewRows.find((r: any) => r.status === "VALIDO");
-      if (primeiraLinhaValida && primeiraLinhaValida.dataReferencia) {
-        const [ano, mes] = primeiraLinhaValida.dataReferencia.split("-");
-        setMesReferencia(`${ano}-${mes}`);
+      setFile(selectedFile);
+      setPreviewData(null);
+      setMesReferencia("");
+      setShowAllRows(false);
+      setLoading(true);
+
+      try {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        const res = await fetch("/api/v1/backoffice/uploads/preview", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Erro ao processar arquivo");
+        }
+
+        const data = await res.json();
+        setPreviewData(data);
+
+        // Extrair mês de referência da primeira linha válida
+        const primeiraLinhaValida = data.previewRows.find(
+          (r: any) => r.status === "VALIDO",
+        );
+        if (primeiraLinhaValida && primeiraLinhaValida.dataReferencia) {
+          const [ano, mes] = primeiraLinhaValida.dataReferencia.split("-");
+          setMesReferencia(`${ano}-${mes}`);
+        }
+
+        toast.success(
+          `Planilha processada: ${data.summary.total} linhas encontradas`,
+        );
+      } catch (error: any) {
+        toast.error(error.message || "Erro ao processar arquivo");
+        setFile(null);
+      } finally {
+        setLoading(false);
       }
-      
-      toast.success(`Planilha processada: ${data.summary.total} linhas encontradas`);
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao processar arquivo");
-      setFile(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   const handleUpload = async () => {
     if (!file || !previewData) {
@@ -122,7 +141,13 @@ export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: (
       formData.append("file", file);
       formData.append("mesReferencia", mesReferencia);
 
-      console.log("[Upload] Iniciando upload do arquivo:", file.name, file.size, "Mês:", mesReferencia);
+      console.log(
+        "[Upload] Iniciando upload do arquivo:",
+        file.name,
+        file.size,
+        "Mês:",
+        mesReferencia,
+      );
 
       const res = await fetch("/api/v1/backoffice/uploads", {
         method: "POST",
@@ -142,32 +167,68 @@ export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: (
       console.log("[Upload] Resposta:", responseData);
 
       if (!res.ok) {
-        const errorMsg = (responseData as any).error || `Erro ${res.status} ao fazer upload`;
+        const errorMsg =
+          (responseData as any).error || `Erro ${res.status} ao fazer upload`;
         toast.error(errorMsg);
         return;
       }
 
-      const processed = responseData.summary?.processedRows ?? 0;
-      toast.success(
-        `Upload concluído! ${processed} linhas processadas`, 
-        { duration: 6000 }
-      );
-      
+      const uploadId = responseData.id ?? responseData.upload?.id;
+      if (!uploadId) {
+        toast.error("Upload aceito, mas não foi possível rastrear o status.");
+        if (onUploadSuccess) onUploadSuccess();
+        return;
+      }
+
+      toast.info("Processando planilha...", {
+        description: "Aguarde enquanto salvamos os procedimentos.",
+        duration: UPLOAD_POLL_MAX_ATTEMPTS * UPLOAD_POLL_INTERVAL_MS,
+      });
+
+      const resultado = await sondarStatusUpload(uploadId);
+
+      if (resultado.status === "ERRO") {
+        toast.error(
+          "Falha ao processar a planilha. Verifique o arquivo e tente novamente.",
+        );
+        return;
+      }
+
+      if (resultado.status === "PROCESSANDO") {
+        toast.warning(
+          "O processamento está demorando mais que o esperado. A lista será recarregada.",
+          { duration: 8000 },
+        );
+      } else {
+        const processed = resultado.summary?.processedRows ?? 0;
+        const orfaos = resultado.summary?.orphanedRows ?? 0;
+        const rejeitados = resultado.summary?.rejectedRows ?? 0;
+        toast.success(
+          `Upload concluído! ${processed} procedimentos salvos` +
+            (orfaos ? ` · ${orfaos} órfãos` : "") +
+            (rejeitados ? ` · ${rejeitados} rejeitados` : ""),
+          { duration: 6000 },
+        );
+      }
+
       // Reset
       setFile(null);
       setPreviewData(null);
       setMesReferencia("");
       setShowAllRows(false);
-      
-      // Notificar componente pai para recarregar lista
+
+      // Notificar componente pai para recarregar lista (agora os dados já estão persistidos)
       if (onUploadSuccess) {
         onUploadSuccess();
       }
     } catch (error: any) {
       console.error("[Upload] Erro:", error);
-      toast.error(error?.message || "Erro ao fazer upload. Verifique a conexão.", {
-        duration: 8000,
-      });
+      toast.error(
+        error?.message || "Erro ao fazer upload. Verifique a conexão.",
+        {
+          duration: 8000,
+        },
+      );
     } finally {
       setUploading(false);
     }
@@ -186,22 +247,28 @@ export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: (
     }
   };
 
-  const displayedRows = showAllRows 
-    ? previewData?.previewRows 
+  const displayedRows = showAllRows
+    ? previewData?.previewRows
     : previewData?.previewRows.slice(0, 10);
 
   function gerarMesesDisponiveis() {
     const meses = [];
     const hoje = new Date();
-    
+
     // Gerar últimos 12 meses
     for (let i = 0; i < 12; i++) {
       const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
       const valor = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}`;
-      const label = data.toLocaleString("pt-BR", { month: "long", year: "numeric" });
-      meses.push({ value: valor, label: label.charAt(0).toUpperCase() + label.slice(1) });
+      const label = data.toLocaleString("pt-BR", {
+        month: "long",
+        year: "numeric",
+      });
+      meses.push({
+        value: valor,
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+      });
     }
-    
+
     return meses;
   }
 
@@ -209,7 +276,9 @@ export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-bold text-gray-900">📥 Upload de Planilha de Produção</h2>
+        <h2 className="text-xl font-bold text-gray-900">
+          📥 Upload de Planilha de Produção
+        </h2>
         <p className="text-sm text-gray-500 mt-1">
           Envie a planilha de procedimentos para processamento automático
         </p>
@@ -233,8 +302,12 @@ export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: (
           />
         </div>
         <p className="text-xs text-gray-500 mt-2">
-          Apenas arquivos Excel (.xlsx ou .xls). A planilha deve conter as colunas:{" "}
-          <span className="font-medium">Data de Referência, Paciente, CPF, Procedimento, Total Pago, Usuário da conta</span>
+          Apenas arquivos Excel (.xlsx ou .xls). A planilha deve conter as
+          colunas:{" "}
+          <span className="font-medium">
+            Data de Referência, Paciente, CPF, Procedimento, Total Pago, Usuário
+            da conta
+          </span>
         </p>
       </div>
 
@@ -251,7 +324,9 @@ export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: (
         <>
           {/* Mês de Referência */}
           <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Mês de Referência</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">
+              Mês de Referência
+            </h3>
             <select
               value={mesReferencia}
               onChange={(e) => setMesReferencia(e.target.value)}
@@ -271,29 +346,42 @@ export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: (
 
           {/* Summary */}
           <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Resumo do Preview</h3>
-            
+            <h3 className="font-semibold text-gray-900 mb-4">
+              Resumo do Preview
+            </h3>
+
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
               <div className="text-center p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs text-gray-500">Total</p>
-                <p className="text-lg font-bold text-gray-900">{previewData.summary.total}</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {previewData.summary.total}
+                </p>
               </div>
               <div className="text-center p-3 bg-green-50 rounded-lg">
                 <p className="text-xs text-green-600">Válidos</p>
-                <p className="text-lg font-bold text-green-700">{previewData.summary.validos}</p>
+                <p className="text-lg font-bold text-green-700">
+                  {previewData.summary.validos}
+                </p>
               </div>
               <div className="text-center p-3 bg-yellow-50 rounded-lg">
                 <p className="text-xs text-yellow-600">Órfãos</p>
-                <p className="text-lg font-bold text-yellow-700">{previewData.summary.orfaos}</p>
+                <p className="text-lg font-bold text-yellow-700">
+                  {previewData.summary.orfaos}
+                </p>
               </div>
               <div className="text-center p-3 bg-red-50 rounded-lg">
                 <p className="text-xs text-red-600">Rejeitados</p>
-                <p className="text-lg font-bold text-red-700">{previewData.summary.rejeitados}</p>
+                <p className="text-lg font-bold text-red-700">
+                  {previewData.summary.rejeitados}
+                </p>
               </div>
               <div className="text-center p-3 bg-blue-50 rounded-lg">
                 <p className="text-xs text-blue-600">Total Comissão</p>
                 <p className="text-lg font-bold text-blue-700">
-                  R$ {previewData.summary.totalComissao.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  R${" "}
+                  {previewData.summary.totalComissao.toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                  })}
                 </p>
                 <p className="text-xs text-blue-500 mt-1">A calcular</p>
               </div>
@@ -301,17 +389,23 @@ export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: (
 
             {/* Colunas */}
             <div className="mt-4 pt-4 border-t">
-              <p className="text-xs font-medium text-gray-700 mb-2">Colunas Encontradas:</p>
+              <p className="text-xs font-medium text-gray-700 mb-2">
+                Colunas Encontradas:
+              </p>
               <div className="flex flex-wrap gap-1">
                 {previewData.summary.colunasEncontradas.map((col) => (
-                  <span key={col} className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">
+                  <span
+                    key={col}
+                    className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded"
+                  >
                     {col}
                   </span>
                 ))}
               </div>
               {previewData.summary.colunasOpcionais.length > 0 && (
                 <p className="text-xs text-gray-500 mt-2">
-                  Colunas opcionais: {previewData.summary.colunasOpcionais.join(", ")}
+                  Colunas opcionais:{" "}
+                  {previewData.summary.colunasOpcionais.join(", ")}
                 </p>
               )}
             </div>
@@ -332,50 +426,99 @@ export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: (
                 </button>
               )}
             </div>
-            
+
             <div className="overflow-x-auto max-h-96 overflow-y-auto">
               <table className="w-full text-xs">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
-                    <th className="text-left p-2 font-medium text-gray-600">#</th>
-                    <th className="text-left p-2 font-medium text-gray-600">Data Ref.</th>
-                    <th className="text-left p-2 font-medium text-gray-600">Paciente</th>
-                    <th className="text-left p-2 font-medium text-gray-600">CPF</th>
-                    <th className="text-left p-2 font-medium text-gray-600">Procedimento</th>
-                    <th className="text-left p-2 font-medium text-gray-600">Tipo</th>
-                    <th className="text-left p-2 font-medium text-gray-600">Unidade</th>
-                    <th className="text-left p-2 font-medium text-gray-600">Usuário Conta</th>
-                    <th className="text-right p-2 font-medium text-gray-600">Total Pago</th>
-                    <th className="text-right p-2 font-medium text-gray-600">Comissão</th>
-                    <th className="text-center p-2 font-medium text-gray-600">Status</th>
+                    <th className="text-left p-2 font-medium text-gray-600">
+                      #
+                    </th>
+                    <th className="text-left p-2 font-medium text-gray-600">
+                      Data Ref.
+                    </th>
+                    <th className="text-left p-2 font-medium text-gray-600">
+                      Paciente
+                    </th>
+                    <th className="text-left p-2 font-medium text-gray-600">
+                      CPF
+                    </th>
+                    <th className="text-left p-2 font-medium text-gray-600">
+                      Procedimento
+                    </th>
+                    <th className="text-left p-2 font-medium text-gray-600">
+                      Tipo
+                    </th>
+                    <th className="text-left p-2 font-medium text-gray-600">
+                      Unidade
+                    </th>
+                    <th className="text-left p-2 font-medium text-gray-600">
+                      Usuário Conta
+                    </th>
+                    <th className="text-right p-2 font-medium text-gray-600">
+                      Total Pago
+                    </th>
+                    <th className="text-right p-2 font-medium text-gray-600">
+                      Comissão
+                    </th>
+                    <th className="text-center p-2 font-medium text-gray-600">
+                      Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {displayedRows?.map((row) => (
-                    <tr key={row.rowNumber} className="border-t hover:bg-gray-50">
+                    <tr
+                      key={row.rowNumber}
+                      className="border-t hover:bg-gray-50"
+                    >
                       <td className="p-2 text-gray-500">{row.rowNumber}</td>
-                      <td className="p-2 text-gray-900">{row.dataReferencia}</td>
-                      <td className="p-2 text-gray-900 font-medium">{row.paciente}</td>
+                      <td className="p-2 text-gray-900">
+                        {row.dataReferencia}
+                      </td>
+                      <td className="p-2 text-gray-900 font-medium">
+                        {row.paciente}
+                      </td>
                       <td className="p-2 text-gray-600">
-                        {row.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")}
+                        {row.cpf.replace(
+                          /(\d{3})(\d{3})(\d{3})(\d{2})/,
+                          "$1.$2.$3-$4",
+                        )}
                       </td>
                       <td className="p-2 text-gray-600">{row.procedimento}</td>
-                      <td className="p-2 text-gray-600">{row.tipoProcedimento}</td>
+                      <td className="p-2 text-gray-600">
+                        {row.tipoProcedimento}
+                      </td>
                       <td className="p-2 text-gray-600">{row.unidade}</td>
-                      <td className="p-2 text-gray-600">{row.usuarioDaConta || "-"}</td>
+                      <td className="p-2 text-gray-600">
+                        {row.usuarioDaConta || "-"}
+                      </td>
                       <td className="p-2 text-right text-gray-900">
-                        R$ {Number(row.totalPago).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        R${" "}
+                        {Number(row.totalPago).toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                        })}
                       </td>
                       <td className="p-2 text-right text-gray-500">
-                        R$ {(row.valorComissao || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        R${" "}
+                        {(row.valorComissao || 0).toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                        })}
                       </td>
                       <td className="p-2 text-center">
-                        <span className={`text-xs px-2 py-0.5 rounded ${getStatusColor(row.status)}`}>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded ${getStatusColor(row.status)}`}
+                        >
                           {row.status}
                         </span>
                         {row.motivo && row.status === "REJEITADO" && (
-                          <div className="text-xs text-red-600 mt-1" title={row.motivo}>
-                            {row.motivo.length > 20 ? `${row.motivo.slice(0, 20)}...` : row.motivo}
+                          <div
+                            className="text-xs text-red-600 mt-1"
+                            title={row.motivo}
+                          >
+                            {row.motivo.length > 20
+                              ? `${row.motivo.slice(0, 20)}...`
+                              : row.motivo}
                           </div>
                         )}
                       </td>
@@ -393,7 +536,9 @@ export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: (
               disabled={uploading || previewData.summary.rejeitados > 0}
               className="flex-1 bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {uploading ? "Processando..." : `Confirmar Upload (${previewData.summary.validos} válidos)`}
+              {uploading
+                ? "Processando..."
+                : `Confirmar Upload (${previewData.summary.validos} válidos)`}
             </button>
             <button
               onClick={() => {
@@ -410,8 +555,9 @@ export function UploadPlanilhaPreview({ onUploadSuccess }: { onUploadSuccess?: (
           {previewData.summary.rejeitados > 0 && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <p className="text-sm text-yellow-800">
-                ⚠️ <strong>Atenção:</strong> {previewData.summary.rejeitados} linhas foram rejeitadas. 
-                Corrija os erros na planilha antes de confirmar o upload.
+                ⚠️ <strong>Atenção:</strong> {previewData.summary.rejeitados}{" "}
+                linhas foram rejeitadas. Corrija os erros na planilha antes de
+                confirmar o upload.
               </p>
             </div>
           )}
