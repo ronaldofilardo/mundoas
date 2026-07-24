@@ -136,8 +136,7 @@ export async function requireBackoffice() {
   return { session, error: null };
 }
 
-// Alias deprecated para compatibilidade
-export const requireGestorPF = requireBackoffice;
+
 
 export async function requireParceiro() {
   const session = await getSession();
@@ -171,8 +170,7 @@ export async function requireBackofficeWithScope() {
   return { session, backofficeId: backoffice.id, error: null };
 }
 
-// Alias deprecated para compatibilidade
-export const requireGestorPFWithScope = requireBackofficeWithScope;
+
 
 export async function requireParceiroWithScope() {
   const session = await getSession();
@@ -216,7 +214,7 @@ export async function requireComercialWithScope() {
   };
 }
 
-export async function requireLiderancaWithScope(expectedTipo?: "COMERCIAL" | "GESTOR") {
+export async function requireLiderancaWithScope() {
   const session = await getSession();
   if (!session?.user)
     return { session: null, liderancaId: null, backofficeId: null, error: unauthorized() };
@@ -230,10 +228,6 @@ export async function requireLiderancaWithScope(expectedTipo?: "COMERCIAL" | "GE
 
   if (!lideranca)
     return { session: null, liderancaId: null, backofficeId: null, error: forbidden() };
-
-  if (expectedTipo && lideranca.tipo !== expectedTipo) {
-    return { session: null, liderancaId: null, backofficeId: null, error: forbidden() };
-  }
 
   return {
     session,

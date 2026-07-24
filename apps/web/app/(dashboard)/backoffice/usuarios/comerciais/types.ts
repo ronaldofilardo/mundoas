@@ -9,6 +9,7 @@ export interface Comercial {
   telefone?: string | null;
   lideranca?: "COMERCIAL" | "GESTOR";
   tipoLideranca?: "COMERCIAL" | "GESTOR";
+  tipo?: "GERENTE" | "SUPERVISOR" | "LIDER";
 }
 
 export interface Meta {
@@ -17,6 +18,7 @@ export interface Meta {
   mesReferencia: string;
   valorMeta: string | number;
   valorAtingido: string | number;
+  valorComissao?: string | number;
 }
 
 export interface Comissao {

@@ -74,12 +74,9 @@ export async function processUploadPlanilha(
   ] as const;
 
   const allRows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", range: 0 });
-  
-  let startRow = 0;
-  const firstRow = allRows[0];
-  if (!firstRow.some((cell: any) => String(cell).includes("Data de Referência"))) {
-    startRow = 1;
-  }
+
+  // Cabeçalhos estão sempre na linha 2 (índice 1), pois a linha 1 contém "REceita bruta analitica"
+  const startRow = 1;
 
   const headerRow = allRows[startRow];
   const dataRows = allRows.slice(startRow + 1);

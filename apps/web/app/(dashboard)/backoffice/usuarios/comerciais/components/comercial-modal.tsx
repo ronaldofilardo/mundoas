@@ -15,26 +15,22 @@ export function ComercialModal({ comercial, onSave, onClose }: ComercialModalPro
     telefone: comercial.telefone || "",
     funcao: comercial.funcao || "",
     lideranca: comercial.lideranca,
+    tipo: comercial.tipo,
   });
 
-  const [lideranca, setLideranca] = useState(comercial.lideranca || "");
+  const [isLideranca, setIsLideranca] = useState<boolean>(!!comercial.lideranca);
+  const [tipoLideranca, setTipoLideranca] = useState<string>(comercial.lideranca || "");
+  const [tipo, setTipo] = useState<string>(comercial.tipo || "");
 
-  const funcoesComercial = [
-    "SUPERVISOR_COMERCIAL",
-    "GERENTE_CIRE",
-    "SUPERVISOR_ATIVO",
-    "SUPERVISOR_RECEPTIVO",
-  ];
-
-  const funcoesGestor = [
-    "GERENTE_CIRE",
-    "SUPERVISOR_ATIVO",
-    "SUPERVISOR_RECEPTIVO",
-    "SUPERVISOR_FRANQUIA",
-    "SUPERVISOR_ATENDIMENTO",
-    "GERENTE_ATENDIMENTO",
-    "SUPERVISOR_COMERCIAL",
-  ];
+const funcoes = [
+  "GERENTE_CIRE",
+  "SUPERVISOR_ATIVO",
+  "SUPERVISOR_RECEPTIVO",
+  "SUPERVISOR_FRANQUIA",
+  "SUPERVISOR_ATENDIMENTO",
+  "GERENTE_ATENDIMENTO",
+  "SUPERVISOR_COMERCIAL",
+];
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -94,21 +90,71 @@ export function ComercialModal({ comercial, onSave, onClose }: ComercialModalPro
               className="w-full px-3 py-2 border rounded"
             />
           </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="lideranca"
+              checked={isLideranca}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setIsLideranca(checked);
+                if (!checked) {
+                  setFormData({ 
+                    ...formData, 
+                    lideranca: undefined, 
+                    funcao: "" 
+                  });
+                  setTipoLideranca("");
+                }
+              }}
+              className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            />
+            <label htmlFor="lideranca" className="text-sm font-medium text-gray-700">
+              Liderança (opcional)
+            </label>
+          </div>
+
+          {isLideranca && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tipo de Liderança
+              </label>
+              <select
+                value={tipoLideranca}
+                onChange={(e) => {
+                  setTipoLideranca(e.target.value);
+                  setFormData({ 
+                    ...formData, 
+                    lideranca: e.target.value as "COMERCIAL" | "GESTOR",
+                    funcao: "",
+                    tipo: undefined
+                  });
+                }}
+                className="w-full px-3 py-2 border rounded"
+                required={isLideranca}
+              >
+                <option value="">Selecione</option>
+                <option value="COMERCIAL">Comercial</option>
+                <option value="GESTOR">Gestor</option>
+              </select>
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Liderança
+              Tipo
             </label>
             <select
-              value={lideranca}
+              value={tipo}
               onChange={(e) => {
-                setLideranca(e.target.value);
-                setFormData({ ...formData, lideranca: e.target.value as "COMERCIAL" | "GESTOR", funcao: "" });
+                setTipo(e.target.value);
+                setFormData({ ...formData, tipo: e.target.value as "GERENTE" | "SUPERVISOR" | "LIDER" | undefined });
               }}
               className="w-full px-3 py-2 border rounded"
             >
               <option value="">Selecione</option>
-              <option value="COMERCIAL">Comercial</option>
-              <option value="GESTOR">Gestor</option>
+              <option value="GERENTE">Gerente</option>
+              <option value="SUPERVISOR">Supervisor</option>
+              <option value="LIDER">Lider</option>
             </select>
           </div>
           <div>
@@ -119,13 +165,9 @@ export function ComercialModal({ comercial, onSave, onClose }: ComercialModalPro
               value={formData.funcao || ""}
               onChange={(e) => setFormData({ ...formData, funcao: e.target.value })}
               className="w-full px-3 py-2 border rounded"
-              disabled={!lideranca}
             >
               <option value="">Selecione</option>
-              {lideranca === "COMERCIAL" && funcoesComercial.map((f) => (
-                <option key={f} value={f}>{f.replace(/_/g, " ")}</option>
-              ))}
-              {lideranca === "GESTOR" && funcoesGestor.map((f) => (
+              {funcoes.map((f) => (
                 <option key={f} value={f}>{f.replace(/_/g, " ")}</option>
               ))}
             </select>

@@ -61,6 +61,22 @@ export async function POST(req: NextRequest) {
     const { session, gestorId, error } = await requireGestorNivelInferiorWithScope();
     if (error) return error;
 
+    const gestor = await prisma.gestor.findUnique({
+      where: { id: gestorId },
+      select: { liderancaId: true },
+    });
+    if (!gestor) {
+      return badRequest("Gestor não encontrado");
+    }
+
+    const lideranca = await prisma.lideranca.findUnique({
+      where: { id: gestor.liderancaId },
+      select: { backofficeId: true },
+    });
+    if (!lideranca) {
+      return badRequest("Gestor não está vinculado a uma liderança");
+    }
+
     let body: any;
     try {
       body = await req.json();
@@ -125,6 +141,7 @@ export async function POST(req: NextRequest) {
           cpf: cpfClean,
           pixChave,
           status: "ATIVO",
+          backofficeId: lideranca.backofficeId,
           gestorId,
         },
       });

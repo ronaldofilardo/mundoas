@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
     return notFound("Parceiro não encontrado");
   }
 
-  // Obter nome do gestor-pf através do comercial ou gestor
+  // Obter nome do backoffice através do comercial ou gestor
   let gestorNome: string | null = null;
   if (acesso.parceiro.comercial && acesso.parceiro.comercial.lideranca) {
     gestorNome = acesso.parceiro.comercial.lideranca.usuario.nome;

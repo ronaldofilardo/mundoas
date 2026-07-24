@@ -2,7 +2,7 @@ import { prisma } from "../src/index";
 
 async function checkUser() {
   const user = await prisma.usuario.findFirst({
-    where: { email: "gestor-pf@asa.com.br" },
+    where: { email: "backoffice@asa.com.br" },
   });
   
   console.log("User found:", user?.email);

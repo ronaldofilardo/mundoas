@@ -33,6 +33,7 @@ export default function UsuariosComerciaisPage() {
   const [anoReferencia] = useState(new Date().getFullYear());
   const [metasGerais, setMetasGerais] = useState<Record<string, Meta[]>>({});
   const [loadingMetasGerais, setLoadingMetasGerais] = useState(false);
+  const [metaVersion, setMetaVersion] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [comercialEditando, setComercialEditando] = useState<Comercial | null>(null);
 
@@ -62,6 +63,7 @@ export default function UsuariosComerciaisPage() {
         map[r.comercialId] = r.metas;
       });
       setMetasGerais(map);
+      setMetaVersion((v) => v + 1);
     } catch {
       toast.error("Erro ao carregar metas gerais");
     } finally {
@@ -195,7 +197,7 @@ export default function UsuariosComerciaisPage() {
 
       <NovoComercialForm onCreated={refetchComerciais} />
 
-      <div className="card mt-6 flex-grow overflow-hidden">
+<div className="card mt-6 flex-grow overflow-hidden">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">
           Comerciais Cadastrados - Metas Anual ({anoReferencia})
         </h2>
@@ -206,15 +208,15 @@ export default function UsuariosComerciaisPage() {
             Nenhum comercial cadastrado ainda.
           </p>
         ) : (
-          <div className="overflow-auto flex-grow">
-            <table className="w-full text-sm" style={{ minWidth: '1400px' }}>
+          <div className="overflow-y-auto overflow-x-hidden flex-grow max-h-[600px]">
+            <table className="w-full text-sm table-fixed">
               <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="text-left p-3 font-semibold text-gray-700 sticky left-0 bg-gray-50 z-10">Comercial</th>
-                  <th className="text-left p-3 font-semibold text-gray-700 sticky left-64 bg-gray-50 z-10">Função</th>
-                  <th className="text-center p-3 font-semibold text-gray-700 sticky left-[340px] bg-gray-50 z-10">Ações</th>
+                <tr className="border-b bg-gray-50 sticky top-0 z-10">
+                  <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[150px]">Comercial</th>
+                  <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[90px]">Função</th>
+                  <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[130px]">Ações</th>
                   {mesesAno.map((m) => (
-                    <th key={m.value} className="text-center p-2 font-semibold text-gray-700 min-w-[90px]">
+                    <th key={m.value} className="text-center p-2 font-semibold text-gray-700">
                       {m.label}
                     </th>
                   ))}
@@ -223,31 +225,31 @@ export default function UsuariosComerciaisPage() {
               <tbody>
                 {comerciais.map((c) => (
                   <tr key={c.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3 sticky left-0 bg-white z-10">
+                    <td className="p-3">
                       <button
                         onClick={() => handleEditarComercial(c.id)}
                         className="text-left hover:text-primary-600 hover:underline"
                       >
-                        <p className="font-medium text-gray-900">{c.nome}</p>
-                        <p className="text-xs text-gray-500">{formatCpf(c.cpf)}</p>
+                        <p className="font-medium text-gray-900 truncate">{c.nome}</p>
+                        <p className="text-xs text-gray-500 truncate">{formatCpf(c.cpf)}</p>
                       </button>
                     </td>
-                    <td className="p-3 sticky left-64 bg-white z-10">
-                      <p className="text-xs text-gray-600">{c.funcao ? c.funcao.replace(/_/g, " ") : "-"}</p>
-                      <p className="text-xs text-gray-500">{c.status}</p>
+                    <td className="p-3">
+                      <p className="text-xs text-gray-600 truncate">{c.funcao ? c.funcao.replace(/_/g, " ") : "-"}</p>
+                      <p className="text-xs text-gray-500 truncate">{c.status}</p>
                     </td>
-                    <td className="p-2 text-center sticky left-[340px] bg-white z-10">
-                      <div className="flex gap-2 justify-center">
+                    <td className="p-2 text-center">
+                      <div className="flex gap-1 justify-center">
                         <button
                           onClick={() => handleEditarComercial(c.id)}
-                          className="text-blue-600 hover:text-blue-800 text-xs font-medium px-2 py-1 rounded hover:bg-blue-50"
+                          className="text-blue-600 hover:text-blue-800 text-xs font-medium px-1.5 py-1 rounded hover:bg-blue-50"
                           title="Editar"
                         >
                           ✏️ Editar
                         </button>
                         <button
                           onClick={() => handleDeletarComercial(c.id)}
-                          className="text-red-600 hover:text-red-800 text-xs font-medium px-2 py-1 rounded hover:bg-red-50"
+                          className="text-red-600 hover:text-red-800 text-xs font-medium px-1.5 py-1 rounded hover:bg-red-50"
                           title="Deletar"
                         >
                           🗑️ Deletar
@@ -260,7 +262,7 @@ export default function UsuariosComerciaisPage() {
                         (mt) => mt.mesReferencia === mesRef
                       );
                       return (
-                        <td key={m.value} className="p-2">
+                        <td key={`${m.value}-${metaVersion}`} className="p-2">
                           <input
                             type="number"
                             step="0.01"

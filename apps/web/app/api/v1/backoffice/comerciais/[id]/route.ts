@@ -17,10 +17,13 @@ export async function GET(
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  // Buscar comercial e verificar se pertence a uma liderança deste backoffice
+  // Buscar comercial e verificar se pertence a este backoffice
   const comercial = await prisma.comercial.findFirst({
     where: { id: params.id },
     include: {
+      backoffice: {
+        select: { id: true },
+      },
       lideranca: {
         select: { backofficeId: true },
       },
@@ -32,8 +35,10 @@ export async function GET(
   
   if (!comercial) return notFound("Comercial não encontrado");
   
-  // Verificar se a liderança pertence a este backoffice
-  if (comercial.lideranca.backofficeId !== backofficeId) {
+  if (comercial.lideranca && comercial.lideranca.backofficeId !== backofficeId) {
+    return forbidden();
+  }
+  if (comercial.backofficeId !== backofficeId) {
     return forbidden();
   }
 
@@ -68,14 +73,17 @@ export async function PATCH(
     where: { id: params.id },
     include: { 
       usuario: true,
+      backoffice: { select: { id: true } },
       lideranca: { select: { backofficeId: true } }
     },
   });
   
   if (!comercial) return notFound("Comercial não encontrado");
   
-  // Verificar se a liderança pertence a este backoffice
-  if (comercial.lideranca.backofficeId !== backofficeId) {
+  if (comercial.lideranca && comercial.lideranca.backofficeId !== backofficeId) {
+    return forbidden();
+  }
+  if (comercial.backofficeId !== backofficeId) {
     return forbidden();
   }
 
@@ -151,8 +159,10 @@ export async function DELETE(
   
   if (!comercial) return notFound("Comercial não encontrado");
   
-  // Verificar se a liderança pertence a este backoffice
-  if (comercial.lideranca.backofficeId !== backofficeId) {
+  if (comercial.lideranca && comercial.lideranca.backofficeId !== backofficeId) {
+    return forbidden();
+  }
+  if (comercial.backofficeId !== backofficeId) {
     return forbidden();
   }
 

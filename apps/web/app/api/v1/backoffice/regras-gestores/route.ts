@@ -38,7 +38,7 @@ export async function GET() {
   });
 }
 
-export async function POST(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 

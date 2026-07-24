@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useComerciais } from "../../usuarios/comerciais/hooks/use-comerciais";
-import type { Comercial, Meta } from "../../usuarios/comerciais/types";
+import type { Comercial, Meta, RegrasComerciais, RegrasGestores } from "../../usuarios/comerciais/types";
 import { formatCpf } from "../../usuarios/comerciais/utils";
 import { NovoComercialForm } from "../../usuarios/comerciais/components/novo-comercial-form";
 import { ComercialModal } from "../../usuarios/comerciais/components/comercial-modal";
@@ -34,8 +34,49 @@ function parseMoeda(valor: string): string {
   return numeros;
 }
 
+function getRegrasComercialMap(): Record<string, keyof RegrasComerciais> {
+  return {
+    "CARTAO ACESSO SAUDE": "cartaoAcessoSaude",
+    "CIRE ATIVO": "cireAtivo",
+    "CIRE RECEPTIVO": "cireReceptivo",
+    "FRANCHISING ACESSO": "franchisingAcesso",
+    "FRANCHISING CARTAO": "franchisingCartao",
+    "UNIDADE": "unidade",
+  };
+}
+
+function getRegrasGestorMap(): Record<string, keyof RegrasGestores> {
+  return {
+    "GERENTE CIRE": "gerenteCire",
+    "SUPERVISOR ATIVO": "supervisorAtivo",
+    "SUPERVISOR RECEPTIVO": "supervisorReceptivo",
+    "SUPERVISOR FRANQUIA": "supervisorFranquia",
+    "SUPERVISOR ATENDIMENTO": "supervisorAtendimento",
+    "GERENTE ATENDIMENTO": "gerenteAtendimento",
+    "SUPERVISOR COMERCIAL": "supervisorComercial",
+  };
+}
+
+function getComissaoFromFuncao(
+  regrasComerciais: { regrasComerciais: RegrasComerciais | null; regrasGestores: RegrasGestores | null },
+  funcao: string | undefined
+): number {
+  const raw = (funcao || "").toUpperCase().replace(/_/g, " ").trim();
+  const funcaoStripped = raw.replace(/\s*ATIVO\s*$/, "").replace(/\s*RECEPTIVO\s*$/, "").trim();
+
+  const chaveGestor = getRegrasGestorMap()[funcaoStripped];
+  if (chaveGestor && regrasComerciais.regrasGestores) return regrasComerciais.regrasGestores[chaveGestor];
+
+  const chaveCom = getRegrasComercialMap()[funcaoStripped];
+  if (chaveCom && regrasComerciais.regrasComerciais) return regrasComerciais.regrasComerciais[chaveCom];
+
+  return 0;
+}
+
 export function TabComerciais() {
   const { comerciais, loading, refetch: refetchComerciais, setComerciais } = useComerciais();
+  const [regrasComerciais, setRegrasComerciais] = useState<RegrasComerciais | null>(null);
+  const [regrasGestores, setRegrasGestores] = useState<RegrasGestores | null>(null);
   const [metasGerais, setMetasGerais] = useState<Record<string, Meta[]>>({});
   const [loadingMetasGerais, setLoadingMetasGerais] = useState(false);
   const [metaVersion, setMetaVersion] = useState(0);
@@ -46,8 +87,10 @@ export function TabComerciais() {
   const [metasAlteradas, setMetasAlteradas] = useState<Set<string>>(new Set());
   const [producaoInputs, setProducaoInputs] = useState<Record<string, Record<string, string>>>({});
   const [producaoAlteradas, setProducaoAlteradas] = useState<Set<string>>(new Set());
+  const [comissaoInputs, setComissaoInputs] = useState<Record<string, Record<string, string>>>({});
+  const [comissaoAlteradas, setComissaoAlteradas] = useState<Set<string>>(new Set());
 
-  async function fetchMetasGerais() {
+  async function fetchMetasGerais(regrasCom: RegrasComerciais | null, regrasGes: RegrasGestores | null) {
     setLoadingMetasGerais(true);
     try {
       const promises = comerciais.map(async (c) => {
@@ -59,28 +102,69 @@ export function TabComerciais() {
       const map: Record<string, Meta[]> = {};
       const inputsMap: Record<string, Record<string, string>> = {};
       const producaoMap: Record<string, Record<string, string>> = {};
+      const comissaoMap: Record<string, Record<string, string>> = {};
+      const comissaoAlteradasLocal = new Set<string>();
+      const regrasBuffer = { regrasComerciais: regrasCom, regrasGestores: regrasGes };
       results.forEach((r) => {
         map[r.comercialId] = r.metas;
         inputsMap[r.comercialId] = {};
         producaoMap[r.comercialId] = {};
+        comissaoMap[r.comercialId] = {};
+        const comercial = comerciais.find((c) => c.id === r.comercialId);
         r.metas.forEach((m: Meta) => {
           const metaFormatada = Number(m.valorMeta).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
           inputsMap[r.comercialId][m.mesReferencia] = metaFormatada;
           const atingido = Number(m.valorAtingido ?? 0);
           const producaoFormatada = atingido > 0 ? atingido.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "";
           producaoMap[r.comercialId][m.mesReferencia] = producaoFormatada;
+          const comissaoFormatada = m.valorComissao !== undefined && m.valorComissao !== null && Number(m.valorComissao) > 0
+            ? Number(m.valorComissao).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            : "";
+          comissaoMap[r.comercialId][m.mesReferencia] = comissaoFormatada;
+
+          if (!comissaoFormatada) {
+            const peso = getComissaoFromFuncao(regrasBuffer, comercial?.funcao);
+            if (peso > 0) {
+              comissaoMap[r.comercialId][m.mesReferencia] = peso.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              comissaoAlteradasLocal.add(`${r.comercialId}|${m.mesReferencia}`);
+            }
+          }
         });
       });
       setMetasGerais(map);
       setMetasInputs(inputsMap);
       setProducaoInputs(producaoMap);
+      setComissaoInputs(comissaoMap);
       setMetasAlteradas(new Set());
       setProducaoAlteradas(new Set());
+      setComissaoAlteradas(comissaoAlteradasLocal);
       setMetaVersion((v) => v + 1);
     } catch {
       toast.error("Erro ao carregar metas gerais");
     } finally {
       setLoadingMetasGerais(false);
+    }
+  }
+
+  async function fetchRegrasGerais() {
+    try {
+      const [comRes, gesRes] = await Promise.all([
+        fetch("/api/v1/backoffice/regras-comerciais"),
+        fetch("/api/v1/backoffice/regras-gestores"),
+      ]);
+      let comData: RegrasComerciais | null = null;
+      let gesData: RegrasGestores | null = null;
+      if (comRes.ok) {
+        comData = await comRes.json();
+        setRegrasComerciais(comData);
+      }
+      if (gesRes.ok) {
+        gesData = await gesRes.json();
+        setRegrasGestores(gesData);
+      }
+      await fetchMetasGerais(comData, gesData);
+    } catch {
+      toast.error("Erro ao carregar regras gerais");
     }
   }
 
@@ -103,7 +187,16 @@ export function TabComerciais() {
       }
     });
 
-    type Registro = { comercialId: string; mes: string; valorMeta?: string; valorAtingido?: string };
+    const comissoesParaSalvar: Array<{ comercialId: string; mes: string; valor: string }> = [];
+    comissaoAlteradas.forEach((key) => {
+      const [comercialId, mes] = key.split('|');
+      const valor = comissaoInputs[comercialId]?.[mes];
+      if (valor) {
+        comissoesParaSalvar.push({ comercialId, mes, valor });
+      }
+    });
+
+    type Registro = { comercialId: string; mes: string; valorMeta?: string; valorAtingido?: string; valorComissao?: string };
     const registros = new Map<string, Registro>();
     metasParaSalvar.forEach(({ comercialId, mes, valor }) => {
       const key = `${comercialId}|${mes}`;
@@ -112,6 +205,10 @@ export function TabComerciais() {
     producoesParaSalvar.forEach(({ comercialId, mes, valor }) => {
       const key = `${comercialId}|${mes}`;
       registros.set(key, { ...(registros.get(key) || { comercialId, mes }), valorAtingido: valor });
+    });
+    comissoesParaSalvar.forEach(({ comercialId, mes, valor }) => {
+      const key = `${comercialId}|${mes}`;
+      registros.set(key, { ...(registros.get(key) || { comercialId, mes }), valorComissao: valor });
     });
 
     if (registros.size === 0) {
@@ -124,7 +221,7 @@ export function TabComerciais() {
       let erros = 0;
 
       await Promise.all(
-        Array.from(registros.values()).map(async ({ comercialId, mes, valorMeta, valorAtingido }) => {
+        Array.from(registros.values()).map(async ({ comercialId, mes, valorMeta, valorAtingido, valorComissao }) => {
           if (valorMeta !== undefined) {
             const valorNumerico = parseMoeda(valorMeta);
             const num = parseFloat(valorNumerico);
@@ -141,6 +238,14 @@ export function TabComerciais() {
               return;
             }
           }
+          if (valorComissao !== undefined) {
+            const valorNumerico = parseMoeda(valorComissao);
+            const num = parseFloat(valorNumerico);
+            if (isNaN(num) || num < 0) {
+              erros++;
+              return;
+            }
+          }
 
           try {
             const res = await fetch(`/api/v1/backoffice/comerciais/${comercialId}/metas`, {
@@ -150,6 +255,7 @@ export function TabComerciais() {
                 mesReferencia: mes,
                 ...(valorMeta !== undefined ? { valorMeta: parseFloat(parseMoeda(valorMeta)) } : {}),
                 ...(valorAtingido !== undefined ? { valorAtingido: parseFloat(parseMoeda(valorAtingido)) } : {}),
+                ...(valorComissao !== undefined ? { valorComissao: parseFloat(parseMoeda(valorComissao)) } : {}),
               }),
             });
 
@@ -172,7 +278,8 @@ export function TabComerciais() {
 
       setMetasAlteradas(new Set());
       setProducaoAlteradas(new Set());
-      await fetchMetasGerais();
+      setComissaoAlteradas(new Set());
+      await fetchRegrasGerais();
     } catch {
       toast.error("Erro ao salvar metas");
     }
@@ -210,6 +317,25 @@ export function TabComerciais() {
       };
     });
     setProducaoAlteradas((prev) => {
+      const nova = new Set(prev);
+      nova.add(`${comercialId}|${mes}`);
+      return nova;
+    });
+  }
+
+  function handleChangeComissao(comercialId: string, mes: string, valor: string) {
+    const valorFormatado = formatarMoeda(valor);
+    setComissaoInputs((prev) => {
+      const comercialInputs = prev[comercialId] || {};
+      return {
+        ...prev,
+        [comercialId]: {
+          ...comercialInputs,
+          [mes]: valorFormatado,
+        },
+      };
+    });
+    setComissaoAlteradas((prev) => {
       const nova = new Set(prev);
       nova.add(`${comercialId}|${mes}`);
       return nova;
@@ -332,7 +458,7 @@ export function TabComerciais() {
         nova.delete(`${comercialId}|${mes}`);
         return nova;
       });
-      fetchMetasGerais();
+      await fetchRegrasGerais();
     } catch {
       toast.error("Erro ao salvar meta");
     }
@@ -369,15 +495,52 @@ export function TabComerciais() {
         nova.delete(`${comercialId}|${mes}`);
         return nova;
       });
-      fetchMetasGerais();
+      await fetchRegrasGerais();
     } catch {
       toast.error("Erro ao salvar produção");
     }
   }
 
+  async function handleSalvarComissaoGeral(comercialId: string, mes: string, valor: string) {
+    const valorNumerico = parseMoeda(valor);
+    const num = parseFloat(valorNumerico);
+    if (isNaN(num) || num < 0) {
+      toast.error("Valor inválido");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/v1/backoffice/comerciais/${comercialId}/metas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mesReferencia: mes, valorComissao: num }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.error || "Erro ao salvar comissão");
+        return;
+      }
+      toast.success("Comissão salva");
+      setComissaoInputs((prev) => ({
+        ...prev,
+        [comercialId]: {
+          ...prev[comercialId],
+          [mes]: valor,
+        },
+      }));
+      setComissaoAlteradas((prev) => {
+        const nova = new Set(prev);
+        nova.delete(`${comercialId}|${mes}`);
+        return nova;
+      });
+      await fetchRegrasGerais();
+    } catch {
+      toast.error("Erro ao salvar comissão");
+    }
+  }
+
   useEffect(() => {
     if (comerciais.length > 0) {
-      fetchMetasGerais();
+      fetchRegrasGerais();
     }
   }, [comerciais]);
 
@@ -394,14 +557,14 @@ export function TabComerciais() {
           </h2>
           <button
             onClick={handleSalvarTodasMetas}
-            disabled={metasAlteradas.size === 0 && producaoAlteradas.size === 0}
+            disabled={metasAlteradas.size === 0 && producaoAlteradas.size === 0 && comissaoAlteradas.size === 0}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              metasAlteradas.size > 0 || producaoAlteradas.size > 0
+              metasAlteradas.size > 0 || producaoAlteradas.size > 0 || comissaoAlteradas.size > 0
                 ? 'bg-primary-600 text-white hover:bg-primary-700 cursor-pointer'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            💾 Salvar ({metasAlteradas.size + producaoAlteradas.size})
+            💾 Salvar ({metasAlteradas.size + producaoAlteradas.size + comissaoAlteradas.size})
           </button>
         </div>
         {loadingMetasGerais ? (
@@ -430,7 +593,7 @@ export function TabComerciais() {
                 {comerciais.map((c) => (
                   <Fragment key={c.id}>
                     <tr className="hover:bg-gray-50">
-                      <td className="p-3 align-top border-t" rowSpan={2}>
+                      <td className="p-3 align-top border-t" rowSpan={3}>
                         <button
                           onClick={() => handleEditarComercial(c.id)}
                           className="text-left hover:text-primary-600 hover:underline"
@@ -439,11 +602,11 @@ export function TabComerciais() {
                           <p className="text-xs text-gray-500">{formatCpf(c.cpf)}</p>
                         </button>
                       </td>
-                      <td className="p-3 align-top border-t" rowSpan={2}>
+                      <td className="p-3 align-top border-t" rowSpan={3}>
                         <p className="text-xs text-gray-600">{c.funcao ? c.funcao.replace(/_/g, " ") : "-"}</p>
                         <p className="text-xs text-gray-500">{c.status}</p>
                       </td>
-                      <td className="p-2 text-center align-top border-t" rowSpan={2}>
+                      <td className="p-2 text-center align-top border-t" rowSpan={3}>
                         <div className="flex gap-1 justify-center">
                           <button
                             onClick={() => handleEditarComercial(c.id)}
@@ -509,6 +672,34 @@ export function TabComerciais() {
                                 const valor = e.target.value;
                                 if (valor) {
                                   handleSalvarProducaoGeral(c.id, mesRef, valor);
+                                }
+                              }}
+                            />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <tr className="border-b hover:bg-gray-50">
+                      <td className="p-2">
+                        <span className="text-[11px] font-medium text-gray-500">Comissão</span>
+                      </td>
+                      {mesesAno.map((m) => {
+                        const mesRef = `${anoReferencia}-${m.value}`;
+                        return (
+                          <td key={`comissao-${m.value}-${metaVersion}`} className="p-2">
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              value={comissaoInputs[c.id]?.[mesRef] ?? ""}
+                              placeholder="R$ 0,00"
+                              className="w-full px-3 py-2 border rounded text-sm text-right font-mono focus-ring bg-green-50/40"
+                              onChange={(e) => {
+                                handleChangeComissao(c.id, mesRef, e.target.value);
+                              }}
+                              onBlur={(e) => {
+                                const valor = e.target.value;
+                                if (valor) {
+                                  handleSalvarComissaoGeral(c.id, mesRef, valor);
                                 }
                               }}
                             />

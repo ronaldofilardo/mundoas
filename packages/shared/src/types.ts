@@ -6,7 +6,9 @@ export type TipoUsuario =
   | "CONSULTOR"
   | "PARCEIRO"
   | "COMERCIAL"
-  | "LIDERANCA";
+  | "LIDERANCA"
+  | "GESTOR_PJ"
+  | "CONSULTOR_PF";
 export type TipoPix = "CPF" | "CNPJ" | "EMAIL" | "TELEFONE";
 export type TipoDocumento = "CNPJ" | "CPF_RESPONSAVEL";
 export type StatusCupomImportado =

@@ -68,6 +68,20 @@ const comercialNav: NavItem[] = [
   { label: "Dados Pessoais", href: "/comercial/dados-pessoais", icon: "👤" },
 ];
 
+const liderancaNav: NavItem[] = [
+  { label: "Dashboard", href: "/lideranca", icon: "📊" },
+  {
+    label: "Equipe",
+    href: "/lideranca/equipe",
+    icon: "👥",
+    subItems: [
+      { label: "Consultores PF", href: "/lideranca/equipe/consultores-pf" },
+    ],
+  },
+  { label: "Produção", href: "/lideranca/consultores-pf/producao", icon: "📋" },
+  { label: "Metas", href: "/lideranca/metas", icon: "🎯" },
+];
+
 const estabelecimentoNav: NavItem[] = [
   { label: "Dashboard", href: "/estabelecimento/dashboard", icon: "📊" },
   {
@@ -86,6 +100,8 @@ function getTipoLabel(tipo: string | undefined) {
   if (tipo === "CONSULTOR") return "Consultor";
   if (tipo === "ESTABELECIMENTO") return "Estabelecimento";
   if (tipo === "COMERCIAL") return "Comercial";
+  if (tipo === "LIDERANCA") return "Liderança";
+  if (tipo === "CONSULTOR_PF") return "Consultor PF";
   return "";
 }
 
@@ -102,6 +118,7 @@ export function Sidebar() {
   else if (tipo === "GESTOR") navItems = gestorNav;
   else if (tipo === "PARCEIRO") navItems = parceiroNav;
   else if (tipo === "COMERCIAL") navItems = comercialNav;
+  else if (tipo === "LIDERANCA") navItems = liderancaNav;
   else if (tipo === "ESTABELECIMENTO") navItems = estabelecimentoNav;
   else navItems = consultorNav;
 

@@ -8,7 +8,7 @@ async function main() {
   const senhaAdmin = await hash("123456", 12);
   await prisma.usuario.upsert({
     where: { email: "admin@asa.com" },
-    update: { senhaHash: senhaAdmin, senhaTemporaria: false },
+    update: { senhaHash: senhaAdmin, senhaTemporaria: false, status: "ATIVO" },
     create: {
       nome: "Administrador",
       email: "admin@asa.com",
@@ -16,6 +16,7 @@ async function main() {
       tipo: "ADMIN",
       papel: null,
       senhaTemporaria: false,
+      status: "ATIVO",
     },
   });
 
@@ -28,6 +29,7 @@ async function main() {
       senhaTemporaria: false,
       tipo: "BACKOFFICE",
       papel: "BACKOFFICE",
+      status: "ATIVO",
     },
     create: {
       nome: "BackOffice Admin",
@@ -36,6 +38,7 @@ async function main() {
       tipo: "BACKOFFICE",
       papel: "BACKOFFICE",
       senhaTemporaria: false,
+      status: "ATIVO",
     },
   });
 
@@ -60,6 +63,7 @@ async function main() {
       senhaTemporaria: false,
       tipo: "BACKOFFICE",
       papel: "BACKOFFICE",
+      status: "ATIVO",
     },
     create: {
       nome: "Backoffice Admin",
@@ -68,6 +72,7 @@ async function main() {
       tipo: "BACKOFFICE",
       papel: "BACKOFFICE",
       senhaTemporaria: false,
+      status: "ATIVO",
     },
   });
 
@@ -83,23 +88,25 @@ async function main() {
     },
   });
 
-  // Gestor PJ (arquitetura independente: Consultor -> Estabelecimentos via gestores/liderancas)
+  // Gestor PJ
   const senhaGestorPj = await hash("123456", 12);
   await prisma.usuario.upsert({
     where: { email: "gestor-pj@asa.com" },
     update: {
       senhaHash: senhaGestorPj,
       senhaTemporaria: false,
-      tipo: "BACKOFFICE",
+      tipo: "GESTOR_PJ",
       papel: "GESTOR_PJ",
+      status: "ATIVO",
     },
     create: {
       nome: "Gestor Pessoa Jurídica",
       email: "gestor-pj@asa.com",
       senhaHash: senhaGestorPj,
-      tipo: "BACKOFFICE",
+      tipo: "GESTOR_PJ",
       papel: "GESTOR_PJ",
       senhaTemporaria: false,
+      status: "ATIVO",
     },
   });
 
@@ -107,7 +114,7 @@ async function main() {
   const senhaConsultor = await hash("123456", 12);
   const consultorUsuario = await prisma.usuario.upsert({
     where: { email: "consultor@asa.com" },
-    update: { senhaHash: senhaConsultor, senhaTemporaria: false },
+    update: { senhaHash: senhaConsultor, senhaTemporaria: false, status: "ATIVO" },
     create: {
       nome: "Consultor",
       email: "consultor@asa.com",
@@ -115,6 +122,7 @@ async function main() {
       tipo: "CONSULTOR",
       papel: null,
       senhaTemporaria: false,
+      status: "ATIVO",
     },
   });
 

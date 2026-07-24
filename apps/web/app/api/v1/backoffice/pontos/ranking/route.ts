@@ -23,7 +23,6 @@ export const dynamic = 'force-dynamic';
  * 
  * Query params:
  * - cicloPontosId: UUID do ciclo (opcional, usa o vigente se não informado)
- * - referenciaMes: Mês de referência YYYY-MM (opcional, para snapshots históricos)
  * - forceRefresh: true para ignorar cache (opcional)
  */
 export async function GET(req: NextRequest) {
@@ -33,7 +32,6 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const cicloPontosId = searchParams.get('cicloPontosId');
-    const referenciaMes = searchParams.get('referenciaMes');
     const forceRefresh = searchParams.get('forceRefresh') === 'true';
 
     // Buscar ciclo vigente se não especificado
@@ -60,48 +58,6 @@ export async function GET(req: NextRequest) {
 
     if (!ciclo || ciclo.backofficeId !== backofficeId) {
       return badRequest('Ciclo não encontrado ou não pertence ao backoffice');
-    }
-
-    // Se especificado mês, buscar snapshot (não usa cache)
-    if (referenciaMes) {
-      const snapshot = await prisma.rankingSnapshot.findUnique({
-        where: {
-          cicloPontosId_referenciaMes: {
-            cicloPontosId: cicloId,
-            referenciaMes,
-          },
-        },
-        include: {
-          posicoes: {
-            include: {
-              parceiro: {
-                select: {
-                  id: true,
-                  nome: true,
-                  cpf: true,
-                },
-              },
-            },
-            orderBy: { posicao: 'asc' },
-          },
-        },
-      });
-
-      if (!snapshot) {
-        return badRequest(`Ranking para ${referenciaMes} não encontrado`);
-      }
-
-      return ok({
-        ranking: {
-          mes: referenciaMes,
-          geradoEm: snapshot.geradoEm.toISOString(),
-          posicoes: snapshot.posicoes.map((p) => ({
-            posicao: p.posicao,
-            parceiro: p.parceiro,
-            pontosAcumulados: p.pontosAcumulados,
-          })),
-        },
-      });
     }
 
     // Verificar cache

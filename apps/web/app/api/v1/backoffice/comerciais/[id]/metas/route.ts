@@ -17,19 +17,21 @@ export async function GET(
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  // Buscar comercial e verificar se pertence a uma liderança deste backoffice
+  // Buscar comercial e verificar se pertence a este backoffice
   const comercial = await prisma.comercial.findFirst({
     where: { id: params.id },
     include: {
+      backoffice: { select: { id: true } },
       lideranca: { select: { backofficeId: true } },
     },
   });
   
   if (!comercial) return notFound("Comercial não encontrado");
   
-  // Verificar permissão: se tiver liderança, verificar se pertence a este backoffice
-  // Se não tiver liderança, permitir (comercial criado diretamente neste backoffice)
   if (comercial.lideranca && comercial.lideranca.backofficeId !== backofficeId) {
+    return forbidden();
+  }
+  if (comercial.backofficeId !== backofficeId) {
     return forbidden();
   }
 
@@ -59,15 +61,17 @@ export async function POST(
   const comercial = await prisma.comercial.findFirst({
     where: { id: params.id },
     include: {
+      backoffice: { select: { id: true } },
       lideranca: { select: { backofficeId: true } },
     },
   });
   
   if (!comercial) return notFound("Comercial não encontrado");
   
-  // Verificar permissão: se tiver liderança, verificar se pertence a este backoffice
-  // Se não tiver liderança, permitir (comercial criado diretamente neste backoffice)
   if (comercial.lideranca && comercial.lideranca.backofficeId !== backofficeId) {
+    return forbidden();
+  }
+  if (comercial.backofficeId !== backofficeId) {
     return forbidden();
   }
 

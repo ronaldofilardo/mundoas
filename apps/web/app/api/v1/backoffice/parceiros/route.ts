@@ -130,6 +130,7 @@ export async function POST(req: NextRequest) {
       cpf: cpfUnmasked,
       pixChave: pixChave || null,
       usuarioId: usuario.id,
+      backofficeId,
       status: "ATIVO",
     },
   });

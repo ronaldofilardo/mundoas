@@ -2,14 +2,6 @@ import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
 import { ok, badRequest, requireBackofficeWithScope } from "@/lib/api-helpers";
 
-/**
- * GET /api/v1/backoffice/relatorio-comissoes
- * 
- * Query params:
- * - inicio: YYYY-MM (mês inicial)
- * - fim: YYYY-MM (mês final)
- * - comercialId: uuid (opcional, filtra por comercial)
- */
 export async function GET(req: NextRequest) {
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
@@ -19,50 +11,118 @@ export async function GET(req: NextRequest) {
   const fim = searchParams.get("fim");
   const comercialId = searchParams.get("comercialId");
   const funcao = searchParams.get("funcao");
+  const tipo = searchParams.get("tipo") || "comercial";
 
   if (!inicio || !fim) {
     return badRequest("Parâmetros obrigatórios: inicio e fim (formato: YYYY-MM)");
   }
 
-  // Busca as lideranças deste gestor e seus comerciais
-  const liderancasDoGestor = await prisma.lideranca.findMany({
+  const liderancas = await prisma.lideranca.findMany({
     where: { backofficeId },
     include: {
-      comerciais: { select: { id: true, funcao: true } }
-    }
+      comerciais: { select: { id: true, funcao: true, nome: true } },
+      consultorPfs: { select: { id: true, nome: true, cpf: true } },
+    },
   });
-  
-  const comerciaisDoGestor = liderancasDoGestor.flatMap(l => l.comerciais);
+
+  if (tipo === "consultor-pf") {
+    const consultorIds = liderancas.flatMap(l => l.consultorPfs.map(c => c.id));
+    if (consultorIds.length === 0) {
+      return ok({
+        tipo: "consultor-pf",
+        comissoes: [],
+        resumo: {
+          porMes: [],
+          totalGeral: { totalProducao: 0, totalComissao: 0, quantidade: 0 },
+        },
+        consultores: [],
+      });
+    }
+
+    const where: any = {
+      consultorPfId: { in: consultorIds },
+      mesReferencia: { gte: inicio, lte: fim },
+    };
+
+    const comissoes = await prisma.comissaoConsultorPf.findMany({
+      where,
+      include: {
+        consultorPf: { select: { id: true, nome: true, cpf: true } },
+      },
+      orderBy: { mesReferencia: "desc" },
+    });
+
+    const porMes = new Map<string, { totalProducao: number; totalComissao: number; quantidade: number }>();
+    let totalGeralProducao = 0;
+    let totalGeralComissao = 0;
+
+    comissoes.forEach((c) => {
+      const mes = c.mesReferencia;
+      const atualMes = porMes.get(mes) || { totalProducao: 0, totalComissao: 0, quantidade: 0 };
+      atualMes.totalProducao += Number(c.valorProducao);
+      atualMes.totalComissao += Number(c.valorComissao);
+      atualMes.quantidade += 1;
+      porMes.set(mes, atualMes);
+
+      totalGeralProducao += Number(c.valorProducao);
+      totalGeralComissao += Number(c.valorComissao);
+    });
+
+    return ok({
+      tipo: "consultor-pf",
+      comissoes: comissoes.map((c) => ({
+        id: c.id,
+        mesReferencia: c.mesReferencia,
+        consultorPf: {
+          id: c.consultorPf.id,
+          nome: c.consultorPf.nome,
+          cpf: c.consultorPf.cpf,
+        },
+        valorProducao: Number(c.valorProducao),
+        valorComissao: Number(c.valorComissao),
+        status: c.status,
+        dataPagamento: c.dataPagamento,
+        createdAt: c.createdAt,
+      })),
+      resumo: {
+        porMes: Array.from(porMes.entries())
+          .sort(([a], [b]) => b.localeCompare(a))
+          .map(([mes, dados]) => ({ mes, ...dados })),
+        totalGeral: {
+          totalProducao: totalGeralProducao,
+          totalComissao: totalGeralComissao,
+          quantidade: comissoes.length,
+        },
+      },
+      consultores: liderancas.flatMap(l => l.consultorPfs.map(c => ({ id: c.id, nome: c.nome, cpf: c.cpf }))),
+    });
+  }
+
+  const comerciaisDoGestor = liderancas.flatMap(l => l.comerciais);
   let comercialIds = comerciaisDoGestor.map(c => c.id);
 
-  // Filtrar por função se especificado
   if (funcao) {
     comercialIds = comerciaisDoGestor
       .filter(c => c.funcao === funcao)
       .map(c => c.id);
   }
 
-  // Se não houver comerciais, retorna array vazio
   if (comercialIds.length === 0) {
     return ok({
+      tipo: "comercial",
       comissoes: [],
       resumo: {
         porMes: [],
-        totalGeral: {
-          totalVendas: 0,
-          totalComissao: 0,
-          quantidade: 0,
-        },
+        porFuncao: [],
+        totalGeral: { totalVendas: 0, totalComissao: 0, quantidade: 0 },
       },
+      comerciais: [],
     });
   }
 
   const where: any = {
     comercialId: { in: comercialIds },
-    mesReferencia: {
-      gte: inicio,
-      lte: fim,
-    },
+    mesReferencia: { gte: inicio, lte: fim },
   };
 
   if (comercialId) {
@@ -74,46 +134,30 @@ export async function GET(req: NextRequest) {
     include: {
       comercial: {
         include: {
-          usuario: {
-            select: { nome: true, email: true },
-          },
+          usuario: { select: { nome: true, email: true } },
         },
       },
     },
     orderBy: { mesReferencia: "desc" },
   });
 
-  // Agrupar por mês para totais
   const porMes = new Map<string, { totalVendas: number; totalComissao: number; quantidade: number }>();
   let totalGeralVendas = 0;
   let totalGeralComissao = 0;
 
-  // Agrupar por função para totais
-  const porFuncao = new Map<string, { 
-    totalVendas: number; 
-    totalComissao: number; 
-    quantidade: number;
-    comerciais: Set<string>;
-  }>();
+  const porFuncao = new Map<string, { totalVendas: number; totalComissao: number; quantidade: number; comerciais: Set<string> }>();
 
   comissoes.forEach((c) => {
     const mes = c.mesReferencia;
     const funcao = c.comercial.funcao || "SEM_FUNCAO";
-    
-    // Agrupamento por mês
+
     const atualMes = porMes.get(mes) || { totalVendas: 0, totalComissao: 0, quantidade: 0 };
     atualMes.totalVendas += Number(c.valorVendas);
     atualMes.totalComissao += Number(c.valorComissao);
     atualMes.quantidade += 1;
     porMes.set(mes, atualMes);
 
-    // Agrupamento por função
-    const atualFuncao = porFuncao.get(funcao) || { 
-      totalVendas: 0, 
-      totalComissao: 0, 
-      quantidade: 0,
-      comerciais: new Set<string>(),
-    };
+    const atualFuncao = porFuncao.get(funcao) || { totalVendas: 0, totalComissao: 0, quantidade: 0, comerciais: new Set<string>() };
     atualFuncao.totalVendas += Number(c.valorVendas);
     atualFuncao.totalComissao += Number(c.valorComissao);
     atualFuncao.quantidade += 1;
@@ -125,6 +169,7 @@ export async function GET(req: NextRequest) {
   });
 
   return ok({
+    tipo: "comercial",
     comissoes: comissoes.map((c) => ({
       id: c.id,
       mesReferencia: c.mesReferencia,
@@ -143,10 +188,7 @@ export async function GET(req: NextRequest) {
     resumo: {
       porMes: Array.from(porMes.entries())
         .sort(([a], [b]) => b.localeCompare(a))
-        .map(([mes, dados]) => ({
-          mes,
-          ...dados,
-        })),
+        .map(([mes, dados]) => ({ mes, ...dados })),
       porFuncao: Array.from(porFuncao.entries())
         .map(([funcao, dados]) => ({
           funcao: funcao === "SEM_FUNCAO" ? null : funcao,
@@ -162,5 +204,6 @@ export async function GET(req: NextRequest) {
         quantidade: comissoes.length,
       },
     },
+    comerciais: liderancas.flatMap(l => l.comerciais.map(c => ({ id: c.id, nome: c.nome, funcao: c.funcao }))),
   });
 }

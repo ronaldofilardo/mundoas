@@ -76,6 +76,7 @@ describe("Comercial sem Liderança", () => {
         nome: "Comercial Sem Lideranca",
         cpf: uniqueCpf(),
         liderancaId: null, // SEM liderança
+        backofficeId,
         percentualComissao: 5.0,
         funcao: "SUPERVISOR_ATIVO",
         tipoLideranca: null,
@@ -99,6 +100,7 @@ describe("Comercial sem Liderança", () => {
         nome: "Comercial Com Lideranca",
         cpf: uniqueCpf(),
         liderancaId, // COM liderança
+        backofficeId,
         percentualComissao: 5.0,
         funcao: "GERENTE_CIRE",
         tipoLideranca: "COMERCIAL",
@@ -200,6 +202,7 @@ describe("Comercial sem Liderança", () => {
         nome: "Temp",
         cpf: uniqueCpf(),
         liderancaId: null,
+        backofficeId,
         percentualComissao: 0,
       },
     });
@@ -238,6 +241,7 @@ describe("Comercial sem Liderança", () => {
         nome: "Temp2",
         cpf: uniqueCpf(),
         liderancaId,
+        backofficeId,
         percentualComissao: 0,
         tipoLideranca: "COMERCIAL",
       },
@@ -278,6 +282,7 @@ describe("Comercial sem Liderança", () => {
     const comerciaisSemLideranca = await prisma.comercial.findMany({
       where: {
         liderancaId: null,
+        backofficeId,
       },
       include: {
         usuario: { select: { id: true, email: true, status: true } },

@@ -230,7 +230,6 @@ export async function calcularComissaoComercial(params: {
 }> {
   const { comercialId, valorProcedimento, dataReferencia, tipoProcedimento } = params;
 
-  // Busca dados do comercial com função
   const comercial = await prisma.comercial.findUnique({
     where: { id: comercialId },
     select: {
@@ -250,17 +249,14 @@ export async function calcularComissaoComercial(params: {
   const { funcao, lideranca } = comercial;
   const backofficeId = lideranca?.backofficeId;
 
-  // Busca regras comerciais
   const regraComercial = await prisma.regraComercial.findUnique({
     where: { backofficeId },
   });
 
-  // Busca regras de gestores
   const regraGestor = await prisma.regraGestor.findUnique({
     where: { backofficeId },
   });
 
-  // Se não houver regras, retorna comissão zero
   if (!regraComercial || !regraGestor) {
     return {
       valorComissao: 0,
@@ -273,13 +269,11 @@ export async function calcularComissaoComercial(params: {
     };
   }
 
-  // Obtém percentual das regras comerciais
   const campoRegraComercial = getCampoRegraComercial(tipoProcedimento);
   const percentualComercial = Number(
     regraComercial[campoRegraComercial as keyof typeof regraComercial] || 0,
   );
 
-  // Obtém percentual das regras de gestores baseado na função
   let percentualGestor = 0;
   if (funcao) {
     const campoRegraGestor = getCampoRegraGestor(funcao);
@@ -290,7 +284,6 @@ export async function calcularComissaoComercial(params: {
     }
   }
 
-  // Calcula comissão: valor × (regraComercial/100) × (regraGestor/100)
   const valorComissao = Number(
     (valorProcedimento * (percentualComercial / 100) * (percentualGestor / 100)).toFixed(2),
   );
@@ -306,6 +299,69 @@ export async function calcularComissaoComercial(params: {
       regraComercialPercentual: percentualComercial,
       regraGestorPercentual: percentualGestor,
       funcaoComercial: funcao,
+    },
+  };
+}
+
+/**
+ * Calcula comissão de um consultor PF baseado na regra comercial por unidade.
+ *
+ * Fórmula: valorProcedimento × (regraComercial.unidade / 100)
+ */
+export async function calcularComissaoConsultorPf(params: {
+  consultorPfId: string;
+  valorProcedimento: number;
+  dataReferencia: Date;
+}): Promise<{
+  valorComissao: number;
+  percentualAplicado: number;
+  detalhamento: {
+    regraComercialUnidade: number;
+  };
+}> {
+  const { consultorPfId, valorProcedimento } = params;
+
+  const consultorPf = await prisma.consultorPf.findUnique({
+    where: { id: consultorPfId },
+    select: {
+      lideranca: {
+        select: {
+          backofficeId: true,
+        },
+      },
+    },
+  });
+
+  if (!consultorPf) {
+    throw new Error("Consultor PF não encontrado");
+  }
+
+  const backofficeId = consultorPf.lideranca.backofficeId;
+
+  const regraComercial = await prisma.regraComercial.findUnique({
+    where: { backofficeId },
+  });
+
+  if (!regraComercial) {
+    return {
+      valorComissao: 0,
+      percentualAplicado: 0,
+      detalhamento: {
+        regraComercialUnidade: 0,
+      },
+    };
+  }
+
+  const percentualUnidade = Number(regraComercial.unidade || 0);
+  const valorComissao = Number(
+    (valorProcedimento * (percentualUnidade / 100)).toFixed(2),
+  );
+
+  return {
+    valorComissao,
+    percentualAplicado: Number((percentualUnidade).toFixed(2)),
+    detalhamento: {
+      regraComercialUnidade: percentualUnidade,
     },
   };
 }

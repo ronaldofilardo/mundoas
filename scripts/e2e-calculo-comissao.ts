@@ -36,8 +36,8 @@ async function main() {
   let failed = 0;
 
   try {
-    // 1. Setup: Criar GestorPF
-    console.log("📋 [1/6] Criando GestorPF...");
+    // 1. Setup: Criar Backoffice
+    console.log("📋 [1/6] Criando Backoffice...");
     const gestorUsuario = await prisma.usuario.create({
       data: {
         nome: "Gestor Teste",
@@ -46,21 +46,21 @@ async function main() {
         tipo: "GERENCIA",
       },
     });
-    const gestorPf = await prisma.gestorPF.create({
+    const backoffice = await prisma.backoffice.create({
       data: {
         usuarioId: gestorUsuario.id,
         nome: "Gestor Teste",
         cpf: gerarCPFValido(),
       },
     });
-    console.log(`   ✅ GestorPF criado: ${gestorPf.id}\n`);
+    console.log(`   ✅ Backoffice criado: ${backoffice.id}\n`);
     passed++;
 
     // 2. Criar Regras
     console.log("📋 [2/6] Criando Regras...");
     await prisma.regraComercial.create({
       data: {
-        gestorPfId: gestorPf.id,
+        backofficeId: backoffice.id,
         cartaoAcessoSaude: 10.0,
         cireAtivo: 8.0,
         cireReceptivo: 7.0,
@@ -72,7 +72,7 @@ async function main() {
 
     await prisma.regraGestor.create({
       data: {
-        gestorPfId: gestorPf.id,
+        backofficeId: backoffice.id,
         gerenteCire: 15.0,
         supervisorAtivo: 12.0,
         supervisorReceptivo: 11.0,
@@ -100,7 +100,7 @@ async function main() {
         usuarioId: comercialUsuario.id,
         nome: "Comercial Ativo",
         cpf: gerarCPFValido(),
-        gestorPfId: gestorPf.id,
+        backofficeId: backoffice.id,
         funcao: "SUPERVISOR_ATIVO",
       },
     });
@@ -150,7 +150,7 @@ async function main() {
         })).id,
         nome: "Gerente Cire",
         cpf: gerarCPFValido(),
-        gestorPfId: gestorPf.id,
+        backofficeId: backoffice.id,
         funcao: "GERENTE_CIRE",
       },
     });
@@ -181,7 +181,7 @@ async function main() {
 
     // 6. Testar sem regras (deve retornar 0)
     console.log("📋 [6/6] Testando sem regras...");
-    const gestorSemRegras = await prisma.gestorPF.create({
+    const gestorSemRegras = await prisma.backoffice.create({
       data: {
         usuarioId: (await prisma.usuario.create({
           data: {
@@ -208,7 +208,7 @@ async function main() {
         })).id,
         nome: "Comercial Sem Regras",
         cpf: gerarCPFValido(),
-        gestorPfId: gestorSemRegras.id,
+        backofficeId: gestorSemRegras.id,
         funcao: "SUPERVISOR_ATIVO",
       },
     });
@@ -228,12 +228,12 @@ async function main() {
     }
 
     // Cleanup
-    await prisma.comercial.deleteMany({ where: { gestorPfId: gestorSemRegras.id } });
-    await prisma.gestorPF.delete({ where: { id: gestorSemRegras.id } });
+    await prisma.comercial.deleteMany({ where: { backofficeId: gestorSemRegras.id } });
+    await prisma.backoffice.delete({ where: { id: gestorSemRegras.id } });
     await prisma.comercial.deleteMany({ where: { id: { in: [comercialSemRegras.id, comercialGerente.id, comercialAtivo.id] } } });
-    await prisma.regraGestor.delete({ where: { gestorPfId: gestorPf.id } });
-    await prisma.regraComercial.delete({ where: { gestorPfId: gestorPf.id } });
-    await prisma.gestorPF.delete({ where: { id: gestorPf.id } });
+    await prisma.regraGestor.delete({ where: { backofficeId: backoffice.id } });
+    await prisma.regraComercial.delete({ where: { backofficeId: backoffice.id } });
+    await prisma.backoffice.delete({ where: { id: backoffice.id } });
     await prisma.usuario.delete({ where: { id: gestorUsuario.id } });
 
     // Summary

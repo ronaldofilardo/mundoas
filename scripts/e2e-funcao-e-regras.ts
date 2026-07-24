@@ -35,8 +35,8 @@ async function main() {
   let failed = 0;
 
   try {
-    // 1. Criar GestorPF
-    console.log("📋 [1/5] Criando GestorPF...");
+    // 1. Criar Backoffice
+    console.log("📋 [1/5] Criando Backoffice...");
     const gestorUsuario = await prisma.usuario.create({
       data: {
         nome: "Gestor Teste",
@@ -45,14 +45,14 @@ async function main() {
         tipo: "GERENCIA",
       },
     });
-    const gestorPf = await prisma.gestorPF.create({
+    const backoffice = await prisma.backoffice.create({
       data: {
         usuarioId: gestorUsuario.id,
         nome: "Gestor Teste",
         cpf: gerarCPFValido(),
       },
     });
-    console.log(`   ✅ GestorPF criado: ${gestorPf.id}\n`);
+    console.log(`   ✅ Backoffice criado: ${backoffice.id}\n`);
     passed++;
 
     // 2. Criar Comercial com função
@@ -71,7 +71,7 @@ async function main() {
         usuarioId: comercialUsuario.id,
         nome: "Comercial Teste",
         cpf: gerarCPFValido(),
-        gestorPfId: gestorPf.id,
+        backofficeId: backoffice.id,
         funcao: "GERENTE_CIRE",
         percentualComissao: 0,
       },
@@ -88,7 +88,7 @@ async function main() {
     console.log("📋 [3/5] Criando Regras Comerciais...");
     const regraComercial = await prisma.regraComercial.create({
       data: {
-        gestorPfId: gestorPf.id,
+        backofficeId: backoffice.id,
         cartaoAcessoSaude: 10.5,
         cireAtivo: 8.0,
         cireReceptivo: 7.5,
@@ -109,7 +109,7 @@ async function main() {
     console.log("📋 [4/5] Criando Regras Gestores...");
     const regraGestor = await prisma.regraGestor.create({
       data: {
-        gestorPfId: gestorPf.id,
+        backofficeId: backoffice.id,
         gerenteCire: 15.0,
         supervisorAtivo: 12.0,
         supervisorReceptivo: 11.0,
@@ -129,8 +129,8 @@ async function main() {
 
     // 5. Verificar relações
     console.log("📋 [5/5] Verificando relações...");
-    const gestorComRelacoes = await prisma.gestorPF.findUnique({
-      where: { id: gestorPf.id },
+    const gestorComRelacoes = await prisma.backoffice.findUnique({
+      where: { id: backoffice.id },
       include: {
         comerciais: true,
         regraComercial: true,
@@ -150,11 +150,11 @@ async function main() {
     }
 
     // Cleanup
-    await prisma.regraGestor.delete({ where: { gestorPfId: gestorPf.id } });
-    await prisma.regraComercial.delete({ where: { gestorPfId: gestorPf.id } });
+    await prisma.regraGestor.delete({ where: { backofficeId: backoffice.id } });
+    await prisma.regraComercial.delete({ where: { backofficeId: backoffice.id } });
     await prisma.comercial.delete({ where: { id: comercial.id } });
     await prisma.usuario.delete({ where: { id: comercialUsuario.id } });
-    await prisma.gestorPF.delete({ where: { id: gestorPf.id } });
+    await prisma.backoffice.delete({ where: { id: backoffice.id } });
     await prisma.usuario.delete({ where: { id: gestorUsuario.id } });
 
     // Summary

@@ -61,6 +61,14 @@ export async function POST(req: NextRequest) {
     const { session, comercial, error } = await requireComercialWithScope();
     if (error) return error;
 
+    const lideranca = await prisma.lideranca.findUnique({
+      where: { id: comercial.liderancaId! },
+      select: { backofficeId: true },
+    });
+    if (!lideranca) {
+      return badRequest("Comercial não está vinculado a uma liderança");
+    }
+
     let body: any;
     try {
       body = await req.json();
@@ -125,6 +133,7 @@ export async function POST(req: NextRequest) {
           cpf: cpfClean,
           pixChave,
           status: "ATIVO",
+          backofficeId: lideranca.backofficeId,
           comercialId: comercial.id,
         },
       });

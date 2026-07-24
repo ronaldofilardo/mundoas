@@ -7,11 +7,23 @@ interface NovoComercialFormProps {
   onCreated: () => void;
 }
 
+const funcoes = [
+  "GERENTE_CIRE",
+  "SUPERVISOR_ATIVO",
+  "SUPERVISOR_RECEPTIVO",
+  "SUPERVISOR_FRANQUIA",
+  "SUPERVISOR_ATENDIMENTO",
+  "GERENTE_ATENDIMENTO",
+  "SUPERVISOR_COMERCIAL",
+];
+
 export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [lideranca, setLideranca] = useState("");
+  const [tipo, setTipo] = useState("");
   const [funcao, setFuncao] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -28,6 +40,8 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
           cpf,
           email: email.toLowerCase().trim(),
           telefone: telefone || undefined,
+          lideranca: lideranca || undefined,
+          tipo: tipo || undefined,
           funcao: funcao || undefined,
           percentualComissao: 0,
         }),
@@ -44,6 +58,8 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
       setCpf("");
       setEmail("");
       setTelefone("");
+      setLideranca("");
+      setTipo("");
       setFuncao("");
       onCreated();
     } catch {
@@ -58,7 +74,7 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
       <h2 className="text-lg font-semibold text-gray-800 mb-4">
         Novo Comercial
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Nome
@@ -82,7 +98,7 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
             className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-500"
             required
             pattern="\d{11}"
-            title="CPF deve ter 11 dígitos"
+            title="CPF deve ter 11 digitos"
           />
         </div>
         <div>
@@ -111,7 +127,36 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Função
+            Liderança (opcional)
+          </label>
+          <select
+            value={lideranca}
+            onChange={(e) => setLideranca(e.target.value)}
+            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="">Nenhuma</option>
+            <option value="COMERCIAL">Comercial</option>
+            <option value="GESTOR">Gestor</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Tipo
+          </label>
+          <select
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value)}
+            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="">Selecione</option>
+            <option value="GERENTE">Gerente</option>
+            <option value="SUPERVISOR">Supervisor</option>
+            <option value="LIDER">Lider</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Funcao
           </label>
           <select
             value={funcao}
@@ -119,20 +164,21 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
             className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-500"
           >
             <option value="">Selecione</option>
-            <option value="SUPERVISOR_COMERCIAL">Supervisor Comercial</option>
-            <option value="GERENTE_CIRE">Gerente CIRE</option>
-            <option value="SUPERVISOR_ATIVO">Supervisor Ativo</option>
-            <option value="SUPERVISOR_RECEPTIVO">Supervisor Receptivo</option>
+            {funcoes.map((f) => (
+              <option key={f} value={f}>{f.replace(/_/g, " ")}</option>
+            ))}
           </select>
         </div>
+        <div className="flex items-end">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
+          >
+            {loading ? "Criando..." : "Criar Comercial"}
+          </button>
+        </div>
       </div>
-      <button
-        type="submit"
-        disabled={loading}
-        className="mt-4 px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
-      >
-        {loading ? "Criando..." : "Criar Comercial"}
-      </button>
     </form>
   );
 }

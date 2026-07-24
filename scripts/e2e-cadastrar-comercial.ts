@@ -75,26 +75,26 @@ function printSummary() {
 async function setup() {
   console.log("\n🔧 [1/6] Configurando ambiente de teste...\n");
 
-  // Cria GestorPF
+  // Cria Backoffice
   const gestorUsuario = await prisma.usuario.create({
     data: {
-      nome: "Gestor PF Teste",
-      email: `gestor-pf-${unique()}@e2e.test`,
+      nome: "Backoffice Teste",
+      email: `backoffice-${unique()}@e2e.test`,
       senhaHash: await hash("senha123", 12),
       tipo: "GERENCIA",
     },
   });
 
-  const gestorPf = await prisma.gestorPF.create({
+  const backoffice = await prisma.backoffice.create({
     data: {
       usuarioId: gestorUsuario.id,
-      nome: "Gestor PF Teste",
+      nome: "Backoffice Teste",
       cpf: gerarCPFValido(),
     },
   });
 
-  logStep("Criar GestorPF", "OK", `ID: ${gestorPf.id}`);
-  return { gestorPf, gestorUsuario };
+  logStep("Criar Backoffice", "OK", `ID: ${backoffice.id}`);
+  return { backoffice, gestorUsuario };
 }
 
 // ─── Step 2: Schema Validation ───────────────────────────────────────────────
@@ -121,7 +121,7 @@ async function validateSchema(goodData, badData) {
 // ─── Step 3: Simulate API (Cadastrar Comercial) ─────────────────────────────
 async function cadastrarComercial(gestorPfId: string, payload: any) {
   console.log("\n🔐 [3/6] Simulando chamada à API...");
-  console.log("   POST /api/v1/gestor-pf/comerciais");
+  console.log("   POST /api/v1/backoffice/comerciais");
   console.log("   Body:", JSON.stringify(payload, null, 2));
 
   // 1. Validate schema
@@ -158,7 +158,7 @@ async function cadastrarComercial(gestorPfId: string, payload: any) {
 
   // 4. Find or create Lideranca
   let lideranca = await prisma.lideranca.findFirst({
-    where: { gestorPfId, tipo: "COMERCIAL" },
+    where: { backofficeId, tipo: "COMERCIAL" },
   });
 
   if (!lideranca) {
@@ -176,7 +176,7 @@ async function cadastrarComercial(gestorPfId: string, payload: any) {
         usuarioId: usuarioLideranca.id,
         nome: "Lideranca Comercial",
         cpf: uniqueCpf(),
-        gestorPfId,
+        backofficeId,
         tipo: "COMERCIAL",
       },
     });
@@ -312,7 +312,7 @@ async function main() {
 
   try {
     // Step 1: Setup
-    const { gestorPf, gestorUsuario } = await setup();
+    const { backoffice, gestorUsuario } = await setup();
     
     const cpf = gerarCPFValido();
     const email = `comercial-${unique()}@e2e.test`;
@@ -324,7 +324,7 @@ async function main() {
     );
 
     // Step 3: Simulate API
-    const result = await cadastrarComercial(gestorPf.id, {
+    const result = await cadastrarComercial(backoffice.id, {
       nome: "Comercial E2E Test",
       email,
       cpf,
@@ -340,7 +340,7 @@ async function main() {
     await verifyState(result.comercial.id, email);
 
     // Step 5: Test Duplicates
-    await testDuplicatePrevention(gestorPf.id, email, cpf);
+    await testDuplicatePrevention(backoffice.id, email, cpf);
 
     // Step 6: Cleanup
     await cleanup(

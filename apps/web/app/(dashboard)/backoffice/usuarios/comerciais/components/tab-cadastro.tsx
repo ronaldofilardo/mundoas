@@ -10,6 +10,7 @@ import { ComercialModal } from "./comercial-modal";
 interface TabCadastroProps {
   comerciais: Comercial[];
   loadingMetasGerais: boolean;
+  metaVersion?: number;
   metasGerais: Record<string, Meta[]>;
   anoReferencia: number;
   onEditarComercial: (id: string) => void;
@@ -36,6 +37,7 @@ const mesesAno = [
 export function TabCadastro({
   comerciais,
   loadingMetasGerais,
+  metaVersion = 0,
   metasGerais,
   anoReferencia,
   onEditarComercial,
@@ -113,7 +115,7 @@ export function TabCadastro({
                         (mt) => mt.mesReferencia === mesRef
                       );
                       return (
-                        <td key={m.value} className="p-2">
+                        <td key={`${m.value}-${metaVersion}`} className="p-2">
                           <input
                             type="number"
                             step="0.01"

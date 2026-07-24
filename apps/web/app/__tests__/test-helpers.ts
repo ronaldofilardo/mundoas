@@ -80,7 +80,7 @@ export async function createTestLideranca(backofficeId: string) {
 /**
  * Cria um comercial de teste vinculado a uma liderança
  */
-export async function createTestComercial(liderancaId: string) {
+export async function createTestComercial(liderancaId: string, backofficeId: string) {
   const usuario = await prisma.usuario.create({
     data: {
       nome: "Comercial Teste",
@@ -94,6 +94,7 @@ export async function createTestComercial(liderancaId: string) {
     data: {
       usuarioId: usuario.id,
       liderancaId,
+      backofficeId,
       nome: "Comercial Teste",
       cpf: uniqueCpf(),
       percentualComissao: 5.0,

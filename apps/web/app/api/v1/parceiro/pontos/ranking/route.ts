@@ -11,7 +11,6 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const cicloPontosId = searchParams.get("cicloPontosId");
-    const referenciaMes = searchParams.get("referenciaMes");
 
     // Buscar informações do parceiro
     const parceiro = await prisma.parceiro.findUnique({
@@ -39,53 +38,6 @@ export async function GET(req: NextRequest) {
       }
 
       cicloId = cicloVigente.id;
-    }
-
-    // Se especificado mês, buscar snapshot
-    if (referenciaMes) {
-      const snapshot = await prisma.rankingSnapshot.findUnique({
-        where: {
-          cicloPontosId_referenciaMes: {
-            cicloPontosId: cicloId,
-            referenciaMes,
-          },
-        },
-        include: {
-          posicoes: {
-            include: {
-              parceiro: {
-                select: {
-                  id: true,
-                  nome: true,
-                },
-              },
-            },
-            orderBy: { posicao: "asc" },
-          },
-        },
-      });
-
-      if (!snapshot) {
-        return badRequest(`Ranking para ${referenciaMes} não encontrado`);
-      }
-
-      const minhaPosition = snapshot.posicoes.find(
-        (p) => p.parceiroId === parceiroId,
-      );
-
-      return ok({
-        ranking: {
-          mes: referenciaMes,
-          minhaPositionNo: minhaPosition?.posicao || null,
-          meusPontos: minhaPosition?.pontosAcumulados || 0,
-          posicoes: snapshot.posicoes.map((p) => ({
-            posicao: p.posicao,
-            parceiro: p.parceiro.nome,
-            pontosAcumulados: p.pontosAcumulados,
-            euSou: p.parceiroId === parceiroId,
-          })),
-        },
-      });
     }
 
     // Gerar ranking atual do ciclo

@@ -11,7 +11,7 @@ export async function GET() {
   if (error) return error;
 
   const regra = await prisma.regraComercial.findUnique({
-    where: { backofficeId: backofficeId! },
+    where: { backofficeId },
   });
 
   if (!regra) {
@@ -36,7 +36,7 @@ export async function GET() {
   });
 }
 
-export async function POST(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
@@ -57,9 +57,9 @@ export async function POST(req: NextRequest) {
   } = body;
 
   const regra = await prisma.regraComercial.upsert({
-    where: { backofficeId: backofficeId! },
+    where: { backofficeId },
     create: {
-      backofficeId: backofficeId!,
+      backofficeId,
       cartaoAcessoSaude: cartaoAcessoSaude || 0,
       cireAtivo: cireAtivo || 0,
       cireReceptivo: cireReceptivo || 0,

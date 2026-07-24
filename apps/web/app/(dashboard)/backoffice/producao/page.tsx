@@ -26,6 +26,8 @@ interface Procedimento {
   statusComissao: string;
   parceiro: { id: string; nome: string; cpf: string } | null;
   indicado: { id: string; nome: string; cpf: string } | null;
+  comercial: { id: string; nome: string; funcao: string } | null;
+  consultorPf: { id: string; nome: string } | null;
   upload: {
     id: string;
     nomeArquivo: string;
@@ -139,7 +141,9 @@ function BackofficeProducaoInner() {
         p.procedimento.toLowerCase().includes(search) ||
         p.cpf.includes(search) ||
         p.unidade.toLowerCase().includes(search) ||
-        p.formaPagamento.toLowerCase().includes(search)
+        p.formaPagamento.toLowerCase().includes(search) ||
+        (p.comercial?.nome || "").toLowerCase().includes(search) ||
+        (p.consultorPf?.nome || "").toLowerCase().includes(search)
       );
     }
     return true;
@@ -221,12 +225,9 @@ function BackofficeProducaoInner() {
         <div className="mt-4">
           <UploadPlanilhaPreview
             onUploadSuccess={() => {
+              fetchProducao();
               setCurrentPage(1);
               setActiveTab("lista");
-              // Aguarda pequeno delay e recarrega para garantir listagem imediata
-              setTimeout(() => {
-                window.location.reload();
-              }, 800);
             }}
           />
         </div>
@@ -302,6 +303,7 @@ function BackofficeProducaoInner() {
                 <th className="text-left p-2 font-medium text-gray-600">Tipo</th>
                 <th className="text-left p-2 font-medium text-gray-600">Unidade</th>
                 <th className="text-left p-2 font-medium text-gray-600">Forma Pgto</th>
+                <th className="text-left p-2 font-medium text-gray-600">Usuário da Conta</th>
                 <th className="text-left p-2 font-medium text-gray-600">Parceiro</th>
                 <th className="text-left p-2 font-medium text-gray-600">Mês Ref.</th>
                 <th className="text-left p-2 font-medium text-gray-600">Status</th>
@@ -319,6 +321,9 @@ function BackofficeProducaoInner() {
                   <td className="p-2 text-gray-600">{p.tipoProcedimento}</td>
                   <td className="p-2 text-gray-600">{p.unidade}</td>
                   <td className="p-2 text-gray-600">{p.formaPagamento || "-"}</td>
+                  <td className="p-2 text-gray-600">
+                    {p.comercial?.nome || p.consultorPf?.nome || "-"}
+                  </td>
                   <td className="p-2">
                     {p.parceiro ? (
                       <span className="text-blue-600">{p.parceiro.nome}</span>
@@ -345,7 +350,7 @@ function BackofficeProducaoInner() {
 
               {filteredProcedimentos?.length === 0 && (
                 <tr>
-                  <td colSpan={12} className="p-8 text-center text-gray-500">
+                  <td colSpan={13} className="p-8 text-center text-gray-500">
                     Nenhum procedimento encontrado
                   </td>
                 </tr>

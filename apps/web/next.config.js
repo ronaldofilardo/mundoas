@@ -43,6 +43,16 @@ const nextConfig = {
       },
     ];
   },
+  webpack: (config, { isServer }) => {
+    config.snapshot = {
+      ...config.snapshot,
+      managedPaths: [
+        ...(config.snapshot?.managedPaths || []),
+        /@next\/swc-[a-z0-9-]+/,
+      ],
+    };
+    return config;
+  },
 };
 
 module.exports = nextConfig;

@@ -1,6 +1,6 @@
 import "next-auth";
 
-export type PapelGestor = "BACKOFFICE" | "GESTOR_PJ" | "GESTOR_PF";
+export type PapelGestor = "BACKOFFICE" | "GESTOR_PJ";
 
 export type TipoAcesso =
   | "ADMIN"
