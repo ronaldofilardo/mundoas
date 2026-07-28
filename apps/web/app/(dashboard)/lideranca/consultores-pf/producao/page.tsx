@@ -1,249 +1,365 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { toast } from "sonner";
 
-interface Registro {
+interface Parceiro {
   id: string;
-  mesReferencia: string;
-  consultorPfId: string;
-  consultorPfNome: string;
-  consultorPfCpf: string;
-  valorProducao: number;
-  valorComissao: number;
-  valorMeta: number;
-  valorAtingido: number;
-  status: string;
-  dataPagamento?: string;
+  nome: string;
+  cpf: string;
 }
 
-interface Resumo {
-  totalProducao: number;
-  totalComissao: number;
-  totalMeta: number;
-  totalAtingido: number;
-  quantidade: number;
+interface Consultor {
+  id: string;
+  nome: string;
+  cpf: string;
+}
+
+interface Procedimento {
+  id: string;
+  dataReferencia: string;
+  dataPagamento: string;
+  formaPagamento: string;
+  totalPago: string;
+  paciente: string;
+  procedimento: string;
+  cpf: string;
+  tipoProcedimento: string;
+  unidade: string;
+  valorComissao: string;
+  statusComissao: string;
+  parceiro: { id: string; nome: string; cpf: string } | null;
+  indicado: { id: string; nome: string; cpf: string } | null;
+  comercial: { id: string; nome: string; funcao?: string } | null;
+  consultorPf: { id: string; nome: string } | null;
+  upload: {
+    id: string;
+    nomeArquivo: string;
+    mesReferencia: string;
+  };
+}
+
+interface ProducaoData {
+  procedimentos: Procedimento[];
+  consultores: Consultor[];
+  mesesDisponiveis: string[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export default function LiderancaProducaoPage() {
-  const [registros, setRegistros] = useState<Registro[]>([]);
-  const [resumo, setResumo] = useState<Resumo | null>(null);
-  const [consultores, setConsultores] = useState<Array<{ id: string; nome: string; cpf: string }>>([]);
-  const [meses, setMeses] = useState<string[]>([]);
+  const [data, setData] = useState<ProducaoData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [inicio, setInicio] = useState("");
-  const [fim, setFim] = useState("");
-  const [consultorId, setConsultorId] = useState("");
+  const [filterStatus, setFilterStatus] = useState("TODOS");
+  const [filterMes, setFilterMes] = useState("");
+  const [filterConsultor, setFilterConsultor] = useState("");
+  const [filterSearch, setFilterSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  async function fetchRelatorio() {
-    if (!inicio || !fim) return;
+  useEffect(() => {
+    fetchProducao();
+  }, [filterStatus, filterMes, filterConsultor, currentPage]);
+
+  async function fetchProducao() {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ inicio, fim });
-      if (consultorId) params.append("consultorPfId", consultorId);
-      const res = await fetch(`/api/v1/lideranca/consultores-pf/producao?${params}`);
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "50",
+      });
+      if (filterStatus !== "TODOS") params.set("status", filterStatus);
+      if (filterMes) params.set("mesReferencia", filterMes);
+      if (filterConsultor) params.set("consultorPfId", filterConsultor);
+
+      const res = await fetch(`/api/v1/lideranca/consultores-pf/producao/procedimentos?${params}`);
       if (!res.ok) throw new Error("Erro ao carregar produção");
-      const data = await res.json();
-      setRegistros(data.registros || []);
-      setResumo(data.resumo || null);
-      setConsultores(data.consultores || []);
-      setMeses(data.meses || []);
-    } catch (err: any) {
-      console.error(err);
+      const json = await res.json();
+      setData(json);
+    } catch (e) {
+      toast.error("Erro ao carregar dados de produção");
+      console.error(e);
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => {
-    async function loadInitial() {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/v1/lideranca/consultores-pf/producao");
-        if (res.ok) {
-          const data = await res.json();
-          setRegistros(data.registros || []);
-          setResumo(data.resumo || null);
-          setConsultores(data.consultores || []);
-          setMeses(data.meses || []);
-        }
-      } finally {
-        setLoading(false);
-      }
+  function formatDate(dateStr: string) {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  }
+
+  function formatCpf(cpf: string) {
+    if (!cpf || cpf.length < 11) return cpf || "-";
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  }
+
+  function formatFuncao(funcao?: string) {
+    if (!funcao) return "";
+    return funcao
+      .replace(/_/g, " ")
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  }
+
+  function formatStatus(status: string) {
+    switch (status) {
+      case "PAGA":
+        return { label: "Pago", class: "bg-green-100 text-green-800" };
+      case "CALCULADA":
+        return { label: "Calculada", class: "bg-blue-100 text-blue-800" };
+      case "PENDENTE":
+        return { label: "Pendente", class: "bg-yellow-100 text-yellow-800" };
+      default:
+        return { label: status, class: "bg-gray-100 text-gray-800" };
     }
-    loadInitial();
-  }, []);
+  }
 
-  useEffect(() => {
-    if (inicio && fim) {
-      fetchRelatorio();
-    }
-  }, [inicio, fim, consultorId]);
-
-  const formatCurrency = (value: number) =>
-    value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
-  const formatMonth = (mes: string) => {
+  function formatMes(mes: string) {
+    if (!mes) return "-";
     const [ano, mesNum] = mes.split("-");
-    const nomes = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-    return `${nomes[parseInt(mesNum) - 1]}/${ano}`;
-  };
+    const date = new Date(Number(ano), Number(mesNum) - 1);
+    return date.toLocaleString("pt-BR", { month: "long", year: "numeric" });
+  }
 
-  const registrosFiltrados = useMemo(() => {
-    if (!consultorId) return registros;
-    return registros.filter(r => r.consultorPfId === consultorId);
-  }, [registros, consultorId]);
+  function getMesReferenciaData(dataReferencia: string) {
+    const d = new Date(dataReferencia);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  }
 
-  const resumoFiltrado = useMemo(() => {
-    if (!consultorId) return resumo;
-    const filtrados = registrosFiltrados;
-    return {
-      totalProducao: filtrados.reduce((acc, r) => acc + r.valorProducao, 0),
-      totalComissao: filtrados.reduce((acc, r) => acc + r.valorComissao, 0),
-      totalMeta: filtrados.reduce((acc, r) => acc + r.valorMeta, 0),
-      totalAtingido: filtrados.reduce((acc, r) => acc + r.valorAtingido, 0),
-      quantidade: filtrados.length,
-    };
-  }, [registrosFiltrados, resumo, consultorId]);
+  function formatMesReferencia(dataReferencia: string) {
+    const mesRef = getMesReferenciaData(dataReferencia);
+    return formatMes(mesRef);
+  }
+
+  const filteredProcedimentos = useMemo(() => {
+    return (data?.procedimentos ?? []).filter((p) => {
+      if (filterSearch) {
+        const search = filterSearch.toLowerCase();
+        return (
+          p.paciente.toLowerCase().includes(search) ||
+          p.procedimento.toLowerCase().includes(search) ||
+          p.cpf.includes(search) ||
+          p.unidade.toLowerCase().includes(search) ||
+          p.formaPagamento.toLowerCase().includes(search)
+        );
+      }
+      return true;
+    });
+  }, [data?.procedimentos, filterSearch]);
+
+  const totalComissao = filteredProcedimentos?.reduce(
+    (sum, p) => sum + Number(p.valorComissao),
+    0
+  ) || 0;
+
+  const totalReceita = filteredProcedimentos?.reduce(
+    (sum, p) => sum + Number(p.totalPago),
+    0
+  ) || 0;
+
+  if (loading && !data) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">📋 Produção da Equipe</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Acompanhe a produção e comissão mensal dos seus consultores PF
-        </p>
+    <div className="font-sans space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Produção da Equipe</h1>
+          <p className="text-sm text-gray-500">
+            Lista de procedimentos dos consultores PF vinculados à sua liderança
+          </p>
+        </div>
+        <div className="flex gap-6 text-right">
+          <div>
+            <p className="text-xs text-gray-500">Total Receita</p>
+            <p className="text-lg font-bold text-gray-900">
+              R$ {totalReceita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500">Total Comissões</p>
+            <p className="text-lg font-bold text-green-600">
+              R$ {totalComissao.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="card mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Filtros</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Mês Inicial</label>
-            <input
-              type="month"
-              value={inicio}
-              onChange={(e) => setInicio(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Mês Final</label>
-            <input
-              type="month"
-              value={fim}
-              onChange={(e) => setFim(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Consultor PF</label>
-            <select
-              value={consultorId}
-              onChange={(e) => setConsultorId(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
-            >
-              <option value="">Todos</option>
-              {consultores.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nome}
-                </option>
+      <div className="card">
+        <div className="flex flex-wrap gap-3 mb-4">
+          <select
+            value={filterStatus}
+            onChange={(e) => {
+              setFilterStatus(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="text-sm border rounded px-3 py-2"
+          >
+            <option value="TODOS">Todos Status</option>
+            <option value="PENDENTE">Pendente</option>
+            <option value="CALCULADA">Calculada</option>
+            <option value="PAGA">Pago</option>
+          </select>
+
+          <select
+            value={filterMes}
+            onChange={(e) => {
+              setFilterMes(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="text-sm border rounded px-3 py-2"
+          >
+            <option value="">Todos os Meses</option>
+            {data?.mesesDisponiveis?.map((mes) => (
+              <option key={mes} value={mes}>
+                {formatMes(mes)}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={filterConsultor}
+            onChange={(e) => {
+              setFilterConsultor(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="text-sm border rounded px-3 py-2"
+          >
+            <option value="">Todos os Consultores</option>
+            {data?.consultores?.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nome}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="text"
+            placeholder="Buscar paciente, procedimento, CPF, unidade..."
+            value={filterSearch}
+            onChange={(e) => setFilterSearch(e.target.value)}
+            className="text-sm border rounded px-3 py-2 flex-1 min-w-[250px]"
+          />
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b bg-gray-50">
+                <th className="text-left p-2 font-medium text-gray-600">Data</th>
+                <th className="text-left p-2 font-medium text-gray-600">Paciente</th>
+                <th className="text-left p-2 font-medium text-gray-600">CPF</th>
+                <th className="text-left p-2 font-medium text-gray-600">Procedimento</th>
+                <th className="text-left p-2 font-medium text-gray-600">Tipo</th>
+                <th className="text-left p-2 font-medium text-gray-600">Unidade</th>
+                <th className="text-left p-2 font-medium text-gray-600">Forma Pgto</th>
+                <th className="text-left p-2 font-medium text-gray-600">Parceiro</th>
+                <th className="text-left p-2 font-medium text-gray-600">Comercial</th>
+                <th className="text-left p-2 font-medium text-gray-600">Consultor PF</th>
+                <th className="text-left p-2 font-medium text-gray-600">Mês Ref.</th>
+                <th className="text-left p-2 font-medium text-gray-600">Status</th>
+                <th className="text-right p-2 font-medium text-gray-600">Total Pago</th>
+                <th className="text-right p-2 font-medium text-gray-600">Comissão</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProcedimentos?.map((p) => (
+                <tr key={p.id} className="border-b hover:bg-gray-50">
+                  <td className="p-2 text-gray-600">{formatDate(p.dataReferencia)}</td>
+                  <td className="p-2 text-gray-900 font-medium">{p.paciente}</td>
+                  <td className="p-2 text-gray-600">{formatCpf(p.cpf)}</td>
+                  <td className="p-2 text-gray-600">{p.procedimento}</td>
+                  <td className="p-2 text-gray-600">{p.tipoProcedimento}</td>
+                  <td className="p-2 text-gray-600">{p.unidade}</td>
+                  <td className="p-2 text-gray-600">{p.formaPagamento || "-"}</td>
+                  <td className="p-2">
+                    {p.parceiro ? (
+                      <span className="text-blue-600">{p.parceiro.nome}</span>
+                    ) : (
+                      <span className="text-orange-500 text-xs">Sem vínculo</span>
+                    )}
+                  </td>
+                  <td className="p-2">
+                    {p.comercial ? (
+                      <div>
+                        <p className="text-xs font-medium text-gray-900">{p.comercial.nome}</p>
+                        {p.comercial.funcao && (
+                          <p className="text-xs text-gray-500">
+                            {formatFuncao(p.comercial.funcao)}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-xs">-</span>
+                    )}
+                  </td>
+                  <td className="p-2 text-gray-600">
+                    {p.consultorPf ? p.consultorPf.nome : "-"}
+                  </td>
+                  <td className="p-2 text-gray-600">
+                    {formatMesReferencia(p.dataReferencia)}
+                  </td>
+                  <td className="p-2">
+                    <span className={`text-xs px-2 py-0.5 rounded ${formatStatus(p.statusComissao).class}`}>
+                      {formatStatus(p.statusComissao).label}
+                    </span>
+                  </td>
+                  <td className="p-2 text-right text-gray-900">
+                    R$ {Number(p.totalPago).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="p-2 text-right text-green-600 font-medium">
+                    R$ {Number(p.valorComissao).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </td>
+                </tr>
               ))}
-            </select>
-          </div>
-          <div className="flex items-end">
+
+              {filteredProcedimentos?.length === 0 && (
+                <tr>
+                  <td colSpan={14} className="p-8 text-center text-gray-500">
+                    Nenhum procedimento encontrado
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {data?.pagination?.totalPages && data.pagination.totalPages > 1 && (
+          <div className="flex justify-center gap-2 mt-4">
             <button
-              onClick={fetchRelatorio}
-              disabled={!inicio || !fim || loading}
-              className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 text-sm font-medium"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 text-xs border rounded disabled:opacity-50"
             >
-              {loading ? "Carregando..." : "Buscar"}
+              Anterior
+            </button>
+            <span className="text-xs text-gray-500 py-1">
+              {currentPage} / {data.pagination.totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(data.pagination.totalPages, p + 1))}
+              disabled={currentPage === data.pagination.totalPages}
+              className="px-3 py-1 text-xs border rounded disabled:opacity-50"
+            >
+              Próxima
             </button>
           </div>
-        </div>
+        )}
       </div>
-
-      {loading && registros.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">Carregando...</div>
-      ) : registros.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          Nenhuma produção encontrada. Ajuste os filtros e tente novamente.
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="card">
-              <h3 className="text-sm text-gray-600">Total Produção</h3>
-              <p className="text-2xl font-bold text-green-600">{formatCurrency(resumoFiltrado?.totalProducao || 0)}</p>
-            </div>
-            <div className="card">
-              <h3 className="text-sm text-gray-600">Total Comissão</h3>
-              <p className="text-2xl font-bold text-blue-600">{formatCurrency(resumoFiltrado?.totalComissao || 0)}</p>
-            </div>
-            <div className="card">
-              <h3 className="text-sm text-gray-600">Meta Total</h3>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(resumoFiltrado?.totalMeta || 0)}</p>
-            </div>
-            <div className="card">
-              <h3 className="text-sm text-gray-600">Atingido</h3>
-              <p className="text-2xl font-bold text-purple-600">{formatCurrency(resumoFiltrado?.totalAtingido || 0)}</p>
-            </div>
-          </div>
-
-          <div className="card">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Produção por Mês e Consultor</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="text-left px-4 py-3 text-gray-700 font-semibold">Mês</th>
-                    <th className="text-left px-4 py-3 text-gray-700 font-semibold">Consultor PF</th>
-                    <th className="text-left px-4 py-3 text-gray-700 font-semibold">CPF</th>
-                    <th className="text-right px-4 py-3 text-gray-700 font-semibold">Meta</th>
-                    <th className="text-right px-4 py-3 text-gray-700 font-semibold">Produção</th>
-                    <th className="text-right px-4 py-3 text-gray-700 font-semibold">Comissão</th>
-                    <th className="text-center px-4 py-3 text-gray-700 font-semibold">Status</th>
-                    <th className="text-center px-4 py-3 text-gray-700 font-semibold">Pagamento</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {registrosFiltrados.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
-                        Nenhum registro encontrado.
-                      </td>
-                    </tr>
-                  ) : (
-                    registrosFiltrados.map((r) => (
-                      <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="px-4 py-3 font-medium text-gray-900">{formatMonth(r.mesReferencia)}</td>
-                        <td className="px-4 py-3 font-medium text-gray-900">{r.consultorPfNome}</td>
-                        <td className="px-4 py-3 text-gray-600">{r.consultorPfCpf}</td>
-                        <td className="px-4 py-3 text-right text-gray-900">{formatCurrency(r.valorMeta)}</td>
-                        <td className="px-4 py-3 text-right text-green-600 font-medium">{formatCurrency(r.valorProducao)}</td>
-                        <td className="px-4 py-3 text-right text-blue-700 font-semibold">{formatCurrency(r.valorComissao)}</td>
-                        <td className="px-4 py-3 text-center">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              r.status === "PAGA"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-amber-100 text-amber-700"
-                            }`}
-                          >
-                            {r.status === "PAGA" ? "Paga" : "Calculada"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-center text-xs text-gray-500">
-                          {r.dataPagamento ? new Date(r.dataPagamento).toLocaleDateString("pt-BR") : "-"}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
