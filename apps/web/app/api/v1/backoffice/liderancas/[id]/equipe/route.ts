@@ -45,6 +45,13 @@ export async function GET(
           },
         },
       },
+      consultorPfs: {
+        include: {
+          usuario: {
+            select: { email: true, status: true },
+          },
+        },
+      },
     },
   });
 
@@ -92,10 +99,18 @@ export async function GET(
           status: p.status,
         })),
       })),
+      consultoresPf: lideranca.consultorPfs.map((cp) => ({
+        id: cp.id,
+        nome: cp.nome,
+        email: cp.usuario.email,
+        status: cp.usuario.status,
+        cpf: cp.cpf,
+      })),
     },
     resumo: {
       totalComerciais: lideranca.comerciais.length,
       totalGestores: lideranca.gestores.length,
+      totalConsultoresPf: lideranca.consultorPfs.length,
       totalParceiros:
         lideranca.comerciais.reduce((acc, c) => acc + c.parceiros.length, 0) +
         lideranca.gestores.reduce((acc, g) => acc + g.parceiros.length, 0),
