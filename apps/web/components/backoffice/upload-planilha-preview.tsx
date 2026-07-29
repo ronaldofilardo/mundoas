@@ -8,6 +8,39 @@ import {
   UPLOAD_POLL_MAX_ATTEMPTS,
 } from "@/lib/upload-status-poll";
 
+export interface ConsultorPfBadgeProps {
+  text: string;
+  className: string;
+  title: string;
+}
+
+/**
+ * Determina o badge exibido na coluna "Consultor PF" do preview:
+ *  - "-" cinza   → usuário da conta vazio
+ *  - "✓" verde   → bate com consultor PF (mostra o nome no title)
+ *  - "✗" vermelho → não bate
+ */
+export function getConsultorPfBadgeProps(
+  usuarioDaConta?: string,
+  consultorPfNome?: string,
+): ConsultorPfBadgeProps {
+  if (!usuarioDaConta) {
+    return { text: "-", className: "text-gray-400", title: "" };
+  }
+  if (consultorPfNome) {
+    return {
+      text: "✓",
+      className: "text-green-600",
+      title: consultorPfNome,
+    };
+  }
+  return {
+    text: "✗",
+    className: "text-red-600",
+    title: "Não bate com consultor PF",
+  };
+}
+
 interface PreviewRow {
   rowNumber: number;
   dataReferencia: string;
@@ -24,6 +57,7 @@ interface PreviewRow {
   parceiroNome?: string;
   comercialNome?: string;
   gestorNome?: string;
+  consultorPfNome?: string;
 }
 
 interface PreviewData {
@@ -444,9 +478,6 @@ export function UploadPlanilhaPreview({
                       CPF
                     </th>
                     <th className="text-left p-2 font-medium text-gray-600">
-                      Procedimento
-                    </th>
-                    <th className="text-left p-2 font-medium text-gray-600">
                       Tipo
                     </th>
                     <th className="text-left p-2 font-medium text-gray-600">
@@ -454,6 +485,9 @@ export function UploadPlanilhaPreview({
                     </th>
                     <th className="text-left p-2 font-medium text-gray-600">
                       Usuário Conta
+                    </th>
+                    <th className="text-center p-2 font-medium text-gray-600">
+                      Consultor PF
                     </th>
                     <th className="text-right p-2 font-medium text-gray-600">
                       Total Pago
@@ -485,13 +519,28 @@ export function UploadPlanilhaPreview({
                           "$1.$2.$3-$4",
                         )}
                       </td>
-                      <td className="p-2 text-gray-600">{row.procedimento}</td>
                       <td className="p-2 text-gray-600">
                         {row.tipoProcedimento}
                       </td>
                       <td className="p-2 text-gray-600">{row.unidade}</td>
                       <td className="p-2 text-gray-600">
                         {row.usuarioDaConta || "-"}
+                      </td>
+                      <td className="p-2 text-center">
+                        {(() => {
+                          const badge = getConsultorPfBadgeProps(
+                            row.usuarioDaConta,
+                            row.consultorPfNome,
+                          );
+                          return (
+                            <span
+                              className={badge.className}
+                              title={badge.title}
+                            >
+                              {badge.text}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="p-2 text-right text-gray-900">
                         R${" "}

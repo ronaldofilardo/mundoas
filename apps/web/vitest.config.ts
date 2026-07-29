@@ -25,6 +25,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './'),
     },
   },
+  esbuild: {
+    jsx: 'react-jsx',
+    jsxImportSource: 'react',
+  },
   server: {
     watch: {
       ignored: ['**/node_modules/**', '**/.git/**'],
