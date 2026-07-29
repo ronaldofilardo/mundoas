@@ -560,6 +560,7 @@ model ProcedimentoPF {
   @@index([comercialId])
   @@index([gestorId])
   @@index([consultorPfId])
+  @@index([consultorPfId, dataReferencia])
   @@index([uploadId])
   @@map("procedimentos_pf")
 }

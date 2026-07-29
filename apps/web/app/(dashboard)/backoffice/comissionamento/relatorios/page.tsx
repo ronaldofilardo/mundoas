@@ -185,6 +185,11 @@ export default function RelatorioComissoesPage() {
               <p className="text-2xl font-bold text-green-600">
                 {formatBRL(isConsultor ? (resumo.totalGeral.totalProducao || 0) : (resumo.totalGeral.totalVendas || 0))}
               </p>
+              {isConsultor && resumo.totalGeral.totalProducaoCalculada !== undefined && (
+                <p className={`text-xs mt-1 ${Math.abs((resumo.totalGeral.totalProducao || 0) - (resumo.totalGeral.totalProducaoCalculada || 0)) > 0.01 ? "text-red-600" : "text-gray-500"}`}>
+                  Calculado: {formatBRL(resumo.totalGeral.totalProducaoCalculada || 0)}
+                </p>
+              )}
             </div>
             <div className="card">
               <h3 className="text-sm text-gray-600">Total Comissões</h3>
@@ -193,6 +198,11 @@ export default function RelatorioComissoesPage() {
             <div className="card">
               <h3 className="text-sm text-gray-600">Quantidade</h3>
               <p className="text-2xl font-bold text-gray-900">{resumo.totalGeral.quantidade}</p>
+              {isConsultor && (resumo.totalGeral.totalDivergencias || 0) > 0 && (
+                <p className="text-xs mt-1 text-red-600 font-medium">
+                  ⚠️ {resumo.totalGeral.totalDivergencias} divergência(s)
+                </p>
+              )}
             </div>
           </div>
 
@@ -248,6 +258,66 @@ export default function RelatorioComissoesPage() {
                         <td className="p-2 text-right">{f.comerciaisCount}</td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {isConsultor && (
+            <div className="card">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">Produção por consultor/mês</h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-gray-50">
+                      <th className="text-left p-2">Consultor PF</th>
+                      <th className="text-left p-2">CPF</th>
+                      <th className="text-left p-2">Mês</th>
+                      <th className="text-right p-2">Produção (Comissão)</th>
+                      <th className="text-right p-2">Produção Calculada</th>
+                      <th className="text-center p-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comissoes.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                          Nenhuma produção encontrada.
+                        </td>
+                      </tr>
+                    ) : (
+                      comissoes.map((c) => {
+                        const valorProducao = c.valorProducao || 0;
+                        const valorCalculado = c.valorProducaoCalculado ?? valorProducao;
+                        const divergente = c.divergente === true;
+                        return (
+                          <tr key={c.id} className="border-b hover:bg-gray-50">
+                            <td className="p-2 font-medium">{c.consultorPf?.nome || "-"}</td>
+                            <td className="p-2">{c.consultorPf?.cpf || "-"}</td>
+                            <td className="p-2">{formatMonth(c.mesReferencia)}</td>
+                            <td className="p-2 text-right text-green-600">{formatBRL(valorProducao)}</td>
+                            <td className={`p-2 text-right ${divergente ? "text-red-600 font-semibold" : "text-gray-700"}`}>
+                              {formatBRL(valorCalculado)}
+                            </td>
+                            <td className="p-2 text-center">
+                              {divergente ? (
+                                <span
+                                  title={`Divergência de ${formatBRL(Math.abs(valorProducao - valorCalculado))} entre a produção gravada e a soma dos procedimentos.`}
+                                  className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800"
+                                >
+                                  ⚠️ Divergente
+                                </span>
+                              ) : (
+                                <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                                  ✓ OK
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>

@@ -17,6 +17,8 @@ interface Comissao {
   };
   valorVendas?: number;
   valorProducao?: number;
+  valorProducaoCalculado?: number;
+  divergente?: boolean;
   valorComissao: number;
   status: string;
   dataPagamento?: string | null;
@@ -27,6 +29,8 @@ interface Resumo {
     mes: string;
     totalVendas?: number;
     totalProducao?: number;
+    totalProducaoCalculada?: number;
+    totalDivergencias?: number;
     totalComissao: number;
     quantidade: number;
   }>;
@@ -40,6 +44,8 @@ interface Resumo {
   totalGeral: {
     totalVendas?: number;
     totalProducao?: number;
+    totalProducaoCalculada?: number;
+    totalDivergencias?: number;
     totalComissao: number;
     quantidade: number;
   };
