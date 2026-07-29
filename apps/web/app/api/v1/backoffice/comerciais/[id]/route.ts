@@ -114,6 +114,10 @@ export async function PATCH(
     usuarioUpdate.status = dataToUpdate.status;
     delete dataToUpdate.status;
   }
+  if (dataToUpdate.telefone) {
+    usuarioUpdate.telefone = dataToUpdate.telefone;
+    delete dataToUpdate.telefone;
+  }
 
   const updated = await prisma.comercial.update({
     where: { id: params.id },

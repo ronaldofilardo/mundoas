@@ -1,11 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { prisma } from "@asa/database";
-
-let _cpfSeq = 0;
-const uniqueCpf = () => {
-  _cpfSeq++;
-  return `${Date.now()}${_cpfSeq}${Math.floor(Math.random() * 1000)}`.slice(0, 11).padStart(11, "0");
-};
+import { uniqueCpf } from "./test-helpers";
 
 describe("GestorConsultor - Hierarchy & Authorization", () => {
   let gestorId: string;

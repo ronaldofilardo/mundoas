@@ -310,9 +310,36 @@ model ConsultorPf {
   metas        MetaConsultorPf[]
   comissoes    ComissaoConsultorPf[]
   procedimentos ProcedimentoPF[]
+  setores      ConsultorPfSetor[]
 
   @@index([liderancaId])
   @@map("consultores_pf")
+}
+
+model Setor {
+  id            String              @id @default(uuid()) @db.Uuid
+  nome          String              @unique @db.VarChar(100)
+  descricao     String?             @db.VarChar(255)
+  ativo         Boolean             @default(true)
+  criadoEm      DateTime            @default(now()) @map("criado_em")
+  atualizadoEm  DateTime            @updatedAt @map("atualizado_em")
+  consultores   ConsultorPfSetor[]
+
+  @@map("setores")
+}
+
+model ConsultorPfSetor {
+  id             String      @id @default(uuid()) @db.Uuid
+  consultorPfId  String      @map("consultor_pf_id") @db.Uuid
+  setorId        String      @map("setor_id") @db.Uuid
+  criadoEm       DateTime    @default(now()) @map("criado_em")
+  consultorPf    ConsultorPf @relation(fields: [consultorPfId], references: [id], onDelete: Cascade)
+  setor          Setor       @relation(fields: [setorId], references: [id], onDelete: Cascade)
+
+  @@unique([consultorPfId, setorId])
+  @@index([consultorPfId])
+  @@index([setorId])
+  @@map("consultor_pf_setores")
 }
 
 model MetaComercial {

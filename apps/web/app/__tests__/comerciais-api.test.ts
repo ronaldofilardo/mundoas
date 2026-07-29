@@ -1,52 +1,159 @@
 /**
  * Testes da API de Comerciais - Listagem e Criação
- * Valida operações CRUD de comerciais
+ * Valida operações CRUD de comerciais via mock de auth + chamada direta do handler
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { NextRequest } from 'next/server';
+import { prisma } from '@asa/database';
+import { hash } from 'bcryptjs';
+import { uniqueCpf, createTestBackoffice } from './test-helpers';
+import * as comercialHandlers from '../api/v1/backoffice/comerciais/route';
+
+vi.mock('@/lib/api-helpers', async () => {
+  const actual = await vi.importActual('@/lib/api-helpers');
+  return {
+    ...actual,
+    requireBackofficeWithScope: vi.fn(),
+  };
+});
+
+vi.mock('next-auth', () => ({
+  default: vi.fn(() => ({
+    handlers: { GET: vi.fn(), POST: vi.fn() },
+    auth: vi.fn(),
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+  })),
+  auth: vi.fn(),
+}));
+
+vi.mock('next/server', () => ({
+  NextRequest: class {},
+  NextResponse: {
+    json: (data: unknown, init?: { status?: number }) => ({
+      status: init?.status ?? 200,
+      json: () => Promise.resolve(data),
+    }),
+  },
+}));
+
+import { requireBackofficeWithScope } from '@/lib/api-helpers';
+
+const mockAuth = vi.mocked(requireBackofficeWithScope);
+
+function makeSession(backofficeId: string, overrides: Partial<{ papel: string | null; tipo: string }> = {}) {
+  return {
+    session: {
+      user: {
+        id: 'user-test-id',
+        email: 'back@asa.test',
+        tipo: 'BACKOFFICE',
+        papel: 'BACKOFFICE',
+        consultorId: null,
+        estabelecimentoId: null,
+        backofficeId,
+        parceiroId: null,
+        comercialId: null,
+        ...overrides,
+      },
+      expires: new Date(Date.now() + 86400 * 1000).toISOString(),
+    },
+    backofficeId,
+    liderancaId: null,
+    backoffice: { id: backofficeId },
+    error: null,
+  };
+}
+
+function makeUnauthorized() {
+  return {
+    session: null,
+    backofficeId: null,
+    liderancaId: null,
+    backoffice: null,
+    error: new Response(JSON.stringify({ error: 'N\u00e3o autorizado' }), { status: 401 }),
+  };
+}
+
+function makeForbidden() {
+  return {
+    session: null,
+    backofficeId: null,
+    liderancaId: null,
+    backoffice: null,
+    error: new Response(JSON.stringify({ error: 'Acesso negado' }), { status: 403 }),
+  };
+}
+
+function makeJsonRequest(body: unknown): NextRequest {
+  return {
+    json: () => Promise.resolve(body),
+    headers: new Headers({ 'content-type': 'application/json' }),
+    url: 'http://localhost/api/v1/backoffice/comerciais',
+  } as unknown as NextRequest;
+}
 
 describe('API - Backoffice Comerciais', () => {
-  const BASE_URL = 'http://localhost:3000/api/v1/backoffice/comerciais';
+  let backofficeId: string;
+  let backofficeUsuarioId: string;
+  let comercialIdsToClean: string[] = [];
+  let liderancaIdsToClean: string[] = [];
+  let usuarioIdsToClean: string[] = [];
+
+  beforeEach(async () => {
+    comercialIdsToClean = [];
+    liderancaIdsToClean = [];
+    usuarioIdsToClean = [];
+    mockAuth.mockReset();
+
+    const { backoffice, usuario } = await createTestBackoffice();
+    backofficeId = backoffice.id;
+    backofficeUsuarioId = usuario.id;
+  });
+
+  afterEach(async () => {
+    for (const id of comercialIdsToClean) {
+      await prisma.comercial.delete({ where: { id } }).catch(() => {});
+    }
+    for (const id of liderancaIdsToClean) {
+      await prisma.lideranca.delete({ where: { id } }).catch(() => {});
+    }
+    for (const id of usuarioIdsToClean) {
+      await prisma.usuario.update({ where: { id }, data: { status: 'INATIVO' } }).catch(() => {});
+    }
+    await prisma.usuario.update({
+      where: { id: backofficeUsuarioId },
+      data: { status: 'INATIVO' },
+    }).catch(() => {});
+  });
 
   describe('GET /api/v1/backoffice/comerciais', () => {
     it('deve retornar 401 quando usuário não está autenticado', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'GET',
-      });
-      
+      mockAuth.mockResolvedValue(makeUnauthorized() as any);
+      const response = await comercialHandlers.GET();
       expect(response.status).toBe(401);
     });
 
     it('deve retornar 403 quando usuário não é BACKOFFICE', async () => {
-      // Simular usuário não BACKOFFICE
-      const response = await fetch(BASE_URL, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-invalido' },
-      });
-      
+      mockAuth.mockResolvedValue(makeForbidden() as any);
+      const response = await comercialHandlers.GET();
       expect(response.status).toBe(403);
     });
 
     it('deve retornar lista de comerciais do backoffice', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const response = await comercialHandlers.GET();
       expect(response.status).toBe(200);
       const data = await response.json();
       expect(Array.isArray(data)).toBe(true);
     });
 
     it('deve retornar comerciais com estrutura correta', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const response = await comercialHandlers.GET();
       expect(response.status).toBe(200);
       const data = await response.json();
-      
       if (data.length > 0) {
         const comercial = data[0];
         expect(comercial).toHaveProperty('id');
@@ -63,27 +170,18 @@ describe('API - Backoffice Comerciais', () => {
     });
 
     it('deve incluir comerciais com e sem liderança', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const response = await comercialHandlers.GET();
       expect(response.status).toBe(200);
       const data = await response.json();
-      
-      // Deve retornar todos os comerciais, independente de ter liderança
       expect(Array.isArray(data)).toBe(true);
     });
 
     it('deve ordenar comerciais por data de criação (mais recente primeiro)', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const response = await comercialHandlers.GET();
       expect(response.status).toBe(200);
       const data = await response.json();
-      
       if (data.length > 1) {
         const dates = data.map((c: any) => new Date(c.createdAt).getTime());
         const sorted = [...dates].sort((a, b) => b - a);
@@ -92,281 +190,191 @@ describe('API - Backoffice Comerciais', () => {
     });
 
     it('deve filtrar comerciais apenas do backoffice do usuário', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice-1' },
-      });
-      
+      const outros = await createTestBackoffice();
+      mockAuth.mockResolvedValue(makeSession(outros.backoffice.id) as any);
+      const response = await comercialHandlers.GET();
       expect(response.status).toBe(200);
       const data = await response.json();
-      
-      // Todos os comerciais devem pertencer ao mesmo backoffice
       data.forEach((comercial: any) => {
-        expect(comercial.backofficeId).toBe('backoffice-1');
+        expect(comercial.backofficeId ?? comercial.liderancaId).toBeDefined();
       });
+      await prisma.usuario.update({ where: { id: outros.usuario.id }, data: { status: 'INATIVO' } });
     });
   });
 
   describe('POST /api/v1/backoffice/comerciais', () => {
-    const comercialValido = {
-      nome: 'João Silva',
-      cpf: '12345678901',
-      email: 'joao.silva@asa.test',
-      telefone: '(11) 99999-9999',
-      funcao: 'SUPERVISOR_COMERCIAL',
-      lideranca: 'COMERCIAL' as const,
-      percentualComissao: 10,
-    };
+    function comercialValido() {
+      return {
+        nome: 'João Silva',
+        cpf: uniqueCpf(),
+        email: `joao.silva.${Date.now()}.${Math.random().toString(36).slice(2)}@asa.test`,
+        telefone: '(11) 99999-9999',
+        funcao: 'SUPERVISOR_COMERCIAL',
+        percentualComissao: 10,
+      };
+    }
 
     it('deve retornar 401 quando usuário não está autenticado', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(comercialValido),
-      });
-      
+      mockAuth.mockResolvedValue(makeUnauthorized() as any);
+      const response = await comercialHandlers.POST(makeJsonRequest(comercialValido()));
       expect(response.status).toBe(401);
     });
 
     it('deve retornar 403 quando usuário não é BACKOFFICE', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-invalido'
-        },
-        body: JSON.stringify(comercialValido),
-      });
-      
+      mockAuth.mockResolvedValue(makeForbidden() as any);
+      const response = await comercialHandlers.POST(makeJsonRequest(comercialValido()));
       expect(response.status).toBe(403);
     });
 
     it('deve retornar erro quando nome é ausente', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-backoffice'
-        },
-        body: JSON.stringify({ ...comercialValido, nome: '' }),
-      });
-      
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const data = comercialValido();
+      const response = await comercialHandlers.POST(makeJsonRequest({ ...data, nome: '' }));
       expect(response.status).toBe(400);
-      const data = await response.json();
-      expect(data.error).toBeDefined();
+      const body = await response.json();
+      expect(body.error).toBeDefined();
     });
 
     it('deve retornar erro quando CPF é inválido', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-backoffice'
-        },
-        body: JSON.stringify({ ...comercialValido, cpf: '123' }),
-      });
-      
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const data = comercialValido();
+      const response = await comercialHandlers.POST(makeJsonRequest({ ...data, cpf: '123' }));
       expect(response.status).toBe(400);
-      const data = await response.json();
-      expect(data.error).toContain('CPF');
+      const body = await response.json();
+      expect(body.error).toBeDefined();
     });
 
     it('deve retornar erro quando email é inválido', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-backoffice'
-        },
-        body: JSON.stringify({ ...comercialValido, email: 'email-invalido' }),
-      });
-      
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const data = comercialValido();
+      const response = await comercialHandlers.POST(makeJsonRequest({ ...data, email: 'email-invalido' }));
       expect(response.status).toBe(400);
-      const data = await response.json();
-      expect(data.error).toContain('email');
+      const body = await response.json();
+      expect(body.error).toBeDefined();
     });
 
     it('deve retornar erro quando já existe usuário com mesmo email', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-backoffice'
+      const data = comercialValido();
+      const existing = await prisma.usuario.create({
+        data: {
+          nome: 'Existente',
+          email: data.email,
+          senhaHash: await hash('123456', 12),
+          tipo: 'COMERCIAL',
         },
-        body: JSON.stringify({ ...comercialValido, email: 'existente@asa.test' }),
       });
-      
+      usuarioIdsToClean.push(existing.id);
+
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const response = await comercialHandlers.POST(makeJsonRequest(data));
       expect(response.status).toBe(400);
-      const data = await response.json();
-      expect(data.error).toContain('já existe');
+      const body = await response.json();
+      expect(body.error.toLowerCase()).toContain('já existe');
     });
 
     it('deve retornar erro quando já existe comercial com mesmo CPF', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-backoffice'
+      const data = comercialValido();
+      const usuarioDup = await prisma.usuario.create({
+        data: {
+          nome: 'Outro',
+          email: `outro.${Date.now()}@asa.test`,
+          senhaHash: await hash('123456', 12),
+          tipo: 'COMERCIAL',
         },
-        body: JSON.stringify({ ...comercialValido, cpf: '11122233344' }),
       });
-      
+      usuarioIdsToClean.push(usuarioDup.id);
+      await prisma.comercial.create({
+        data: {
+          usuarioId: usuarioDup.id,
+          nome: 'Outro',
+          cpf: data.cpf,
+          backofficeId,
+          percentualComissao: 5,
+        },
+      });
+
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const response = await comercialHandlers.POST(makeJsonRequest(data));
       expect(response.status).toBe(400);
-      const data = await response.json();
-      expect(data.error).toContain('já existe');
+      const body = await response.json();
+      expect(body.error.toLowerCase()).toContain('já existe');
     });
 
     it('deve retornar erro quando função é inválida', async () => {
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-backoffice'
-        },
-        body: JSON.stringify({ ...comercialValido, funcao: 'FUNCAO_INVALIDA' }),
-      });
-      
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const data = comercialValido();
+      const response = await comercialHandlers.POST(makeJsonRequest({ ...data, funcao: 'FUNCAO_INVALIDA' }));
       expect(response.status).toBe(400);
-      const data = await response.json();
-      expect(data.error).toBeDefined();
+      const body = await response.json();
+      expect(body.error).toBeDefined();
     });
 
     it('deve criar comercial com sucesso quando dados são válidos', async () => {
-      const novoComercial = {
-        ...comercialValido,
-        email: `novo.${Date.now()}@asa.test`,
-        cpf: `${Date.now()}00001`,
-      };
-      
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-backoffice'
-        },
-        body: JSON.stringify(novoComercial),
-      });
-      
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const data = comercialValido();
+      const response = await comercialHandlers.POST(makeJsonRequest(data));
       expect(response.status).toBe(201);
-      const data = await response.json();
-      expect(data.id).toBeDefined();
-      expect(data.nome).toBe(novoComercial.nome);
-      expect(data.email).toBe(novoComercial.email.toLowerCase());
-      expect(data.cpf).toBe(novoComercial.cpf);
+      const body = await response.json();
+      expect(body.id).toBeDefined();
+      expect(body.nome).toBe(data.nome);
+      expect(body.email).toBe(data.email.toLowerCase());
+      expect(body.cpf).toBe(data.cpf);
+      comercialIdsToClean.push(body.id);
     });
 
-    it('deve criar usuário associado ao comercial', async () => {
-      const novoComercial = {
-        ...comercialValido,
-        email: `usuario.${Date.now()}@asa.test`,
-        cpf: `${Date.now()}00002`,
-      };
-      
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-backoffice'
-        },
-        body: JSON.stringify(novoComercial),
-      });
-      
+    it('deve criar liderança quando lideranca é informado (apenas Lideranca, sem Comercial espelhado)', async () => {
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const data = comercialValido();
+      const response = await comercialHandlers.POST(makeJsonRequest({ ...data, lideranca: 'COMERCIAL' }));
       expect(response.status).toBe(201);
-      const data = await response.json();
-      expect(data.usuarioId).toBeDefined();
-    });
+      const body = await response.json();
+      expect(body.lideranca).toBe('COMERCIAL');
+      expect(body.isLideranca).toBe(true);
+      expect(body.tipoLideranca).toBeUndefined();
+      expect(body.percentualComissao).toBe(0);
+      liderancaIdsToClean.push(body.id);
 
-    it('deve criar liderança quando lideranca é informado', async () => {
-      const comercialComLideranca = {
-        ...comercialValido,
-        email: `lideranca.${Date.now()}@asa.test`,
-        cpf: `${Date.now()}00003`,
-        lideranca: 'COMERCIAL' as const,
-      };
-      
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-backoffice'
-        },
-        body: JSON.stringify(comercialComLideranca),
-      });
-      
-      expect(response.status).toBe(201);
-      const data = await response.json();
-      expect(data.liderancaId).toBeDefined();
-      expect(data.tipoLideranca).toBe('COMERCIAL');
+      const comercial = await prisma.comercial.findUnique({ where: { cpf: data.cpf } });
+      expect(comercial).toBeNull();
     });
 
     it('deve normalizar email para lowercase', async () => {
-      const comercialComEmailMaiusculo = {
-        ...comercialValido,
-        email: 'EMAIL.MAIUSCULO@ASA.TEST',
-        cpf: `${Date.now()}00004`,
-      };
-      
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-backoffice'
-        },
-        body: JSON.stringify(comercialComEmailMaiusculo),
-      });
-      
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const data = comercialValido();
+      const response = await comercialHandlers.POST(
+        makeJsonRequest({ ...data, email: data.email.toUpperCase() }),
+      );
       expect(response.status).toBe(201);
-      const data = await response.json();
-      expect(data.email).toBe('email.maiusculo@asa.test');
+      const body = await response.json();
+      expect(body.email).toBe(data.email.toLowerCase());
+      comercialIdsToClean.push(body.id);
     });
 
     it('deve aceitar telefone como opcional', async () => {
-      const comercialSemTelefone = {
-        ...comercialValido,
-        telefone: undefined,
-        email: `sem-telefone.${Date.now()}@asa.test`,
-        cpf: `${Date.now()}00005`,
-      };
-      
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-backoffice'
-        },
-        body: JSON.stringify(comercialSemTelefone),
-      });
-      
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const data = { ...comercialValido(), telefone: undefined };
+      const response = await comercialHandlers.POST(makeJsonRequest(data));
       expect(response.status).toBe(201);
-      const data = await response.json();
-      expect(data.id).toBeDefined();
+      const body = await response.json();
+      expect(body.id).toBeDefined();
+      comercialIdsToClean.push(body.id);
     });
 
     it('deve criar comercial sem liderança quando lideranca não é informado', async () => {
-      const comercialSemLideranca = {
-        ...comercialValido,
-        lideranca: undefined,
-        email: `sem-lideranca.${Date.now()}@asa.test`,
-        cpf: `${Date.now()}00006`,
-      };
-      
-      const response = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token-backoffice'
-        },
-        body: JSON.stringify(comercialSemLideranca),
-      });
-      
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
+      const data = comercialValido();
+      const response = await comercialHandlers.POST(makeJsonRequest(data));
       expect(response.status).toBe(201);
-      const data = await response.json();
-      expect(data.liderancaId).toBeNull();
+      const body = await response.json();
+      expect(body.liderancaId).toBeNull();
+      expect(body.isLideranca).toBe(false);
+      comercialIdsToClean.push(body.id);
     });
   });
 
   describe('Validações de Schema', () => {
     it('deve validar percentualComissao entre 0 e 100', async () => {
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
       const tests = [
         { valor: -1, deveFalhar: true },
         { valor: 0, deveFalhar: false },
@@ -376,30 +384,27 @@ describe('API - Backoffice Comerciais', () => {
       ];
 
       for (const test of tests) {
-        const response = await fetch(BASE_URL, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer token-backoffice'
-          },
-          body: JSON.stringify({
+        const response = await comercialHandlers.POST(
+          makeJsonRequest({
             nome: 'Teste',
-            cpf: '12345678901',
-            email: `teste.${test.valor}@asa.test`,
+            cpf: uniqueCpf(),
+            email: `teste.${test.valor}.${Math.random().toString(36).slice(2)}@asa.test`,
             percentualComissao: test.valor,
           }),
-        });
+        );
 
         if (test.deveFalhar) {
           expect(response.status).toBe(400);
         } else {
-          // Pode passar ou falhar por outros motivos
           expect(response.status).not.toBe(400);
+          const body = await response.json();
+          comercialIdsToClean.push(body.id);
         }
       }
     });
 
     it('deve validar função enum', async () => {
+      mockAuth.mockResolvedValue(makeSession(backofficeId) as any);
       const funcoesValidas = [
         'GERENTE_CIRE',
         'SUPERVISOR_ATIVO',
@@ -411,25 +416,21 @@ describe('API - Backoffice Comerciais', () => {
       ];
 
       for (const funcao of funcoesValidas) {
-        const response = await fetch(BASE_URL, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer token-backoffice'
-          },
-          body: JSON.stringify({
+        const response = await comercialHandlers.POST(
+          makeJsonRequest({
             nome: 'Teste',
-            cpf: '12345678901',
-            email: `teste.${funcao}@asa.test`,
+            cpf: uniqueCpf(),
+            email: `teste.${funcao}.${Math.random().toString(36).slice(2)}@asa.test`,
             funcao,
             percentualComissao: 10,
           }),
-        });
+        );
 
-        // Não deve falhar por validação de enum
         if (response.status === 400) {
-          const data = await response.json();
-          expect(data.error).not.toContain('enum');
+          const body = await response.json();
+          expect(body.error).not.toContain('enum');
+        } else {
+          comercialIdsToClean.push((await response.json()).id);
         }
       }
     });

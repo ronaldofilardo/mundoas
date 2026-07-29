@@ -111,8 +111,15 @@ export async function POST(req: NextRequest) {
       return badRequest("Já existe um comercial com este CPF");
     }
 
-    // Se lideranca for informado, criar LIDERANCA + Comercial vinculado
+    // Se lideranca for informado, criar apenas LIDERANCA (sem Comercial espelhado)
     if (data.lideranca) {
+      const existingLideranca = await prisma.lideranca.findUnique({
+        where: { cpf: data.cpf },
+      });
+      if (existingLideranca) {
+        return badRequest("Já existe uma liderança com este CPF");
+      }
+
       const usuarioLideranca = await prisma.usuario.create({
         data: {
           nome: data.nome,
@@ -134,34 +141,15 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      const comercial = await prisma.comercial.create({
-        data: {
-          usuarioId: usuarioLideranca.id,
-          nome: data.nome,
-          cpf: data.cpf,
-          liderancaId: lideranca.id,
-          backofficeId,
-          percentualComissao: data.percentualComissao,
-          funcao: data.funcao,
-          tipoLideranca: data.lideranca,
-        },
-        include: {
-          usuario: {
-            select: { id: true, email: true, status: true },
-          },
-        },
-      });
-
       return created({
-        id: comercial.id,
-        nome: comercial.nome,
-        cpf: comercial.cpf,
-        email: comercial.usuario.email,
-        funcao: comercial.funcao,
-        percentualComissao: comercial.percentualComissao,
-        status: comercial.status,
-        liderancaId: comercial.liderancaId,
-        tipoLideranca: comercial.tipoLideranca,
+        id: lideranca.id,
+        nome: lideranca.nome,
+        cpf: lideranca.cpf,
+        email: usuarioLideranca.email,
+        funcao: null,
+        percentualComissao: 0,
+        status: lideranca.status,
+        lideranca: lideranca.tipo,
         isLideranca: true,
       });
     }

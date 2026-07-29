@@ -18,28 +18,26 @@ describe('Correções da Tabela de Metas - Validação', () => {
     '../(dashboard)/backoffice/usuarios/comerciais/page.tsx'
   );
 
-  it('tab-comerciais.tsx deve usar table-fixed em vez de sticky positioning', () => {
+  it('tab-comerciais.tsx deve usar table-auto com scroll horizontal e header sticky (sem sticky horizontal nas células)', () => {
     const content = readFileSync(tabComerciaisPath, 'utf-8');
-    
-    // Deve ter table-fixed
-    expect(content).toContain('table-fixed');
-    
-    // Deve ter larguras fixas
-    expect(content).toContain('w-[150px]'); // Comercial
-    expect(content).toContain('w-[90px]');  // Função
-    expect(content).toContain('w-[130px]'); // Ações
-    
-    // Não deve ter sticky positioning hardcoded
+
+    // Tabela com layout automático e largura mínima para scroll horizontal
+    expect(content).toContain('table-auto');
+    expect(content).toContain('min-w');
+
+    // Header sticky no topo (vertical)
+    expect(content).toContain('sticky top-0');
+
+    // Não deve ter sticky horizontal hardcoded nas células
     expect(content).not.toContain('sticky left-0');
     expect(content).not.toContain('sticky left-64');
     expect(content).not.toContain('sticky left-[340px]');
-    
-    // Deve ter scroll apenas vertical
-    expect(content).toContain('overflow-y-auto');
-    expect(content).toContain('overflow-x-hidden');
-    
-    // Não deve ter overflow-x-auto
-    expect(content).not.toContain('overflow-x-auto');
+
+    // Container de scroll horizontal
+    expect(content).toContain('overflow-x-auto');
+
+    // Não deve usar table-fixed (layout escolhido para este arquivo foi table-auto)
+    expect(content).not.toContain('table-fixed');
   });
 
   it('tab-comerciais.tsx deve ter header sticky no topo', () => {

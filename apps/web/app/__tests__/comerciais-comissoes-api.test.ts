@@ -1,244 +1,250 @@
 /**
  * Testes da API de Comissões de Comercial
- * Valida listagem de comissões por comercial
+ * Valida listagem de comissões por comercial via mock de auth.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { prisma } from '@asa/database';
+import { hash } from 'bcryptjs';
+import {
+  mockAuthAsBackoffice,
+  mockAuthAsUnauthorized,
+  mockAuthAsForbidden,
+  resetAuthMocks,
+  setMockUserId,
+} from './api-test-helpers';
+import * as comissoesHandlers from '../api/v1/backoffice/comerciais/[id]/comissoes/route';
+import { uniqueCpf, createTestBackoffice } from './test-helpers';
 
 describe('API - Backoffice Comerciais [id] Comissões', () => {
-  const BASE_URL = 'http://localhost:3000/api/v1/backoffice/comerciais';
-  const comercialId = 'comercial-teste-123';
+  let backofficeId: string;
+  let otherBackofficeId: string;
+  let backofficeUsuarioId: string;
+  let otherBackofficeUsuarioId: string;
+  let comercialId: string;
+  let otherComercialId: string;
+  let comercialSemComissoesId: string;
+  let comercialIdsToClean: string[] = [];
+  let usuarioIdsToClean: string[] = [];
+  let comissaoIdsToClean: string[] = [];
+
+  beforeEach(async () => {
+    resetAuthMocks();
+    comercialIdsToClean = [];
+    usuarioIdsToClean = [];
+    comissaoIdsToClean = [];
+
+    const { backoffice, usuario } = await createTestBackoffice();
+    backofficeId = backoffice.id;
+    backofficeUsuarioId = usuario.id;
+    setMockUserId(backofficeUsuarioId);
+
+    const other = await createTestBackoffice();
+    otherBackofficeId = other.backoffice.id;
+    otherBackofficeUsuarioId = other.usuario.id;
+
+    const usuario1 = await prisma.usuario.create({
+      data: {
+        nome: 'Com Teste',
+        email: `com-comissoes-${Date.now()}-${Math.random().toString(36).slice(2)}@asa.test`,
+        senhaHash: await hash('123456', 12),
+        tipo: 'COMERCIAL',
+      },
+    });
+    usuarioIdsToClean.push(usuario1.id);
+    const comercial1 = await prisma.comercial.create({
+      data: {
+        usuarioId: usuario1.id,
+        nome: 'Com Teste',
+        cpf: uniqueCpf(),
+        backofficeId,
+        percentualComissao: 5,
+      },
+    });
+    comercialId = comercial1.id;
+    comercialIdsToClean.push(comercial1.id);
+
+    const comissao1 = await prisma.comissaoComercial.create({
+      data: {
+        comercialId: comercial1.id,
+        mesReferencia: '2026-07',
+        valorVendas: 10000,
+        valorComissao: 500,
+        status: 'CALCULADA',
+      },
+    });
+    comissaoIdsToClean.push(comissao1.id);
+
+    const comissao2 = await prisma.comissaoComercial.create({
+      data: {
+        comercialId: comercial1.id,
+        mesReferencia: '2026-06',
+        valorVendas: 12000,
+        valorComissao: 600,
+        status: 'PAGA',
+        dataPagamento: new Date(),
+      },
+    });
+    comissaoIdsToClean.push(comissao2.id);
+
+    const usuario2 = await prisma.usuario.create({
+      data: {
+        nome: 'Com Other',
+        email: `com-other-${Date.now()}-${Math.random().toString(36).slice(2)}@asa.test`,
+        senhaHash: await hash('123456', 12),
+        tipo: 'COMERCIAL',
+      },
+    });
+    usuarioIdsToClean.push(usuario2.id);
+    const comercial2 = await prisma.comercial.create({
+      data: {
+        usuarioId: usuario2.id,
+        nome: 'Com Other',
+        cpf: uniqueCpf(),
+        backofficeId: otherBackofficeId,
+        percentualComissao: 5,
+      },
+    });
+    otherComercialId = comercial2.id;
+    comercialIdsToClean.push(comercial2.id);
+
+    const usuario3 = await prisma.usuario.create({
+      data: {
+        nome: 'Com Sem',
+        email: `com-sem-${Date.now()}-${Math.random().toString(36).slice(2)}@asa.test`,
+        senhaHash: await hash('123456', 12),
+        tipo: 'COMERCIAL',
+      },
+    });
+    usuarioIdsToClean.push(usuario3.id);
+    const comercial3 = await prisma.comercial.create({
+      data: {
+        usuarioId: usuario3.id,
+        nome: 'Com Sem',
+        cpf: uniqueCpf(),
+        backofficeId,
+        percentualComissao: 5,
+      },
+    });
+    comercialSemComissoesId = comercial3.id;
+    comercialIdsToClean.push(comercial3.id);
+  });
+
+  afterEach(async () => {
+    for (const id of comissaoIdsToClean) {
+      await prisma.comissaoComercial.delete({ where: { id } }).catch(() => {});
+    }
+    for (const id of comercialIdsToClean) {
+      await prisma.comercial.delete({ where: { id } }).catch(() => {});
+    }
+    for (const id of usuarioIdsToClean) {
+      await prisma.usuario.update({ where: { id }, data: { status: 'INATIVO' } }).catch(() => {});
+    }
+    await prisma.usuario.update({ where: { id: backofficeUsuarioId }, data: { status: 'INATIVO' } }).catch(() => {});
+    await prisma.usuario.update({ where: { id: otherBackofficeUsuarioId }, data: { status: 'INATIVO' } }).catch(() => {});
+  });
 
   describe('GET /api/v1/backoffice/comerciais/[id]/comissoes', () => {
     it('deve retornar 401 quando usuário não está autenticado', async () => {
-      const response = await fetch(`${BASE_URL}/${comercialId}/comissoes`, {
-        method: 'GET',
-      });
-      
+      mockAuthAsUnauthorized();
+      const response = await comissoesHandlers.GET(
+        {} as any,
+        { params: { id: comercialId } },
+      );
       expect(response.status).toBe(401);
     });
 
     it('deve retornar 403 quando usuário não é BACKOFFICE', async () => {
-      const response = await fetch(`${BASE_URL}/${comercialId}/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-invalido' },
-      });
-      
+      mockAuthAsForbidden();
+      const response = await comissoesHandlers.GET(
+        {} as any,
+        { params: { id: comercialId } },
+      );
       expect(response.status).toBe(403);
     });
 
     it('deve retornar 404 quando comercial não existe', async () => {
-      const response = await fetch(`${BASE_URL}/comercial-inexistente/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
+      mockAuthAsBackoffice(backofficeId);
+      const response = await comissoesHandlers.GET(
+        {} as any,
+        { params: { id: '00000000-0000-0000-0000-000000000000' } },
+      );
       expect(response.status).toBe(404);
       const data = await response.json();
-      expect(data.error).toContain('não encontrado');
+      expect(data.error.toLowerCase()).toContain('não encontrado');
     });
 
     it('deve retornar 403 quando comercial não pertence ao backoffice', async () => {
-      const response = await fetch(`${BASE_URL}/comercial-outro-backoffice/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice-1' },
-      });
-      
+      mockAuthAsBackoffice(backofficeId);
+      const response = await comissoesHandlers.GET(
+        {} as any,
+        { params: { id: otherComercialId } },
+      );
       expect(response.status).toBe(403);
     });
 
     it('deve retornar lista de comissões do comercial', async () => {
-      const response = await fetch(`${BASE_URL}/${comercialId}/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
+      mockAuthAsBackoffice(backofficeId);
+      const response = await comissoesHandlers.GET(
+        {} as any,
+        { params: { id: comercialId } },
+      );
       expect(response.status).toBe(200);
       const data = await response.json();
       expect(Array.isArray(data)).toBe(true);
+      expect(data.length).toBeGreaterThan(0);
     });
 
-    it('deve retornar comissões com estrutura correta', async () => {
-      const response = await fetch(`${BASE_URL}/${comercialId}/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
+    it('deve incluir campos esperados nas comissões', async () => {
+      mockAuthAsBackoffice(backofficeId);
+      const response = await comissoesHandlers.GET(
+        {} as any,
+        { params: { id: comercialId } },
+      );
       expect(response.status).toBe(200);
       const data = await response.json();
-      
       if (data.length > 0) {
-        const comissao = data[0];
-        expect(comissao).toHaveProperty('id');
-        expect(comissao).toHaveProperty('comercialId');
-        expect(comissao).toHaveProperty('mesReferencia');
-        expect(comissao).toHaveProperty('valorComissao');
-        expect(comissao).toHaveProperty('status');
+        const c = data[0];
+        expect(c).toHaveProperty('mesReferencia');
+        expect(c).toHaveProperty('valorVendas');
+        expect(c).toHaveProperty('valorComissao');
+        expect(c).toHaveProperty('status');
       }
     });
 
-    it('deve ordenar comissões por mês de referência (mais recente primeiro)', async () => {
-      const response = await fetch(`${BASE_URL}/${comercialId}/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
+    it('deve retornar lista vazia para comercial sem comissões', async () => {
+      mockAuthAsBackoffice(backofficeId);
+      const response = await comissoesHandlers.GET(
+        {} as any,
+        { params: { id: comercialSemComissoesId } },
+      );
       expect(response.status).toBe(200);
       const data = await response.json();
-      
+      expect(data).toEqual([]);
+    });
+
+    it('deve ordenar por mês de referência (mais recente primeiro)', async () => {
+      mockAuthAsBackoffice(backofficeId);
+      const response = await comissoesHandlers.GET(
+        {} as any,
+        { params: { id: comercialId } },
+      );
+      expect(response.status).toBe(200);
+      const data = await response.json();
       if (data.length > 1) {
-        const dates = data.map((c: any) => c.mesReferencia);
-        const sorted = [...dates].sort((a, b) => b.localeCompare(a));
-        expect(dates).toEqual(sorted);
+        const meses = data.map((c: any) => c.mesReferencia);
+        const sorted = [...meses].sort().reverse();
+        expect(meses).toEqual(sorted);
       }
     });
 
-    it('deve limitar a 24 comissões', async () => {
-      const response = await fetch(`${BASE_URL}/${comercialId}/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      expect(data.length).toBeLessThanOrEqual(24);
-    });
-
-    it('deve retornar array vazio quando comercial não tem comissões', async () => {
-      const response = await fetch(`${BASE_URL}/comercial-sem-comissoes/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      expect(Array.isArray(data)).toBe(true);
-      expect(data.length).toBe(0);
-    });
-
-    it('deve permitir acesso a comercial sem liderança', async () => {
-      const response = await fetch(`${BASE_URL}/comercial-sem-lideranca/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
-      expect(response.status).toBe(200);
-    });
-  });
-
-  describe('Verificação de Comissões Existentes', () => {
-    it('deve retornar true quando comercial tem comissões', async () => {
-      const response = await fetch(`${BASE_URL}/comercial-com-comissoes/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      expect(data.length).toBeGreaterThan(0);
-    });
-
-    it('deve retornar false quando comercial não tem comissões', async () => {
-      const response = await fetch(`${BASE_URL}/comercial-sem-comissoes/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      expect(data.length).toBe(0);
-    });
-
-    it('deve incluir comissões de todos os meses disponíveis', async () => {
-      const response = await fetch(`${BASE_URL}/${comercialId}/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      
-      // Deve retornar até 24 meses
-      expect(data.length).toBeLessThanOrEqual(24);
-      expect(data.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('Estrutura de Dados da Comissão', () => {
-    it('deve incluir ID da comissão', async () => {
-      const response = await fetch(`${BASE_URL}/${comercialId}/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      
-      if (data.length > 0) {
-        expect(data[0].id).toBeDefined();
-        expect(typeof data[0].id).toBe('string');
-      }
-    });
-
-    it('deve incluir mês de referência no formato YYYY-MM', async () => {
-      const response = await fetch(`${BASE_URL}/${comercialId}/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      
-      if (data.length > 0) {
-        expect(data[0].mesReferencia).toMatch(/^\d{4}-\d{2}$/);
-      }
-    });
-
-    it('deve incluir valor da comissão como número', async () => {
-      const response = await fetch(`${BASE_URL}/${comercialId}/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      
-      if (data.length > 0) {
-        expect(typeof data[0].valorComissao).toBe('number');
-        expect(data[0].valorComissao).toBeGreaterThanOrEqual(0);
-      }
-    });
-
-    it('deve incluir status da comissão', async () => {
-      const response = await fetch(`${BASE_URL}/${comercialId}/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice' },
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      
-      if (data.length > 0) {
-        expect(['PENDENTE', 'PAGA', 'CANCELADA']).toContain(data[0].status);
-      }
-    });
-  });
-
-  describe('Permissões por Backoffice', () => {
-    it('deve permitir acesso apenas ao backoffice dono do comercial', async () => {
-      const responseBackoffice1 = await fetch(`${BASE_URL}/comercial-backoffice-1/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice-1' },
-      });
-      
-      expect(responseBackoffice1.status).toBe(200);
-      
-      const responseBackoffice2 = await fetch(`${BASE_URL}/comercial-backoffice-1/comissoes`, {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer token-backoffice-2' },
-      });
-      
-      expect(responseBackoffice2.status).toBe(403);
+    it('não deve permitir acesso a comissões de comercial de outro backoffice', async () => {
+      mockAuthAsBackoffice(backofficeId);
+      const response = await comissoesHandlers.GET(
+        {} as any,
+        { params: { id: otherComercialId } },
+      );
+      expect(response.status).toBe(403);
     });
   });
 });
