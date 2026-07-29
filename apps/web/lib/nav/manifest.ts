@@ -31,11 +31,6 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
             href: "/backoffice/comissionamento/pagamentos",
             icon: "payments",
           },
-          {
-            label: "Regras",
-            href: "/backoffice/comissionamento/regras",
-            icon: "rules",
-          },
         ],
       },
       {
@@ -50,22 +45,11 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
         title: "Pontos",
         links: [
           { label: "Ciclos e prêmios", href: "/backoffice/pontos", icon: "points" },
-          { label: "Ranking", href: "/backoffice/pontos/ranking", icon: "reports" },
-        ],
-      },
-      {
-        title: "Cadastros",
-        links: [
-          { label: "Estabelecimentos", href: "/backoffice/estabelecimentos", icon: "establishment" },
-          { label: "Comerciais", href: "/backoffice/usuarios/comerciais", icon: "users" },
-          { label: "Consultores PF", href: "/backoffice/consultores-pf", icon: "users" },
         ],
       },
       {
         title: "Conta",
-        links: [
-          { label: "Dados pessoais", href: "/backoffice/dados-pessoais", icon: "profile" },
-        ],
+        links: [],
       },
     ],
   },

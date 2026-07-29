@@ -29,8 +29,8 @@ export function AppSidebar() {
   const { data: session } = useSession();
 
   const profile: NavProfile = useMemo(
-    () => resolveNavProfile(session?.user),
-    [session?.user],
+    () => resolveNavProfile(session?.user, pathname),
+    [session?.user, pathname],
   );
 
   const [query, setQuery] = useState("");

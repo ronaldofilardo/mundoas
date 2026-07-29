@@ -2,28 +2,44 @@ import { describe, it, expect } from "vitest";
 import { resolveNavProfile, isLinkActive } from "@/lib/nav";
 
 describe("resolveNavProfile", () => {
-  it("GESTOR + papel BACKOFFICE → perfil backoffice", () => {
+  it("rota /backoffice/* sempre resolve para perfil backoffice, mesmo com sessão divergente", () => {
+    const p = resolveNavProfile(
+      { tipo: "CONSULTOR", name: "X" },
+      "/backoffice/usuarios/comerciais",
+    );
+    expect(p.id).toBe("backoffice");
+  });
+
+  it("GESTOR + papel BACKOFFICE → perfil backoffice (sem rota)", () => {
     const p = resolveNavProfile({ tipo: "GESTOR", papel: "BACKOFFICE", name: "X" });
     expect(p.id).toBe("backoffice");
   });
 
-  it("BACKOFFICE → perfil backoffice", () => {
+  it("BACKOFFICE → perfil backoffice (sem rota)", () => {
     const p = resolveNavProfile({ tipo: "BACKOFFICE", name: "X" });
     expect(p.id).toBe("backoffice");
     expect(p.groups.find((g) => g.title === "Comissionamento")?.links.length).toBeGreaterThan(0);
   });
 
-  it("CONSULTOR → perfil consultor (mesmo se vier como CONSULTOR_PF legado)", () => {
+  it("rota tem prioridade sobre sessão (sessão Consultor em /gestor/* → gestor)", () => {
+    const p = resolveNavProfile(
+      { tipo: "CONSULTOR", name: "X" },
+      "/gestor/dashboard",
+    );
+    expect(p.id).toBe("gestor");
+  });
+
+  it("CONSULTOR → perfil consultor (sem rota)", () => {
     const p = resolveNavProfile({ tipo: "CONSULTOR_PF", name: "X" });
     expect(p.id).toBe("consultor");
   });
 
-  it("tipo desconhecido cai no DEFAULT_PROFILE_ID (consultor)", () => {
+  it("tipo desconhecido sem rota cai no DEFAULT_PROFILE_ID (consultor)", () => {
     const p = resolveNavProfile({ tipo: "NAO_EXISTE", name: "X" });
     expect(p.id).toBe("consultor");
   });
 
-  it("sessão nula cai no DEFAULT_PROFILE_ID", () => {
+  it("sessão nula sem rota cai no DEFAULT_PROFILE_ID", () => {
     const p = resolveNavProfile(null);
     expect(p.id).toBe("consultor");
   });
@@ -47,7 +63,6 @@ describe("isLinkActive", () => {
   });
 
   it("ignora query string para o match (pathname nunca traz query)", () => {
-    // pathname = "/backoffice/producao"; href do manifesto pode ter query
     expect(isLinkActive("/backoffice/producao", "/backoffice/producao?tab=upload")).toBe(true);
   });
 });
