@@ -43,9 +43,7 @@ export async function GET(
           },
         },
       },
-      backoffice: {
-        select: { id: true, nome: true },
-      },
+
     },
   });
 
@@ -65,7 +63,7 @@ export async function GET(
     tipo: lideranca.tipo,
     status: lideranca.status,
     createdAt: lideranca.createdAt,
-    backoffice: lideranca.backoffice,
+    backofficeId: lideranca.backofficeId,
     equipe: {
       comerciais: lideranca.comerciais.map((c) => ({
         id: c.id,

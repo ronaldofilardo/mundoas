@@ -11,7 +11,13 @@ function normalizarCpf(cpf: string): string {
 }
 
 /**
- * Processa upload de planilha PF em background
+ * Processa upload de planilha PF em background.
+ *
+ * Persistência:
+ *  - Arquivo .xlsx bruto é salvo em uploads_planilha_backoffice.conteudo_arquivo (BYTEA).
+ *  - Cada linha da planilha é gravada em procedimentos_pf_raw (auditoria completa),
+ *    incluindo válidas, rejeitadas e órfãs, com o motivo.
+ *  - Apenas linhas válidas e com parceiro encontrado são gravadas em procedimentos_pf.
  */
 export async function processarUploadPlanilhaPF(
   uploadId: string,
@@ -19,26 +25,38 @@ export async function processarUploadPlanilhaPF(
   backofficeId: string,
 ): Promise<void> {
   try {
-    // Salvar arquivo temporariamente
-    if (!existsSync(UPLOAD_DIR)) {
-      await mkdir(UPLOAD_DIR, { recursive: true });
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Fallback de disco apenas em desenvolvimento (Vercel serverless não suporta).
+    if (process.env.NODE_ENV !== "production" && process.env.UPLOAD_PERSIST_DISK !== "false") {
+      try {
+        if (!existsSync(UPLOAD_DIR)) {
+          await mkdir(UPLOAD_DIR, { recursive: true });
+        }
+        const timestamp = Date.now();
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const fileName = `${timestamp}-${safeName}`;
+        await writeFile(join(UPLOAD_DIR, fileName), buffer);
+      } catch (err) {
+        console.warn("[processarUploadPlanilhaPF] Falha ao gravar em disco (não fatal):", err);
+      }
     }
 
-    const timestamp = Date.now();
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const fileName = `${timestamp}-${safeName}`;
-    const filePath = join(UPLOAD_DIR, fileName);
-
-    const bytes = await file.arrayBuffer();
-    await writeFile(filePath, Buffer.from(bytes));
+    // Persistir arquivo bruto no banco (fonte de verdade permanente)
+    await prisma.uploadPlanilhaBackoffice.update({
+      where: { id: uploadId },
+      data: {
+        conteudoArquivo: buffer,
+        tamanhoArquivo: buffer.length,
+      },
+    });
 
     // Ler planilha
-    const buffer = await file.arrayBuffer();
     const workbook = read(buffer, { type: "array" });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
 
-    // Converter planilha para array de arrays
     const jsonData: any[][] = utils.sheet_to_json(worksheet, {
       header: 1,
       defval: "",
@@ -49,17 +67,11 @@ export async function processarUploadPlanilhaPF(
       "[processarUploadPlanilhaPF] Total de linhas:",
       jsonData.length,
     );
-    console.log("[processarUploadPlanilhaPF] Linha 1:", jsonData[0]);
-    console.log(
-      "[processarUploadPlanilhaPF] Linha 2 (cabeçalhos):",
-      jsonData[1],
-    );
 
     if (!jsonData || jsonData.length < 2) {
       throw new Error("Planilha vazia ou sem cabeçalhos");
     }
 
-    // Cabeçalhos estão na linha 2 (índice 1)
     const headersRaw = jsonData[1] || [];
     const headers: Record<string, string> = headersRaw.reduce(
       (acc, h, idx) => {
@@ -72,13 +84,6 @@ export async function processarUploadPlanilhaPF(
       {} as Record<string, string>,
     );
 
-    console.log("[processarUploadPlanilhaPF] Headers mapeados:", headers);
-
-    const colunasEncontradas = Object.values(headers).map((h) =>
-      h.toLowerCase(),
-    );
-
-    // Mapear índices das colunas
     const getColIndex = (nome: string) =>
       Object.values(headers).findIndex(
         (h) => String(h).trim().toLowerCase() === nome.toLowerCase(),
@@ -112,13 +117,10 @@ export async function processarUploadPlanilhaPF(
       }),
     ]);
 
-    const comercialIds = comerciais.map((c) => c.id);
-
     const consultorPorNome = new Map(
       consultoresPf.map((c) => [normalizarNome(c.nome), c.id]),
     );
 
-    // Buscar parceiros do backoffice com seus indicados
     const parceiros = await prisma.parceiro.findMany({
       where: { backofficeId },
       select: {
@@ -136,22 +138,13 @@ export async function processarUploadPlanilhaPF(
       },
     });
 
-    console.log(
-      "[processarUploadPlanilhaPF] Parceiros encontrados:",
-      parceiros.length,
-    );
-    console.log(
-      "[processarUploadPlanilhaPF] Total de indicados:",
-      parceiros.reduce((sum, p) => sum + p.indicacoes.length, 0),
-    );
-
-    // Processar linhas (começa do índice 2 para pular título e cabeçalho)
     let totalRows = 0;
     let processedRows = 0;
     let rejectedRows = 0;
     let orphanedRows = 0;
 
     const procedimentosToCreate: any[] = [];
+    const linhasRawToCreate: any[] = [];
 
     for (let i = 2; i < jsonData.length; i++) {
       const row = jsonData[i];
@@ -178,29 +171,37 @@ export async function processarUploadPlanilhaPF(
           ? String(row[idxFormaPagamento] || "").trim()
           : "PARTICULAR";
 
-      // Validar dados
-      let rejected = false;
-      let orphaned = false;
+      const dadosOriginais = {
+        linha: i + 1,
+        dataReferencia: dataReferenciaRaw ?? null,
+        paciente,
+        cpf: cpfRaw,
+        procedimento,
+        totalPago: totalPagoRaw ?? null,
+        usuarioDaConta,
+        unidade,
+        tipoProcedimento,
+        formaPagamento,
+      };
 
-      // Validar CPF — sem CPF ou CPF inválido NÃO rejeita mais a linha,
-      // apenas impede a busca de parceiro. A linha vai ser marcada como órfã.
       const cpf = cpfRaw.replace(/\D/g, "");
       const cpfValido = cpf.length === 11;
 
-      // Validar data
+      let rejected = false;
+      const motivosRejeicao: string[] = [];
+
       let dataReferencia: Date | null = null;
       if (!dataReferenciaRaw) {
         rejected = true;
-        rejectedRows++;
+        motivosRejeicao.push("data_referencia_ausente");
       } else {
         dataReferencia = parseDate(dataReferenciaRaw);
         if (!dataReferencia) {
           rejected = true;
-          rejectedRows++;
+          motivosRejeicao.push("data_referencia_invalida");
         }
       }
 
-      // Validar total pago
       let totalPago: number = 0;
       if (
         totalPagoRaw === null ||
@@ -208,37 +209,48 @@ export async function processarUploadPlanilhaPF(
         isNaN(Number(totalPagoRaw))
       ) {
         rejected = true;
-        rejectedRows++;
+        motivosRejeicao.push("total_pago_invalido");
       } else {
         totalPago = Number(totalPagoRaw);
       }
 
-      // Validar paciente e procedimento
-      if (!paciente || !procedimento) {
+      if (!paciente) {
         rejected = true;
-        rejectedRows++;
+        motivosRejeicao.push("paciente_ausente");
+      }
+      if (!procedimento) {
+        rejected = true;
+        motivosRejeicao.push("procedimento_ausente");
       }
 
       if (rejected) {
+        rejectedRows++;
+        linhasRawToCreate.push({
+          uploadId,
+          linhaOriginal: i + 1,
+          dadosOriginais,
+          valido: false,
+          motivoRejeicao: motivosRejeicao.join(","),
+          orfao: false,
+          motivoOrfao: null,
+        });
         continue;
       }
 
-      // Verificar se é órfão (não tem parceiro/indicado)
       let parceiroEncontrado = null;
       let indicadoId: string | null = null;
       let consultorPfId: string | null = null;
+      let orfao = false;
+      const motivosOrfao: string[] = [];
 
       if (!cpfValido) {
-        // Sem CPF válido: marca como órfão sem tentar buscar parceiro
-        orphaned = true;
-        orphanedRows++;
+        orfao = true;
+        motivosOrfao.push("cpf_invalido_ou_ausente");
       } else {
-        // Primeiro tenta achar pelo CPF do parceiro (normaliza CPF para comparar)
         parceiroEncontrado = parceiros.find(
           (p) => normalizarCpf(p.cpf) === cpf,
         );
 
-        // Se não achou, procura entre os indicados de todos os parceiros
         if (!parceiroEncontrado) {
           for (const parceiro of parceiros) {
             const indicado = parceiro.indicacoes.find(
@@ -253,13 +265,9 @@ export async function processarUploadPlanilhaPF(
         }
 
         if (!parceiroEncontrado) {
-          orphaned = true;
-          orphanedRows++;
+          orfao = true;
+          motivosOrfao.push("parceiro_nao_encontrado");
         }
-      }
-
-      if (orphaned || !parceiroEncontrado) {
-        continue;
       }
 
       if (usuarioDaConta) {
@@ -267,13 +275,26 @@ export async function processarUploadPlanilhaPF(
           consultorPorNome.get(normalizarNome(usuarioDaConta)) ?? null;
       }
 
-      // Calcular comissão (será processada pelas regras do sistema posteriormente)
       const valorComissao = 0;
-
-      // Extrair mês de referência da data
       const mesReferencia = dataReferencia
         ? `${dataReferencia.getFullYear()}-${String(dataReferencia.getMonth() + 1).padStart(2, "0")}`
         : "";
+
+      // Linha válida (passou nas validações) — sempre grava em raw para auditoria
+      linhasRawToCreate.push({
+        uploadId,
+        linhaOriginal: i + 1,
+        dadosOriginais,
+        valido: true,
+        motivoRejeicao: null,
+        orfao,
+        motivoOrfao: orfao ? motivosOrfao.join(",") : null,
+      });
+
+      if (orfao || !parceiroEncontrado) {
+        orphanedRows++;
+        continue;
+      }
 
       procedimentosToCreate.push({
         dataReferencia,
@@ -298,7 +319,16 @@ export async function processarUploadPlanilhaPF(
       processedRows++;
     }
 
-    // Criar procedimentos em batch
+    // Persistir TODAS as linhas em procedimentos_pf_raw (auditoria)
+    if (linhasRawToCreate.length > 0) {
+      const BATCH_SIZE = 100;
+      for (let i = 0; i < linhasRawToCreate.length; i += BATCH_SIZE) {
+        const batch = linhasRawToCreate.slice(i, i + BATCH_SIZE);
+        await prisma.procedimentoPFRaw.createMany({ data: batch });
+      }
+    }
+
+    // Persistir apenas procedimentos válidos com parceiro em procedimentos_pf
     if (procedimentosToCreate.length > 0) {
       const BATCH_SIZE = 100;
       for (let i = 0; i < procedimentosToCreate.length; i += BATCH_SIZE) {
@@ -310,7 +340,6 @@ export async function processarUploadPlanilhaPF(
       }
     }
 
-    // Atualizar status do upload
     await prisma.uploadPlanilhaBackoffice.update({
       where: { id: uploadId },
       data: {
@@ -323,7 +352,7 @@ export async function processarUploadPlanilhaPF(
     });
 
     console.log(
-      `[processarUploadPlanilhaPF] Upload ${uploadId} processado: ${processedRows} procedimentos criados`,
+      `[processarUploadPlanilhaPF] Upload ${uploadId} processado: ${processedRows} procedimentos criados, ${rejectedRows} rejeitadas, ${orphanedRows} órfãs (todas em raw)`,
     );
   } catch (error) {
     console.error("[processarUploadPlanilhaPF] Erro:", error);
@@ -346,9 +375,9 @@ function parseDate(dateRaw: any): Date | null {
   const str = String(dateRaw).trim();
 
   const patterns = [
-    /^(\d{2})\/(\d{2})\/(\d{4})$/, // DD/MM/YYYY
-    /^(\d{4})-(\d{2})-(\d{2})$/, // YYYY-MM-DD
-    /^(\d{2})-(\d{2})-(\d{4})$/, // DD-MM-YYYY
+    /^(\d{2})\/(\d{2})\/(\d{4})$/,
+    /^(\d{4})-(\d{2})-(\d{2})$/,
+    /^(\d{2})-(\d{2})-(\d{4})$/,
   ];
 
   for (const pattern of patterns) {

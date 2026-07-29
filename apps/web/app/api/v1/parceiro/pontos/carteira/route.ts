@@ -135,3 +135,4 @@ export async function GET(req: NextRequest) {
     return badRequest("Erro ao buscar carteira");
   }
 }
+

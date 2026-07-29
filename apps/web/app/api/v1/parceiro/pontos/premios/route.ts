@@ -75,9 +75,9 @@ export async function GET(req: NextRequest) {
         codigo: true,
         tipo: true,
         descricao: true,
-        pontos: true,
+        custoPontos: true,
       },
-      orderBy: { pontos: "asc" },
+      orderBy: { custoPontos: "asc" },
     });
 
     // Determinar se está em período de resgate
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
         saldoAtual,
         premios: premios.map((p) => ({
           ...p,
-          podeSolicitar: emPeriodoResgate && saldoAtual >= p.pontos,
+          podeSolicitar: emPeriodoResgate && saldoAtual >= p.custoPontos,
         })),
       },
     });
@@ -98,3 +98,4 @@ export async function GET(req: NextRequest) {
     return badRequest("Erro ao buscar catálogo");
   }
 }
+

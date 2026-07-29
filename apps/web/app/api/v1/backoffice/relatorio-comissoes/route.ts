@@ -40,15 +40,15 @@ export async function GET(req: NextRequest) {
     }
 
     const where: any = {
-      consultorPfId: { in: consultorIds },
+      comercialId: { in: consultorIds },
       mesReferencia: { gte: inicio, lte: fim },
     };
 
     const [comissoes, producoesBrutas] = await Promise.all([
-      prisma.comissaoConsultorPf.findMany({
+      prisma.comissaoComercial.findMany({
         where,
         include: {
-          consultorPf: { select: { id: true, nome: true, cpf: true } },
+          comercial: { select: { id: true, nome: true, cpf: true } },
         },
         orderBy: { mesReferencia: "desc" },
       }),
@@ -83,21 +83,21 @@ export async function GET(req: NextRequest) {
     comissoes.forEach((c) => {
       const mes = c.mesReferencia;
       const atualMes = porMes.get(mes) || { totalProducao: 0, totalProducaoCalculada: 0, totalDivergencias: 0, totalComissao: 0, quantidade: 0 };
-      const valorProducao = Number(c.valorProducao);
-      const valorCalculado = producaoCalculadaPorChave.get(`${c.consultorPfId}-${mes}`) ?? valorProducao;
-      atualMes.totalProducao += valorProducao;
+      const valorVendas = Number(c.valorVendas);
+      const valorCalculado = producaoCalculadaPorChave.get(`${c.comercialId}-${mes}`) ?? valorVendas;
+      atualMes.totalProducao += valorVendas;
       atualMes.totalProducaoCalculada += valorCalculado;
       atualMes.totalComissao += Number(c.valorComissao);
-      if (Math.abs(valorProducao - valorCalculado) > TOLERANCIA) {
+      if (Math.abs(valorVendas - valorCalculado) > TOLERANCIA) {
         atualMes.totalDivergencias += 1;
       }
       atualMes.quantidade += 1;
       porMes.set(mes, atualMes);
 
-      totalGeralProducao += valorProducao;
+      totalGeralProducao += valorVendas;
       totalGeralProducaoCalculada += valorCalculado;
       totalGeralComissao += Number(c.valorComissao);
-      if (Math.abs(valorProducao - valorCalculado) > TOLERANCIA) {
+      if (Math.abs(valorVendas - valorCalculado) > TOLERANCIA) {
         totalGeralDivergencias += 1;
       }
     });
@@ -105,18 +105,18 @@ export async function GET(req: NextRequest) {
     return ok({
       tipo: "consultor-pf",
       comissoes: comissoes.map((c) => {
-        const valorCalculado = producaoCalculadaPorChave.get(`${c.consultorPfId}-${c.mesReferencia}`);
-        const divergente = valorCalculado !== undefined && Math.abs(Number(c.valorProducao) - valorCalculado) > TOLERANCIA;
+        const valorCalculado = producaoCalculadaPorChave.get(`${c.comercialId}-${c.mesReferencia}`);
+        const divergente = valorCalculado !== undefined && Math.abs(Number(c.valorVendas) - valorCalculado) > TOLERANCIA;
         return {
           id: c.id,
           mesReferencia: c.mesReferencia,
-          consultorPf: {
-            id: c.consultorPf.id,
-            nome: c.consultorPf.nome,
-            cpf: c.consultorPf.cpf,
+          comercial: {
+            id: c.comercial.id,
+            nome: c.comercial.nome,
+            cpf: c.comercial.cpf,
           },
-          valorProducao: Number(c.valorProducao),
-          valorProducaoCalculado: valorCalculado ?? Number(c.valorProducao),
+          valorVendas: Number(c.valorVendas),
+          valorVendasCalculado: valorCalculado ?? Number(c.valorVendas),
           divergente,
           valorComissao: Number(c.valorComissao),
           status: c.status,
@@ -249,3 +249,8 @@ export async function GET(req: NextRequest) {
     comerciais: liderancas.flatMap(l => l.comerciais.map(c => ({ id: c.id, nome: c.nome, funcao: c.funcao }))),
   });
 }
+
+
+
+
+

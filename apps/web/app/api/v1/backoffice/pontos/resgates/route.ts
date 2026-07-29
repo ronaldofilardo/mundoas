@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
             id: true,
             codigo: true,
             descricao: true,
-            pontos: true,
+            custoPontos: true,
           },
         },
         cicloPontos: {
@@ -109,7 +109,7 @@ export async function GET(req: NextRequest) {
           id: r.premio.id,
           codigo: r.premio.codigo,
           descricao: r.premio.descricao,
-          pontos: r.premio.pontos,
+          custoPontos: r.premio.custoPontos,
         },
         cicloPontos: {
           id: r.cicloPontos.id,
@@ -129,4 +129,5 @@ export async function GET(req: NextRequest) {
     return badRequest("Erro ao buscar resgates");
   }
 }
+
 

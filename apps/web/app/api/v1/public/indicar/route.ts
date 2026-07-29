@@ -112,7 +112,7 @@ export async function GET(req: NextRequest) {
         select: {
           lideranca: {
             select: {
-              backoffice: { select: { id: true, nome: true } }
+              backofficeId: true
             }
           }
         }
@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
         select: {
           lideranca: {
             select: {
-              backoffice: { select: { id: true, nome: true } }
+              backofficeId: true
             }
           }
         }
@@ -136,7 +136,8 @@ export async function GET(req: NextRequest) {
     return notFound("Parceiro não encontrado");
   }
 
-  const backoffice = parceiro.comercial?.lideranca?.backoffice || parceiro.gestor?.lideranca?.backoffice;
+  const backoffice = parceiro.comercial?.lideranca?.backofficeId || parceiro.gestor?.lideranca?.backofficeId;
 
   return ok(parceiro);
 }
+

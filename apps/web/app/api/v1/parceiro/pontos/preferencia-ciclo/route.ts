@@ -73,3 +73,5 @@ export async function GET() {
     periodicidade: parceiro?.periodicidadeCicloEscolhida ?? null,
   });
 }
+
+

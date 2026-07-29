@@ -20,11 +20,11 @@ export async function GET(req: NextRequest) {
   const liderancaIds = liderancas.map((l) => l.id);
 
   const where: Record<string, unknown> = {
-    consultorPf: { liderancaId: { in: liderancaIds } },
+    comercial: { liderancaId: { in: liderancaIds } },
   };
 
   if (consultorPfId) {
-    where.consultorPfId = consultorPfId;
+    where.comercialId = consultorPfId;
   }
 
   if (mesReferencia) {
@@ -32,10 +32,10 @@ export async function GET(req: NextRequest) {
   }
 
   const [comissoes, total, consultores] = await Promise.all([
-    prisma.comissaoConsultorPf.findMany({
+    prisma.comissaoComercial.findMany({
       where,
       include: {
-        consultorPf: {
+        comercial: {
           select: { id: true, nome: true, cpf: true, liderancaId: true },
         },
       },
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
       take: limit,
       skip,
     }),
-    prisma.comissaoConsultorPf.count({ where }),
+    prisma.comissaoComercial.count({ where }),
     prisma.consultorPf.findMany({
       where: { liderancaId: { in: liderancaIds } },
       select: { id: true, nome: true, cpf: true },
@@ -101,3 +101,4 @@ export async function POST(req: NextRequest) {
     return badRequest(err?.message || "Erro ao calcular comissão");
   }
 }
+

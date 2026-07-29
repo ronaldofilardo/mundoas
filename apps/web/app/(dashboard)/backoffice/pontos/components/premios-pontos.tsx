@@ -7,7 +7,7 @@ interface Premio {
   codigo: string;
   tipo: string;
   descricao: string;
-  pontos: number;
+  custoPontos: number;
   ativo: boolean;
 }
 
@@ -15,7 +15,7 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
   const [codigo, setCodigo] = useState("");
   const [tipo, setTipo] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [pontos, setPontos] = useState("");
+  const [custoPontos, setCustoPontos] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -32,7 +32,7 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
           codigo,
           tipo,
           descricao,
-          pontos: Number(pontos),
+          custoPontos: Number(custoPontos),
         }),
       });
 
@@ -46,7 +46,7 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
       setCodigo("");
       setTipo("");
       setDescricao("");
-      setPontos("");
+      setCustoPontos("");
     } catch (error) {
       setMessage({ type: "error", text: error instanceof Error ? error.message : "Erro ao cadastrar prêmio" });
     } finally {
@@ -108,11 +108,11 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Pontos</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Custo em Pontos</label>
           <input
             type="number"
-            value={pontos}
-            onChange={(e) => setPontos(e.target.value)}
+            value={custoPontos}
+            onChange={(e) => setCustoPontos(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             min="1"
             required
@@ -153,7 +153,7 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
                     <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">{premio.tipo}</span>
                   </td>
                   <td className="py-3 px-4 text-sm text-gray-700">{premio.descricao}</td>
-                  <td className="py-3 px-4 text-sm font-medium text-gray-900">{premio.pontos}</td>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-900">{premio.custoPontos}</td>
                 </tr>
               ))
             )}

@@ -121,3 +121,4 @@ return ok({
     return badRequest("Erro ao atualizar resgate");
   }
 }
+
