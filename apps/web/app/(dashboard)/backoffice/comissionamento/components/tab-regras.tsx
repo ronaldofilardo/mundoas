@@ -18,9 +18,50 @@ export function TabRegras() {
         fetch("/api/v1/backoffice/regras-comerciais"),
         fetch("/api/v1/backoffice/regras-gestores"),
       ]);
-      setRegrasComerciais(regrasComRes.ok ? await regrasComRes.json() : null);
-      setRegrasGestores(regrasGesRes.ok ? await regrasGesRes.json() : null);
+      const regrasComData: RegrasComerciais = regrasComRes.ok
+        ? await regrasComRes.json()
+        : {
+            cartaoAcessoSaude: 0,
+            cireAtivo: 0,
+            cireReceptivo: 0,
+            franchisingAcesso: 0,
+            franchisingCartao: 0,
+            unidade: 0,
+          };
+      const regrasGesData: RegrasGestores = regrasGesRes.ok
+        ? await regrasGesRes.json()
+        : {
+            gerenteCire: 0,
+            supervisorAtivo: 0,
+            supervisorReceptivo: 0,
+            supervisorFranquia: 0,
+            supervisorAtendimento: 0,
+            gerenteAtendimento: 0,
+            supervisorComercial: 0,
+          };
+      setRegrasComerciais(regrasComData);
+      setRegrasGestores(regrasGesData);
+      if (!regrasComRes.ok || !regrasGesRes.ok) {
+        toast.error("Erro ao carregar regras");
+      }
     } catch {
+      setRegrasComerciais({
+        cartaoAcessoSaude: 0,
+        cireAtivo: 0,
+        cireReceptivo: 0,
+        franchisingAcesso: 0,
+        franchisingCartao: 0,
+        unidade: 0,
+      });
+      setRegrasGestores({
+        gerenteCire: 0,
+        supervisorAtivo: 0,
+        supervisorReceptivo: 0,
+        supervisorFranquia: 0,
+        supervisorAtendimento: 0,
+        gerenteAtendimento: 0,
+        supervisorComercial: 0,
+      });
       toast.error("Erro ao carregar regras");
     } finally {
       setLoading(false);
@@ -75,11 +116,11 @@ export function TabRegras() {
         <h2 className="text-lg font-semibold text-gray-800 mb-4">
           Regras: Comercial
         </h2>
-        {loading || !regrasComerciais ? (
+        {loading ? (
           <p className="text-sm text-gray-500">Carregando...</p>
         ) : (
           <RegrasComerciaisForm
-            regras={regrasComerciais}
+            regras={regrasComerciais!}
             onSave={handleSalvarComerciais}
           />
         )}
@@ -89,11 +130,11 @@ export function TabRegras() {
         <h2 className="text-lg font-semibold text-gray-800 mb-4">
           Regras: Gestores
         </h2>
-        {loading || !regrasGestores ? (
+        {loading ? (
           <p className="text-sm text-gray-500">Carregando...</p>
         ) : (
           <RegrasGestoresForm
-            regras={regrasGestores}
+            regras={regrasGestores!}
             onSave={handleSalvarGestores}
           />
         )}
