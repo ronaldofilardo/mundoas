@@ -47,11 +47,11 @@ describe("resolveNavProfile", () => {
 
 describe("isLinkActive", () => {
   it("match exato", () => {
-    expect(isLinkActive("/backoffice/comissionamento/relatorios", "/backoffice/comissionamento/relatorios")).toBe(true);
+    expect(isLinkActive("/backoffice/producao/relatorios", "/backoffice/producao/relatorios")).toBe(true);
   });
 
   it("match por prefixo (sub-rota)", () => {
-    expect(isLinkActive("/backoffice/comissionamento/relatorios/abc", "/backoffice/comissionamento/relatorios")).toBe(true);
+    expect(isLinkActive("/backoffice/producao/relatorios/abc", "/backoffice/producao/relatorios")).toBe(true);
   });
 
   it("não confunde prefixos de mesmo radical", () => {
@@ -64,5 +64,28 @@ describe("isLinkActive", () => {
 
   it("ignora query string para o match (pathname nunca traz query)", () => {
     expect(isLinkActive("/backoffice/producao", "/backoffice/producao?tab=upload")).toBe(true);
+  });
+});
+
+describe("manifesto — Metas & Produção", () => {
+  it("perfil backoffice expõe link 'Metas & Produção' apontando para ?tab=comerciais", async () => {
+    const { NAV_PROFILES } = await import("@/lib/nav/manifest");
+    const comissionamento = NAV_PROFILES.backoffice.groups.find(
+      (g) => g.title === "Comissionamento",
+    );
+    expect(comissionamento).toBeDefined();
+    const link = comissionamento!.links.find((l) => l.label === "Metas & Produção");
+    expect(link).toBeDefined();
+    expect(link?.href).toBe("/backoffice/comissionamento?tab=comerciais");
+    expect(link?.icon).toBe("goals");
+  });
+
+  it("perfil liderança rotula como 'Metas & Produção'", async () => {
+    const { NAV_PROFILES } = await import("@/lib/nav/manifest");
+    const links = NAV_PROFILES.lideranca.groups.flatMap((g) => g.links);
+    const link = links.find((l) => l.href === "/lideranca/metas");
+    expect(link).toBeDefined();
+    expect(link?.label).toBe("Metas & Produção");
+    expect(link?.icon).toBe("goals");
   });
 });

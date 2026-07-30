@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { TabComerciais } from "./components/tab-comerciais";
 import { TabRegras } from "./components/tab-regras";
 import { TabEquipes } from "./components/tab-equipes";
@@ -13,8 +14,30 @@ const TABS: { id: TabType; label: string; icon: string }[] = [
   { id: "equipes", label: "Equipes", icon: "🏢" },
 ];
 
+const TAB_IDS = new Set<TabType>(TABS.map((t) => t.id));
+
 export default function ComissionamentoPage() {
-  const [activeTab, setActiveTab] = useState<TabType>("comerciais");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams?.get("tab") ?? null;
+  const activeTab: TabType = TAB_IDS.has(tabParam as TabType)
+    ? (tabParam as TabType)
+    : "comerciais";
+
+  useEffect(() => {
+    if (!searchParams) return;
+    const hasTab = searchParams.has("tab");
+    if (!hasTab) {
+      router.replace("/backoffice/comissionamento?tab=comerciais", { scroll: false });
+    }
+  }, [searchParams, router]);
+
+  const handleTabChange = useCallback(
+    (tab: TabType) => {
+      router.replace(`/backoffice/comissionamento?tab=${tab}`, { scroll: false });
+    },
+    [router],
+  );
 
   return (
     <div>
@@ -30,7 +53,7 @@ export default function ComissionamentoPage() {
           {TABS.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`px-6 py-3 text-sm font-medium transition-colors ${
                 activeTab === tab.id
                   ? "text-primary-600 border-b-2 border-primary-600"
