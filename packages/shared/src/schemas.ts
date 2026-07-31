@@ -386,10 +386,26 @@ export const upsertMetaComercialSchema = z
         { message: "Valor da produção deve ser >= 0" },
       )
       .optional(),
+    valorComissao: z
+      .union([z.string(), z.number()])
+      .refine(
+        (val) => {
+          const num = typeof val === "string" ? parseFloat(val) : val;
+          return num >= 0;
+        },
+        { message: "Valor da comissão deve ser >= 0" },
+      )
+      .optional(),
   })
-  .refine((data) => data.valorMeta !== undefined || data.valorAtingido !== undefined, {
-    message: "Informe valorMeta ou valorAtingido",
-  });
+  .refine(
+    (data) =>
+      data.valorMeta !== undefined ||
+      data.valorAtingido !== undefined ||
+      data.valorComissao !== undefined,
+    {
+      message: "Informe valorMeta, valorAtingido ou valorComissao",
+    },
+  );
 
 export const preferenciaCicloParceiroSchema = z.object({
   periodicidade: z.enum(["SEMESTRAL", "ANUAL"]),

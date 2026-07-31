@@ -89,6 +89,13 @@ export async function POST(
         : parsed.data.valorAtingido
       : undefined;
 
+  const valorComissaoNum =
+    parsed.data.valorComissao !== undefined
+      ? typeof parsed.data.valorComissao === "string"
+        ? parseFloat(parsed.data.valorComissao)
+        : parsed.data.valorComissao
+      : undefined;
+
   const meta = await prisma.metaComercial.upsert({
     where: {
       comercialId_mesReferencia: {
@@ -101,10 +108,12 @@ export async function POST(
       mesReferencia: parsed.data.mesReferencia,
       valorMeta: valorMetaNum ?? 0,
       valorAtingido: valorAtingidoNum ?? 0,
+      valorComissao: valorComissaoNum ?? 0,
     },
     update: {
       ...(valorMetaNum !== undefined ? { valorMeta: valorMetaNum } : {}),
       ...(valorAtingidoNum !== undefined ? { valorAtingido: valorAtingidoNum } : {}),
+      ...(valorComissaoNum !== undefined ? { valorComissao: valorComissaoNum } : {}),
     },
   });
 
@@ -118,6 +127,7 @@ export async function POST(
       mesReferencia: parsed.data.mesReferencia,
       valorMeta: valorMetaNum,
       valorAtingido: valorAtingidoNum,
+      valorComissao: valorComissaoNum,
     },
   });
 

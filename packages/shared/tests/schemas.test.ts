@@ -761,6 +761,30 @@ describe("upsertMetaComercialSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("deve aceitar apenas valorComissao", () => {
+    const result = upsertMetaComercialSchema.safeParse({
+      mesReferencia: "2026-07",
+      valorComissao: 1.25,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("deve aceitar valorComissao como string", () => {
+    const result = upsertMetaComercialSchema.safeParse({
+      mesReferencia: "2026-07",
+      valorComissao: "1.25",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("deve rejeitar valorComissao negativo", () => {
+    const result = upsertMetaComercialSchema.safeParse({
+      mesReferencia: "2026-07",
+      valorComissao: "-1.25",
+    });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe("preferenciaCicloParceiroSchema", () => {
