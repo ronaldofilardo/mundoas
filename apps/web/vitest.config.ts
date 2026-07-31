@@ -29,6 +29,12 @@ export default defineConfig({
     jsx: 'react-jsx',
     jsxImportSource: 'react',
   },
+  oxc: {
+    jsx: {
+      runtime: 'automatic',
+      importSource: 'react',
+    },
+  },
   server: {
     watch: {
       ignored: ['**/node_modules/**', '**/.git/**'],
