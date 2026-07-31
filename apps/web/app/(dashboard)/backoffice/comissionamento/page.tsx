@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { Suspense, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { TabComerciais } from "./components/tab-comerciais";
 import { TabRegras } from "./components/tab-regras";
@@ -16,7 +16,7 @@ const TABS: { id: TabType; label: string; icon: string }[] = [
 
 const TAB_IDS = new Set<TabType>(TABS.map((t) => t.id));
 
-export default function ComissionamentoPage() {
+function ComissionamentoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams?.get("tab") ?? null;
@@ -40,14 +40,7 @@ export default function ComissionamentoPage() {
   );
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Comissionamento</h1>
-        <p className="text-gray-500 text-sm">
-          Gerencie os comerciais e as regras de comissão
-        </p>
-      </div>
-
+    <>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm mb-6">
         <div className="flex border-b border-gray-200">
           {TABS.map((tab) => (
@@ -72,6 +65,23 @@ export default function ComissionamentoPage() {
           {activeTab === "equipes" && <TabEquipes />}
         </div>
       </div>
+    </>
+  );
+}
+
+export default function ComissionamentoPage() {
+  return (
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Comissionamento</h1>
+        <p className="text-gray-500 text-sm">
+          Gerencie os comerciais e as regras de comissão
+        </p>
+      </div>
+
+      <Suspense fallback={null}>
+        <ComissionamentoContent />
+      </Suspense>
     </div>
   );
 }

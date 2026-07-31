@@ -261,7 +261,6 @@ export default function BackofficeProducao() {
                 <th className="text-left p-2 font-medium text-gray-600">Mês Ref.</th>
                 <th className="text-left p-2 font-medium text-gray-600">Status</th>
                 <th className="text-right p-2 font-medium text-gray-600">Total Pago</th>
-                <th className="text-right p-2 font-medium text-gray-600">Comissão</th>
               </tr>
             </thead>
             <tbody>
@@ -311,15 +310,12 @@ export default function BackofficeProducao() {
                   <td className="p-2 text-right text-gray-900">
                     R$ {Number(p.totalPago).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </td>
-                  <td className="p-2 text-right text-green-600 font-medium">
-                    R$ {Number(p.valorComissao).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </td>
                 </tr>
               ))}
 
               {filteredProcedimentos?.length === 0 && (
                 <tr>
-                  <td colSpan={12} className="p-8 text-center text-gray-500">
+                  <td colSpan={11} className="p-8 text-center text-gray-500">
                     Nenhum procedimento encontrado
                   </td>
                 </tr>

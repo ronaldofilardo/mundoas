@@ -408,10 +408,11 @@ describe('API Routes - Cobertura Estendida', () => {
       const premio = await prisma.premio.create({
         data: {
           backofficeId,
+          nome: 'Prêmio Teste',
           codigo: 'PREMIO_TESTE',
           tipo: 'PRODUTO',
           descricao: 'Descrição original',
-          pontos: 1000,
+          custoPontos: 1000,
           ativo: true,
         },
       });
@@ -420,27 +421,27 @@ describe('API Routes - Cobertura Estendida', () => {
         where: { id: premio.id },
         data: {
           descricao: 'Descrição atualizada',
-          pontos: 1500,
+          custoPontos: 1500,
         },
       });
 
       expect(updated.descricao).toBe('Descrição atualizada');
-      expect(updated.pontos).toBe(1500);
+      expect(updated.custoPontos).toBe(1500);
     });
 
     it('deve ativar/desativar prêmio', async () => {
       const premio = await prisma.premio.create({
         data: {
           backofficeId,
+          nome: 'Prêmio Toggle',
           codigo: 'PREMIO_TOGGLE',
           tipo: 'SERVICO',
           descricao: 'Teste',
-          pontos: 500,
+          custoPontos: 500,
           ativo: true,
         },
       });
 
-      // Desativar
       const desativado = await prisma.premio.update({
         where: { id: premio.id },
         data: { ativo: false },
@@ -448,7 +449,6 @@ describe('API Routes - Cobertura Estendida', () => {
 
       expect(desativado.ativo).toBe(false);
 
-      // Reativar
       const reativado = await prisma.premio.update({
         where: { id: premio.id },
         data: { ativo: true },
@@ -463,10 +463,11 @@ describe('API Routes - Cobertura Estendida', () => {
       const premio = await prisma.premio.create({
         data: {
           backofficeId,
+          nome: 'Prêmio Del',
           codigo: 'PREMIO_DEL',
           tipo: 'BRINDE',
           descricao: 'Será deletado',
-          pontos: 300,
+          custoPontos: 300,
           ativo: false,
         },
       });
@@ -484,10 +485,11 @@ describe('API Routes - Cobertura Estendida', () => {
       const premio = await prisma.premio.create({
         data: {
           backofficeId,
+          nome: 'Prêmio Com Resgate',
           codigo: 'PREMIO_RES',
           tipo: 'PRODUTO',
           descricao: 'Não pode deletar',
-          pontos: 500,
+          custoPontos: 500,
           ativo: true,
         },
       });
@@ -504,16 +506,18 @@ describe('API Routes - Cobertura Estendida', () => {
         },
       });
 
+      const parceiroUsuario = await prisma.usuario.create({
+        data: {
+          nome: 'Parceiro Resgate',
+          email: `parceiro-resgate-${Date.now()}@asa.test`,
+          senhaHash: await hash('123456', 12),
+          tipo: 'PARCEIRO',
+        },
+      });
+
       const parceiro = await prisma.parceiro.create({
         data: {
-          usuarioId: (await prisma.usuario.create({
-            data: {
-              nome: 'Parceiro Resgate',
-              email: `parceiro-resgate-${Date.now()}@asa.test`,
-              senhaHash: await hash('123456', 12),
-              tipo: 'PARCEIRO',
-            },
-          })).id,
+          usuarioId: parceiroUsuario.id,
           comercialId: null,
           nome: 'Parceiro Resgate',
           cpf: uniqueCpf(),
@@ -521,7 +525,6 @@ describe('API Routes - Cobertura Estendida', () => {
         },
       });
 
-      // Criar resgate vinculado
       await prisma.solicitacaoResgate.create({
         data: {
           cicloPontosId: ciclo.id,
@@ -532,13 +535,11 @@ describe('API Routes - Cobertura Estendida', () => {
         },
       });
 
-      // Verificar que tem resgate
       const resgates = await prisma.solicitacaoResgate.findMany({
         where: { premioId: premio.id },
       });
 
       expect(resgates.length).toBeGreaterThan(0);
-      // Não deve permitir deletar (validação de negócio)
     });
   });
 
@@ -640,13 +641,12 @@ describe('API Routes - Cobertura Estendida', () => {
     });
 
     it('deve usar regras comerciais se existirem', async () => {
-      const regras = await prisma.regraComercial.findUnique({
+      const regras = await prisma.regraComercial.findFirst({
         where: { backofficeId },
       });
 
-      // Se não existir regras, deve retornar valor default
       if (!regras) {
-        const comissaoDefault = 10000 * 0.05; // 5% default
+        const comissaoDefault = 10000 * 0.05;
         expect(comissaoDefault).toBe(500);
       }
     });

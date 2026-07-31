@@ -17,6 +17,7 @@ interface FiltrosRelatorioProps {
   onBuscar: () => void;
   onExportarCSV: () => void;
   loading: boolean;
+  showFuncao?: boolean;
 }
 
 export function FiltrosRelatorio({
@@ -34,6 +35,7 @@ export function FiltrosRelatorio({
   onBuscar,
   onExportarCSV,
   loading,
+  showFuncao = true,
 }: FiltrosRelatorioProps) {
   return (
     <div className="card mb-6">
@@ -69,21 +71,23 @@ export function FiltrosRelatorio({
             ))}
           </select>
         </div>
-        <div>
-          <label className="block text-xs text-gray-600 mb-1">Função</label>
-          <select
-            value={funcao}
-            onChange={(e) => onFuncaoChange(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          >
-            <option value="">Todas</option>
-            {funcoesDisponiveis.map((f) => (
-              <option key={f} value={f}>
-                {f.replace(/_/g, " ")}
-              </option>
-            ))}
-          </select>
-        </div>
+        {showFuncao && (
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">Função</label>
+            <select
+              value={funcao}
+              onChange={(e) => onFuncaoChange(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg text-sm"
+            >
+              <option value="">Todas</option>
+              {funcoesDisponiveis.map((f) => (
+                <option key={f} value={f}>
+                  {f.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div>
           <label className="block text-xs text-gray-600 mb-1">Comercial</label>
           <select

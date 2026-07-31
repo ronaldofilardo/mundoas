@@ -32,6 +32,11 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
             icon: "goals",
           },
           {
+            label: "Painel Metas de Vendas",
+            href: "/backoffice/metas-vendas",
+            icon: "goals",
+          },
+          {
             label: "Pagamentos",
             href: "/backoffice/comissionamento/pagamentos",
             icon: "payments",

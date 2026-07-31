@@ -299,7 +299,7 @@ function PremiosPontos({ data }: { data?: any }) {
               <p className="text-sm text-gray-600 mt-1">{premio.descricao}</p>
               <div className="flex justify-between items-center mt-3">
                 <span className="text-sm font-bold text-primary-600">
-                  {premio.pontos} pts
+                  {premio.custoPontos} pts
                 </span>
                 <button className="text-xs bg-primary-50 text-primary-600 px-3 py-1 rounded hover:bg-primary-100">
                   Resgatar

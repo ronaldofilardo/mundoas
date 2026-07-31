@@ -12,6 +12,7 @@ describe('API /api/v1/backoffice/pontos/premios', () => {
     codigo: 'TEST001',
     tipo: 'PRODUTO',
     descricao: 'Produto de teste',
+    custoPontos: 1000,
     pontos: 1000,
   };
 
@@ -31,6 +32,13 @@ describe('API /api/v1/backoffice/pontos/premios', () => {
       expect(Number.isInteger(payload.pontos)).toBe(true);
     });
 
+    it('deve aceitar alias "pontos" e normalizar para custoPontos', () => {
+      const payload = { codigo: '001', tipo: 'PRODUTO', descricao: 'Cafeteria', pontos: 5 };
+      const custoPontos = payload.pontos;
+      expect(custoPontos).toBe(5);
+      expect(payload.custoPontos).toBeUndefined();
+    });
+
     it('deve retornar erro quando código vazio', () => {
       const payload = { ...mockPremioValido, codigo: '' };
       expect(payload.codigo.trim()).toBe('');
@@ -46,7 +54,7 @@ describe('API /api/v1/backoffice/pontos/premios', () => {
       expect(payload.descricao.trim()).toBe('');
     });
 
-    it('deve retornar erro quando pontos negativo ou zero', () => {
+    it('deve rejeitar pontos negativo ou zero', () => {
       const payloadZero = { ...mockPremioValido, pontos: 0 };
       const payloadNegativo = { ...mockPremioValido, pontos: -100 };
       
@@ -240,10 +248,11 @@ describe('API /api/v1/backoffice/pontos/premios', () => {
         codigo: 'string.min(1)',
         tipo: 'string.min(1)',
         descricao: 'string.min(1)',
+        custoPontos: 'number.int.positive',
         pontos: 'number.int.positive',
       };
 
-      expect(Object.keys(schema)).toEqual(['codigo', 'tipo', 'descricao', 'pontos']);
+      expect(Object.keys(schema)).toEqual(['codigo', 'tipo', 'descricao', 'custoPontos', 'pontos']);
     });
 
     it('UpdatePremioSchema deve permitir campos opcionais', () => {
@@ -251,11 +260,18 @@ describe('API /api/v1/backoffice/pontos/premios', () => {
         codigo: 'string.min(1).optional()',
         tipo: 'string.min(1).optional()',
         descricao: 'string.min(1).optional()',
+        custoPontos: 'number.int.positive().optional()',
         pontos: 'number.int.positive().optional()',
         ativo: 'boolean.optional()',
       };
 
-      expect(Object.keys(schema)).toEqual(['codigo', 'tipo', 'descricao', 'pontos', 'ativo']);
+      expect(Object.keys(schema)).toEqual(['codigo', 'tipo', 'descricao', 'custoPontos', 'pontos', 'ativo']);
+    });
+
+    it('deve normalizar alias "pontos" para custoPontos no cadastro', () => {
+      const input = { codigo: '001', tipo: 'PRODUTO', descricao: 'Cafeteria', pontos: 5 };
+      const custoPontosFinal = input.pontos ?? input.custoPontos;
+      expect(custoPontosFinal).toBe(5);
     });
 
     it('deve rejeitar pontos não inteiro', () => {

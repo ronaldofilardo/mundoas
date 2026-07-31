@@ -7,6 +7,11 @@ import type { Comercial, Meta, RegrasComerciais, RegrasGestores } from "../../us
 import { formatCpf } from "../../usuarios/comerciais/utils";
 import { NovoComercialForm } from "../../usuarios/comerciais/components/novo-comercial-form";
 import { ComercialModal } from "../../usuarios/comerciais/components/comercial-modal";
+import {
+  calcularValorComissao,
+  calcularValorComissaoNum,
+  getComissaoFromFuncao,
+} from "@/lib/comissao-calculo";
 
 const mesesAno = [
   { value: "01", label: "Jan" },
@@ -32,45 +37,6 @@ function formatarMoeda(valor: string): string {
 function parseMoeda(valor: string): string {
   const numeros = valor.replace(/\./g, "").replace(",", ".");
   return numeros;
-}
-
-function getRegrasComercialMap(): Record<string, keyof RegrasComerciais> {
-  return {
-    "CARTAO ACESSO SAUDE": "cartaoAcessoSaude",
-    "CIRE ATIVO": "cireAtivo",
-    "CIRE RECEPTIVO": "cireReceptivo",
-    "FRANCHISING ACESSO": "franchisingAcesso",
-    "FRANCHISING CARTAO": "franchisingCartao",
-    "UNIDADE": "unidade",
-  };
-}
-
-function getRegrasGestorMap(): Record<string, keyof RegrasGestores> {
-  return {
-    "GERENTE CIRE": "gerenteCire",
-    "SUPERVISOR ATIVO": "supervisorAtivo",
-    "SUPERVISOR RECEPTIVO": "supervisorReceptivo",
-    "SUPERVISOR FRANQUIA": "supervisorFranquia",
-    "SUPERVISOR ATENDIMENTO": "supervisorAtendimento",
-    "GERENTE ATENDIMENTO": "gerenteAtendimento",
-    "SUPERVISOR COMERCIAL": "supervisorComercial",
-  };
-}
-
-function getComissaoFromFuncao(
-  regrasComerciais: { regrasComerciais: RegrasComerciais | null; regrasGestores: RegrasGestores | null },
-  funcao: string | undefined
-): number {
-  const raw = (funcao || "").toUpperCase().replace(/_/g, " ").trim();
-  const funcaoStripped = raw.replace(/\s*ATIVO\s*$/, "").replace(/\s*RECEPTIVO\s*$/, "").trim();
-
-  const chaveGestor = getRegrasGestorMap()[funcaoStripped];
-  if (chaveGestor && regrasComerciais.regrasGestores) return regrasComerciais.regrasGestores[chaveGestor];
-
-  const chaveCom = getRegrasComercialMap()[funcaoStripped];
-  if (chaveCom && regrasComerciais.regrasComerciais) return regrasComerciais.regrasComerciais[chaveCom];
-
-  return 0;
 }
 
 export function TabComerciais() {
@@ -111,24 +77,14 @@ export function TabComerciais() {
         producaoMap[r.comercialId] = {};
         comissaoMap[r.comercialId] = {};
         const comercial = comerciais.find((c) => c.id === r.comercialId);
+        const percentualRegra = getComissaoFromFuncao(regrasBuffer, comercial?.funcao);
         r.metas.forEach((m: Meta) => {
           const metaFormatada = Number(m.valorMeta).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
           inputsMap[r.comercialId][m.mesReferencia] = metaFormatada;
           const atingido = Number(m.valorAtingido ?? 0);
           const producaoFormatada = atingido > 0 ? atingido.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "";
           producaoMap[r.comercialId][m.mesReferencia] = producaoFormatada;
-          const comissaoFormatada = m.valorComissao !== undefined && m.valorComissao !== null && Number(m.valorComissao) > 0
-            ? Number(m.valorComissao).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-            : "";
-          comissaoMap[r.comercialId][m.mesReferencia] = comissaoFormatada;
-
-          if (!comissaoFormatada) {
-            const peso = getComissaoFromFuncao(regrasBuffer, comercial?.funcao);
-            if (peso > 0) {
-              comissaoMap[r.comercialId][m.mesReferencia] = peso.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-              comissaoAlteradasLocal.add(`${r.comercialId}|${m.mesReferencia}`);
-            }
-          }
+          comissaoMap[r.comercialId][m.mesReferencia] = calcularValorComissao(producaoFormatada, percentualRegra);
         });
       });
       setMetasGerais(map);
@@ -187,16 +143,7 @@ export function TabComerciais() {
       }
     });
 
-    const comissoesParaSalvar: Array<{ comercialId: string; mes: string; valor: string }> = [];
-    comissaoAlteradas.forEach((key) => {
-      const [comercialId, mes] = key.split('|');
-      const valor = comissaoInputs[comercialId]?.[mes];
-      if (valor) {
-        comissoesParaSalvar.push({ comercialId, mes, valor });
-      }
-    });
-
-    type Registro = { comercialId: string; mes: string; valorMeta?: string; valorAtingido?: string; valorComissao?: string };
+    type Registro = { comercialId: string; mes: string; valorMeta?: string; valorAtingido?: string; valorComissao?: number };
     const registros = new Map<string, Registro>();
     metasParaSalvar.forEach(({ comercialId, mes, valor }) => {
       const key = `${comercialId}|${mes}`;
@@ -204,11 +151,14 @@ export function TabComerciais() {
     });
     producoesParaSalvar.forEach(({ comercialId, mes, valor }) => {
       const key = `${comercialId}|${mes}`;
-      registros.set(key, { ...(registros.get(key) || { comercialId, mes }), valorAtingido: valor });
-    });
-    comissoesParaSalvar.forEach(({ comercialId, mes, valor }) => {
-      const key = `${comercialId}|${mes}`;
-      registros.set(key, { ...(registros.get(key) || { comercialId, mes }), valorComissao: valor });
+      const comercial = comerciais.find((c) => c.id === comercialId);
+      const percentualRegra = getComissaoFromFuncao({ regrasComerciais, regrasGestores }, comercial?.funcao);
+      const valorComissaoCalc = calcularValorComissaoNum(valor, percentualRegra);
+      registros.set(key, {
+        ...(registros.get(key) || { comercialId, mes }),
+        valorAtingido: valor,
+        valorComissao: valorComissaoCalc,
+      });
     });
 
     if (registros.size === 0) {
@@ -238,14 +188,6 @@ export function TabComerciais() {
               return;
             }
           }
-          if (valorComissao !== undefined) {
-            const valorNumerico = parseMoeda(valorComissao);
-            const num = parseFloat(valorNumerico);
-            if (isNaN(num) || num < 0) {
-              erros++;
-              return;
-            }
-          }
 
           try {
             const res = await fetch(`/api/v1/backoffice/comerciais/${comercialId}/metas`, {
@@ -255,7 +197,7 @@ export function TabComerciais() {
                 mesReferencia: mes,
                 ...(valorMeta !== undefined ? { valorMeta: parseFloat(parseMoeda(valorMeta)) } : {}),
                 ...(valorAtingido !== undefined ? { valorAtingido: parseFloat(parseMoeda(valorAtingido)) } : {}),
-                ...(valorComissao !== undefined ? { valorComissao: parseFloat(parseMoeda(valorComissao)) } : {}),
+                ...(valorComissao !== undefined ? { valorComissao } : {}),
               }),
             });
 
@@ -321,17 +263,16 @@ export function TabComerciais() {
       nova.add(`${comercialId}|${mes}`);
       return nova;
     });
-  }
 
-  function handleChangeComissao(comercialId: string, mes: string, valor: string) {
-    const valorFormatado = formatarMoeda(valor);
+    const comercial = comerciais.find((c) => c.id === comercialId);
+    const percentualRegra = getComissaoFromFuncao({ regrasComerciais, regrasGestores }, comercial?.funcao);
     setComissaoInputs((prev) => {
-      const comercialInputs = prev[comercialId] || {};
+      const atual = prev[comercialId] || {};
       return {
         ...prev,
         [comercialId]: {
-          ...comercialInputs,
-          [mes]: valorFormatado,
+          ...atual,
+          [mes]: calcularValorComissao(valorFormatado, percentualRegra),
         },
       };
     });
@@ -340,6 +281,10 @@ export function TabComerciais() {
       nova.add(`${comercialId}|${mes}`);
       return nova;
     });
+  }
+
+  function handleChangeComissao(_comercialId: string, _mes: string, _valor: string) {
+    /* no-op: comissão agora é calculada automaticamente */
   }
 
   async function handleEditarComercial(comercialId: string) {
@@ -471,11 +416,20 @@ export function TabComerciais() {
       toast.error("Valor inválido");
       return;
     }
+
+    const comercial = comerciais.find((c) => c.id === comercialId);
+    const percentualRegra = getComissaoFromFuncao({ regrasComerciais, regrasGestores }, comercial?.funcao);
+    const valorComissaoCalculado = calcularValorComissaoNum(valor, percentualRegra);
+
     try {
       const res = await fetch(`/api/v1/backoffice/comerciais/${comercialId}/metas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mesReferencia: mes, valorAtingido: num }),
+        body: JSON.stringify({
+          mesReferencia: mes,
+          valorAtingido: num,
+          valorComissao: valorComissaoCalculado,
+        }),
       });
       if (!res.ok) {
         const err = await res.json();
@@ -495,38 +449,16 @@ export function TabComerciais() {
         nova.delete(`${comercialId}|${mes}`);
         return nova;
       });
-      await fetchRegrasGerais();
-    } catch {
-      toast.error("Erro ao salvar produção");
-    }
-  }
-
-  async function handleSalvarComissaoGeral(comercialId: string, mes: string, valor: string) {
-    const valorNumerico = parseMoeda(valor);
-    const num = parseFloat(valorNumerico);
-    if (isNaN(num) || num < 0) {
-      toast.error("Valor inválido");
-      return;
-    }
-    try {
-      const res = await fetch(`/api/v1/backoffice/comerciais/${comercialId}/metas`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mesReferencia: mes, valorComissao: num }),
+      setComissaoInputs((prev) => {
+        const atual = prev[comercialId] || {};
+        return {
+          ...prev,
+          [comercialId]: {
+            ...atual,
+            [mes]: calcularValorComissao(valor, percentualRegra),
+          },
+        };
       });
-      if (!res.ok) {
-        const err = await res.json();
-        toast.error(err.error || "Erro ao salvar comissão");
-        return;
-      }
-      toast.success("Comissão salva");
-      setComissaoInputs((prev) => ({
-        ...prev,
-        [comercialId]: {
-          ...prev[comercialId],
-          [mes]: valor,
-        },
-      }));
       setComissaoAlteradas((prev) => {
         const nova = new Set(prev);
         nova.delete(`${comercialId}|${mes}`);
@@ -534,8 +466,12 @@ export function TabComerciais() {
       });
       await fetchRegrasGerais();
     } catch {
-      toast.error("Erro ao salvar comissão");
+      toast.error("Erro ao salvar produção");
     }
+  }
+
+  async function handleSalvarComissaoGeral(_comercialId: string, _mes: string, _valor: string) {
+    /* no-op: comissão agora é calculada automaticamente ao salvar a produção */
   }
 
   useEffect(() => {
@@ -557,14 +493,14 @@ export function TabComerciais() {
           </h2>
           <button
             onClick={handleSalvarTodasMetas}
-            disabled={metasAlteradas.size === 0 && producaoAlteradas.size === 0 && comissaoAlteradas.size === 0}
+            disabled={metasAlteradas.size === 0 && producaoAlteradas.size === 0}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              metasAlteradas.size > 0 || producaoAlteradas.size > 0 || comissaoAlteradas.size > 0
+              metasAlteradas.size > 0 || producaoAlteradas.size > 0
                 ? 'bg-primary-600 text-white hover:bg-primary-700 cursor-pointer'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            💾 Salvar ({metasAlteradas.size + producaoAlteradas.size + comissaoAlteradas.size})
+            💾 Salvar ({metasAlteradas.size + producaoAlteradas.size})
           </button>
         </div>
         {loadingMetasGerais ? (
@@ -685,23 +621,19 @@ export function TabComerciais() {
                       </td>
                       {mesesAno.map((m) => {
                         const mesRef = `${anoReferencia}-${m.value}`;
+                        const producaoMes = producaoInputs[c.id]?.[mesRef];
+                        const percentualRegra = getComissaoFromFuncao({ regrasComerciais, regrasGestores }, c.funcao);
+                        const valorCalculado = calcularValorComissao(producaoMes, percentualRegra);
                         return (
                           <td key={`comissao-${m.value}-${metaVersion}`} className="p-2">
                             <input
                               type="text"
-                              inputMode="decimal"
-                              value={comissaoInputs[c.id]?.[mesRef] ?? ""}
+                              readOnly
+                              tabIndex={-1}
+                              value={valorCalculado}
                               placeholder="R$ 0,00"
-                              className="w-full px-3 py-2 border rounded text-sm text-right font-mono focus-ring bg-green-50/40"
-                              onChange={(e) => {
-                                handleChangeComissao(c.id, mesRef, e.target.value);
-                              }}
-                              onBlur={(e) => {
-                                const valor = e.target.value;
-                                if (valor) {
-                                  handleSalvarComissaoGeral(c.id, mesRef, valor);
-                                }
-                              }}
+                              title={`Produção × regra (${percentualRegra.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)`}
+                              className="w-full px-3 py-2 border rounded text-sm text-right font-mono bg-green-50/60 text-gray-700 cursor-not-allowed"
                             />
                           </td>
                         );

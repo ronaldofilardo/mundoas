@@ -41,7 +41,7 @@ describe("upsertMetaComercialSchema - Meta e Produção", () => {
 
       const result = upsertMetaComercialSchema.safeParse(input);
       expect(result.success).toBe(false);
-      expect(result.error?.errors[0].message).toContain("valorMeta ou valorAtingido");
+      expect(result.error?.errors[0].message).toContain("Informe valorMeta, valorAtingido ou valorComissao");
     });
 
     it("deve aceitar valorMeta como string", () => {
@@ -149,6 +149,63 @@ describe("upsertMetaComercialSchema - Meta e Produção", () => {
       if (result.success) {
         expect(result.data.valorAtingido).toBe("1234.56");
       }
+    });
+  });
+
+  describe("valorComissao", () => {
+    it("deve aceitar apenas valorComissao", () => {
+      const input = {
+        mesReferencia: "2026-01",
+        valorComissao: 1.25,
+      };
+
+      const result = upsertMetaComercialSchema.safeParse(input);
+      expect(result.success).toBe(true);
+    });
+
+    it("deve aceitar valorComissao como string", () => {
+      const input = {
+        mesReferencia: "2026-01",
+        valorComissao: "1.25",
+      };
+
+      const result = upsertMetaComercialSchema.safeParse(input);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.valorComissao).toBe("1.25");
+      }
+    });
+
+    it("deve aceitar valorComissao junto com valorAtingido", () => {
+      const input = {
+        mesReferencia: "2026-01",
+        valorAtingido: 2500,
+        valorComissao: 1.25,
+      };
+
+      const result = upsertMetaComercialSchema.safeParse(input);
+      expect(result.success).toBe(true);
+    });
+
+    it("deve aceitar valorComissao = 0", () => {
+      const input = {
+        mesReferencia: "2026-01",
+        valorComissao: 0,
+      };
+
+      const result = upsertMetaComercialSchema.safeParse(input);
+      expect(result.success).toBe(true);
+    });
+
+    it("deve rejeitar valorComissao negativo", () => {
+      const input = {
+        mesReferencia: "2026-01",
+        valorComissao: -1.25,
+      };
+
+      const result = upsertMetaComercialSchema.safeParse(input);
+      expect(result.success).toBe(false);
+      expect(result.error?.errors[0].message).toContain(">= 0");
     });
   });
 });

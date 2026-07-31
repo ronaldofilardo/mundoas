@@ -75,18 +75,38 @@ describe("Setores - Modelo e Relação N:N com ConsultorPf", () => {
       expect(setor.ativo).toBe(true);
     });
 
-    it("nao deve permitir nomes duplicados de setor", async () => {
-      const nomeUnico = `Duplicado-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      await prisma.setor.create({
-        data: { nome: nomeUnico },
+    it("nao deve permitir nomes duplicados de setor no mesmo backoffice", async () => {
+      const usuario = await prisma.usuario.create({
+        data: {
+          nome: "Teste Setor",
+          email: `setor-test-${Date.now()}@test.com`,
+          senhaHash: "hash-test",
+          tipo: "BACKOFFICE",
+          status: "ATIVO",
+        },
       });
-      createdSetorIds.push((await prisma.setor.findUnique({ where: { nome: nomeUnico } }))!.id);
+      createdUsuarioIds.push(usuario.id);
+      const backoffice = await prisma.backoffice.create({
+        data: {
+          usuarioId: usuario.id,
+          nome: "Backoffice Teste Setor",
+          cpf: `2${Date.now()}`.slice(0, 11),
+        },
+      });
+
+      const nomeUnico = `Duplicado-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const created = await prisma.setor.create({
+        data: { nome: nomeUnico, backofficeId: backoffice.id },
+      });
+      createdSetorIds.push(created.id);
 
       await expect(
         prisma.setor.create({
-          data: { nome: nomeUnico },
+          data: { nome: nomeUnico, backofficeId: backoffice.id },
         }),
       ).rejects.toThrow();
+
+      await prisma.backoffice.delete({ where: { id: backoffice.id } }).catch(() => {});
     });
 
     it("deve listar setores ativos ordenados por nome", async () => {

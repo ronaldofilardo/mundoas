@@ -10,7 +10,8 @@ interface Premio {
   codigo: string;
   tipo: string;
   descricao: string;
-  pontos: number;
+  custoPontos: number;
+  pontos?: number;
   ativo: boolean;
 }
 
@@ -21,6 +22,7 @@ describe('Componente PremiosPontos - Backoffice', () => {
       codigo: 'PROD001',
       tipo: 'PRODUTO',
       descricao: 'Produto de teste 1',
+      custoPontos: 1000,
       pontos: 1000,
       ativo: true,
     },
@@ -29,6 +31,7 @@ describe('Componente PremiosPontos - Backoffice', () => {
       codigo: 'SERV001',
       tipo: 'SERVICO',
       descricao: 'Serviço de teste',
+      custoPontos: 2500,
       pontos: 2500,
       ativo: true,
     },
@@ -37,6 +40,7 @@ describe('Componente PremiosPontos - Backoffice', () => {
       codigo: 'EXP001',
       tipo: 'EXPERIENCIA',
       descricao: 'Experiência exclusiva',
+      custoPontos: 5000,
       pontos: 5000,
       ativo: true,
     },

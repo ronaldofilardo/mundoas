@@ -10,8 +10,11 @@ export default function RelatorioComissoesPage() {
   const {
     comissoes,
     resumo,
+    tipo,
+    setTipo,
     loading,
     comerciais,
+    consultores,
     mesesDisponiveis,
     fetchRelatorio,
   } = useRelatorioComissoes();
@@ -23,7 +26,7 @@ export default function RelatorioComissoesPage() {
   const [reprocessando, setReprocessando] = useState(false);
   const [procedimentosSemComercial, setProcedimentosSemComercial] = useState<{count: number; totalVendas: number} | null>(null);
 
-  const funcoesDisponiveis = useMemo(() => 
+  const funcoesDisponiveis = useMemo(() =>
     Array.from(new Set(comerciais.map(c => c.funcao!).filter(Boolean))).sort(),
     [comerciais]
   );
@@ -33,26 +36,42 @@ export default function RelatorioComissoesPage() {
       toast.error("Selecione o período inicial e final");
       return;
     }
-    await fetchRelatorio({ inicio, fim, comercialId, funcao });
+    await fetchRelatorio({ inicio, fim, comercialId, funcao, tipo });
   }
 
   function handleExportarCSV() {
-    const headers = ["Mês", "Comercial", "Função", "Vendas", "Comissão", "Status", "Pagamento"];
-    const rows = comissoes.map((c) => [
-      c.mesReferencia,
-      c.comercial.nome,
-      c.comercial.funcao || "-",
-      c.valorVendas.toFixed(2),
-      c.valorComissao.toFixed(2),
-      c.status,
-      c.dataPagamento || "-",
-    ]);
+    const isConsultor = tipo === "consultor-pf";
+    const headers = isConsultor
+      ? ["Mês", "Consultor PF", "CPF", "Produção", "Comissão", "Status", "Pagamento"]
+      : ["Mês", "Comercial", "Função", "Vendas", "Comissão", "Status", "Pagamento"];
+    const rows = comissoes.map((c) => {
+      if (isConsultor) {
+        return [
+          c.mesReferencia,
+          c.consultorPf?.nome || "-",
+          c.consultorPf?.cpf || "-",
+          (c.valorProducao || 0).toFixed(2),
+          c.valorComissao.toFixed(2),
+          c.status,
+          c.dataPagamento || "-",
+        ];
+      }
+      return [
+        c.mesReferencia,
+        c.comercial?.nome || "-",
+        c.comercial?.funcao || "-",
+        (c.valorVendas || 0).toFixed(2),
+        c.valorComissao.toFixed(2),
+        c.status,
+        c.dataPagamento || "-",
+      ];
+    });
     const csv = [headers, ...rows].map((row) => row.join(";")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `relatorio-comissoes-${inicio}-a-${fim}.csv`;
+    link.download = `relatorio-comissoes-${tipo}-${inicio}-a-${fim}.csv`;
     link.click();
     URL.revokeObjectURL(url);
     toast.success("Relatório exportado!");
@@ -108,13 +127,34 @@ export default function RelatorioComissoesPage() {
     }
   }
 
+  const isConsultor = tipo === "consultor-pf";
+
   return (
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">📊 Relatório de Comissões</h1>
         <p className="text-gray-500 text-sm mt-1">
-          Acompanhe as comissões pagas e calculadas por período e comercial
+          Acompanhe as comissões pagas e calculadas por período
         </p>
+      </div>
+
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={() => { setTipo("comercial"); setFuncao(""); setComercialId(""); }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-smooth ${
+            !isConsultor ? "bg-primary-600 text-white shadow-sm" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+          }`}
+        >
+          🧑‍💼 Comerciais
+        </button>
+        <button
+          onClick={() => { setTipo("consultor-pf"); setFuncao(""); setComercialId(""); }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-smooth ${
+            isConsultor ? "bg-primary-600 text-white shadow-sm" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+          }`}
+        >
+          🩺 Consultores PF
+        </button>
       </div>
 
       <FiltrosRelatorio
@@ -132,6 +172,7 @@ export default function RelatorioComissoesPage() {
         onBuscar={handleBuscar}
         onExportarCSV={handleExportarCSV}
         loading={loading}
+        showFuncao={!isConsultor}
       />
 
       {loading ? (
@@ -140,8 +181,15 @@ export default function RelatorioComissoesPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="card">
-              <h3 className="text-sm text-gray-600">Total Vendas</h3>
-              <p className="text-2xl font-bold text-green-600">{formatBRL(resumo.totalGeral.totalVendas)}</p>
+              <h3 className="text-sm text-gray-600">{isConsultor ? "Total Produção" : "Total Vendas"}</h3>
+              <p className="text-2xl font-bold text-green-600">
+                {formatBRL(isConsultor ? (resumo.totalGeral.totalProducao || 0) : (resumo.totalGeral.totalVendas || 0))}
+              </p>
+              {isConsultor && resumo.totalGeral.totalProducaoCalculada !== undefined && (
+                <p className={`text-xs mt-1 ${Math.abs((resumo.totalGeral.totalProducao || 0) - (resumo.totalGeral.totalProducaoCalculada || 0)) > 0.01 ? "text-red-600" : "text-gray-500"}`}>
+                  Calculado: {formatBRL(resumo.totalGeral.totalProducaoCalculada || 0)}
+                </p>
+              )}
             </div>
             <div className="card">
               <h3 className="text-sm text-gray-600">Total Comissões</h3>
@@ -150,6 +198,11 @@ export default function RelatorioComissoesPage() {
             <div className="card">
               <h3 className="text-sm text-gray-600">Quantidade</h3>
               <p className="text-2xl font-bold text-gray-900">{resumo.totalGeral.quantidade}</p>
+              {isConsultor && (resumo.totalGeral.totalDivergencias || 0) > 0 && (
+                <p className="text-xs mt-1 text-red-600 font-medium">
+                  ⚠️ {resumo.totalGeral.totalDivergencias} divergência(s)
+                </p>
+              )}
             </div>
           </div>
 
@@ -160,7 +213,7 @@ export default function RelatorioComissoesPage() {
                 <thead>
                   <tr className="border-b bg-gray-50">
                     <th className="text-left p-2">Mês</th>
-                    <th className="text-right p-2">Vendas</th>
+                    <th className="text-right p-2">{isConsultor ? "Produção" : "Vendas"}</th>
                     <th className="text-right p-2">Comissões</th>
                     <th className="text-right p-2">Qtd</th>
                   </tr>
@@ -169,7 +222,9 @@ export default function RelatorioComissoesPage() {
                   {resumo.porMes.map((m) => (
                     <tr key={m.mes} className="border-b">
                       <td className="p-2 font-medium">{formatMonth(m.mes)}</td>
-                      <td className="p-2 text-right text-green-600">{formatBRL(m.totalVendas)}</td>
+                      <td className="p-2 text-right text-green-600">
+                        {formatBRL(isConsultor ? (m.totalProducao || 0) : (m.totalVendas || 0))}
+                      </td>
                       <td className="p-2 text-right text-blue-600">{formatBRL(m.totalComissao)}</td>
                       <td className="p-2 text-right">{m.quantidade}</td>
                     </tr>
@@ -179,33 +234,95 @@ export default function RelatorioComissoesPage() {
             </div>
           </div>
 
-          <div className="card">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Resumo por Função</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="text-left p-2">Função</th>
-                    <th className="text-right p-2">Vendas</th>
-                    <th className="text-right p-2">Comissões</th>
-                    <th className="text-right p-2">Qtd</th>
-                    <th className="text-right p-2">Comerciais</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {resumo.porFuncao.map((f) => (
-                    <tr key={f.funcao || "-"} className="border-b">
-                      <td className="p-2 font-medium">{formatFuncao(f.funcao || undefined)}</td>
-                      <td className="p-2 text-right text-green-600">{formatBRL(f.totalVendas)}</td>
-                      <td className="p-2 text-right text-blue-600">{formatBRL(f.totalComissao)}</td>
-                      <td className="p-2 text-right">{f.quantidade}</td>
-                      <td className="p-2 text-right">{f.comerciaisCount}</td>
+          {!isConsultor && resumo.porFuncao && (
+            <div className="card">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">Resumo por Função</h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-gray-50">
+                      <th className="text-left p-2">Função</th>
+                      <th className="text-right p-2">Vendas</th>
+                      <th className="text-right p-2">Comissões</th>
+                      <th className="text-right p-2">Qtd</th>
+                      <th className="text-right p-2">Comerciais</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {resumo.porFuncao.map((f) => (
+                      <tr key={f.funcao || "-"} className="border-b">
+                        <td className="p-2 font-medium">{formatFuncao(f.funcao || undefined)}</td>
+                        <td className="p-2 text-right text-green-600">{formatBRL(f.totalVendas)}</td>
+                        <td className="p-2 text-right text-blue-600">{formatBRL(f.totalComissao)}</td>
+                        <td className="p-2 text-right">{f.quantidade}</td>
+                        <td className="p-2 text-right">{f.comerciaisCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
+
+          {isConsultor && (
+            <div className="card">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">Produção por consultor/mês</h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-gray-50">
+                      <th className="text-left p-2">Consultor PF</th>
+                      <th className="text-left p-2">CPF</th>
+                      <th className="text-left p-2">Mês</th>
+                      <th className="text-right p-2">Produção (Comissão)</th>
+                      <th className="text-right p-2">Produção Calculada</th>
+                      <th className="text-center p-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comissoes.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                          Nenhuma produção encontrada.
+                        </td>
+                      </tr>
+                    ) : (
+                      comissoes.map((c) => {
+                        const valorProducao = c.valorProducao || 0;
+                        const valorCalculado = c.valorProducaoCalculado ?? valorProducao;
+                        const divergente = c.divergente === true;
+                        return (
+                          <tr key={c.id} className="border-b hover:bg-gray-50">
+                            <td className="p-2 font-medium">{c.consultorPf?.nome || "-"}</td>
+                            <td className="p-2">{c.consultorPf?.cpf || "-"}</td>
+                            <td className="p-2">{formatMonth(c.mesReferencia)}</td>
+                            <td className="p-2 text-right text-green-600">{formatBRL(valorProducao)}</td>
+                            <td className={`p-2 text-right ${divergente ? "text-red-600 font-semibold" : "text-gray-700"}`}>
+                              {formatBRL(valorCalculado)}
+                            </td>
+                            <td className="p-2 text-center">
+                              {divergente ? (
+                                <span
+                                  title={`Divergência de ${formatBRL(Math.abs(valorProducao - valorCalculado))} entre a produção gravada e a soma dos procedimentos.`}
+                                  className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800"
+                                >
+                                  ⚠️ Divergente
+                                </span>
+                              ) : (
+                                <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                                  ✓ OK
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           <div className="card">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">Comissões Detalhadas</h2>
@@ -214,30 +331,58 @@ export default function RelatorioComissoesPage() {
                 <thead>
                   <tr className="border-b bg-gray-50">
                     <th className="text-left p-2">Mês</th>
-                    <th className="text-left p-2">Comercial</th>
-                    <th className="text-left p-2">Função</th>
-                    <th className="text-right p-2">Vendas</th>
+                    {isConsultor ? (
+                      <>
+                        <th className="text-left p-2">Consultor PF</th>
+                        <th className="text-left p-2">CPF</th>
+                      </>
+                    ) : (
+                      <>
+                        <th className="text-left p-2">Comercial</th>
+                        <th className="text-left p-2">Função</th>
+                      </>
+                    )}
+                    <th className="text-right p-2">{isConsultor ? "Produção" : "Vendas"}</th>
                     <th className="text-right p-2">Comissão</th>
                     <th className="text-left p-2">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {comissoes.map((c) => (
-                    <tr key={c.id} className="border-b hover:bg-gray-50">
-                      <td className="p-2">{formatMonth(c.mesReferencia)}</td>
-                      <td className="p-2 font-medium">{c.comercial.nome}</td>
-                      <td className="p-2">{formatFuncao(c.comercial.funcao)}</td>
-                      <td className="p-2 text-right text-green-600">{formatBRL(c.valorVendas)}</td>
-                      <td className="p-2 text-right text-blue-600 font-semibold">{formatBRL(c.valorComissao)}</td>
-                      <td className="p-2">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          c.status === "PAGA" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                        }`}>
-                          {c.status}
-                        </span>
+                  {comissoes.length === 0 ? (
+                    <tr>
+                      <td colSpan={isConsultor ? 6 : 6} className="px-6 py-8 text-center text-gray-500">
+                        Nenhuma comissão encontrada.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    comissoes.map((c) => (
+                      <tr key={c.id} className="border-b hover:bg-gray-50">
+                        <td className="p-2">{formatMonth(c.mesReferencia)}</td>
+                        {isConsultor ? (
+                          <>
+                            <td className="p-2 font-medium">{c.consultorPf?.nome || "-"}</td>
+                            <td className="p-2">{c.consultorPf?.cpf || "-"}</td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="p-2 font-medium">{c.comercial?.nome || "-"}</td>
+                            <td className="p-2">{formatFuncao(c.comercial?.funcao)}</td>
+                          </>
+                        )}
+                        <td className="p-2 text-right text-green-600">
+                          {formatBRL(isConsultor ? (c.valorProducao || 0) : (c.valorVendas || 0))}
+                        </td>
+                        <td className="p-2 text-right text-blue-600 font-semibold">{formatBRL(c.valorComissao)}</td>
+                        <td className="p-2">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            c.status === "PAGA" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                          }`}>
+                            {c.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

@@ -4,13 +4,21 @@ import { toast } from "sonner";
 interface Comissao {
   id: string;
   mesReferencia: string;
-  comercial: {
+  comercial?: {
     id: string;
     nome: string;
     email: string;
     funcao?: string;
   };
-  valorVendas: number;
+  consultorPf?: {
+    id: string;
+    nome: string;
+    cpf: string;
+  };
+  valorVendas?: number;
+  valorProducao?: number;
+  valorProducaoCalculado?: number;
+  divergente?: boolean;
   valorComissao: number;
   status: string;
   dataPagamento?: string | null;
@@ -19,11 +27,14 @@ interface Comissao {
 interface Resumo {
   porMes: Array<{
     mes: string;
-    totalVendas: number;
+    totalVendas?: number;
+    totalProducao?: number;
+    totalProducaoCalculada?: number;
+    totalDivergencias?: number;
     totalComissao: number;
     quantidade: number;
   }>;
-  porFuncao: Array<{
+  porFuncao?: Array<{
     funcao: string | null;
     totalVendas: number;
     totalComissao: number;
@@ -31,7 +42,10 @@ interface Resumo {
     comerciaisCount: number;
   }>;
   totalGeral: {
-    totalVendas: number;
+    totalVendas?: number;
+    totalProducao?: number;
+    totalProducaoCalculada?: number;
+    totalDivergencias?: number;
     totalComissao: number;
     quantidade: number;
   };
@@ -40,8 +54,10 @@ interface Resumo {
 export function useRelatorioComissoes() {
   const [comissoes, setComissoes] = useState<Comissao[]>([]);
   const [resumo, setResumo] = useState<Resumo | null>(null);
+  const [tipo, setTipo] = useState<"comercial" | "consultor-pf">("comercial");
   const [loading, setLoading] = useState(false);
   const [comerciais, setComerciais] = useState<Array<{ id: string; nome: string; funcao?: string }>>([]);
+  const [consultores, setConsultores] = useState<Array<{ id: string; nome: string; cpf: string }>>([]);
   const [mesesDisponiveis, setMesesDisponiveis] = useState<string[]>([]);
 
   async function fetchComerciais() {
@@ -61,6 +77,7 @@ export function useRelatorioComissoes() {
     fim?: string;
     comercialId?: string;
     funcao?: string;
+    tipo?: string;
   }) {
     setLoading(true);
     try {
@@ -69,13 +86,15 @@ export function useRelatorioComissoes() {
       if (filters?.fim) params.append("fim", filters.fim);
       if (filters?.comercialId) params.append("comercialId", filters.comercialId);
       if (filters?.funcao) params.append("funcao", filters.funcao);
+      if (filters?.tipo) params.append("tipo", filters.tipo);
 
-      const res = await fetch(`/api/v1/backoffice/relatorios/comissoes?${params}`);
+      const res = await fetch(`/api/v1/backoffice/relatorio-comissoes?${params}`);
       if (res.ok) {
         const data = await res.json();
         setComissoes(data.comissoes || []);
         setResumo(data.resumo || null);
         setMesesDisponiveis(data.meses || []);
+        if (data.consultores) setConsultores(data.consultores);
       } else {
         toast.error("Erro ao carregar relatório");
       }
@@ -88,14 +107,16 @@ export function useRelatorioComissoes() {
 
   useEffect(() => {
     fetchComerciais();
-    fetchRelatorio();
   }, []);
 
   return {
     comissoes,
     resumo,
+    tipo,
+    setTipo,
     loading,
     comerciais,
+    consultores,
     mesesDisponiveis,
     fetchRelatorio,
   };

@@ -99,13 +99,14 @@ describe('Sidebar - Testes de Validação', () => {
         href: '/backoffice/comissionamento',
         parent: 'Raiz',
         subItems: [
-          { label: 'Relatórios', href: '/backoffice/comissionamento/relatorios' },
+          { label: 'Relatórios', href: '/backoffice/producao/relatorios' },
           { label: 'Pagamentos', href: '/backoffice/comissionamento/pagamentos' },
+          { label: 'Equipe', href: '/backoffice/comissionamento/equipe' },
         ],
       };
 
       expect(estruturaComissionamento.parent).toBe('Raiz');
-      expect(estruturaComissionamento.subItems.length).toBe(2);
+      expect(estruturaComissionamento.subItems.length).toBe(3);
     });
   });
 
@@ -118,8 +119,9 @@ describe('Sidebar - Testes de Validação', () => {
       '/backoffice/producao?tab=upload',
       '/backoffice/producao/procedimentos',
       '/backoffice/comissionamento',
-      '/backoffice/comissionamento/relatorios',
+      '/backoffice/producao/relatorios',
       '/backoffice/comissionamento/pagamentos',
+      '/backoffice/comissionamento/equipe',
     ];
 
     rotasBackoffice.forEach((rota) => {
