@@ -6,7 +6,7 @@ describe("getAbsoluteLink", () => {
 
   beforeEach(() => {
     globalThis.window = {
-      location: { origin: "https://asaqui.acessosaude.com.br" },
+      location: { origin: "https://SEU_DOMINIO_MUNDOAS" },
     } as any;
   });
 
@@ -23,19 +23,19 @@ describe("getAbsoluteLink", () => {
   });
 
   it("preserves an already absolute URL", () => {
-    const link = "https://asaqui.acessosaude.com.br/acesso/test-token";
+    const link = "https://SEU_DOMINIO_MUNDOAS/acesso/test-token";
     expect(getAbsoluteLink(link)).toBe(link);
   });
 
   it("resolves a relative path starting with slash", () => {
     expect(getAbsoluteLink("/acesso/test-token")).toBe(
-      "https://asaqui.acessosaude.com.br/acesso/test-token",
+      "https://SEU_DOMINIO_MUNDOAS/acesso/test-token",
     );
   });
 
   it("resolves a relative path without leading slash", () => {
     expect(getAbsoluteLink("acesso/test-token")).toBe(
-      "https://asaqui.acessosaude.com.br/acesso/test-token",
+      "https://SEU_DOMINIO_MUNDOAS/acesso/test-token",
     );
   });
 });

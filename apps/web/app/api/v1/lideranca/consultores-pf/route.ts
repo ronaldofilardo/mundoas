@@ -15,6 +15,10 @@ const criarConsultorPfSchema = z.object({
   email: z.string().email("Email inválido"),
   cpf: z.string().min(11, "CPF deve ter 11 caracteres"),
   telefone: z.string().optional(),
+  setores: z
+    .array(z.string().min(1))
+    .min(1, "Selecione ao menos um setor")
+    .max(20, "Limite máximo de setores excedido"),
 });
 
 export async function GET() {
@@ -26,6 +30,10 @@ export async function GET() {
     include: {
       usuario: {
         select: { id: true, email: true, status: true, telefone: true },
+      },
+      setores: {
+        include: { setor: { select: { id: true, nome: true } } },
+        orderBy: { setor: { nome: "asc" } },
       },
     },
     orderBy: { criadoEm: "desc" },
@@ -40,6 +48,7 @@ export async function GET() {
       telefone: c.usuario.telefone,
       status: c.usuario.status,
       createdAt: c.criadoEm,
+      setores: c.setores.map((s) => ({ id: s.setor.id, nome: s.setor.nome })),
     })),
   );
 }
@@ -68,7 +77,7 @@ export async function POST(req: NextRequest) {
     return badRequest(parsed.error.errors.map((e) => e.message).join(", "));
   }
 
-  const { nome, email, cpf, telefone } = parsed.data;
+  const { nome, email, cpf, telefone, setores: setoresNomes } = parsed.data;
   const cpfClean = cpf.replace(/\D/g, "");
   const emailLower = email.toLowerCase().trim();
 
@@ -88,6 +97,24 @@ export async function POST(req: NextRequest) {
   if (existingCpf) {
     console.error("[POST /consultores-pf] CPF já cadastrado:", cpfClean);
     return badRequest("CPF já cadastrado como Consultor PF");
+  }
+
+  const setoresUnicos = Array.from(new Set(setoresNomes.map((s) => s.trim())));
+  const setoresEncontrados = await prisma.setor.findMany({
+    where: {
+      nome: { in: setoresUnicos },
+      ativo: true,
+    },
+    select: { id: true, nome: true },
+  });
+
+  if (setoresEncontrados.length !== setoresUnicos.length) {
+    const encontrados = new Set(setoresEncontrados.map((s) => s.nome));
+    const faltantes = setoresUnicos.filter((n) => !encontrados.has(n));
+    console.error("[POST /consultores-pf] Setores inválidos:", faltantes);
+    return badRequest(
+      `Setor(es) inválido(s) ou inativo(s): ${faltantes.join(", ")}`
+    );
   }
 
   const senhaTemporaria = gerarSenhaProvisoria(cpfClean);
@@ -119,7 +146,18 @@ export async function POST(req: NextRequest) {
     });
     console.log("[POST /consultores-pf] Consultor PF criado:", consultorPf.id);
 
-    return { usuario, consultorPf };
+    await tx.consultorPfSetor.createMany({
+      data: setoresEncontrados.map((s) => ({
+        consultorPfId: consultorPf.id,
+        setorId: s.id,
+      })),
+    });
+    console.log(
+      "[POST /consultores-pf] Setores vinculados:",
+      setoresEncontrados.map((s) => s.nome).join(", ")
+    );
+
+    return { usuario, consultorPf, setores: setoresEncontrados };
   });
 
   console.log("[POST /consultores-pf] Sucesso!");
@@ -130,5 +168,6 @@ export async function POST(req: NextRequest) {
     email: emailLower,
     cpf: cpfClean,
     senhaTemporaria,
+    setores: result.setores.map((s) => ({ id: s.id, nome: s.nome })),
   });
 }

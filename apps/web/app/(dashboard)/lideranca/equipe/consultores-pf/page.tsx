@@ -21,6 +21,7 @@ interface ConsultorPf {
   telefone?: string | null;
   status: string;
   createdAt: string;
+  setores?: Array<{ id: string; nome: string }>;
 }
 
 interface MetaConsultorPf {
@@ -139,6 +140,7 @@ export default function ConsultoresPfPage() {
                 <th className="text-left p-2 font-medium text-gray-600">Email</th>
                 <th className="text-left p-2 font-medium text-gray-600">CPF</th>
                 <th className="text-left p-2 font-medium text-gray-600">Telefone</th>
+                <th className="text-left p-2 font-medium text-gray-600">Setor</th>
                 <th className="text-left p-2 font-medium text-gray-600">Status</th>
                 <th className="text-left p-2 font-medium text-gray-600">Criado em</th>
                 {MESES_ANO.map((m) => (
@@ -158,6 +160,23 @@ export default function ConsultoresPfPage() {
                   <td className="p-2 text-gray-600">{c.email}</td>
                   <td className="p-2 text-gray-600">{formatarCpf(c.cpf)}</td>
                   <td className="p-2 text-gray-600">{c.telefone || "-"}</td>
+                  <td className="p-2">
+                    <div className="flex flex-wrap gap-1">
+                      {c.setores && c.setores.length > 0 ? (
+                        c.setores.map((s) => (
+                          <span
+                            key={s.id}
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800"
+                            title={s.nome}
+                          >
+                            {s.nome}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="p-2">
                     <span
                       className={`px-2 py-1 rounded text-xs ${
@@ -199,7 +218,7 @@ export default function ConsultoresPfPage() {
 
               {consultores.length === 0 && (
                 <tr>
-                  <td colSpan={6 + MESES_ANO.length} className="p-8 text-center text-gray-500">
+                  <td colSpan={7 + MESES_ANO.length} className="p-8 text-center text-gray-500">
                     Nenhum consultor PF na equipe
                   </td>
                 </tr>

@@ -5,77 +5,67 @@ param(
 
 if (-not $VercelToken -or -not $ProjectId) {
     Write-Host "ERROR: VERCEL_TOKEN e VERCEL_PROJECT_ID sao obrigatorios" -ForegroundColor Red
+    Write-Host "Defina as variaveis:"
+    Write-Host '  $env:VERCEL_TOKEN = "seu_token"'
+    Write-Host '  $env:VERCEL_PROJECT_ID = "seu_project_id_mundoas"'
     exit 1
 }
 
 $VercelApi = "https://api.vercel.com"
 
-# Gerar NEXTAUTH_SECRET aleatório
-function Generate-Secret {
-    $bytes = New-Object byte[] 32
-    $rng = [Security.Cryptography.RNGCryptoServiceProvider]::new()
-    $rng.GetBytes($bytes)
-    return [Convert]::ToBase64String($bytes)
-}
+$bytes = New-Object byte[] 32
+$rng = [Security.Cryptography.RNGCryptoServiceProvider]::new()
+$rng.GetBytes($bytes)
+$NextAuthSecret = [Convert]::ToBase64String($bytes)
 
-$NextAuthSecret = Generate-Secret
-
-# Headers para autenticação
 $headers = @{
     "Authorization" = "Bearer $VercelToken"
     "Content-Type" = "application/json"
 }
 
-# Variáveis a configurar
 $envVars = @(
-    # DATABASE_URL MUST be configured manually in Vercel Dashboard UI
+    # DATABASE_URL MUST be configured manually in Vercel UI Dashboard
     # NEVER hardcode database connection strings
-    @{
-        key = "NEXTAUTH_SECRET"
-        value = $NextAuthSecret
-    },
-    @{
-        key = "NEXTAUTH_URL"
-        value = "https://seu-dominio.vercel.app"
-    },
-    @{
-        key = "AUTH_SECRET"
-        value = $NextAuthSecret
-    }
+    @{ key = "NEXTAUTH_SECRET"; value = $NextAuthSecret },
+    @{ key = "NEXTAUTH_URL"; value = "https://SEU_DOMINIO_MUNDOAS" },
+    @{ key = "AUTH_SECRET"; value = $NextAuthSecret }
 )
 
-Write-Host "🔐 Configurando variáveis de ambiente no Vercel..." -ForegroundColor Cyan
-Write-Host "Project ID: $ProjectId`n"
+Write-Host "[SETUP] Configurando variaveis de ambiente no Vercel..."
+Write-Host "Project ID: $ProjectId"
+Write-Host ""
 
 foreach ($env in $envVars) {
+    Write-Host "[INFO] Configurando: $($env.key)"
+    
     $body = @{
         key = $env.key
         value = $env.value
         target = @("production")
-    } | ConvertTo-Json -Compress
-
-    Write-Host "📝 Configurando: $($env.key)..." -ForegroundColor Yellow
+    } | ConvertTo-Json
     
     try {
-        $response = Invoke-WebRequest `
-            -Uri "$VercelApi/v10/projects/$ProjectId/env" `
-            -Method POST `
-            -Headers $headers `
-            -Body $body `
-            -SkipHttpErrorCheck
-        
-        if ($response.StatusCode -eq 201 -or $response.StatusCode -eq 200) {
-            Write-Host "✅ $($env.key) configurado com sucesso" -ForegroundColor Green
-        } else {
-            Write-Host "⚠️ Status: $($response.StatusCode) - $($response.Content)" -ForegroundColor Yellow
-        }
+        $response = Invoke-WebRequest -Uri "$VercelApi/v10/projects/$ProjectId/env" -Method POST -Headers $headers -Body $body
+        Write-Host "[OK] $($env.key)"
     } catch {
-        Write-Host "❌ Erro: $($_.Exception.Message)" -ForegroundColor Red
+        $statusCode = $_.Exception.Response.StatusCode.Value
+        if ($statusCode -eq 201 -or $statusCode -eq 200) {
+            Write-Host "[OK] $($env.key)"
+        } else {
+            Write-Host "[ERROR] Status $statusCode"
+        }
     }
     
-    Start-Sleep -Milliseconds 500
+    Start-Sleep -Milliseconds 300
 }
 
-Write-Host "`n✅ Processo concluído!" -ForegroundColor Green
-Write-Host "`n📝 NEXTAUTH_SECRET gerado (salve em local seguro):"
-Write-Host $NextAuthSecret -ForegroundColor Cyan
+Write-Host ""
+Write-Host "[SUCCESS] Configuracao concluida!"
+Write-Host ""
+Write-Host "NEXTAUTH_SECRET: $NextAuthSecret"
+Write-Host ""
+Write-Host "Agora configure manualmente no Vercel Dashboard:"
+Write-Host "1. Vá em Settings → Environment Variables"
+Write-Host "2. Adicione DATABASE_URL com o banco do mundoas"
+Write-Host "3. Adicione NEXTAUTH_URL apontando para o dominio final do mundoas"
+Write-Host "4. Adicione o dominio em Settings → Domains"

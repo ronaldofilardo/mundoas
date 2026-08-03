@@ -5,6 +5,15 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+const SETORES = [
+  "Cartão Acesso Saúde",
+  "CIRE Ativo",
+  "CIRE Receptivo",
+  "Franchising Acesso",
+  "Franchising Cartão",
+  "Unidade",
+];
+
 export default function NovoConsultorPfPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -14,13 +23,28 @@ export default function NovoConsultorPfPage() {
     cpf: "",
     telefone: "",
   });
+  const [setores, setSetores] = useState<string[]>([]);
+  const [setoresError, setSetoresError] = useState<string | null>(null);
+
+  function toggleSetor(nome: string) {
+    setSetoresError(null);
+    setSetores((prev) =>
+      prev.includes(nome) ? prev.filter((s) => s !== nome) : [...prev, nome]
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (setores.length === 0) {
+      setSetoresError("Selecione ao menos um setor para o consultor.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      console.log("[NovoConsultorPf] Enviando dados:", formData);
+      console.log("[NovoConsultorPf] Enviando dados:", { ...formData, setores });
 
       const res = await fetch("/api/v1/lideranca/consultores-pf", {
         method: "POST",
@@ -28,6 +52,7 @@ export default function NovoConsultorPfPage() {
         body: JSON.stringify({
           ...formData,
           telefone: formData.telefone || undefined,
+          setores,
         }),
       });
 
@@ -146,6 +171,41 @@ export default function NovoConsultorPfPage() {
               className="w-full border rounded-lg px-3 py-2 text-sm"
               placeholder="Ex: 11999999999"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Setores <span className="text-red-600">*</span>
+            </label>
+            <p className="text-xs text-gray-500 mb-2">
+              Selecione um ou mais setores em que o consultor atuará.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {SETORES.map((nome) => {
+                const checked = setores.includes(nome);
+                return (
+                  <label
+                    key={nome}
+                    className={`flex items-center gap-2 border rounded-lg px-3 py-2 text-sm cursor-pointer transition-colors ${
+                      checked
+                        ? "border-green-600 bg-green-50 text-green-800"
+                        : "border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleSetor(nome)}
+                      className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    />
+                    <span>{nome}</span>
+                  </label>
+                );
+              })}
+            </div>
+            {setoresError && (
+              <p className="text-xs text-red-600 mt-1">{setoresError}</p>
+            )}
           </div>
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
