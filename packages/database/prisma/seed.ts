@@ -135,6 +135,50 @@ async function main() {
     },
   });
 
+  // Liderança
+  const senhaLider = await hash("123456", 12);
+  const liderUsuario = await prisma.usuario.upsert({
+    where: { email: "lider01@asa.com" },
+    update: {
+      senhaHash: senhaLider,
+      senhaTemporaria: false,
+      tipo: "LIDERANCA",
+      status: "ATIVO",
+    },
+    create: {
+      nome: "Lider01",
+      email: "lider01@asa.com",
+      senhaHash: senhaLider,
+      tipo: "LIDERANCA",
+      papel: null,
+      senhaTemporaria: false,
+      status: "ATIVO",
+    },
+  });
+
+  const backofficeLider = await prisma.backoffice.findFirst();
+  if (!backofficeLider) {
+    throw new Error("Nenhum backoffice encontrado para associar à liderança.");
+  }
+
+  await prisma.lideranca.upsert({
+    where: { cpf: "06566698027" },
+    update: {
+      usuarioId: liderUsuario.id,
+      backofficeId: backofficeLider.id,
+      tipo: "GESTOR",
+      status: "ATIVO",
+    },
+    create: {
+      usuarioId: liderUsuario.id,
+      nome: "Lider01",
+      cpf: "06566698027",
+      backofficeId: backofficeLider.id,
+      tipo: "GESTOR",
+      status: "ATIVO",
+    },
+  });
+
   // Estabelecimento 1: Churrascaria Gaúcha
   const estab1 = await prisma.estabelecimento.upsert({
     where: { id: "9103241c-60e7-45a0-87eb-f12f2588cf6c" },
