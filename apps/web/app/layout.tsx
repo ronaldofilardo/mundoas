@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { validateSecrets } from "@/lib/validate-secrets";
-
-validateSecrets();
 
 export const metadata: Metadata = {
   title: "Acesso Saúde Aqui",
