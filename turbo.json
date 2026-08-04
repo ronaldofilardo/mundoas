@@ -5,7 +5,8 @@
     "DATABASE_URL",
     "NEXTAUTH_SECRET",
     "NEXTAUTH_URL",
-    "AUTH_SECRET"
+    "AUTH_SECRET",
+    "NODE_ENV"
   ],
   "tasks": {
     "build": {
