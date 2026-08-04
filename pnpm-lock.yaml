@@ -26,6 +26,9 @@ importers:
       '@asa/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      autoprefixer:
+        specifier: ^10.4.19
+        version: 10.4.27(postcss@8.5.8)
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -41,6 +44,9 @@ importers:
       next-auth:
         specifier: ^5.0.0-beta.25
         version: 5.0.0-beta.30(next@14.2.35(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      postcss:
+        specifier: ^8.4.38
+        version: 8.5.8
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
@@ -53,6 +59,12 @@ importers:
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      tailwindcss:
+        specifier: ^3.4.4
+        version: 3.4.19
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
       xlsx:
         specifier: ^0.18.5
         version: 0.18.5
@@ -78,24 +90,12 @@ importers:
       '@types/xlsx':
         specifier: ^0.0.36
         version: 0.0.36
-      autoprefixer:
-        specifier: ^10.4.19
-        version: 10.4.27(postcss@8.5.8)
       cypress:
         specifier: ^15.12.0
         version: 15.12.0
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
-      postcss:
-        specifier: ^8.4.38
-        version: 8.5.8
-      tailwindcss:
-        specifier: ^3.4.4
-        version: 3.4.19
-      typescript:
-        specifier: ^5.5.0
-        version: 5.9.3
 
   packages/database:
     dependencies:
