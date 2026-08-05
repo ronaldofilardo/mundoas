@@ -129,12 +129,21 @@ export function UploadPlanilhaPreview({
           body: formData,
         });
 
+        console.log("[Preview] Response status:", res.status);
+        const responseText = await res.text();
+        console.log("[Preview] Response body:", responseText);
+
         if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || "Erro ao processar arquivo");
+          let errMsg = "Erro ao processar arquivo";
+          try {
+            const err = JSON.parse(responseText);
+            errMsg = err.error || errMsg;
+          } catch {}
+          throw new Error(errMsg);
         }
 
-        const data = await res.json();
+        const data = JSON.parse(responseText);
+        console.log("[Preview] Parsed data:", data);
         setPreviewData(data);
 
         // Extrair mês de referência da primeira linha que tiver data válida

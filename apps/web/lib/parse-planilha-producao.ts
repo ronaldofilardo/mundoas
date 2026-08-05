@@ -103,10 +103,14 @@ export async function parsePlanilhaProducao(
     colunasEncontradas.includes(col.toLowerCase()),
   );
 
+  console.log("[parsePlanilhaProducao] Colunas obrigatórias esperadas:", COLUNAS_OBRIGATORIAS);
+  console.log("[parsePlanilhaProducao] Colunas obrigatórias encontradas:", colunasObrigatoriasEncontradas);
+
   if (colunasObrigatoriasEncontradas.length !== COLUNAS_OBRIGATORIAS.length) {
     const faltantes = COLUNAS_OBRIGATORIAS.filter(
       (col) => !colunasEncontradas.includes(col.toLowerCase()),
     );
+    console.error("[parsePlanilhaProducao] Colunas faltando:", faltantes);
     throw new Error(`Colunas obrigatórias faltando: ${faltantes.join(", ")}`);
   }
 
