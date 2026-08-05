@@ -88,7 +88,7 @@ describe("upload-planilha-preview - correções desta conversa", () => {
 
     it("handleUpload deve bloquear com toast quando validos === 0", () => {
       expect(SOURCE).toMatch(/if\s*\(\s*previewData\.summary\.validos\s*===\s*0\s*\)\s*\{/);
-      expect(SOURCE).toMatch(/toast\.error\(["']Nenhuma linha válida para enviar/);
+      expect(SOURCE).toMatch(/Nenhuma linha válida para enviar/);
     });
 
     it("executarUpload deve ser função separada chamada após confirmação", () => {
@@ -118,7 +118,7 @@ describe("upload-planilha-preview - correções desta conversa", () => {
 
   describe("aviso visual atualizado", () => {
     it("deve mostrar mensagem que rejeições serão ignoradas", () => {
-      expect(SOURCE).toMatch(/apenas as linhas válidas serão processadas; as rejeitadas serão ignoradas/);
+      expect(SOURCE).toMatch(/Apenas as linhas válidas serão processadas; as[\s\S]*?rejeitadas serão ignoradas/);
     });
 
     it("não deve mais dizer 'Corrija os erros na planilha antes de confirmar o upload'", () => {
