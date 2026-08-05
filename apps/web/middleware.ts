@@ -41,27 +41,27 @@ function getAllowedOrigin(): string {
 
 function getAllowedOrigins(): string[] {
   const origins = new Set<string>();
-  
+
   // Primary origin from env vars
   const primary = getAllowedOrigin();
   if (primary) origins.add(primary);
-  
+
   // Also add VERCEL_URL origin if different
   if (process.env.VERCEL_URL) {
     origins.add(`https://${process.env.VERCEL_URL}`);
   }
-  
+
   // Add custom domain if configured
   if (process.env.NEXT_PUBLIC_CUSTOM_DOMAIN) {
-    origins.add(process.env.NEXT_PUBLIC_CUSTOM_DOMAIN.startsWith('http') 
-      ? process.env.NEXT_PUBLIC_CUSTOM_DOMAIN 
+    origins.add(process.env.NEXT_PUBLIC_CUSTOM_DOMAIN.startsWith('http')
+      ? process.env.NEXT_PUBLIC_CUSTOM_DOMAIN
       : `https://${process.env.NEXT_PUBLIC_CUSTOM_DOMAIN}`);
   }
-  
+
   // Always allow localhost for dev
   origins.add("http://localhost:3000");
   origins.add("http://127.0.0.1:3000");
-  
+
   return Array.from(origins);
 }
 
@@ -83,6 +83,14 @@ function isLocalhostOrigin(origin: string): boolean {
   }
 }
 
+// Remove "www." e porta para comparar hosts de forma tolerante.
+// Isso evita falso-positivo de CORS quando o Origin vem sem "www"
+// mas o Host (ou vice-versa) tem, ou quando há diferença de porta
+// introduzida por proxy/CDN na frente da Vercel.
+function normalizeHost(host: string): string {
+  return host.toLowerCase().replace(/^www\./, "").split(":")[0];
+}
+
 // ---------------------------------------------------------------------------
 // Route access control by papel (PF vs PJ)
 // ---------------------------------------------------------------------------
@@ -96,16 +104,16 @@ const ROUTE_RULES: Array<{
   allowedTipos: string[];
   allowedPapeis?: Array<string | null>;
 }> = [
-{ prefix: "/admin", allowedTipos: ["ADMIN"] },
-  { prefix: "/backoffice", allowedTipos: ["BACKOFFICE", "GESTOR"], allowedPapeis: ["BACKOFFICE"] },
-  { prefix: "/gestor-pf", allowedTipos: ["BACKOFFICE", "GESTOR"], allowedPapeis: ["BACKOFFICE"] },
-  { prefix: "/gestor", allowedTipos: ["GERENCIA"], allowedPapeis: ["GESTOR_PJ"] },
-  { prefix: "/parceiro", allowedTipos: ["PARCEIRO"] },
-  { prefix: "/comercial", allowedTipos: ["COMERCIAL"] },
-  { prefix: "/consultor", allowedTipos: ["CONSULTOR"] },
-  { prefix: "/estabelecimento", allowedTipos: ["ESTABELECIMENTO"] },
-  { prefix: "/lideranca", allowedTipos: ["LIDERANCA"] },
-];
+    { prefix: "/admin", allowedTipos: ["ADMIN"] },
+    { prefix: "/backoffice", allowedTipos: ["BACKOFFICE", "GESTOR"], allowedPapeis: ["BACKOFFICE"] },
+    { prefix: "/gestor-pf", allowedTipos: ["BACKOFFICE", "GESTOR"], allowedPapeis: ["BACKOFFICE"] },
+    { prefix: "/gestor", allowedTipos: ["GERENCIA"], allowedPapeis: ["GESTOR_PJ"] },
+    { prefix: "/parceiro", allowedTipos: ["PARCEIRO"] },
+    { prefix: "/comercial", allowedTipos: ["COMERCIAL"] },
+    { prefix: "/consultor", allowedTipos: ["CONSULTOR"] },
+    { prefix: "/estabelecimento", allowedTipos: ["ESTABELECIMENTO"] },
+    { prefix: "/lideranca", allowedTipos: ["LIDERANCA"] },
+  ];
 
 function dashboardForPapel(user: SessionUser): string {
   if (user.tipo === "ADMIN") return "/admin/usuarios";
@@ -181,16 +189,38 @@ export async function middleware(req: NextRequest) {
       !allowedOrigins.includes(requestOrigin) &&
       !isLocalhostOrigin(requestOrigin)
     ) {
-      // Fallback: same-origin requests (Origin matches Host header) are allowed
-      const originHost = (() => {
+      // Fallback: same-origin requests (Origin "equivalente" ao Host) são permitidas.
+      // Comparação tolerante (sem "www." e sem porta) para não bloquear o
+      // próprio front-end quando há diferença de www/porta introduzida por
+      // proxy, CDN ou configuração de DNS do domínio próprio.
+      const originHostname = (() => {
         try {
-          return new URL(requestOrigin).host;
+          return new URL(requestOrigin).hostname;
         } catch {
           return "";
         }
       })();
 
-      if (originHost !== requestHost) {
+      const requestHostname = requestHost.split(":")[0];
+
+      const matchesAllowedHostname = allowedOrigins.some((o) => {
+        try {
+          return normalizeHost(new URL(o).hostname) === normalizeHost(originHostname);
+        } catch {
+          return false;
+        }
+      });
+
+      if (
+        normalizeHost(originHostname) !== normalizeHost(requestHostname) &&
+        !matchesAllowedHostname
+      ) {
+        console.warn(
+          "[middleware] CORS bloqueado - Origin:",
+          requestOrigin,
+          "Host:",
+          requestHost,
+        );
         return NextResponse.json(
           { error: "Origem não permitida" },
           { status: 403 },
