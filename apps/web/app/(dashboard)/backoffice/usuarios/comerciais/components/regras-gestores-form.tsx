@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { RegrasGestores } from "../types";
 
 interface RegrasGestoresFormProps {
@@ -10,6 +10,10 @@ interface RegrasGestoresFormProps {
 
 export function RegrasGestoresForm({ regras, onSave }: RegrasGestoresFormProps) {
   const [formData, setFormData] = useState<RegrasGestores>(regras);
+
+  useEffect(() => {
+    setFormData(regras);
+  }, [regras]);
 
   function handleChange(field: keyof RegrasGestores, value: string) {
     const num = parseFloat(value) || 0;

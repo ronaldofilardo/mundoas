@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { RegrasComerciais } from "../types";
 
 interface RegrasComerciaisFormProps {
@@ -10,6 +10,10 @@ interface RegrasComerciaisFormProps {
 
 export function RegrasComerciaisForm({ regras, onSave }: RegrasComerciaisFormProps) {
   const [formData, setFormData] = useState<RegrasComerciais>(regras);
+
+  useEffect(() => {
+    setFormData(regras);
+  }, [regras]);
 
   function handleChange(field: keyof RegrasComerciais, value: string) {
     const num = parseFloat(value) || 0;
