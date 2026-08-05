@@ -166,6 +166,7 @@ export async function middleware(req: NextRequest) {
   if (isApiV1) {
     const allowedOrigins = getAllowedOrigins();
     const requestOrigin = req.headers.get("origin") ?? "";
+    const requestHost = req.headers.get("host") ?? "";
 
     if (req.method === "OPTIONS") {
       return new NextResponse(null, {
@@ -180,10 +181,21 @@ export async function middleware(req: NextRequest) {
       !allowedOrigins.includes(requestOrigin) &&
       !isLocalhostOrigin(requestOrigin)
     ) {
-      return NextResponse.json(
-        { error: "Origem não permitida" },
-        { status: 403 },
-      );
+      // Fallback: same-origin requests (Origin matches Host header) are allowed
+      const originHost = (() => {
+        try {
+          return new URL(requestOrigin).host;
+        } catch {
+          return "";
+        }
+      })();
+
+      if (originHost !== requestHost) {
+        return NextResponse.json(
+          { error: "Origem não permitida" },
+          { status: 403 },
+        );
+      }
     }
   }
 
