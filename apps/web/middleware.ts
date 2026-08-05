@@ -25,12 +25,18 @@ function enforceHttpsProduction(req: NextRequest): NextResponse | null {
 // Allowed origins for CORS on /api/v1/* routes
 // ---------------------------------------------------------------------------
 function getAllowedOrigin(): string {
-  return (
+  const raw =
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.NEXTAUTH_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
-    "http://localhost:3000"
-  );
+    "http://localhost:3000";
+
+  try {
+    const url = new URL(raw);
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return raw;
+  }
 }
 
 function buildCorsHeaders(origin: string): Record<string, string> {
@@ -40,6 +46,15 @@ function buildCorsHeaders(origin: string): Record<string, string> {
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Max-Age": "86400",
   };
+}
+
+function isLocalhostOrigin(origin: string): boolean {
+  try {
+    const url = new URL(origin);
+    return url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "::1";
+  } catch {
+    return false;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -137,7 +152,7 @@ export async function middleware(req: NextRequest) {
       requestOrigin &&
       allowedOrigin &&
       requestOrigin !== allowedOrigin &&
-      !requestOrigin.startsWith("http://localhost")
+      !isLocalhostOrigin(requestOrigin)
     ) {
       return NextResponse.json(
         { error: "Origem não permitida" },
