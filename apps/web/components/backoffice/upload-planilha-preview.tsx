@@ -101,6 +101,7 @@ export function UploadPlanilhaPreview({
   const [uploading, setUploading] = useState(false);
   const [showAllRows, setShowAllRows] = useState(false);
   const [mesReferencia, setMesReferencia] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,12 +137,14 @@ export function UploadPlanilhaPreview({
         const data = await res.json();
         setPreviewData(data);
 
-        // Extrair mês de referência da primeira linha válida
-        const primeiraLinhaValida = data.previewRows.find(
-          (r: any) => r.status === "VALIDO",
+        // Extrair mês de referência da primeira linha que tiver data válida
+        // (prioriza VALIDO, mas aceita ORFAO/REJEITADO como fallback para
+        // que o usuário sempre consiga enviar o arquivo)
+        const linhaComData = data.previewRows.find(
+          (r: any) => r.dataReferencia && /^\d{4}-\d{2}/.test(r.dataReferencia),
         );
-        if (primeiraLinhaValida && primeiraLinhaValida.dataReferencia) {
-          const [ano, mes] = primeiraLinhaValida.dataReferencia.split("-");
+        if (linhaComData && linhaComData.dataReferencia) {
+          const [ano, mes] = linhaComData.dataReferencia.split("-");
           setMesReferencia(`${ano}-${mes}`);
         }
 
@@ -165,7 +168,33 @@ export function UploadPlanilhaPreview({
     }
 
     if (!mesReferencia) {
-      toast.error("Selecione o mês de referência");
+      toast.error(
+        "Não foi possível detectar o mês de referência. Selecione manualmente no campo acima.",
+      );
+      return;
+    }
+
+    if (previewData.summary.validos === 0) {
+      toast.error(
+        "Nenhuma linha válida para enviar. Corrija as rejeições na planilha e tente novamente.",
+        { duration: 8000 },
+      );
+      return;
+    }
+
+    // Se houver rejeitados, pede confirmação explícita antes de prosseguir
+    // (o backend já pula rejeitados — só os válidos são persistidos).
+    if (previewData.summary.rejeitados > 0) {
+      setConfirmOpen(true);
+      return;
+    }
+
+    await executarUpload();
+  };
+
+  const executarUpload = async () => {
+    if (!file || !previewData || !mesReferencia) {
+      toast.error("Selecione um arquivo e aguarde o preview");
       return;
     }
 
@@ -582,7 +611,11 @@ export function UploadPlanilhaPreview({
           <div className="flex gap-3">
             <button
               onClick={handleUpload}
-              disabled={uploading || previewData.summary.rejeitados > 0}
+              disabled={
+                uploading ||
+                !mesReferencia ||
+                previewData.summary.validos === 0
+              }
               className="flex-1 bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploading
@@ -605,12 +638,72 @@ export function UploadPlanilhaPreview({
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <p className="text-sm text-yellow-800">
                 ⚠️ <strong>Atenção:</strong> {previewData.summary.rejeitados}{" "}
-                linhas foram rejeitadas. Corrija os erros na planilha antes de
-                confirmar o upload.
+                linhas foram rejeitadas. Você poderá revisar e confirmar antes
+                de enviar — apenas as linhas válidas serão processadas.
               </p>
             </div>
           )}
         </>
+      )}
+
+      {/* Modal de confirmação quando há linhas rejeitadas */}
+      {confirmOpen && previewData && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="presentation"
+        >
+          {/* Backdrop clicável (botão invisível) */}
+          <button
+            type="button"
+            aria-label="Fechar modal"
+            tabIndex={-1}
+            onClick={() => !uploading && setConfirmOpen(false)}
+            className="absolute inset-0 w-full h-full cursor-default"
+          />
+          <div
+            className="relative bg-white rounded-xl shadow-xl max-w-md w-full p-6"
+            role="dialog"
+            aria-modal="true"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Confirmar upload com rejeições
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              A planilha contém{" "}
+              <strong className="text-gray-900">
+                {previewData.summary.validos}
+              </strong>{" "}
+              linha(s) válida(s) e{" "}
+              <strong className="text-red-600">
+                {previewData.summary.rejeitados}
+              </strong>{" "}
+              rejeitada(s). Apenas as linhas válidas serão processadas; as
+              rejeitadas serão ignoradas.
+            </p>
+            <p className="text-xs text-gray-500 mb-6">
+              Você poderá revisar a tabela acima antes de continuar.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setConfirmOpen(false)}
+                disabled={uploading}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  setConfirmOpen(false);
+                  await executarUpload();
+                }}
+                disabled={uploading}
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
+              >
+                {uploading ? "Processando..." : "Enviar apenas as válidas"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
