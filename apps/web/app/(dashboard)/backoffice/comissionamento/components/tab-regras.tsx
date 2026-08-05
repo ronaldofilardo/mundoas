@@ -75,15 +75,24 @@ export function TabRegras() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+      let errData: { error?: string } = {};
+      try {
+        errData = await res.json();
+      } catch { }
       if (!res.ok) {
-        const err = await res.json();
-        toast.error(err.error || "Erro ao salvar regras comerciais");
+        const msg = errData.error || `Erro ${res.status}: ${res.statusText}`;
+        console.error("[TabRegras] Erro ao salvar regras comerciais:", msg, errData);
+        toast.error(msg);
+        alert(msg);
         return;
       }
       toast.success("Regras comerciais salvas com sucesso");
       fetchRegras();
-    } catch {
-      toast.error("Erro ao salvar regras comerciais");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao salvar regras comerciais";
+      console.error("[TabRegras] Exceção ao salvar regras comerciais:", err);
+      toast.error(msg);
+      alert(msg);
     }
   }
 
@@ -94,15 +103,24 @@ export function TabRegras() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+      let errData: { error?: string } = {};
+      try {
+        errData = await res.json();
+      } catch { }
       if (!res.ok) {
-        const err = await res.json();
-        toast.error(err.error || "Erro ao salvar regras de gestores");
+        const msg = errData.error || `Erro ${res.status}: ${res.statusText}`;
+        console.error("[TabRegras] Erro ao salvar regras de gestores:", msg, errData);
+        toast.error(msg);
+        alert(msg);
         return;
       }
       toast.success("Regras de gestores salvas com sucesso");
       fetchRegras();
-    } catch {
-      toast.error("Erro ao salvar regras de gestores");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao salvar regras de gestores";
+      console.error("[TabRegras] Exceção ao salvar regras de gestores:", err);
+      toast.error(msg);
+      alert(msg);
     }
   }
 

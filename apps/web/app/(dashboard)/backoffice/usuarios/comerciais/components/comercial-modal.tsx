@@ -76,7 +76,8 @@ const funcoes = [
               onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
               className="w-full px-3 py-2 border rounded"
               required
-              pattern="\d{11}"
+              placeholder="000.000.000-00"
+              maxLength={14}
             />
           </div>
           <div>

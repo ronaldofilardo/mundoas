@@ -7,29 +7,42 @@ interface NovoComercialFormProps {
   onCreated: () => void;
 }
 
-const funcoes = [
-  "GERENTE_CIRE",
-  "SUPERVISOR_ATIVO",
-  "SUPERVISOR_RECEPTIVO",
-  "SUPERVISOR_FRANQUIA",
-  "SUPERVISOR_ATENDIMENTO",
-  "GERENTE_ATENDIMENTO",
-  "SUPERVISOR_COMERCIAL",
-];
-
 export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
   const [lideranca, setLideranca] = useState("");
-  const [tipo, setTipo] = useState("");
   const [funcao, setFuncao] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const funcoesComercial = [
+    "SUPERVISOR_COMERCIAL",
+    "GERENTE_CIRE",
+    "SUPERVISOR_ATIVO",
+    "SUPERVISOR_RECEPTIVO",
+  ];
+
+  const funcoesGestor = [
+    "GERENTE_CIRE",
+    "SUPERVISOR_ATIVO",
+    "SUPERVISOR_RECEPTIVO",
+    "SUPERVISOR_FRANQUIA",
+    "SUPERVISOR_ATENDIMENTO",
+    "GERENTE_ATENDIMENTO",
+    "SUPERVISOR_COMERCIAL",
+  ];
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+
+    const cpfDigits = cpf.replace(/\D/g, "");
+    if (cpfDigits.length !== 11) {
+      toast.error("CPF deve ter 11 dígitos");
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/v1/backoffice/comerciais", {
@@ -37,19 +50,25 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nome,
-          cpf,
+          cpf: cpfDigits,
           email: email.toLowerCase().trim(),
           telefone: telefone || undefined,
           lideranca: lideranca || undefined,
-          tipo: tipo || undefined,
           funcao: funcao || undefined,
           percentualComissao: 0,
         }),
       });
 
+      let errData: { error?: string } = {};
+      try {
+        errData = await res.json();
+      } catch { }
+
       if (!res.ok) {
-        const err = await res.json();
-        toast.error(err.error || "Erro ao criar comercial");
+        const msg = errData.error || `Erro ${res.status}: ${res.statusText}`;
+        console.error("[NovoComercialForm] Erro ao criar:", msg, errData);
+        toast.error(msg);
+        alert(msg);
         return;
       }
 
@@ -59,11 +78,13 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
       setEmail("");
       setTelefone("");
       setLideranca("");
-      setTipo("");
       setFuncao("");
       onCreated();
-    } catch {
-      toast.error("Erro ao criar comercial");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao criar comercial";
+      console.error("[NovoComercialForm] Exceção:", err);
+      toast.error(msg);
+      alert(msg);
     } finally {
       setLoading(false);
     }
@@ -97,8 +118,8 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
             onChange={(e) => setCpf(e.target.value)}
             className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-500"
             required
-            pattern="\d{11}"
-            title="CPF deve ter 11 digitos"
+            placeholder="000.000.000-00"
+            maxLength={14}
           />
         </div>
         <div>
@@ -127,44 +148,36 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Liderança (opcional)
+            Liderança
           </label>
           <select
             value={lideranca}
-            onChange={(e) => setLideranca(e.target.value)}
+            onChange={(e) => {
+              setLideranca(e.target.value);
+              setFuncao("");
+            }}
             className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-500"
           >
-            <option value="">Nenhuma</option>
+            <option value="">Selecione</option>
             <option value="COMERCIAL">Comercial</option>
             <option value="GESTOR">Gestor</option>
           </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Tipo
-          </label>
-          <select
-            value={tipo}
-            onChange={(e) => setTipo(e.target.value)}
-            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="">Selecione</option>
-            <option value="GERENTE">Gerente</option>
-            <option value="SUPERVISOR">Supervisor</option>
-            <option value="LIDER">Lider</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Funcao
+            Função
           </label>
           <select
             value={funcao}
             onChange={(e) => setFuncao(e.target.value)}
             className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-500"
+            disabled={!lideranca}
           >
             <option value="">Selecione</option>
-            {funcoes.map((f) => (
+            {lideranca === "COMERCIAL" && funcoesComercial.map((f) => (
+              <option key={f} value={f}>{f.replace(/_/g, " ")}</option>
+            ))}
+            {lideranca === "GESTOR" && funcoesGestor.map((f) => (
               <option key={f} value={f}>{f.replace(/_/g, " ")}</option>
             ))}
           </select>
