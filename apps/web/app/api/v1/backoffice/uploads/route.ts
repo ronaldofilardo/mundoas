@@ -44,17 +44,34 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Processar planilha em background
-    processarUploadPlanilhaPF(upload.id, file, backofficeId).catch((err) => {
-      console.error("[processarUploadPlanilhaPF] Erro:", err);
+    // Processar planilha de forma síncrona para garantir persistência em serverless (Vercel)
+    try {
+      await processarUploadPlanilhaPF(upload.id, file, backofficeId);
+    } catch (processError) {
+      console.error("[processarUploadPlanilhaPF] Erro:", processError);
+      await prisma.uploadPlanilhaBackoffice.update({
+        where: { id: upload.id },
+        data: { status: "ERRO" },
+      });
+      return badRequest("Erro ao processar planilha: " + (processError as Error).message);
+    }
+
+    // Buscar upload atualizado com contagens
+    const uploadFinal = await prisma.uploadPlanilhaBackoffice.findUnique({
+      where: { id: upload.id },
+      select: {
+        id: true,
+        nomeArquivo: true,
+        mesReferencia: true,
+        status: true,
+        totalRows: true,
+        processedRows: true,
+        rejectedRows: true,
+        orphanedRows: true,
+      },
     });
 
-    return created({
-      id: upload.id,
-      nomeArquivo: file.name,
-      mesReferencia,
-      status: upload.status,
-    });
+    return created(uploadFinal);
   } catch (e: any) {
     console.error("[upload POST] Erro:", e);
     return badRequest("Erro ao fazer upload: " + e.message);

@@ -236,36 +236,60 @@ export function UploadPlanilhaPreview({
         return;
       }
 
-      const uploadId = responseData.id ?? responseData.upload?.id;
+      const uploadId = responseData.id;
+      const status = responseData.status;
+      const summary = responseData.summary;
+
       if (!uploadId) {
         toast.error("Upload aceito, mas não foi possível rastrear o status.");
         if (onUploadSuccess) onUploadSuccess();
         return;
       }
 
-      toast.info("Processando planilha...", {
-        description: "Aguarde enquanto salvamos os procedimentos.",
-        duration: UPLOAD_POLL_MAX_ATTEMPTS * UPLOAD_POLL_INTERVAL_MS,
-      });
-
-      const resultado = await sondarStatusUpload(uploadId);
-
-      if (resultado.status === "ERRO") {
+      if (status === "ERRO") {
         toast.error(
           "Falha ao processar a planilha. Verifique o arquivo e tente novamente.",
         );
         return;
       }
 
-      if (resultado.status === "PROCESSANDO") {
-        toast.warning(
-          "O processamento está demorando mais que o esperado. A lista será recarregada.",
-          { duration: 8000 },
-        );
+      if (status === "PROCESSANDO") {
+        // Fallback: se por algum motivo ainda voltar PROCESSANDO, fazer polling
+        toast.info("Processando planilha...", {
+          description: "Aguarde enquanto salvamos os procedimentos.",
+          duration: UPLOAD_POLL_MAX_ATTEMPTS * UPLOAD_POLL_INTERVAL_MS,
+        });
+
+        const resultado = await sondarStatusUpload(uploadId);
+
+        if (resultado.status === "ERRO") {
+          toast.error(
+            "Falha ao processar a planilha. Verifique o arquivo e tente novamente.",
+          );
+          return;
+        }
+
+        if (resultado.status === "PROCESSANDO") {
+          toast.warning(
+            "O processamento está demorando mais que o esperado. A lista será recarregada.",
+            { duration: 8000 },
+          );
+        } else {
+          const processed = resultado.summary?.processedRows ?? 0;
+          const orfaos = resultado.summary?.orphanedRows ?? 0;
+          const rejeitados = resultado.summary?.rejectedRows ?? 0;
+          toast.success(
+            `Upload concluído! ${processed} procedimentos salvos` +
+              (orfaos ? ` · ${orfaos} órfãos` : "") +
+              (rejeitados ? ` · ${rejeitados} rejeitados` : ""),
+            { duration: 6000 },
+          );
+        }
       } else {
-        const processed = resultado.summary?.processedRows ?? 0;
-        const orfaos = resultado.summary?.orphanedRows ?? 0;
-        const rejeitados = resultado.summary?.rejectedRows ?? 0;
+        // status === "CONCLUIDO" - processamento síncrono completo
+        const processed = summary?.processedRows ?? 0;
+        const orfaos = summary?.orphanedRows ?? 0;
+        const rejeitados = summary?.rejectedRows ?? 0;
         toast.success(
           `Upload concluído! ${processed} procedimentos salvos` +
             (orfaos ? ` · ${orfaos} órfãos` : "") +
