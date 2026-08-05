@@ -497,7 +497,7 @@ model Indicado {
 
 model UploadPlanilhaBackoffice {
   id              String              @id @default(uuid()) @db.Uuid
-  nomeArquivo     String              @db.VarChar(255)
+  nomeArquivo     String              @map("nome_arquivo") @db.VarChar(255)
   mesReferencia   String              @map("mes_referencia")
   status          StatusUpload        @default(PROCESSANDO)
   totalRows       Int                 @default(0) @map("total_rows")
