@@ -171,6 +171,21 @@ export async function parsePlanilhaProducao(
     );
 
     comercialPorId = new Map(comerciais.map((c) => [c.id, c.nome]));
+
+    // Buscar parceiros do backoffice para validação de CPF no preview
+    parceiros = await prisma.parceiro.findMany({
+      where: { backofficeId },
+      select: {
+        id: true,
+        nome: true,
+        cpf: true,
+        comercialId: true,
+        gestorId: true,
+        indicacoes: {
+          select: { id: true, cpf: true },
+        },
+      },
+    });
   } catch (dbError: any) {
     console.error("[parsePlanilhaProducao] ERRO DE BANCO DE DADOS:", dbError?.message, dbError?.stack);
     // Se falhar busca de parceiros, continua sem eles (todas as linhas virarão órfãs)

@@ -129,7 +129,7 @@ describe('Regressão: escopo da variável consultorPf', () => {
   });
 
   it('não deve lançar erro ao processar linha válida com consultorPf', async () => {
-    mockPrisma.lideranca.findMany.mockResolvedValue([]);
+    mockPrisma.lideranca.findMany.mockResolvedValue([{ id: 'lid1' }]);
     mockPrisma.comercial.findMany.mockResolvedValue([]);
     mockPrisma.gestor.findMany.mockResolvedValue([]);
     mockPrisma.consultorPf.findMany.mockResolvedValue([
@@ -166,7 +166,7 @@ describe('Regressão: escopo da variável consultorPf', () => {
   });
 
   it('deve retornar consultorPfNome undefined quando não há usuário da conta', async () => {
-    mockPrisma.lideranca.findMany.mockResolvedValue([]);
+    mockPrisma.lideranca.findMany.mockResolvedValue([{ id: 'lid1' }]);
     mockPrisma.comercial.findMany.mockResolvedValue([]);
     mockPrisma.gestor.findMany.mockResolvedValue([]);
     mockPrisma.consultorPf.findMany.mockResolvedValue([
@@ -199,7 +199,7 @@ describe('Regressão: escopo da variável consultorPf', () => {
   });
 
   it('deve processar múltiplas linhas válidas e inválidas corretamente', async () => {
-    mockPrisma.lideranca.findMany.mockResolvedValue([]);
+    mockPrisma.lideranca.findMany.mockResolvedValue([{ id: 'lid1' }]);
     mockPrisma.comercial.findMany.mockResolvedValue([]);
     mockPrisma.gestor.findMany.mockResolvedValue([]);
     mockPrisma.consultorPf.findMany.mockResolvedValue([
