@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get("file") as File;
 
-    console.log("[preview] File recebido:", file?.name, file?.size, file?.type);
+    console.log("[preview] File recebido:", file?.name, file?.size, file?.type, "backofficeId:", backofficeId);
 
     if (!file) {
       return badRequest("Arquivo é obrigatório");
@@ -39,6 +39,13 @@ export async function POST(req: NextRequest) {
       return badRequest("Apenas arquivos Excel (.xlsx ou .xls) são permitidos");
     }
 
+    // Check file size (Vercel Hobby limit: 4.5MB, Pro: 50MB)
+    const maxSize = 4.5 * 1024 * 1024; // 4.5MB
+    if (file.size > maxSize) {
+      console.error("[preview] Arquivo muito grande:", file.size, "bytes, max:", maxSize);
+      return badRequest(`Arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)}MB). Limite: 4.5MB`);
+    }
+
     // Parse da planilha
     console.log("[preview] Iniciando parse da planilha...");
     const resultado = await parsePlanilhaProducao(file, backofficeId);
@@ -46,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     return created(resultado);
   } catch (e: any) {
-    console.error("[preview POST] Erro:", e);
-    return badRequest("Erro ao processar planilha: " + e.message);
+    console.error("[preview POST] Erro:", e?.message, e?.stack);
+    return badRequest("Erro ao processar planilha: " + (e?.message || "Erro desconhecido"));
   }
 }

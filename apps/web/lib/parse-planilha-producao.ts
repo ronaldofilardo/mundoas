@@ -131,69 +131,50 @@ export async function parsePlanilhaProducao(
   const idxFormaPagamento = getColIndex("Forma Pagamento");
 
   // Buscar parceiros do backoffice
-  const liderancas = await prisma.lideranca.findMany({
-    where: { backofficeId },
-    select: { id: true },
-  });
-  const liderancaIds = liderancas.map((l) => l.id);
+  let liderancas: any[] = [];
+  let liderancaIds: string[] = [];
+  let comerciais: any[] = [];
+  let consultoresPf: any[] = [];
+  let parceiros: any[] = [];
+  let consultorPorNome = new Map<string, any>();
+  let comercialPorId = new Map<string, string>();
 
-  console.log("[parsePlanilhaProducao] Backoffice ID:", backofficeId);
-  console.log(
-    "[parsePlanilhaProducao] Lideranças encontradas:",
-    liderancas.length,
-  );
-  console.log("[parsePlanilhaProducao] IDs das lideranças:", liderancaIds);
+  try {
+    liderancas = await prisma.lideranca.findMany({
+      where: { backofficeId },
+      select: { id: true },
+    });
+    liderancaIds = liderancas.map((l) => l.id);
 
-  const [comerciais, consultoresPf] = await Promise.all([
-    prisma.comercial.findMany({
-      where: { liderancaId: { in: liderancaIds } },
-      select: { id: true, nome: true },
-    }),
-    prisma.consultorPf.findMany({
-      where: { liderancaId: { in: liderancaIds }, status: "ATIVO" },
-      select: { id: true, nome: true },
-    }),
-  ]);
-
-  const consultorPorNome = new Map(
-    consultoresPf.map((c) => [normalizarNome(c.nome), c]),
-  );
-
-  const comercialPorId = new Map(comerciais.map((c) => [c.id, c.nome]));
-
-  // Buscar parceiros do backoffice
-  const parceiros = await prisma.parceiro.findMany({
-    where: { backofficeId },
-    select: {
-      id: true,
-      nome: true,
-      cpf: true,
-      comercialId: true,
-      gestorId: true,
-      indicacoes: {
-        select: {
-          id: true,
-          cpf: true,
-          nome: true,
-        },
-      },
-    },
-  });
-
-  console.log(
-    "[parsePlanilhaProducao] Parceiros encontrados:",
-    parceiros.length,
-  );
-  console.log(
-    "[parsePlanilhaProducao] Total de indicados:",
-    parceiros.reduce((sum, p) => sum + p.indicacoes.length, 0),
-  );
-  if (parceiros.length > 0) {
-    console.log("[parsePlanilhaProducao] Exemplo de parceiro:", parceiros[0]);
+    console.log("[parsePlanilhaProducao] Backoffice ID:", backofficeId);
     console.log(
-      "[parsePlanilhaProducao] Exemplo de indicado:",
-      parceiros[0]?.indicacoes[0],
+      "[parsePlanilhaProducao] Lideranças encontradas:",
+      liderancas.length,
     );
+    console.log("[parsePlanilhaProducao] IDs das lideranças:", liderancaIds);
+
+    const [comerciaisResult, consultoresPfResult] = await Promise.all([
+      prisma.comercial.findMany({
+        where: { liderancaId: { in: liderancaIds } },
+        select: { id: true, nome: true },
+      }),
+      prisma.consultorPf.findMany({
+        where: { liderancaId: { in: liderancaIds }, status: "ATIVO" },
+        select: { id: true, nome: true },
+      }),
+    ]);
+    comerciais = comerciaisResult;
+    consultoresPf = consultoresPfResult;
+
+    consultorPorNome = new Map(
+      consultoresPf.map((c) => [normalizarNome(c.nome), c]),
+    );
+
+    comercialPorId = new Map(comerciais.map((c) => [c.id, c.nome]));
+  } catch (dbError: any) {
+    console.error("[parsePlanilhaProducao] ERRO DE BANCO DE DADOS:", dbError?.message, dbError?.stack);
+    // Se falhar busca de parceiros, continua sem eles (todas as linhas virarão órfãs)
+    console.warn("[parsePlanilhaProducao] Continuando sem dados de parceiros/comerciais - preview limitado");
   }
 
   // Processar linhas (começa do índice 2 para pular título e cabeçalho)
@@ -294,7 +275,7 @@ export async function parsePlanilhaProducao(
         if (!parceiroEncontrado) {
           for (const parceiro of parceiros) {
             indicadoEncontrado = parceiro.indicacoes.find(
-              (ind) => normalizarCpf(ind.cpf) === cpf,
+              (ind: any) => normalizarCpf(ind.cpf) === cpf,
             );
             if (indicadoEncontrado) {
               parceiroEncontrado = parceiro;
