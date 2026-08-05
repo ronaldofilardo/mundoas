@@ -490,10 +490,7 @@ export function TabComerciais() {
       </div>
 
       <div className="card mt-6 flex-grow overflow-hidden">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">
-            Comerciais Cadastrados - Metas Anual ({anoReferencia})
-          </h2>
+        <div className="flex justify-end items-center mb-4">
           <button
             onClick={handleSalvarTodasMetas}
             disabled={metasAlteradas.size === 0 && producaoAlteradas.size === 0}
