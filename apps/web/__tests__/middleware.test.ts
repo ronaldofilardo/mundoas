@@ -3,7 +3,7 @@
  * Valida redirecionamentos e permissões de rotas
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { middleware } from '@/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
@@ -11,6 +11,18 @@ import { getToken } from 'next-auth/jwt';
 vi.mock('next-auth/jwt', () => ({
   getToken: vi.fn(),
 }));
+
+/**
+ * O middleware retorna `NextResponse.next()` (status 200 com header
+ * `x-middleware-next: 1`) quando a requisição deve continuar, e
+ * `NextResponse.redirect(...)` quando bloqueia.
+ */
+function isContinueResponse(res: unknown): boolean {
+  return (
+    res instanceof NextResponse &&
+    res.headers.get('x-middleware-next') === '1'
+  );
+}
 
 describe('Middleware de Autenticação e Papéis', () => {
   const createRequest = (url: string) => {
@@ -20,7 +32,7 @@ describe('Middleware de Autenticação e Papéis', () => {
   it('deve permitir acesso a rotas públicas', async () => {
     const req = createRequest('/login');
     const res = await middleware(req);
-    expect(res).toBeNull(); // Permite a requisição continuar
+    expect(isContinueResponse(res)).toBe(true);
   });
 
   it('deve redirecionar para /login se tentar acessar rota protegida sem token', async () => {
@@ -52,7 +64,7 @@ describe('Middleware de Autenticação e Papéis', () => {
     const req = createRequest('/backoffice/dashboard');
     const res = await middleware(req);
     
-    expect(res).toBeNull();
+    expect(isContinueResponse(res)).toBe(true);
   });
 
   it('deve redirecionar GESTOR_PJ para dashboard de gestor', async () => {
@@ -63,7 +75,7 @@ describe('Middleware de Autenticação e Papéis', () => {
     const req = createRequest('/gestor/dashboard');
     const res = await middleware(req);
     
-    expect(res).toBeNull();
+    expect(isContinueResponse(res)).toBe(true);
   });
 
   it('deve forçar HTTPS em produção', async () => {
@@ -76,5 +88,118 @@ describe('Middleware de Autenticação e Papéis', () => {
     expect(res.headers.get('location')).toContain('https://');
     
     process.env.NODE_ENV = 'development'; // Restore
+  });
+});
+
+describe('Middleware - NextAuth v5 (cookie + salt + secret)', () => {
+  const originalEnv = { ...process.env };
+  let getTokenMock: any;
+
+  beforeEach(() => {
+    getTokenMock = vi.mocked(getToken);
+    getTokenMock.mockReset();
+    getTokenMock.mockResolvedValue({
+      tipo: 'BACKOFFICE',
+      papel: 'BACKOFFICE',
+    });
+    // Garante estado inicial previsível
+    delete process.env.AUTH_SECRET;
+    delete process.env.NEXTAUTH_SECRET;
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  it('em produção: deve passar secureCookie=true e salt correto para getToken', async () => {
+    process.env.NODE_ENV = 'production';
+    process.env.NEXTAUTH_SECRET = 'nexauth-secret-value';
+    process.env.AUTH_SECRET = 'auth-secret-value';
+
+    const req = new NextRequest(
+      new URL('/backoffice/dashboard', 'https://example.com'),
+    );
+    await middleware(req);
+
+    expect(getTokenMock).toHaveBeenCalledTimes(1);
+    const call = getTokenMock.mock.calls[0][0];
+    expect(call.secureCookie).toBe(true);
+    expect(call.salt).toBe('__Secure-authjs.session-token');
+    expect(call.secret).toBe('auth-secret-value');
+  });
+
+  it('em desenvolvimento: deve passar secureCookie=false e salt sem prefixo', async () => {
+    process.env.NODE_ENV = 'development';
+    process.env.NEXTAUTH_SECRET = 'nexauth-secret-value';
+    process.env.AUTH_SECRET = 'auth-secret-value';
+
+    const req = new NextRequest(
+      new URL('/backoffice/dashboard', 'http://localhost:3000'),
+    );
+    await middleware(req);
+
+    expect(getTokenMock).toHaveBeenCalledTimes(1);
+    const call = getTokenMock.mock.calls[0][0];
+    expect(call.secureCookie).toBe(false);
+    expect(call.salt).toBe('authjs.session-token');
+    expect(call.secret).toBe('auth-secret-value');
+  });
+
+  it('deve priorizar AUTH_SECRET sobre NEXTAUTH_SECRET (padrão v5)', async () => {
+    process.env.NODE_ENV = 'test';
+    process.env.NEXTAUTH_SECRET = 'nexauth-secret-value';
+    process.env.AUTH_SECRET = 'auth-secret-value';
+
+    const req = new NextRequest(
+      new URL('/backoffice/dashboard', 'http://localhost:3000'),
+    );
+    await middleware(req);
+
+    const call = getTokenMock.mock.calls[0][0];
+    expect(call.secret).toBe('auth-secret-value');
+  });
+
+  it('deve usar NEXTAUTH_SECRET como fallback se AUTH_SECRET não estiver definido', async () => {
+    process.env.NODE_ENV = 'test';
+    process.env.NEXTAUTH_SECRET = 'nexauth-secret-value';
+    // AUTH_SECRET propositalmente ausente
+
+    const req = new NextRequest(
+      new URL('/backoffice/dashboard', 'http://localhost:3000'),
+    );
+    await middleware(req);
+
+    const call = getTokenMock.mock.calls[0][0];
+    expect(call.secret).toBe('nexauth-secret-value');
+  });
+
+  it('deve permitir acesso se getToken retornar token válido em produção (HTTPS)', async () => {
+    process.env.NODE_ENV = 'production';
+    process.env.AUTH_SECRET = 'secret';
+    getTokenMock.mockResolvedValue({
+      tipo: 'BACKOFFICE',
+      papel: 'BACKOFFICE',
+    });
+
+    const req = new NextRequest(
+      new URL('/backoffice/dashboard', 'https://example.com'),
+    );
+    const res = await middleware(req);
+
+    expect(isContinueResponse(res)).toBe(true);
+  });
+
+  it('deve redirecionar para /login se getToken retornar null em produção', async () => {
+    process.env.NODE_ENV = 'production';
+    process.env.AUTH_SECRET = 'secret';
+    getTokenMock.mockResolvedValue(null);
+
+    const req = new NextRequest(
+      new URL('/backoffice/dashboard', 'https://example.com'),
+    );
+    const res = await middleware(req);
+
+    expect(res).toBeInstanceOf(NextResponse);
+    expect(res?.headers.get('location')).toContain('/login');
   });
 });
