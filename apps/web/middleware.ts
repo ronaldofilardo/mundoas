@@ -39,6 +39,32 @@ function getAllowedOrigin(): string {
   }
 }
 
+function getAllowedOrigins(): string[] {
+  const origins = new Set<string>();
+  
+  // Primary origin from env vars
+  const primary = getAllowedOrigin();
+  if (primary) origins.add(primary);
+  
+  // Also add VERCEL_URL origin if different
+  if (process.env.VERCEL_URL) {
+    origins.add(`https://${process.env.VERCEL_URL}`);
+  }
+  
+  // Add custom domain if configured
+  if (process.env.NEXT_PUBLIC_CUSTOM_DOMAIN) {
+    origins.add(process.env.NEXT_PUBLIC_CUSTOM_DOMAIN.startsWith('http') 
+      ? process.env.NEXT_PUBLIC_CUSTOM_DOMAIN 
+      : `https://${process.env.NEXT_PUBLIC_CUSTOM_DOMAIN}`);
+  }
+  
+  // Always allow localhost for dev
+  origins.add("http://localhost:3000");
+  origins.add("http://127.0.0.1:3000");
+  
+  return Array.from(origins);
+}
+
 function buildCorsHeaders(origin: string): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": origin,
@@ -138,20 +164,20 @@ export async function middleware(req: NextRequest) {
 
   // ------ CORS ---------------------------------------------------------------
   if (isApiV1) {
-    const allowedOrigin = getAllowedOrigin();
+    const allowedOrigins = getAllowedOrigins();
     const requestOrigin = req.headers.get("origin") ?? "";
 
     if (req.method === "OPTIONS") {
       return new NextResponse(null, {
         status: 204,
-        headers: buildCorsHeaders(allowedOrigin),
+        headers: buildCorsHeaders(allowedOrigins[0]),
       });
     }
 
     if (
       requestOrigin &&
-      allowedOrigin &&
-      requestOrigin !== allowedOrigin &&
+      allowedOrigins.length > 0 &&
+      !allowedOrigins.includes(requestOrigin) &&
       !isLocalhostOrigin(requestOrigin)
     ) {
       return NextResponse.json(
