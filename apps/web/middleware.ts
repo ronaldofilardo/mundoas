@@ -83,13 +83,6 @@ function isLocalhostOrigin(origin: string): boolean {
   }
 }
 
-// Remove "www." e porta para comparar hosts de forma tolerante.
-// Isso evita falso-positivo de CORS quando o Origin vem sem "www"
-// mas o Host (ou vice-versa) tem, ou quando há diferença de porta
-// introduzida por proxy/CDN na frente da Vercel.
-function normalizeHost(host: string): string {
-  return host.toLowerCase().replace(/^www\./, "").split(":")[0];
-}
 
 // ---------------------------------------------------------------------------
 // Route access control by papel (PF vs PJ)
@@ -183,49 +176,27 @@ export async function middleware(req: NextRequest) {
       });
     }
 
+    // NOTA: removido o bloqueio 403 baseado em comparação Origin vs Host.
+    // Esse app roda atrás de um proxy/CDN em frente à Vercel (domínio próprio
+    // .com.br) que pode reescrever o header Host antes de chegar na function,
+    // o que tornava a comparação Origin/Host não confiável e bloqueava
+    // requisições legítimas do próprio front-end (falso positivo em produção).
+    // A proteção real das rotas /api/v1/* é feita via sessão (cookie do
+    // NextAuth), checada em cada rota com requireBackoffice/requireParceiro/etc.
+    // Mantemos apenas o log para diagnóstico, caso seja necessário reativar
+    // uma checagem de origem mais específica no futuro.
     if (
       requestOrigin &&
       allowedOrigins.length > 0 &&
       !allowedOrigins.includes(requestOrigin) &&
       !isLocalhostOrigin(requestOrigin)
     ) {
-      // Fallback: same-origin requests (Origin "equivalente" ao Host) são permitidas.
-      // Comparação tolerante (sem "www." e sem porta) para não bloquear o
-      // próprio front-end quando há diferença de www/porta introduzida por
-      // proxy, CDN ou configuração de DNS do domínio próprio.
-      const originHostname = (() => {
-        try {
-          return new URL(requestOrigin).hostname;
-        } catch {
-          return "";
-        }
-      })();
-
-      const requestHostname = requestHost.split(":")[0];
-
-      const matchesAllowedHostname = allowedOrigins.some((o) => {
-        try {
-          return normalizeHost(new URL(o).hostname) === normalizeHost(originHostname);
-        } catch {
-          return false;
-        }
-      });
-
-      if (
-        normalizeHost(originHostname) !== normalizeHost(requestHostname) &&
-        !matchesAllowedHostname
-      ) {
-        console.warn(
-          "[middleware] CORS bloqueado - Origin:",
-          requestOrigin,
-          "Host:",
-          requestHost,
-        );
-        return NextResponse.json(
-          { error: "Origem não permitida" },
-          { status: 403 },
-        );
-      }
+      console.warn(
+        "[middleware] Origin fora da lista conhecida (não bloqueado) - Origin:",
+        requestOrigin,
+        "Host:",
+        requestHost,
+      );
     }
   }
 
