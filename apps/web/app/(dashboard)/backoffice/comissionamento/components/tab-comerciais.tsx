@@ -59,7 +59,10 @@ export function TabComerciais() {
   async function fetchMetasGerais(regrasCom: RegrasComerciais | null, regrasGes: RegrasGestores | null) {
     setLoadingMetasGerais(true);
     try {
-      const promises = comerciais.map(async (c) => {
+      // Filtrar apenas comerciais (não lideranças) para buscar metas
+      const comerciaisParaMetas = comerciais.filter(c => !c.isLideranca);
+      
+      const promises = comerciaisParaMetas.map(async (c) => {
         const res = await fetch(`/api/v1/backoffice/comerciais/${c.id}/metas`);
         const metas = res.ok ? await res.json() : [];
         return { comercialId: c.id, metas };
@@ -526,121 +529,135 @@ export function TabComerciais() {
                 </tr>
               </thead>
               <tbody>
-                {comerciais.map((c) => (
-                  <Fragment key={c.id}>
-                    <tr className="hover:bg-gray-50">
-                      <td className="p-3 align-top border-t" rowSpan={3}>
-                        <button
-                          onClick={() => handleEditarComercial(c.id)}
-                          className="text-left hover:text-primary-600 hover:underline"
-                        >
-                          <p className="font-medium text-gray-900 truncate">{c.nome}</p>
-                          <p className="text-xs text-gray-500">{formatCpf(c.cpf)}</p>
-                        </button>
-                      </td>
-                      <td className="p-3 align-top border-t" rowSpan={3}>
-                        <p className="text-xs text-gray-600">{c.funcao ? c.funcao.replace(/_/g, " ") : "-"}</p>
-                        <p className="text-xs text-gray-500">{c.status}</p>
-                      </td>
-                      <td className="p-2 text-center align-top border-t" rowSpan={3}>
-                        <div className="flex gap-1 justify-center">
+                {comerciais.map((c) => {
+                  const isLideranca = c.isLideranca === true;
+                  return (
+                    <Fragment key={c.id}>
+                      <tr className="hover:bg-gray-50">
+                        <td className="p-3 align-top border-t" rowSpan={isLideranca ? 1 : 3}>
                           <button
                             onClick={() => handleEditarComercial(c.id)}
-                            className="text-blue-600 hover:text-blue-800 text-xs font-medium px-1.5 py-1 rounded hover:bg-blue-50"
-                            title="Editar"
+                            className="text-left hover:text-primary-600 hover:underline"
                           >
-                            Editar
+                            <p className="font-medium text-gray-900 truncate">{c.nome}</p>
+                            <p className="text-xs text-gray-500">{formatCpf(c.cpf)}</p>
                           </button>
-                          <button
-                            onClick={() => handleDeletarComercial(c.id)}
-                            className="text-red-600 hover:text-red-800 text-xs font-medium px-1.5 py-1 rounded hover:bg-red-50"
-                            title="Deletar"
-                          >
-                            Deletar
-                          </button>
-                        </div>
-                      </td>
-                      <td className="p-2 border-t">
-                        <span className="text-[11px] font-medium text-gray-500">Meta</span>
-                      </td>
-                      {mesesAno.map((m) => {
-                        const mesRef = `${anoReferencia}-${m.value}`;
-                        return (
-                          <td key={`meta-${m.value}-${metaVersion}`} className="p-2 border-t">
-                            <input
-                              type="text"
-                              inputMode="decimal"
-                              value={metasInputs[c.id]?.[mesRef] ?? ""}
-                              placeholder="R$ 0,00"
-                              className="w-full px-3 py-2 border rounded text-sm text-right font-mono focus-ring"
-                              onChange={(e) => {
-                                handleChangeMeta(c.id, mesRef, e.target.value);
-                              }}
-                              onBlur={(e) => {
-                                const valor = e.target.value;
-                                if (valor) {
-                                  handleSalvarMetaGeral(c.id, mesRef, valor);
-                                }
-                              }}
-                            />
+                        </td>
+                        <td className="p-3 align-top border-t" rowSpan={isLideranca ? 1 : 3}>
+                          <p className="text-xs text-gray-600">{c.funcao ? c.funcao.replace(/_/g, " ") : "-"}</p>
+                          <p className="text-xs text-gray-500">{c.status}</p>
+                          {isLideranca && (
+                            <span className="inline-block mt-1 px-2 py-0.5 bg-purple-100 text-purple-800 text-[10px] font-medium rounded">
+                              Líder Comercial
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-2 text-center align-top border-t" rowSpan={isLideranca ? 1 : 3}>
+                          <div className="flex gap-1 justify-center">
+                            <button
+                              onClick={() => handleEditarComercial(c.id)}
+                              className="text-blue-600 hover:text-blue-800 text-xs font-medium px-1.5 py-1 rounded hover:bg-blue-50"
+                              title="Editar"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => handleDeletarComercial(c.id)}
+                              className="text-red-600 hover:text-red-800 text-xs font-medium px-1.5 py-1 rounded hover:bg-red-50"
+                              title="Deletar"
+                            >
+                              Deletar
+                            </button>
+                          </div>
+                        </td>
+                        {!isLideranca && (
+                          <td className="p-2 border-t">
+                            <span className="text-[11px] font-medium text-gray-500">Meta</span>
                           </td>
-                        );
-                      })}
-                    </tr>
-                    <tr className="border-b hover:bg-gray-50">
-                      <td className="p-2">
-                        <span className="text-[11px] font-medium text-gray-500">Produção</span>
-                      </td>
-                      {mesesAno.map((m) => {
-                        const mesRef = `${anoReferencia}-${m.value}`;
-                        return (
-                          <td key={`producao-${m.value}-${metaVersion}`} className="p-2">
-                            <input
-                              type="text"
-                              inputMode="decimal"
-                              value={producaoInputs[c.id]?.[mesRef] ?? ""}
-                              placeholder="R$ 0,00"
-                              className="w-full px-3 py-2 border rounded text-sm text-right font-mono focus-ring bg-blue-50/40"
-                              onChange={(e) => {
-                                handleChangeProducao(c.id, mesRef, e.target.value);
-                              }}
-                              onBlur={(e) => {
-                                const valor = e.target.value;
-                                if (valor) {
-                                  handleSalvarProducaoGeral(c.id, mesRef, valor);
-                                }
-                              }}
-                            />
-                          </td>
-                        );
-                      })}
-                    </tr>
-                    <tr className="border-b hover:bg-gray-50">
-                      <td className="p-2">
-                        <span className="text-[11px] font-medium text-gray-500">Comissão</span>
-                      </td>
-                      {mesesAno.map((m) => {
-                        const mesRef = `${anoReferencia}-${m.value}`;
-                        const producaoMes = producaoInputs[c.id]?.[mesRef];
-                        const percentualRegra = getComissaoFromFuncao({ regrasComerciais, regrasGestores }, c.funcao);
-                        const valorCalculado = calcularValorComissao(producaoMes, percentualRegra);
-                        return (
-                          <td key={`comissao-${m.value}-${metaVersion}`} className="p-2">
-                            <input
-                              type="text"
-                              readOnly
-                              tabIndex={-1}
-                              value={valorCalculado}
-                              placeholder="R$ 0,00"
-                              title={`Produção × regra (${percentualRegra.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)`}
-                              className="w-full px-3 py-2 border rounded text-sm text-right font-mono bg-green-50/60 text-gray-700 cursor-not-allowed"
-                            />
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  </Fragment>
-                ))}
+                        )}
+                        {!isLideranca && mesesAno.map((m) => {
+                          const mesRef = `${anoReferencia}-${m.value}`;
+                          return (
+                            <td key={`meta-${m.value}-${metaVersion}`} className="p-2 border-t">
+                              <input
+                                type="text"
+                                inputMode="decimal"
+                                value={metasInputs[c.id]?.[mesRef] ?? ""}
+                                placeholder="R$ 0,00"
+                                className="w-full px-3 py-2 border rounded text-sm text-right font-mono focus-ring"
+                                onChange={(e) => {
+                                  handleChangeMeta(c.id, mesRef, e.target.value);
+                                }}
+                                onBlur={(e) => {
+                                  const valor = e.target.value;
+                                  if (valor) {
+                                    handleSalvarMetaGeral(c.id, mesRef, valor);
+                                  }
+                                }}
+                              />
+                            </td>
+                          );
+                        })}
+                      </tr>
+                      {!isLideranca && (
+                        <>
+                          <tr className="border-b hover:bg-gray-50">
+                            <td className="p-2">
+                              <span className="text-[11px] font-medium text-gray-500">Produção</span>
+                            </td>
+                            {mesesAno.map((m) => {
+                              const mesRef = `${anoReferencia}-${m.value}`;
+                              return (
+                                <td key={`producao-${m.value}-${metaVersion}`} className="p-2">
+                                  <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={producaoInputs[c.id]?.[mesRef] ?? ""}
+                                    placeholder="R$ 0,00"
+                                    className="w-full px-3 py-2 border rounded text-sm text-right font-mono focus-ring bg-blue-50/40"
+                                    onChange={(e) => {
+                                      handleChangeProducao(c.id, mesRef, e.target.value);
+                                    }}
+                                    onBlur={(e) => {
+                                      const valor = e.target.value;
+                                      if (valor) {
+                                        handleSalvarProducaoGeral(c.id, mesRef, valor);
+                                      }
+                                    }}
+                                  />
+                                </td>
+                              );
+                            })}
+                          </tr>
+                          <tr className="border-b hover:bg-gray-50">
+                            <td className="p-2">
+                              <span className="text-[11px] font-medium text-gray-500">Comissão</span>
+                            </td>
+                            {mesesAno.map((m) => {
+                              const mesRef = `${anoReferencia}-${m.value}`;
+                              const producaoMes = producaoInputs[c.id]?.[mesRef];
+                              const percentualRegra = getComissaoFromFuncao({ regrasComerciais, regrasGestores }, c.funcao);
+                              const valorCalculado = calcularValorComissao(producaoMes, percentualRegra);
+                              return (
+                                <td key={`comissao-${m.value}-${metaVersion}`} className="p-2">
+                                  <input
+                                    type="text"
+                                    readOnly
+                                    tabIndex={-1}
+                                    value={valorCalculado}
+                                    placeholder="R$ 0,00"
+                                    title={`Produção × regra (${percentualRegra.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)`}
+                                    className="w-full px-3 py-2 border rounded text-sm text-right font-mono bg-green-50/60 text-gray-700 cursor-not-allowed"
+                                  />
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        </>
+                      )}
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>

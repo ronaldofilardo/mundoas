@@ -10,6 +10,7 @@ export interface Comercial {
   lideranca?: "COMERCIAL" | "GESTOR";
   tipoLideranca?: "COMERCIAL" | "GESTOR";
   tipo?: "GERENTE" | "SUPERVISOR" | "LIDER";
+  isLideranca?: boolean;
 }
 
 export interface Meta {

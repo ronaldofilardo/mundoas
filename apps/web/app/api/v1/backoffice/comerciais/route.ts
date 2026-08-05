@@ -46,6 +46,9 @@ export async function GET() {
         },
         orderBy: { createdAt: "desc" },
       },
+      usuario: {
+        select: { id: true, email: true, status: true },
+      },
     },
   });
 
@@ -69,8 +72,25 @@ export async function GET() {
   // Juntar todos os comerciais
   const todosComerciais = [...comerciaisComLideranca, ...comerciaisSemLideranca];
 
-  return ok(
-    todosComerciais.map((c) => ({
+  // Incluir lideranças do tipo COMERCIAL como "comerciais líderes"
+  const liderancasComerciais = liderancas
+    .filter(l => l.tipo === "COMERCIAL")
+    .map(l => ({
+      id: l.id,
+      nome: l.nome,
+      cpf: l.cpf,
+      email: l.usuario.email,
+      funcao: "LIDER_COMERCIAL" as const,
+      percentualComissao: 0,
+      status: l.status,
+      createdAt: l.createdAt,
+      liderancaId: null,
+      tipoLideranca: "COMERCIAL" as const,
+      isLideranca: true,
+    }));
+
+  return ok([
+    ...todosComerciais.map((c) => ({
       id: c.id,
       nome: c.nome,
       cpf: c.cpf,
@@ -81,8 +101,10 @@ export async function GET() {
       createdAt: c.createdAt,
       liderancaId: c.liderancaId,
       tipoLideranca: c.tipoLideranca,
+      isLideranca: false,
     })),
-  );
+    ...liderancasComerciais,
+  ]);
 }
 
 export async function POST(req: NextRequest) {
