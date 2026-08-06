@@ -4,7 +4,7 @@ import { resolveNavProfile, isLinkActive } from "@/lib/nav";
 describe("resolveNavProfile", () => {
   it("rota /backoffice/* sempre resolve para perfil backoffice, mesmo com sessão divergente", () => {
     const p = resolveNavProfile(
-      { tipo: "CONSULTOR", name: "X" },
+      { tipo: "COMERCIAL", name: "X" },
       "/backoffice/usuarios/comerciais",
     );
     expect(p.id).toBe("backoffice");
@@ -21,27 +21,27 @@ describe("resolveNavProfile", () => {
     expect(p.groups.find((g) => g.title === "Comissionamento")?.links.length).toBeGreaterThan(0);
   });
 
-  it("rota tem prioridade sobre sessão (sessão Consultor em /gestor/* → gestor)", () => {
+  it("rota tem prioridade sobre sessão (sessão qualquer em /backoffice/* → backoffice)", () => {
     const p = resolveNavProfile(
-      { tipo: "CONSULTOR", name: "X" },
-      "/gestor/dashboard",
+      { tipo: "COMERCIAL", name: "X" },
+      "/backoffice/dashboard",
     );
-    expect(p.id).toBe("gestor");
+    expect(p.id).toBe("backoffice");
   });
 
-  it("CONSULTOR → perfil consultor (sem rota)", () => {
-    const p = resolveNavProfile({ tipo: "CONSULTOR_PF", name: "X" });
-    expect(p.id).toBe("consultor");
+  it("COMERCIAL → perfil comercial (sem rota)", () => {
+    const p = resolveNavProfile({ tipo: "COMERCIAL", name: "X" });
+    expect(p.id).toBe("comercial");
   });
 
-  it("tipo desconhecido sem rota cai no DEFAULT_PROFILE_ID (consultor)", () => {
+  it("tipo desconhecido sem rota cai no DEFAULT_PROFILE_ID (backoffice)", () => {
     const p = resolveNavProfile({ tipo: "NAO_EXISTE", name: "X" });
-    expect(p.id).toBe("consultor");
+    expect(p.id).toBe("backoffice");
   });
 
-  it("sessão nula sem rota cai no DEFAULT_PROFILE_ID", () => {
+  it("sessão nula sem rota cai no DEFAULT_PROFILE_ID (backoffice)", () => {
     const p = resolveNavProfile(null);
-    expect(p.id).toBe("consultor");
+    expect(p.id).toBe("backoffice");
   });
 });
 
@@ -89,3 +89,4 @@ describe("manifesto — Metas & Produção", () => {
     expect(link?.icon).toBe("goals");
   });
 });
+

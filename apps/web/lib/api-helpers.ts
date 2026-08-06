@@ -30,14 +30,6 @@ export function created(data: unknown) {
   return NextResponse.json(data, { status: 201 });
 }
 
-export async function requireGestor() {
-  const session = await getSession();
-  if (!session?.user) return { session: null, error: unauthorized() };
-  if (session.user.tipo !== "GESTOR")
-    return { session: null, error: forbidden() };
-  return { session, error: null };
-}
-
 export async function requireAdmin() {
   const session = await getSession();
   if (!session?.user) return { session: null, error: unauthorized() };
@@ -46,83 +38,9 @@ export async function requireAdmin() {
   return { session, error: null };
 }
 
-export async function requireGestorWithScope() {
-  const session = await getSession();
-  if (!session?.user)
-    return { session: null, consultorIds: [], error: unauthorized() };
-  const isGestorPJ =
-    session.user.tipo === "GESTOR" &&
-    session.user.papel === "GESTOR_PJ";
-  if (!isGestorPJ)
-    return { session: null, consultorIds: [], error: forbidden() };
-
-  const gestoresConsultores = await prisma.gestorConsultor.findMany({
-    where: { gestorId: session.user.id },
-    select: { consultorId: true },
-  });
-
-  const consultorIds = gestoresConsultores.map((gc) => gc.consultorId);
-  return { session, consultorIds, error: null };
-}
-
-export async function requireGestorWithUserScope() {
-  const session = await getSession();
-  if (!session?.user)
-    return {
-      session: null,
-      consultorIds: [],
-      usuarioIds: [],
-      error: unauthorized(),
-    };
-  const isGestorPJ =
-    session.user.tipo === "GESTOR" &&
-    session.user.papel === "GESTOR_PJ";
-  if (!isGestorPJ)
-    return {
-      session: null,
-      consultorIds: [],
-      usuarioIds: [],
-      error: forbidden(),
-    };
-
-  const gestoresConsultores = await prisma.gestorConsultor.findMany({
-    where: { gestorId: session.user.id },
-    select: {
-      consultorId: true,
-      consultor: { select: { usuarioId: true } },
-    },
-  });
-
-  const consultorIds = gestoresConsultores.map(
-    (gc: { consultorId: string; consultor: { usuarioId: string } }) =>
-      gc.consultorId,
-  );
-  const usuarioIds = gestoresConsultores.map(
-    (gc: { consultorId: string; consultor: { usuarioId: string } }) =>
-      gc.consultor.usuarioId,
-  );
-  return { session, consultorIds, usuarioIds, error: null };
-}
-
-export async function requireConsultor() {
-  const session = await getSession();
-  if (!session?.user) return { session: null, error: unauthorized() };
-  if (session.user.tipo !== "CONSULTOR")
-    return { session: null, error: forbidden() };
-  return { session, error: null };
-}
-
 export async function requireAuth() {
   const session = await getSession();
   if (!session?.user) return { session: null, error: unauthorized() };
-  return { session, error: null };
-}
-
-export async function requireEstabelecimento() {
-  const session = await getSession();
-  if (!session?.user) return { session: null, error: unauthorized() };
-  if (session.user.tipo !== "ESTABELECIMENTO")
-    return { session: null, error: forbidden() };
   return { session, error: null };
 }
 

@@ -8,23 +8,32 @@ describe("TipoUsuario", () => {
       "BACKOFFICE",
       "SUPERVISAO",
       "GERENCIA",
-      "CONSULTOR",
+      "GESTOR",
       "PARCEIRO",
       "COMERCIAL",
       "LIDERANCA",
-      "GESTOR_PJ",
       "CONSULTOR_PF",
     ];
 
     expect(tipos).toContain("CONSULTOR_PF");
-    expect(tipos.length).toBeGreaterThanOrEqual(10);
+    expect(tipos.length).toBeGreaterThanOrEqual(9);
   });
 
-  it("nao deve incluir tipos invalidos", () => {
-    const tiposInvalidos = ["GESTOR_PF", "PARCEIRO_PF", "CONSULTOR_PF_INVALIDO"];
+  it("nao deve incluir tipos PJ removidos", () => {
+    const tiposInvalidos = ["GESTOR_PJ", "CONSULTOR"];
 
     tiposInvalidos.forEach((tipo) => {
-      expect(["ADMIN", "BACKOFFICE", "SUPERVISAO", "GERENCIA", "CONSULTOR", "PARCEIRO", "COMERCIAL", "LIDERANCA", "GESTOR_PJ", "CONSULTOR_PF" as any]).not.toContain(tipo as any);
+      expect([
+        "ADMIN",
+        "BACKOFFICE",
+        "SUPERVISAO",
+        "GERENCIA",
+        "GESTOR",
+        "PARCEIRO",
+        "COMERCIAL",
+        "LIDERANCA",
+        "CONSULTOR_PF",
+      ] as any).not.toContain(tipo as any);
     });
   });
 });

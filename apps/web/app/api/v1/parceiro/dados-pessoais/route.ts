@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
 import { ok, notFound, requireParceiroWithScope, badRequest } from "@/lib/api-helpers";
-import { atualizarConsultorSelfSchema } from "@asa/shared";
+import { atualizarDadosPessoaisSchema } from "@asa/shared";
 import { criarAuditLog } from "@/lib/audit";
 
 export async function GET(req: NextRequest) {
@@ -42,7 +42,7 @@ export async function PUT(req: NextRequest) {
   if (error) return error;
 
   const body = await req.json();
-  const parsed = atualizarConsultorSelfSchema.safeParse(body);
+  const parsed = atualizarDadosPessoaisSchema.safeParse(body);
 
   if (!parsed.success) {
     return badRequest(

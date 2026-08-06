@@ -1,0 +1,7 @@
+-- Rollback for: remove_sistema_pj
+-- Pré-requisito: restaurar a partir de backup_tabelas_pj_<data>.dump (pg_restore) ou
+-- recriar o schema antigo deste commit e importar os dados exportados.
+-- Exemplo: pg_restore -d "$DATABASE_URL" --data-only --disable-triggers backup_tabelas_pj_<data>.dump
+--
+-- Este rollback é manual: recrear tipos, tabelas e joins é extenso.
+-- Recomendado: use pg_restore do dump da Fase 0 em vez de replayar este arquivo.

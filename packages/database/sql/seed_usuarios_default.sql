@@ -67,56 +67,13 @@ ON CONFLICT (cpf) DO UPDATE SET
   updated_at = NOW();
 
 -- ============================================================
--- 3. CONSULTOR
--- ============================================================
-INSERT INTO usuarios (id, nome, email, senha_hash, tipo, telefone, status, senha_temporaria, papel, criado_em, atualizado_em)
-VALUES (
-  '00000000-0000-0000-0004-000000000001',
-  'Consultor',
-  'consultor@asa.com',
-  '$2a$12$uF0dL8sTPbckvCzvlvgK0uDoK3dm/wEufvO0Xfn1MNiI4T.6Nknni',
-  'CONSULTOR',
-  NULL,
-  'ATIVO',
-  false,
-  NULL,
-  NOW(),
-  NOW()
-)
-ON CONFLICT (email) DO UPDATE SET
-  senha_hash = EXCLUDED.senha_hash,
-  tipo = 'CONSULTOR',
-  papel = NULL,
-  senha_temporaria = false,
-  atualizado_em = NOW();
-
-INSERT INTO consultores (id, usuario_id, cpf, pix_tipo, banco_nome, agencia, conta, total_consultas, criado_em)
-SELECT
-  '00000000-0000-0000-0004-000000000002',
-  u.id,
-  '12345678903',
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  0,
-  NOW()
-FROM usuarios u
-WHERE u.email = 'consultor@asa.com'
-ON CONFLICT (cpf) DO UPDATE SET
-  usuario_id = EXCLUDED.usuario_id,
-  criado_em = NOW();
-
--- ============================================================
 -- VERIFICACAO
 -- ============================================================
 SELECT 'Usuarios seed executado com sucesso!' AS status;
 SELECT id, nome, email, tipo, papel FROM usuarios ORDER BY email;
 SELECT id, nome, cpf, percentual_comissao_default FROM backoffices WHERE cpf = '12345678901';
-SELECT id, cpf FROM consultores WHERE cpf = '12345678903';
 
 -- ============================================================
--- NOTA: gestor-pj@asa.com (Consultor -> Estabelecimentos, R$20/R$10)
---       pertence a outra arquitetura e NAO eh modificado por este seed.
---       Sua criacao eh feita via fluxo de liderancas/gestores.
+-- NOTA: Usuarios do sistema PJ (consultor, gestor-pj, estabelecimentos,
+--       cupons) foram removidos em PLANO_REMOCAO_SISTEMA_PJ.
 -- ============================================================

@@ -80,22 +80,12 @@ export default function LoginPage() {
     console.log("[Login] Session:", session);
     console.log("[Login] Tipo:", tipo, "Papel:", papel);
 
-    if (tipo === "ADMIN") {
-      router.push("/admin/usuarios");
-    } else if (tipo === "GESTOR" && papel === "BACKOFFICE") {
+    if (tipo === "GESTOR" && papel === "BACKOFFICE") {
       router.push("/backoffice/dashboard");
-    } else if (tipo === "GESTOR" && papel === "GESTOR_PJ") {
-      router.push("/gestor/dashboard");
     } else if (tipo === "BACKOFFICE") {
       router.push("/backoffice/dashboard");
-    } else if (tipo === "GESTOR_PJ") {
-      router.push("/gestor/dashboard");
     } else if (tipo === "PARCEIRO") {
       router.push("/parceiro/indicados");
-    } else if (tipo === "ESTABELECIMENTO") {
-      router.push("/estabelecimento/dashboard");
-    } else if (tipo === "CONSULTOR") {
-      router.push("/consultor/estabelecimentos");
     } else if (tipo === "LIDERANCA") {
       router.push("/lideranca");
     } else {
@@ -191,9 +181,9 @@ export default function LoginPage() {
             <br />e cuidar de você.
           </h2>
           <p className="text-primary-100 text-lg leading-relaxed">
-            Plataforma de gestão de cupons,
+            Plataforma de gestão de comissionamento,
             <br />
-            consultas e comissões da rede Acesso Saúde.
+            metas e pontos da rede Acesso Saúde.
           </p>
         </div>
 

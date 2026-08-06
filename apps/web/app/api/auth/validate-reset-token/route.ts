@@ -10,11 +10,7 @@ export async function GET(request: NextRequest) {
     const token = searchParams.get("token");
     const type = searchParams.get("type");
 
-    if (
-      !token ||
-      !type ||
-      !["USUARIO", "USUARIO_ESTABELECIMENTO"].includes(type)
-    ) {
+    if (!token || !type || type !== "USUARIO") {
       return NextResponse.json(
         { valid: false, error: "Token ou tipo inválido" },
         { status: 400 },
@@ -28,9 +24,6 @@ export async function GET(request: NextRequest) {
       where: { token: hashedToken },
       include: {
         usuario: {
-          select: { id: true, email: true, nome: true },
-        },
-        usuarioEstabelecimento: {
           select: { id: true, email: true, nome: true },
         },
       },
@@ -52,33 +45,18 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if token type matches
-    if (type === "USUARIO" && !resetToken.usuarioId) {
+    if (!resetToken.usuarioId) {
       return NextResponse.json({
         valid: false,
         error: "Tipo de token não corresponde",
       });
     }
-
-    if (
-      type === "USUARIO_ESTABELECIMENTO" &&
-      !resetToken.usuarioEstabelecimentoId
-    ) {
-      return NextResponse.json({
-        valid: false,
-        error: "Tipo de token não corresponde",
-      });
-    }
-
-    const userData =
-      type === "USUARIO"
-        ? resetToken.usuario
-        : resetToken.usuarioEstabelecimento;
 
     return NextResponse.json({
       valid: true,
-      email: userData?.email,
-      nome: userData?.nome,
-      usuarioId: userData?.id,
+      email: resetToken.usuario?.email,
+      nome: resetToken.usuario?.nome,
+      usuarioId: resetToken.usuario?.id,
       type,
     });
   } catch (error) {

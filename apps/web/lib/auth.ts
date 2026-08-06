@@ -29,93 +29,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const user = await prisma.usuario.findUnique({
             where: { email },
             include: {
-              consultor: true,
               backoffice: true,
               parceiro: true,
               comercial: true,
             },
           });
 
-          if (user) {
-            console.log(
-              `[auth] Found usuario: ${email}, status: ${user.status}, tipo: ${user.tipo}, papel: ${user.papel}`
-            );
-
-            if (user.status !== "ATIVO" && user.status !== undefined) {
-              console.log(`[auth] Status check failed: ${user.status}`);
-              return null;
-            }
-
-            const senhaValida = await compare(
-              credentials.senha as string,
-              user.senhaHash
-            );
-
-            if (senhaValida) {
-              console.log(`[auth] ✓ Senha válida para ${email}`);
-              
-              return {
-                id: user.id,
-                name: user.nome,
-                email: user.email,
-                tipo: user.tipo as TipoAcesso,
-                papel: user.papel,
-                consultorId: user.consultor?.id ?? null,
-                estabelecimentoId: null,
-                backofficeId: user.backoffice?.id ?? null,
-                parceiroId: user.parceiro?.id ?? null,
-                comercialId: user.comercial?.id ?? null,
-              };
-            } else {
-              console.log(`[auth] ✗ Senha inválida para ${email}`);
-            }
+          if (!user) {
+            console.log(`[auth] Usuario não encontrado: ${email}`);
+            return null;
           }
 
-          const usuarioEstab = await prisma.usuarioEstabelecimento.findUnique({
-            where: { email },
-            include: {
-              estabelecimento: { select: { id: true, nomeFantasia: true } },
-            },
-          });
+          console.log(
+            `[auth] Found usuario: ${email}, status: ${user.status}, tipo: ${user.tipo}, papel: ${user.papel}`
+          );
 
-          if (usuarioEstab) {
-            console.log(
-              `[auth] Found usuarioEstab: ${email}, ativo: ${usuarioEstab.ativo}`
-            );
-
-            if (usuarioEstab.ativo === false) {
-              console.log(`[auth] UsuarioEstab inactive`);
-              return null;
-            }
-
-            const senhaValida = await compare(
-              credentials.senha as string,
-              usuarioEstab.senhaHash
-            );
-
-            if (senhaValida) {
-              console.log(
-                `[auth] ✓ Senha válida para estabelecimento ${email}`
-              );
-              return {
-                id: usuarioEstab.id,
-                name: usuarioEstab.nome,
-                email: usuarioEstab.email,
-                tipo: "ESTABELECIMENTO" as TipoAcesso,
-                papel: null,
-                consultorId: null,
-                estabelecimentoId: usuarioEstab.estabelecimentoId,
-                backofficeId: null,
-                parceiroId: null,
-                comercialId: null,
-              };
-            } else {
-              console.log(`[auth] ✗ Senha inválida para estabelecimento ${email}`);
-            }
+          if (user.status !== "ATIVO" && user.status !== undefined) {
+            console.log(`[auth] Status check failed: ${user.status}`);
+            return null;
           }
 
-          console.log(`[auth] Usuario não encontrado: ${email}`);
-          return null;
+          const senhaValida = await compare(
+            credentials.senha as string,
+            user.senhaHash
+          );
+
+          if (!senhaValida) {
+            console.log(`[auth] ✗ Senha inválida para ${email}`);
+            return null;
+          }
+
+          console.log(`[auth] ✓ Senha válida para ${email}`);
+          return {
+            id: user.id,
+            name: user.nome,
+            email: user.email,
+            tipo: user.tipo as TipoAcesso,
+            papel: user.papel,
+            backofficeId: user.backoffice?.id ?? null,
+            parceiroId: user.parceiro?.id ?? null,
+            comercialId: user.comercial?.id ?? null,
+          };
         } catch (error) {
           console.error("[auth] Error in authorize:", error);
           return null;
@@ -129,8 +83,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (user.id) token.id = user.id;
         token.tipo = (user as any).tipo;
         token.papel = (user as any).papel;
-        token.consultorId = (user as any).consultorId;
-        token.estabelecimentoId = (user as any).estabelecimentoId;
         token.backofficeId = (user as any).backofficeId;
         token.parceiroId = (user as any).parceiroId;
         token.comercialId = (user as any).comercialId;
@@ -142,8 +94,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         (session.user as any).id = token.id;
         (session.user as any).tipo = token.tipo;
         (session.user as any).papel = token.papel;
-        (session.user as any).consultorId = token.consultorId;
-        (session.user as any).estabelecimentoId = token.estabelecimentoId;
         (session.user as any).backofficeId = token.backofficeId;
         (session.user as any).parceiroId = token.parceiroId;
         (session.user as any).comercialId = token.comercialId;

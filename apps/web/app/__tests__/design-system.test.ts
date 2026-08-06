@@ -1,49 +1,20 @@
 import { describe, it, expect } from "vitest";
 
 /**
- * Testes do Design System — Acesso Saúde Aqui
+ * Testes do Design System — Acesso Saúde Aqui (PF)
  *
- * Cobre as alterações estruturais desta sessão:
- * 1. Paleta de cores — laranja como primary (substituição do azul)
- * 2. Estrutura de navegação da Sidebar — ícones + rotas
- * 3. Comportamento dos nav items (gestor vs. consultor)
- * 4. Geração de initials do usuário
- * 5. Classe CSS fixa da sidebar
+ * Cobre:
+ * 1. Estrutura de navegação da Sidebar (BACKOFFICE, PARCEIRO, COMERCIAL, LIDERANCA)
+ * 2. Geração de initials do usuário
+ * 3. Paleta de cores laranja (tokens Tailwind)
+ * 4. Mensagens de autenticação
  */
-
-// ---------------------------------------------------------------------------
-// Estrutura de navegação (replicação das constantes de sidebar.tsx)
-// ---------------------------------------------------------------------------
 
 interface NavItem {
   label: string;
   href: string;
   icon: string;
 }
-
-const adminNav: NavItem[] = [
-  { label: "Usuários", href: "/admin/usuarios", icon: "👤" },
-];
-
-const gestorNav: NavItem[] = [
-  { label: "Dashboard", href: "/gestor/dashboard", icon: "📊" },
-  { label: "Consultores", href: "/gestor/consultores", icon: "👥" },
-  { label: "Importar Cupons", href: "/gestor/importar-cupons", icon: "📥" },
-  { label: "Produção", href: "/gestor/producao", icon: "📋" },
-  { label: "Comissões", href: "/gestor/comissoes", icon: "💰" },
-  { label: "Auditoria", href: "/gestor/auditoria", icon: "🔍" },
-];
-
-const consultorNav: NavItem[] = [
-  {
-    label: "Estabelecimentos",
-    href: "/consultor/estabelecimentos",
-    icon: "🏥",
-  },
-  { label: "Comissões", href: "/consultor/comissoes", icon: "💰" },
-  { label: "Produtividade", href: "/consultor/produtividade", icon: "📈" },
-  { label: "Dados Pessoais", href: "/consultor/dados-pessoais", icon: "👤" },
-];
 
 const backofficeNav: NavItem[] = [
   { label: "Dashboard", href: "/backoffice/dashboard", icon: "📊" },
@@ -59,19 +30,16 @@ const parceiroNav: NavItem[] = [
   { label: "Dados Pessoais", href: "/parceiro/dados-pessoais", icon: "👤" },
 ];
 
-const estabelecimentoNav: NavItem[] = [
-  { label: "Dashboard", href: "/estabelecimento/dashboard", icon: "📊" },
-  {
-    label: "Produtividade",
-    href: "/estabelecimento/produtividade",
-    icon: "📈",
-  },
-  { label: "Comissões", href: "/estabelecimento/comissoes", icon: "💰" },
+const comercialNav: NavItem[] = [
+  { label: "Minha comissão", href: "/comercial/minha-comissao", icon: "💰" },
+  { label: "Minhas metas", href: "/comercial/minhas-metas", icon: "🎯" },
 ];
 
-// ---------------------------------------------------------------------------
-// Helper de initials (replicação da lógica de sidebar.tsx)
-// ---------------------------------------------------------------------------
+const liderancaNav: NavItem[] = [
+  { label: "Visão geral", href: "/lideranca", icon: "📊" },
+  { label: "Consultores PF", href: "/lideranca/consultores-pf", icon: "👥" },
+];
+
 function generateInitials(name: string | null | undefined): string {
   if (!name) return "?";
   return name
@@ -80,34 +48,6 @@ function generateInitials(name: string | null | undefined): string {
     .slice(0, 2)
     .join("");
 }
-
-// ---------------------------------------------------------------------------
-// Testes
-// ---------------------------------------------------------------------------
-
-describe("Sidebar — Navegação do Gestor", () => {
-  it("deve ter 6 itens de navegação", () => {
-    expect(gestorNav).toHaveLength(6);
-  });
-
-  it("todos os itens devem ter href, label e icon", () => {
-    gestorNav.forEach((item) => {
-      expect(item.href).toBeTruthy();
-      expect(item.label).toBeTruthy();
-      expect(item.icon).toBeTruthy();
-    });
-  });
-
-  it("hrefs do gestor PJ devem começar com /gestor/", () => {
-    gestorNav.forEach((item) => {
-      expect(item.href.startsWith("/gestor/")).toBe(true);
-    });
-  });
-
-  it("deve conter rota de dashboard", () => {
-    expect(gestorNav.some((i) => i.href === "/gestor/dashboard")).toBe(true);
-  });
-});
 
 describe("Sidebar — Navegação do Backoffice", () => {
   it("deve ter 5 itens de navegação", () => {
@@ -128,71 +68,56 @@ describe("Sidebar — Navegação do Backoffice", () => {
     });
   });
 
-  it("deve conter rota de parceiros (diferente do PJ)", () => {
-    expect(
-      backofficeNav.some((i) => i.href === "/backoffice/parceiros"),
-    ).toBe(true);
+  it("deve conter rota de parceiros", () => {
+    expect(backofficeNav.some((i) => i.href === "/backoffice/parceiros")).toBe(true);
   });
 
-  it("não deve conter rotas de /gestor/", () => {
+  it("não deve conter rotas de /gestor/, /consultor/ ou /estabelecimento/ (sistema PJ removido)", () => {
     backofficeNav.forEach((item) => {
       expect(item.href.startsWith("/gestor/")).toBe(false);
+      expect(item.href.startsWith("/consultor/")).toBe(false);
+      expect(item.href.startsWith("/estabelecimento/")).toBe(false);
     });
   });
 });
 
-describe("Sidebar — Navegação do Consultor", () => {
-  it("deve ter 4 itens de navegação", () => {
-    expect(consultorNav).toHaveLength(4);
+describe("Sidebar — Navegação do Parceiro", () => {
+  it("deve ter 3 itens de navegação", () => {
+    expect(parceiroNav).toHaveLength(3);
   });
 
-  it("todos os itens devem ter href, label e icon", () => {
-    consultorNav.forEach((item) => {
-      expect(item.href).toBeTruthy();
-      expect(item.label).toBeTruthy();
-      expect(item.icon).toBeTruthy();
-    });
-  });
-
-  it("hrefs do consultor devem começar com /consultor/", () => {
-    consultorNav.forEach((item) => {
-      expect(item.href.startsWith("/consultor/")).toBe(true);
+  it("hrefs do parceiro devem começar com /parceiro/", () => {
+    parceiroNav.forEach((item) => {
+      expect(item.href.startsWith("/parceiro/")).toBe(true);
     });
   });
 
   it("deve conter rota de dados pessoais", () => {
-    expect(
-      consultorNav.some((i) => i.href === "/consultor/dados-pessoais"),
-    ).toBe(true);
+    expect(parceiroNav.some((i) => i.href === "/parceiro/dados-pessoais")).toBe(true);
   });
 });
 
-describe("Sidebar — Seleção de nav por tipo e papel de usuário", () => {
-  function selectNav(
-    tipo: string | undefined,
-    papel: string | null | undefined,
-  ): NavItem[] {
-    if (tipo === "ADMIN") return adminNav;
-    if (tipo === "BACKOFFICE" || (tipo === "BACKOFFICE" && papel === "BACKOFFICE")) return backofficeNav;
-    if (tipo === "PARCEIRO") return parceiroNav;
-    if (tipo === "ESTABELECIMENTO") return estabelecimentoNav;
-    return consultorNav;
-  }
-
-  it("deve retornar backofficeNav para BACKOFFICE", () => {
-    expect(selectNav("BACKOFFICE", null)).toBe(backofficeNav);
+describe("Sidebar — Navegação do Comercial", () => {
+  it("deve ter itens de navegação", () => {
+    expect(comercialNav.length).toBeGreaterThan(0);
   });
 
-  it("deve retornar backofficeNav para BACKOFFICE com papel BACKOFFICE", () => {
-    expect(selectNav("BACKOFFICE", "BACKOFFICE")).toBe(backofficeNav);
+  it("hrefs do comercial devem começar com /comercial/", () => {
+    comercialNav.forEach((item) => {
+      expect(item.href.startsWith("/comercial/")).toBe(true);
+    });
+  });
+});
+
+describe("Sidebar — Navegação da Liderança", () => {
+  it("deve ter itens de navegação", () => {
+    expect(liderancaNav.length).toBeGreaterThan(0);
   });
 
-  it("deve retornar consultorNav para CONSULTOR", () => {
-    expect(selectNav("CONSULTOR", null)).toBe(consultorNav);
-  });
-
-  it("deve retornar consultorNav para tipo indefinido", () => {
-    expect(selectNav(undefined, undefined)).toBe(consultorNav);
+  it("hrefs da liderança devem começar com /lideranca/", () => {
+    liderancaNav.forEach((item) => {
+      expect(item.href.startsWith("/lideranca/")).toBe(true);
+    });
   });
 });
 
@@ -247,72 +172,12 @@ describe("Design System — Paleta de cores laranja (tokens Tailwind)", () => {
   it("deve ter 10 tons na paleta", () => {
     expect(Object.keys(palette)).toHaveLength(10);
   });
-
-  it("tons mais claros devem ter maior componente R no hex", () => {
-    // 50 é mais claro (mais branco) que 900
-    const r50 = parseInt(palette[50].slice(1, 3), 16);
-    const r900 = parseInt(palette[900].slice(1, 3), 16);
-    expect(r50).toBeGreaterThan(r900);
-  });
 });
 
 describe("Design System — Mensagens de autenticação", () => {
   it("mensagem de erro de login deve ser legível", () => {
     const msg = "Email ou senha inválidos";
-    expect(msg).not.toContain("Credenciais inválidas"); // legado removido
+    expect(msg).not.toContain("Credenciais inválidas");
     expect(msg.length).toBeGreaterThan(0);
-  });
-});
-
-describe("Sidebar — Navegação do Estabelecimento", () => {
-  it("deve ter 3 itens de navegação", () => {
-    expect(estabelecimentoNav).toHaveLength(3);
-  });
-
-  it("todos os itens devem ter href, label e icon", () => {
-    estabelecimentoNav.forEach((item) => {
-      expect(item.href).toBeTruthy();
-      expect(item.label).toBeTruthy();
-      expect(item.icon).toBeTruthy();
-    });
-  });
-
-  it("hrefs do estabelecimento devem começar com /estabelecimento/", () => {
-    estabelecimentoNav.forEach((item) => {
-      expect(item.href.startsWith("/estabelecimento/")).toBe(true);
-    });
-  });
-
-  it("deve conter rota de dashboard", () => {
-    expect(
-      estabelecimentoNav.some((i) => i.href === "/estabelecimento/dashboard"),
-    ).toBe(true);
-  });
-
-  it("deve conter rota de comissoes", () => {
-    expect(
-      estabelecimentoNav.some((i) => i.href === "/estabelecimento/comissoes"),
-    ).toBe(true);
-  });
-});
-
-describe("Sidebar — Seleção de nav para ESTABELECIMENTO", () => {
-  function selectNav(
-    tipo: string | undefined,
-    papel: string | null | undefined,
-  ): NavItem[] {
-    if (tipo === "ADMIN") return adminNav;
-    if (tipo === "BACKOFFICE" || (tipo === "BACKOFFICE" && papel === "BACKOFFICE")) return backofficeNav;
-    if (tipo === "PARCEIRO") return parceiroNav;
-    if (tipo === "ESTABELECIMENTO") return estabelecimentoNav;
-    return consultorNav;
-  }
-
-  it("deve retornar estabelecimentoNav para tipo ESTABELECIMENTO", () => {
-    expect(selectNav("ESTABELECIMENTO", null)).toBe(estabelecimentoNav);
-  });
-
-  it("não deve retornar nav do consultor para ESTABELECIMENTO", () => {
-    expect(selectNav("ESTABELECIMENTO", null)).not.toBe(consultorNav);
   });
 });

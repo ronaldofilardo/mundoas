@@ -3,7 +3,7 @@ import { prisma } from "@asa/database";
 import { hashToken, isTokenExpired } from "@/lib/password-reset";
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ token: string }> },
 ) {
   const { token } = await params;
@@ -20,9 +20,6 @@ export async function GET(
       usuario: {
         select: { id: true, email: true, nome: true },
       },
-      usuarioEstabelecimento: {
-        select: { id: true, email: true, nome: true },
-      },
     },
   });
 
@@ -37,8 +34,7 @@ export async function GET(
     return NextResponse.json({ error: "Token expirado" }, { status: 410 });
   }
 
-  const usuario = resetToken.usuario || resetToken.usuarioEstabelecimento;
-  if (!usuario) {
+  if (!resetToken.usuario) {
     return NextResponse.json(
       { error: "Usuário não encontrado" },
       { status: 404 },
@@ -46,8 +42,8 @@ export async function GET(
   }
 
   return NextResponse.json({
-    email: usuario.email,
-    nome: usuario.nome,
-    type: resetToken.usuarioId ? "USUARIO" : "USUARIO_ESTABELECIMENTO",
+    email: resetToken.usuario.email,
+    nome: resetToken.usuario.nome,
+    type: "USUARIO",
   });
 }

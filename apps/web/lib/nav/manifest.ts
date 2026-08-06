@@ -64,43 +64,6 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
     ],
   },
 
-  gestor: {
-    id: "gestor",
-    label: "Gestão",
-    description: "Equipe · Acesso Saúde",
-    home: "/gestor/dashboard",
-    groups: [
-      {
-        title: "Visão geral",
-        links: [
-          { label: "Dashboard", href: "/gestor/dashboard", icon: "dashboard" },
-        ],
-      },
-      {
-        title: "Equipe",
-        links: [
-          { label: "Consultores", href: "/gestor/consultores", icon: "users" },
-          { label: "Importar cupons", href: "/gestor/importar-cupons", icon: "coupons" },
-          { label: "Usuários", href: "/gestor/usuarios", icon: "users" },
-        ],
-      },
-      {
-        title: "Operação",
-        links: [
-          { label: "Produção", href: "/gestor/producao", icon: "production" },
-          { label: "Comissões", href: "/gestor/comissoes", icon: "commissions" },
-          { label: "Auditoria", href: "/gestor/auditoria", icon: "audit" },
-        ],
-      },
-      {
-        title: "Conta",
-        links: [
-          { label: "Dados pessoais", href: "/gestor/dados-pessoais", icon: "profile" },
-        ],
-      },
-    ],
-  },
-
   comercial: {
     id: "comercial",
     label: "Comercial",
@@ -119,29 +82,6 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
         title: "Conta",
         links: [
           { label: "Dados pessoais", href: "/comercial/dados-pessoais", icon: "profile" },
-        ],
-      },
-    ],
-  },
-
-  consultor: {
-    id: "consultor",
-    label: "Consultor",
-    description: "Estabelecimentos · Acesso Saúde",
-    home: "/consultor/estabelecimentos",
-    groups: [
-      {
-        title: "Operação",
-        links: [
-          { label: "Estabelecimentos", href: "/consultor/estabelecimentos", icon: "establishment" },
-          { label: "Comissões", href: "/consultor/comissoes", icon: "commissions" },
-          { label: "Produtividade", href: "/consultor/produtividade", icon: "productivity" },
-        ],
-      },
-      {
-        title: "Conta",
-        links: [
-          { label: "Dados pessoais", href: "/consultor/dados-pessoais", icon: "profile" },
         ],
       },
     ],
@@ -187,39 +127,7 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
       },
     ],
   },
-
-  estabelecimento: {
-    id: "estabelecimento",
-    label: "Estabelecimento",
-    description: "Operação · Acesso Saúde",
-    home: "/estabelecimento/dashboard",
-    groups: [
-      {
-        title: "Operação",
-        links: [
-          { label: "Dashboard", href: "/estabelecimento/dashboard", icon: "dashboard" },
-          { label: "Produtividade", href: "/estabelecimento/produtividade", icon: "productivity" },
-          { label: "Comissões", href: "/estabelecimento/comissoes", icon: "commissions" },
-        ],
-      },
-    ],
-  },
-
-  admin: {
-    id: "admin",
-    label: "Administrador",
-    description: "Plataforma · Acesso Saúde",
-    home: "/admin/usuarios",
-    groups: [
-      {
-        title: "Plataforma",
-        links: [
-          { label: "Usuários", href: "/admin/usuarios", icon: "users" },
-        ],
-      },
-    ],
-  },
 };
 
 /** Lista ordenada usada quando o perfil não é identificado. */
-export const DEFAULT_PROFILE_ID = "consultor";
+export const DEFAULT_PROFILE_ID = "backoffice";

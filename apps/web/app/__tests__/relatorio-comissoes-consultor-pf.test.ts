@@ -148,7 +148,7 @@ describe("GET /api/v1/backoffice/relatorio-comissoes - consultor-pf", () => {
         nome: "Consultor Rel Test",
         email: `consultor-rel-${Date.now()}-${Math.random().toString(36).slice(2)}@asa.test`,
         senhaHash: await hash("123456", 12),
-        tipo: "CONSULTOR",
+        tipo: "CONSULTOR_PF",
       },
     });
     cleanupIds.usuarios.push(consultorUsuario.id);

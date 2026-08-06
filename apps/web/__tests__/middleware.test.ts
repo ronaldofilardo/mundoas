@@ -37,7 +37,7 @@ describe('Middleware de Autenticação e Papéis', () => {
 
   it('deve redirecionar para /login se tentar acessar rota protegida sem token', async () => {
     (getToken as any).mockResolvedValue(null);
-    const req = createRequest('/admin/usuarios');
+    const req = createRequest('/backoffice/dashboard');
     const res = await middleware(req);
     
     expect(res).toBeInstanceOf(NextResponse);
@@ -49,7 +49,7 @@ describe('Middleware de Autenticação e Papéis', () => {
       tipo: 'PARCEIRO',
       papel: null,
     });
-    const req = createRequest('/admin/usuarios');
+    const req = createRequest('/backoffice/dashboard');
     const res = await middleware(req);
     
     expect(res).toBeInstanceOf(NextResponse);
@@ -62,17 +62,6 @@ describe('Middleware de Autenticação e Papéis', () => {
       papel: 'BACKOFFICE',
     });
     const req = createRequest('/backoffice/dashboard');
-    const res = await middleware(req);
-    
-    expect(isContinueResponse(res)).toBe(true);
-  });
-
-  it('deve redirecionar GESTOR_PJ para dashboard de gestor', async () => {
-    (getToken as any).mockResolvedValue({
-      tipo: 'GERENCIA',
-      papel: 'GESTOR_PJ',
-    });
-    const req = createRequest('/gestor/dashboard');
     const res = await middleware(req);
     
     expect(isContinueResponse(res)).toBe(true);

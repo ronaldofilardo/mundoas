@@ -7,14 +7,11 @@ import type { NavProfile, SessionUserLike } from "./types";
  * mesmo se a sessão/cache divergir, a rota é a fonte da verdade.
  */
 const PATH_PREFIX_TO_PROFILE: Array<{ prefix: string; id: string }> = [
-  { prefix: "/admin", id: "admin" },
   { prefix: "/backoffice", id: "backoffice" },
-  { prefix: "/gestor", id: "gestor" },
+  { prefix: "/gestor-pf", id: "backoffice" },
   { prefix: "/lideranca", id: "lideranca" },
   { prefix: "/parceiro", id: "parceiro" },
   { prefix: "/comercial", id: "comercial" },
-  { prefix: "/consultor", id: "consultor" },
-  { prefix: "/estabelecimento", id: "estabelecimento" },
 ];
 
 function profileByPath(pathname: string | null | undefined): NavProfile | null {

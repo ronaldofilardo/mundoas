@@ -18,6 +18,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (type !== "USUARIO") {
+      return NextResponse.json(
+        { error: "Tipo de usuário inválido" },
+        { status: 400 },
+      );
+    }
+
     // Validate password strength
     const passwordValidation = validatePasswordStrength(novaSenha);
     if (!passwordValidation.valid) {
@@ -39,9 +46,6 @@ export async function POST(request: NextRequest) {
         usuario: {
           select: { id: true },
         },
-        usuarioEstabelecimento: {
-          select: { id: true },
-        },
       },
     });
 
@@ -54,29 +58,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Token expirado" }, { status: 410 });
     }
 
-    // Hash the new password
-    const senhaHash = await bcrypt.hash(novaSenha, 10);
-
-    // Update password based on type
-    if (type === "USUARIO" && resetToken.usuarioId) {
-      await prisma.usuario.update({
-        where: { id: resetToken.usuarioId },
-        data: { senhaHash, senhaTemporaria: false },
-      });
-    } else if (
-      type === "USUARIO_ESTABELECIMENTO" &&
-      resetToken.usuarioEstabelecimentoId
-    ) {
-      await prisma.usuarioEstabelecimento.update({
-        where: { id: resetToken.usuarioEstabelecimentoId },
-        data: { senhaHash, senhaTemporaria: false },
-      });
-    } else {
+    if (!resetToken.usuarioId) {
       return NextResponse.json(
         { error: "Tipo de token não corresponde" },
         { status: 400 },
       );
     }
+
+    // Hash the new password
+    const senhaHash = await bcrypt.hash(novaSenha, 10);
+
+    await prisma.usuario.update({
+      where: { id: resetToken.usuarioId },
+      data: { senhaHash, senhaTemporaria: false },
+    });
 
     // Delete the used token
     await prisma.passwordResetToken.delete({
