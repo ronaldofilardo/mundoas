@@ -14,8 +14,8 @@ export function forbidden() {
   return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
 }
 
-export function badRequest(message: string) {
-  return NextResponse.json({ error: message }, { status: 400 });
+export function badRequest(message: string, details?: unknown) {
+  return NextResponse.json({ error: message, details }, { status: 400 });
 }
 
 export function notFound(message: string = "Não encontrado") {

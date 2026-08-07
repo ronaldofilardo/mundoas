@@ -9,23 +9,56 @@ import {
 } from "@/lib/api-helpers";
 import { z } from "zod";
 
+const FUNCOES_COMERCIAIS = [
+  "GERENTE_CIRE",
+  "SUPERVISOR_ATIVO",
+  "SUPERVISOR_RECEPTIVO",
+  "SUPERVISOR_FRANQUIA",
+  "SUPERVISOR_ATENDIMENTO",
+  "GERENTE_ATENDIMENTO",
+  "SUPERVISOR_COMERCIAL",
+] as const;
+
 const createComercialSchema = z.object({
-  nome: z.string().min(1),
-  cpf: z.string().length(11),
-  email: z.string().email(),
-  telefone: z.string().optional(),
-  funcao: z.enum([
-    "GERENTE_CIRE",
-    "SUPERVISOR_ATIVO",
-    "SUPERVISOR_RECEPTIVO",
-    "SUPERVISOR_FRANQUIA",
-    "SUPERVISOR_ATENDIMENTO",
-    "GERENTE_ATENDIMENTO",
-    "SUPERVISOR_COMERCIAL",
-  ]).optional(),
-  lideranca: z.enum(["COMERCIAL", "GESTOR"]).optional(),
-  tipo: z.enum(["GERENTE", "SUPERVISOR", "LIDER"]).optional(),
-  percentualComissao: z.number().min(0).max(100),
+  nome: z
+    .string({ required_error: "O nome é obrigatório" })
+    .trim()
+    .min(1, "O nome é obrigatório")
+    .max(255, "O nome deve ter no máximo 255 caracteres"),
+  cpf: z
+    .string({ required_error: "O CPF é obrigatório" })
+    .trim()
+    .regex(/^\d{11}$/, "CPF inválido. Informe 11 dígitos sem pontos ou traços"),
+  email: z
+    .string({ required_error: "O e-mail é obrigatório" })
+    .trim()
+    .toLowerCase()
+    .email("E-mail inválido"),
+  telefone: z
+    .string()
+    .trim()
+    .max(20, "Telefone deve ter no máximo 20 caracteres")
+    .optional()
+    .or(z.literal("")),
+  funcao: z
+    .enum(FUNCOES_COMERCIAIS, {
+      errorMap: () => ({ message: "Função comercial inválida" }),
+    })
+    .optional(),
+  lideranca: z
+    .enum(["COMERCIAL", "GESTOR"], {
+      errorMap: () => ({ message: "Tipo de liderança inválido" }),
+    })
+    .optional(),
+  tipo: z
+    .enum(["GERENTE", "SUPERVISOR", "LIDER"], {
+      errorMap: () => ({ message: "Tipo inválido" }),
+    })
+    .optional(),
+  percentualComissao: z
+    .number({ invalid_type_error: "Percentual de comissão deve ser um número" })
+    .min(0, "Percentual de comissão não pode ser negativo")
+    .max(100, "Percentual de comissão não pode ser maior que 100"),
 });
 
 export async function GET() {
@@ -72,22 +105,20 @@ export async function GET() {
   // Juntar todos os comerciais
   const todosComerciais = [...comerciaisComLideranca, ...comerciaisSemLideranca];
 
-  // Incluir lideranças do tipo COMERCIAL como "comerciais líderes"
-  const liderancasComerciais = liderancas
-    .filter(l => l.tipo === "COMERCIAL")
-    .map(l => ({
-      id: l.id,
-      nome: l.nome,
-      cpf: l.cpf,
-      email: l.usuario.email,
-      funcao: "LIDER_COMERCIAL" as const,
-      percentualComissao: 0,
-      status: l.status,
-      createdAt: l.createdAt,
-      liderancaId: null,
-      tipoLideranca: "COMERCIAL" as const,
-      isLideranca: true,
-    }));
+  // Incluir todas as lideranças (COMERCIAL e GESTOR) como "liderança"
+  const todasLiderancas = liderancas.map(l => ({
+    id: l.id,
+    nome: l.nome,
+    cpf: l.cpf,
+    email: l.usuario.email,
+    funcao: l.funcao ?? (l.tipo === "COMERCIAL" ? ("LIDER_COMERCIAL" as const) : ("LIDER_GESTOR" as const)),
+    percentualComissao: 0,
+    status: l.status,
+    createdAt: l.createdAt,
+    liderancaId: null,
+    tipoLideranca: l.tipo,
+    isLideranca: true,
+  }));
 
   return ok([
     ...todosComerciais.map((c) => ({
@@ -103,7 +134,7 @@ export async function GET() {
       tipoLideranca: c.tipoLideranca,
       isLideranca: false,
     })),
-    ...liderancasComerciais,
+    ...todasLiderancas,
   ]);
 }
 
@@ -159,6 +190,7 @@ export async function POST(req: NextRequest) {
           cpf: data.cpf,
           backofficeId,
           tipo: data.lideranca,
+          funcao: data.funcao,
           status: "ATIVO",
         },
       });
@@ -168,7 +200,7 @@ export async function POST(req: NextRequest) {
         nome: lideranca.nome,
         cpf: lideranca.cpf,
         email: usuarioLideranca.email,
-        funcao: null,
+        funcao: lideranca.funcao,
         percentualComissao: 0,
         status: lideranca.status,
         lideranca: lideranca.tipo,
@@ -220,10 +252,40 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     console.error("[comerciais POST] Erro:", e);
+
     if (e instanceof z.ZodError) {
-      return badRequest("Dados inválidos");
+      const fieldErrors: Record<string, string> = {};
+      for (const issue of e.issues) {
+        const path = issue.path.join(".") || "form";
+        if (!fieldErrors[path]) fieldErrors[path] = issue.message;
+      }
+      const firstMessage =
+        Object.values(fieldErrors)[0] ?? "Verifique os campos do formulário";
+      return badRequest(firstMessage, fieldErrors);
     }
-    return badRequest("Erro ao criar comercial");
+
+    if (e?.code === "P2002") {
+      const target = Array.isArray(e?.meta?.target)
+        ? e.meta.target.join(", ")
+        : e?.meta?.target ?? "campo";
+      const map: Record<string, string> = {
+        cpf: "Já existe um cadastro com este CPF",
+        email: "Já existe um cadastro com este e-mail",
+        usuario_id: "Este usuário já está vinculado a um comercial ou liderança",
+      };
+      const msg = map[target] ?? `Já existe um cadastro com este ${target}`;
+      return badRequest(msg, { field: target });
+    }
+
+    if (e?.code === "P2003") {
+      return badRequest(
+        "Referência inválida. Verifique se a liderança selecionada existe"
+      );
+    }
+
+    return badRequest(
+      "Não foi possível criar o comercial. Tente novamente em alguns instantes"
+    );
   }
 }
 
