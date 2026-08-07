@@ -4,6 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@prisma/client': 6.19.2
+  prisma: 6.19.2
+
 importers:
 
   .:
@@ -27,7 +31,7 @@ importers:
         specifier: ^7.37.5
         version: 7.37.5(eslint@8.57.1)
       eslint-plugin-react-hooks:
-        specifier: ^4.6.2
+        specifier: ^4.6.0
         version: 4.6.2(eslint@8.57.1)
       turbo:
         specifier: ^2.0.0
@@ -121,13 +125,13 @@ importers:
   packages/database:
     dependencies:
       '@prisma/client':
-        specifier: ^6.19.2
+        specifier: 6.19.2
         version: 6.19.2(prisma@6.19.2(typescript@5.9.3))(typescript@5.9.3)
       '@types/node':
         specifier: ^20.14.0
         version: 20.19.37
       prisma:
-        specifier: ^6.19.2
+        specifier: 6.19.2
         version: 6.19.2(typescript@5.9.3)
       typescript:
         specifier: ^5.5.0
@@ -323,7 +327,7 @@ packages:
     resolution: {integrity: sha512-gR2EMvfK/aTxsuooaDA32D8v+us/8AAet+C3J1cc04SW35FPdZYgLF+iN4NDLUgAaUGTKdAB0CYenu1TAgGdMg==}
     engines: {node: '>=18.18'}
     peerDependencies:
-      prisma: '*'
+      prisma: 6.19.2
       typescript: '>=5.1.0'
     peerDependenciesMeta:
       prisma:

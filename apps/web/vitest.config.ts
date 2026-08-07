@@ -12,10 +12,12 @@ export default defineConfig({
     include: [
       '__tests__/**/*.test.ts',
       '__tests__/**/*.test.tsx',
+      '__tests__/**/*.test.mjs',
       'app/__tests__/**/*.test.ts',
       'app/__tests__/**/*.test.tsx',
       'lib/__tests__/**/*.test.ts',
       'lib/__tests__/**/*.test.tsx',
+      'lib/__tests__/**/*.test.mjs',
     ],
     testTimeout: 30000,
     pool: 'forks',
