@@ -13,17 +13,16 @@
     "migrate:status": "prisma migrate status",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "test": "vitest run"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
     "@types/node": "^20.14.0",
-    "prisma": "^6.0.0",
+    "prisma": "^6.19.2",
     "typescript": "^5.5.0"
   },
-  "devDependencies": {},
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   }
 }
- 
