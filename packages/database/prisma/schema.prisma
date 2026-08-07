@@ -237,6 +237,7 @@ model Lideranca {
   createdAt    DateTime        @default(now()) @map("created_at")
   updatedAt    DateTime        @updatedAt @map("updated_at")
   tipo         TipoLideranca
+  funcao       FuncaoComercial?
   status       StatusUsuario   @default(ATIVO)
   comerciais   Comercial[]
   consultorPfs ConsultorPf[]
