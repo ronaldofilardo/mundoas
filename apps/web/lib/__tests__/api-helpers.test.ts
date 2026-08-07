@@ -3,16 +3,31 @@
  * Valida funções de utilidade de resposta e autenticação
  */
 
+// Mocka next-auth para evitar carregar next/server.js (next-auth@5.0.0-beta.30
+// faz `import 'next/server'` sem extensão que falha em Node ESM resolver).
+vi.mock('next-auth', () => ({
+  default: () => ({
+    handlers: { GET: () => {}, POST: () => {} },
+    auth: () => Promise.resolve(null),
+    signIn: () => Promise.resolve(),
+    signOut: () => Promise.resolve(),
+  }),
+  auth: () => Promise.resolve(null),
+}));
+
+vi.mock('next-auth/providers/credentials', () => ({
+  default: () => ({}),
+}));
+
 import { describe, it, expect, vi } from 'vitest';
-import { 
-  ok, 
-  badRequest, 
-  notFound, 
-  forbidden, 
+import {
+  ok,
+  badRequest,
+  notFound,
+  forbidden,
   unauthorized,
-  created 
+  created
 } from '@/lib/api-helpers';
-import { NextResponse } from 'next/server';
 
 describe('api-helpers', () => {
   describe('Respostas JSON', () => {
@@ -51,10 +66,5 @@ describe('api-helpers', () => {
       expect(res.status).toBe(201);
       expect(res.json()).resolves.toEqual({ id: '1' });
     });
-  });
-
-  describe('Auth Helpers (Mocks)', () => {
-    // Para testar requireAuth, requireAdmin, etc., precisamos mockar auth()
-    // Como auth() é importado de @/lib/auth, usamos vi.mock
   });
 });

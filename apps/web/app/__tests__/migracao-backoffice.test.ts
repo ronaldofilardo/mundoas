@@ -319,10 +319,11 @@ it('deve criar premio vinculado ao backoffice', async () => {
 const premio = await prisma.premio.create({
       data: {
         backofficeId: usuarioBackoffice.backoffice!.id,
+        nome: 'Prêmio Migração',
         codigo: 'PREMIO_MIG',
         tipo: 'PRODUTO',
         descricao: 'Descrição do prêmio',
-        pontos: 1000,
+        custoPontos: 1000,
         ativo: true,
       },
     });

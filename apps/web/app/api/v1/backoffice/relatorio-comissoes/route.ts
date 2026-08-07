@@ -40,15 +40,15 @@ export async function GET(req: NextRequest) {
     }
 
     const where: any = {
-      comercialId: { in: consultorIds },
+      consultorPfId: { in: consultorIds },
       mesReferencia: { gte: inicio, lte: fim },
     };
 
     const [comissoes, producoesBrutas] = await Promise.all([
-      prisma.comissaoComercial.findMany({
+      prisma.comissaoConsultorPf.findMany({
         where,
         include: {
-          comercial: { select: { id: true, nome: true, cpf: true } },
+          consultorPf: { select: { id: true, nome: true, cpf: true } },
         },
         orderBy: { mesReferencia: "desc" },
       }),
@@ -83,8 +83,8 @@ export async function GET(req: NextRequest) {
     comissoes.forEach((c) => {
       const mes = c.mesReferencia;
       const atualMes = porMes.get(mes) || { totalProducao: 0, totalProducaoCalculada: 0, totalDivergencias: 0, totalComissao: 0, quantidade: 0 };
-      const valorVendas = Number(c.valorVendas);
-      const valorCalculado = producaoCalculadaPorChave.get(`${c.comercialId}-${mes}`) ?? valorVendas;
+      const valorVendas = Number(c.valorProducao);
+      const valorCalculado = producaoCalculadaPorChave.get(`${c.consultorPfId}-${mes}`) ?? valorVendas;
       atualMes.totalProducao += valorVendas;
       atualMes.totalProducaoCalculada += valorCalculado;
       atualMes.totalComissao += Number(c.valorComissao);
@@ -105,18 +105,18 @@ export async function GET(req: NextRequest) {
     return ok({
       tipo: "consultor-pf",
       comissoes: comissoes.map((c) => {
-        const valorCalculado = producaoCalculadaPorChave.get(`${c.comercialId}-${c.mesReferencia}`);
-        const divergente = valorCalculado !== undefined && Math.abs(Number(c.valorVendas) - valorCalculado) > TOLERANCIA;
+        const valorCalculado = producaoCalculadaPorChave.get(`${c.consultorPfId}-${c.mesReferencia}`);
+        const divergente = valorCalculado !== undefined && Math.abs(Number(c.valorProducao) - valorCalculado) > TOLERANCIA;
         return {
           id: c.id,
           mesReferencia: c.mesReferencia,
           comercial: {
-            id: c.comercial.id,
-            nome: c.comercial.nome,
-            cpf: c.comercial.cpf,
+            id: c.consultorPf.id,
+            nome: c.consultorPf.nome,
+            cpf: c.consultorPf.cpf,
           },
-          valorVendas: Number(c.valorVendas),
-          valorVendasCalculado: valorCalculado ?? Number(c.valorVendas),
+          valorVendas: Number(c.valorProducao),
+          valorVendasCalculado: valorCalculado ?? Number(c.valorProducao),
           divergente,
           valorComissao: Number(c.valorComissao),
           status: c.status,

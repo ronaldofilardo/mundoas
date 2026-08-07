@@ -219,6 +219,7 @@ model Backoffice {
   ciclosPontos              CicloPontos[]
   comerciais                Comercial[]
   configuracoesPontos       ConfiguracaoPontos[]
+  liderancas                Lideranca[]
   parceiros                 Parceiro[]
   premios                   Premio[]
   regrasComerciais          RegraComercial[]
@@ -239,6 +240,7 @@ model Lideranca {
   tipo         TipoLideranca
   funcao       FuncaoComercial?
   status       StatusUsuario   @default(ATIVO)
+  backoffice   Backoffice      @relation(fields: [backofficeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   comerciais   Comercial[]
   consultorPfs ConsultorPf[]
   gestores     Gestor[]
@@ -309,9 +311,27 @@ model ConsultorPf {
   usuario       Usuario            @relation(fields: [usuarioId], references: [id])
   metas         MetaConsultorPf[]
   procedimentos ProcedimentoPF[]
+  comissoes     ComissaoConsultorPf[]
 
   @@index([liderancaId])
   @@map("consultores_pf")
+}
+
+model ComissaoConsultorPf {
+  id              String         @id @default(uuid()) @db.Uuid
+  consultorPfId   String         @map("consultor_pf_id") @db.Uuid
+  mesReferencia   String         @map("mes_referencia")
+  valorProducao   Decimal        @default(0) @map("valor_producao") @db.Decimal(12, 2)
+  valorComissao   Decimal        @default(0) @map("valor_comissao") @db.Decimal(12, 2)
+  status          StatusComissao @default(CALCULADA)
+  dataPagamento   DateTime?      @map("data_pagamento")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  consultorPf     ConsultorPf    @relation(fields: [consultorPfId], references: [id], onDelete: Cascade)
+
+  @@unique([consultorPfId, mesReferencia])
+  @@index([consultorPfId])
+  @@map("comissoes_consultor_pf")
 }
 
 model Setor {

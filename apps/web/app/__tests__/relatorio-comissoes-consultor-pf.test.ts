@@ -252,8 +252,8 @@ describe("GET /api/v1/backoffice/relatorio-comissoes - consultor-pf", () => {
 
     expect(data.tipo).toBe("consultor-pf");
     expect(data.comissoes).toHaveLength(1);
-    expect(data.comissoes[0].valorProducao).toBe(600);
-    expect(data.comissoes[0].valorProducaoCalculado).toBe(600);
+    expect(data.comissoes[0].valorVendas).toBe(600);
+    expect(data.comissoes[0].valorVendasCalculado).toBe(600);
     expect(data.comissoes[0].divergente).toBe(false);
 
     expect(data.resumo.totalGeral.totalProducao).toBe(600);
@@ -261,7 +261,7 @@ describe("GET /api/v1/backoffice/relatorio-comissoes - consultor-pf", () => {
     expect(data.resumo.totalGeral.totalDivergencias).toBe(0);
   });
 
-  it("deve retornar com divergente=true quando valorProducao != SUM(ProcedimentoPF)", async () => {
+  it("deve retornar com divergente=true quando valorVendas != SUM(ProcedimentoPF)", async () => {
     await criarProcedimento({ dataReferencia: new Date("2026-08-10"), valorComissao: 100, procedimento: "P1" });
     await criarProcedimento({ dataReferencia: new Date("2026-08-20"), valorComissao: 250, procedimento: "P2" });
     await criarComissao({ mesReferencia: "2026-08", valorProducao: 999, valorComissao: 60 });
@@ -274,8 +274,8 @@ describe("GET /api/v1/backoffice/relatorio-comissoes - consultor-pf", () => {
     const data = await res.json();
 
     expect(data.comissoes).toHaveLength(1);
-    expect(data.comissoes[0].valorProducao).toBe(999);
-    expect(data.comissoes[0].valorProducaoCalculado).toBe(350);
+    expect(data.comissoes[0].valorVendas).toBe(999);
+    expect(data.comissoes[0].valorVendasCalculado).toBe(350);
     expect(data.comissoes[0].divergente).toBe(true);
     expect(data.resumo.totalGeral.totalDivergencias).toBe(1);
   });
@@ -292,7 +292,7 @@ describe("GET /api/v1/backoffice/relatorio-comissoes - consultor-pf", () => {
     const data = await res.json();
 
     expect(data.comissoes).toHaveLength(1);
-    expect(data.comissoes[0].valorProducaoCalculado).toBe(100);
+    expect(data.comissoes[0].valorVendasCalculado).toBe(100);
     expect(data.comissoes[0].divergente).toBe(false);
   });
 
@@ -312,7 +312,7 @@ describe("GET /api/v1/backoffice/relatorio-comissoes - consultor-pf", () => {
     );
     const data = await res.json();
 
-    expect(data.comissoes[0].valorProducaoCalculado).toBe(250);
+    expect(data.comissoes[0].valorVendasCalculado).toBe(250);
     expect(data.comissoes[0].divergente).toBe(false);
   });
 
@@ -330,8 +330,8 @@ describe("GET /api/v1/backoffice/relatorio-comissoes - consultor-pf", () => {
 
     const fev = data.comissoes.find((c: any) => c.mesReferencia === "2026-02");
     const mar = data.comissoes.find((c: any) => c.mesReferencia === "2026-03");
-    expect(fev.valorProducaoCalculado).toBe(50);
-    expect(mar.valorProducaoCalculado).toBe(100);
+    expect(fev.valorVendasCalculado).toBe(50);
+    expect(mar.valorVendasCalculado).toBe(100);
     expect(fev.divergente).toBe(false);
     expect(mar.divergente).toBe(false);
   });
