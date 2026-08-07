@@ -11,11 +11,14 @@ export interface Comercial {
   tipoLideranca?: "COMERCIAL" | "GESTOR";
   tipo?: "GERENTE" | "SUPERVISOR" | "LIDER";
   isLideranca?: boolean;
+  isConsultorPf?: boolean;
 }
 
 export interface Meta {
   id?: string;
-  comercialId: string;
+  comercialId?: string;
+  liderancaId?: string;
+  consultorPfId?: string;
   mesReferencia: string;
   valorMeta: string | number;
   valorAtingido: string | number;

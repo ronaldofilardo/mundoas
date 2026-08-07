@@ -25,6 +25,7 @@ interface Procedimento {
   parceiro: { id: string; nome: string; cpf: string } | null;
   indicado: { id: string; nome: string; cpf: string } | null;
   comercial: { id: string; nome: string; funcao?: string } | null;
+  consultorPf: { id: string; nome: string } | null;
   upload: {
     id: string;
     nomeArquivo: string;
@@ -257,7 +258,7 @@ export default function BackofficeProducao() {
                 <th className="text-left p-2 font-medium text-gray-600">Unidade</th>
                 <th className="text-left p-2 font-medium text-gray-600">Forma Pgto</th>
                 <th className="text-left p-2 font-medium text-gray-600">Parceiro</th>
-                <th className="text-left p-2 font-medium text-gray-600">Comercial</th>
+                <th className="text-left p-2 font-medium text-gray-600">Usuário da Conta</th>
                 <th className="text-left p-2 font-medium text-gray-600">Mês Ref.</th>
                 <th className="text-left p-2 font-medium text-gray-600">Status</th>
                 <th className="text-right p-2 font-medium text-gray-600">Total Pago</th>
@@ -289,6 +290,11 @@ export default function BackofficeProducao() {
                             {formatFuncao(p.comercial.funcao)}
                           </p>
                         )}
+                      </div>
+                    ) : p.consultorPf ? (
+                      <div>
+                        <p className="text-xs font-medium text-gray-900">{p.consultorPf.nome}</p>
+                        <p className="text-xs text-gray-500">Consultor PF</p>
                       </div>
                     ) : (
                       <span className="text-gray-400 text-xs">-</span>

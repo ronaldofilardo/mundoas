@@ -99,7 +99,7 @@ export function LinhaConsultor({
 
         <div className="col-span-12 md:col-span-1 flex md:justify-end items-center gap-1.5">
           <span className={`text-sm font-bold ${corPercentual} font-mono`}>
-            {Math.round(consultor.atingimento)}%
+            {consultor.atingimento.toFixed(2)}%
           </span>
         </div>
       </div>

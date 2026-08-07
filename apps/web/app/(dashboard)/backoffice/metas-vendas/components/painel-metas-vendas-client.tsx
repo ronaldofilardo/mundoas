@@ -289,7 +289,7 @@ export function PainelMetasVendasClient() {
                       </div>
                       <div className="col-span-12 md:col-span-1 md:text-right">
                         <span className="text-sm font-bold text-emerald-700 font-mono">
-                          {Math.round(c.atingimento)}%
+                          {c.atingimento.toFixed(2)}%
                         </span>
                       </div>
                     </div>

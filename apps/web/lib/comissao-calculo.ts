@@ -30,7 +30,11 @@ export function getComissaoFromFuncao(
   regras: { regrasComerciais: RegrasComerciais | null; regrasGestores: RegrasGestores | null },
   funcao: string | undefined,
 ): number {
-  const raw = (funcao || "").toUpperCase().replace(/_/g, " ").trim();
+  if (!funcao) return 0;
+  const upper = funcao.toUpperCase();
+  if (upper.startsWith("LIDER_") || upper.startsWith("LÍDER ")) return 0;
+
+  const raw = funcao.toUpperCase().replace(/_/g, " ").trim();
   const funcaoStripped = raw.replace(/\s*ATIVO\s*$/, "").replace(/\s*RECEPTIVO\s*$/, "").trim();
 
   const chaveGestor = REGRAS_GESTOR_MAP[funcaoStripped];
@@ -46,7 +50,7 @@ export function getComissaoFromFuncao(
  * Calcula o valor em R$ da comissão para um comercial no mês.
  * Fórmula: producao × (regra / 100)
  * - producao: string formatada em moeda pt-BR (ex: "2.500,00")
- * - regra: percentual armazenado como fração (ex: 0.05 = 0,05%)
+ * - regra: percentual em decimal (ex: 0.14 = 0,14%)
  */
 export function calcularValorComissao(producao: string | undefined, regra: number): string {
   const producaoNum = parseMoedaParaNumero(producao);

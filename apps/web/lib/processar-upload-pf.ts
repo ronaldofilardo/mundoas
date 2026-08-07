@@ -121,6 +121,10 @@ export async function processarUploadPlanilhaPF(
       consultoresPf.map((c) => [normalizarNome(c.nome), c.id]),
     );
 
+    const comercialPorNome = new Map(
+      comerciais.map((c) => [normalizarNome(c.nome), c.id]),
+    );
+
     const parceiros = await prisma.parceiro.findMany({
       where: { backofficeId },
       select: {
@@ -240,6 +244,7 @@ export async function processarUploadPlanilhaPF(
       let parceiroEncontrado = null;
       let indicadoId: string | null = null;
       let consultorPfId: string | null = null;
+      let comercialId: string | null = null;
       let orfao = false;
       const motivosOrfao: string[] = [];
 
@@ -271,8 +276,9 @@ export async function processarUploadPlanilhaPF(
       }
 
       if (usuarioDaConta) {
-        consultorPfId =
-          consultorPorNome.get(normalizarNome(usuarioDaConta)) ?? null;
+        const nomeNormalizado = normalizarNome(usuarioDaConta);
+        consultorPfId = consultorPorNome.get(nomeNormalizado) ?? null;
+        comercialId = comercialPorNome.get(nomeNormalizado) ?? null;
       }
 
       const valorComissao = 0;
@@ -311,7 +317,7 @@ export async function processarUploadPlanilhaPF(
         uploadId,
         valorComissao,
         statusComissao: "PENDENTE",
-        comercialId: parceiroEncontrado.comercialId,
+        comercialId: comercialId ?? parceiroEncontrado.comercialId,
         gestorId: parceiroEncontrado.gestorId,
         consultorPfId,
       });
