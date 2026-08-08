@@ -9,7 +9,7 @@
  * ("column does not exist") mesmo com migration aplicada.
  */
 import { existsSync, readFileSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { resolve, dirname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 
@@ -45,7 +45,8 @@ if (pkg.version !== EXPECTED_PRISMA_VERSION) {
 }
 
 // 2) Verifica que o client resolvido está DENTRO do monorepo (.pnpm).
-if (!resolvedPath.includes("\\.pnpm\\@prisma+client")) {
+const PnpmMarker = `${sep}.pnpm${sep}@prisma+client`;
+if (!resolvedPath.includes(PnpmMarker)) {
   fail(
     `@prisma/client resolvido FORA do monorepo: ${resolvedPath}. Existe uma instalação concorrente em uma pasta pai. Remova-a.`,
   );
