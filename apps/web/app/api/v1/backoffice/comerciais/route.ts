@@ -40,11 +40,9 @@ const createComercialSchema = z.object({
     .max(20, "Telefone deve ter no máximo 20 caracteres")
     .optional()
     .or(z.literal("")),
-  funcao: z
-    .enum(FUNCOES_COMERCIAIS, {
-      errorMap: () => ({ message: "Função comercial inválida" }),
-    })
-    .optional(),
+  funcao: z.enum(FUNCOES_COMERCIAIS, {
+    errorMap: () => ({ message: "Função comercial inválida" }),
+  }),
   lideranca: z
     .enum(["COMERCIAL", "GESTOR"], {
       errorMap: () => ({ message: "Tipo de liderança inválido" }),
@@ -111,7 +109,7 @@ export async function GET() {
     nome: l.nome,
     cpf: l.cpf,
     email: l.usuario.email,
-    funcao: l.funcao ?? (l.tipo === "COMERCIAL" ? ("LIDER_COMERCIAL" as const) : ("LIDER_GESTOR" as const)),
+    funcao: l.funcao,
     percentualComissao: 0,
     status: l.status,
     createdAt: l.createdAt,

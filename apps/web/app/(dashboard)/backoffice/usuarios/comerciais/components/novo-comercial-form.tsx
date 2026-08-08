@@ -44,6 +44,12 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
       return;
     }
 
+    if (lideranca && !funcao) {
+      toast.error("Selecione a Função para esta liderança");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/v1/backoffice/comerciais", {
         method: "POST",
@@ -54,7 +60,7 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
           email: email.toLowerCase().trim(),
           telefone: telefone || undefined,
           lideranca: lideranca || undefined,
-          funcao: funcao || undefined,
+          funcao: lideranca ? funcao : undefined,
           percentualComissao: 0,
         }),
       });
@@ -185,7 +191,7 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
         <div className="flex items-end">
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !!(lideranca && !funcao)}
             className="w-full px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
           >
             {loading ? "Criando..." : "Criar Comercial"}

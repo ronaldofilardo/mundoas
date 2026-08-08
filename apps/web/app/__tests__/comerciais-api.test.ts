@@ -390,6 +390,7 @@ describe('API - Backoffice Comerciais', () => {
             cpf: uniqueCpf(),
             email: `teste.${test.valor}.${Math.random().toString(36).slice(2)}@asa.test`,
             percentualComissao: test.valor,
+            funcao: 'GERENTE_CIRE',
           }),
         );
 
