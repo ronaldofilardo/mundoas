@@ -2,7 +2,6 @@
 
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
-import { formatCpf } from "../../../usuarios/comerciais/utils";
 import { NovoComercialForm } from "../../../usuarios/comerciais/components/novo-comercial-form";
 import { ComercialModal } from "../../../usuarios/comerciais/components/comercial-modal";
 import type { Comercial } from "../../../usuarios/comerciais/types";
@@ -191,7 +190,6 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
               <thead>
                 <tr className="border-b bg-gray-50 sticky top-0 z-10">
                   <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[240px]">Nome</th>
-                  <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[140px]">CPF</th>
                   <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[220px]">Email</th>
                   <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[170px]">Função / Tipo</th>
                   <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[100px]">Status</th>
@@ -228,9 +226,6 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
                         </div>
                       </td>
                       <td className="p-3 border-t">
-                        <p className="text-xs text-gray-600">{formatCpf(item.cpf)}</p>
-                      </td>
-                      <td className="p-3 border-t">
                         <p className="text-xs text-gray-600 truncate">{item.email}</p>
                       </td>
                       <td className="p-3 border-t">
@@ -239,35 +234,40 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
                              <p className="text-xs text-gray-800 font-medium">
                                {item.funcao ? item.funcao.replace(/_/g, " ") : "-"}
                              </p>
-                             {item.tipoLideranca && (
-                               <p className="text-xs text-gray-500">
-                                 Liderança:{" "}
-                                 {item.tipoLideranca === "COMERCIAL"
-                                   ? "Comercial"
-                                   : "Gestor"}
-                               </p>
-                             )}
+                              {item.tipoLideranca && (
+                                <p className="text-xs text-gray-500">
+                                  {item.tipoLideranca === "COMERCIAL"
+                                    ? "Comercial"
+                                    : "Gestor"}
+                                </p>
+                              )}
                            </div>
-                         ) : (
-                           <div>
-                             <p className="text-xs text-gray-800 font-medium">
-                               Liderança:{" "}
-                               {item.tipoLideranca === "COMERCIAL" ? "Comercial" : "Gestor"}
-                             </p>
-                             {(item.consultorPfs?.length ?? 0) > 0 && (
-                               <p className="text-xs text-gray-500">
-                                 {item.consultorPfs!.length} consultor
-                                 {item.consultorPfs!.length === 1 ? "" : "es"} PF
-                               </p>
-                             )}
-                             {(item.comerciais?.length ?? 0) > 0 && (
-                               <p className="text-xs text-gray-500">
-                                 {item.comerciais!.length} comercial
-                                 {item.comerciais!.length === 1 ? "" : "is"}
-                               </p>
-                             )}
-                           </div>
-                         )}
+                          ) : (
+                            <div>
+                              <p className="text-xs text-gray-800 font-medium">
+                                {item.funcao ? item.funcao.replace(/_/g, " ") : "-"}
+                              </p>
+                              {item.tipoLideranca && (
+                                <p className="text-xs text-gray-500">
+                                  {item.tipoLideranca === "COMERCIAL"
+                                    ? "Comercial"
+                                    : "Gestor"}
+                                </p>
+                              )}
+                              {(item.consultorPfs?.length ?? 0) > 0 && (
+                                <p className="text-xs text-gray-500">
+                                  {item.consultorPfs!.length} consultor
+                                  {item.consultorPfs!.length === 1 ? "" : "es"} PF
+                                </p>
+                              )}
+                              {(item.comerciais?.length ?? 0) > 0 && (
+                                <p className="text-xs text-gray-500">
+                                  {item.comerciais!.length} comercial
+                                  {item.comerciais!.length === 1 ? "" : "is"}
+                                </p>
+                              )}
+                            </div>
+                          )}
                       </td>
                       <td className="p-3 border-t text-center">
                         <span
@@ -330,7 +330,7 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
                       ((item.consultorPfs?.length ?? 0) > 0 ||
                         (item.comerciais?.length ?? 0) > 0) && (
                         <tr className="bg-gray-50">
-                          <td colSpan={6} className="p-0 border-t">
+                           <td colSpan={5} className="p-0 border-t">
                             <div className="pl-10 pr-3 py-3 space-y-4">
                               {item.comerciais && item.comerciais.length > 0 && (
                                 <div>
@@ -340,21 +340,18 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
                                   <table className="w-full text-xs">
                                     <thead>
                                       <tr className="border-b border-gray-200">
-                                        <th className="text-left p-2 font-medium text-gray-500">
-                                          Nome
-                                        </th>
-                                        <th className="text-left p-2 font-medium text-gray-500">
-                                          CPF
-                                        </th>
-                                        <th className="text-left p-2 font-medium text-gray-500">
-                                          Email
-                                        </th>
-                                        <th className="text-left p-2 font-medium text-gray-500">
-                                          Função
-                                        </th>
-                                        <th className="text-center p-2 font-medium text-gray-500">
-                                          Status
-                                        </th>
+                                       <th className="text-left p-2 font-medium text-gray-500">
+                                           Nome
+                                         </th>
+                                         <th className="text-left p-2 font-medium text-gray-500">
+                                           Email
+                                         </th>
+                                         <th className="text-left p-2 font-medium text-gray-500">
+                                           Função
+                                         </th>
+                                         <th className="text-center p-2 font-medium text-gray-500">
+                                           Status
+                                         </th>
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -363,15 +360,12 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
                                           key={c.id}
                                           className="border-b border-gray-100 last:border-b-0 hover:bg-white"
                                         >
-                                          <td className="p-2 font-medium text-gray-800">
-                                            {c.nome}
-                                          </td>
-                                          <td className="p-2 text-gray-600">
-                                            {formatCpf(c.cpf)}
-                                          </td>
-                                          <td className="p-2 text-gray-600 truncate">
-                                            {c.email}
-                                          </td>
+                                           <td className="p-2 font-medium text-gray-800">
+                                             {c.nome}
+                                           </td>
+                                           <td className="p-2 text-gray-600 truncate">
+                                             {c.email}
+                                           </td>
                                           <td className="p-2 text-gray-600">
                                             {c.funcao ? c.funcao.replace(/_/g, " ") : "-"}
                                           </td>
@@ -400,18 +394,15 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
                                   <table className="w-full text-xs">
                                     <thead>
                                       <tr className="border-b border-gray-200">
-                                        <th className="text-left p-2 font-medium text-gray-500">
-                                          Nome
-                                        </th>
-                                        <th className="text-left p-2 font-medium text-gray-500">
-                                          CPF
-                                        </th>
-                                        <th className="text-left p-2 font-medium text-gray-500">
-                                          Email
-                                        </th>
-                                        <th className="text-center p-2 font-medium text-gray-500">
-                                          Status
-                                        </th>
+                                         <th className="text-left p-2 font-medium text-gray-500">
+                                           Nome
+                                         </th>
+                                         <th className="text-left p-2 font-medium text-gray-500">
+                                           Email
+                                         </th>
+                                         <th className="text-center p-2 font-medium text-gray-500">
+                                           Status
+                                         </th>
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -420,15 +411,12 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
                                           key={cp.id}
                                           className="border-b border-gray-100 last:border-b-0 hover:bg-white"
                                         >
-                                          <td className="p-2 font-medium text-gray-800">
-                                            {cp.nome}
-                                          </td>
-                                          <td className="p-2 text-gray-600">
-                                            {formatCpf(cp.cpf)}
-                                          </td>
-                                          <td className="p-2 text-gray-600 truncate">
-                                            {cp.email}
-                                          </td>
+                                           <td className="p-2 font-medium text-gray-800">
+                                             {cp.nome}
+                                           </td>
+                                           <td className="p-2 text-gray-600 truncate">
+                                             {cp.email}
+                                           </td>
                                           <td className="p-2 text-center">
                                             <span
                                               className={`inline-block px-2 py-1 rounded text-xs font-medium ${

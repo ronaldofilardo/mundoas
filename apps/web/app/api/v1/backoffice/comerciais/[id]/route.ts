@@ -14,7 +14,7 @@ import {
   requireBackofficeWithScope,
 } from "@/lib/api-helpers";
 import { criarAuditLog } from "@/lib/audit";
-import * as equipeIdRoute from "../../../equipe/[id]/route";
+import * as equipeIdRoute from "../../equipe/[id]/route";
 
 export const GET = async (
   req: NextRequest,

@@ -5,14 +5,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { TabEquipe } from "./components/tab-equipe";
 import { TabMetas } from "./components/tab-metas";
 import { TabComissoes } from "./components/tab-comissoes";
+import { TabRegras } from "../components/tab-regras";
 import { useEquipe } from "./hooks/use-equipe";
 
-type TabType = "equipe" | "metas" | "comissoes";
+type TabType = "equipe" | "metas" | "comissoes" | "regras";
 
 const TABS: { id: TabType; label: string; icon: string }[] = [
   { id: "equipe", label: "Equipe", icon: "👥" },
   { id: "metas", label: "Metas", icon: "🎯" },
   { id: "comissoes", label: "Comissões", icon: "💰" },
+  { id: "regras", label: "Regras", icon: "📋" },
 ];
 
 const TAB_IDS = new Set<TabType>(TABS.map((t) => t.id));
@@ -84,6 +86,7 @@ export default function ComissionamentoEquipePage() {
               )}
               {activeTab === "metas" && <TabMetas itens={itens} />}
               {activeTab === "comissoes" && <TabComissoes itens={itens} />}
+              {activeTab === "regras" && <TabRegras />}
             </>
           )}
         </div>

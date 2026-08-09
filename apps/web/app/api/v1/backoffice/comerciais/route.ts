@@ -10,7 +10,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
 import { ok, requireBackofficeWithScope } from "@/lib/api-helpers";
-import * as equipeRoute from "../../equipe/route";
+import * as equipeRoute from "../equipe/route";
 
 export const GET = async () => {
   const { backofficeId, error } = await requireBackofficeWithScope();
