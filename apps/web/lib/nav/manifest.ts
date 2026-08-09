@@ -180,7 +180,6 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
         title: "Equipe",
         links: [
           { label: "Visão geral", href: "/lideranca", icon: "dashboard" },
-          { label: "Consultores PF", href: "/lideranca/consultores-pf", icon: "users" },
           { label: "Produção", href: "/lideranca/consultores-pf/producao", icon: "production" },
           { label: "Metas & Produção", href: "/lideranca/metas", icon: "goals" },
         ],
