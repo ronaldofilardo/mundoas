@@ -18,17 +18,17 @@ export async function GET(req: NextRequest) {
     ? mesReferencia
     : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
-  const where: any = { comercialId };
+  const where: any = { equipeId: comercialId };
   if (mesReferencia) where.mesReferencia = mesReferencia;
 
-  const comissoes = await prisma.comissaoComercial.findMany({
+  const comissoes = await prisma.comissaoEquipe.findMany({
     where,
     orderBy: { mesReferencia: "desc" },
     take: mesReferencia ? 1 : 12,
   });
 
-  const comercial = await prisma.comercial.findUnique({
-    where: { id: comercialId },
+  const comercial = await prisma.equipe.findFirst({
+    where: { id: comercialId, tipo: "COMERCIAL" },
     select: {
       nome: true,
       cpf: true,

@@ -32,7 +32,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               consultor: true,
               backoffice: true,
               parceiro: true,
-              comercial: true,
+              equipe: true,
             },
           });
 
@@ -64,7 +64,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 estabelecimentoId: null,
                 backofficeId: user.backoffice?.id ?? null,
                 parceiroId: user.parceiro?.id ?? null,
-                comercialId: user.comercial?.id ?? null,
+                comercialId: user.equipe?.tipo === "COMERCIAL" ? user.equipe.id : null,
+                equipeId: user.equipe?.id ?? null,
               };
             } else {
               console.log(`[auth] ✗ Senha inválida para ${email}`);
@@ -108,6 +109,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 backofficeId: null,
                 parceiroId: null,
                 comercialId: null,
+                equipeId: null,
               };
             } else {
               console.log(`[auth] ✗ Senha inválida para estabelecimento ${email}`);

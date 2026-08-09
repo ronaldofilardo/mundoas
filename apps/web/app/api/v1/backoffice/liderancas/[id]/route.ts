@@ -1,71 +1,62 @@
+/**
+ * Endpoint legado /api/v1/backoffice/liderancas/[id] — thin proxy para
+ * /api/v1/backoffice/equipe/[id]. GET retorna shape compatível com
+ * consumidores atuais (subordinados + gestores, mapeados para {comerciais,
+ * gestores}). PUT adapta payload legado { tipo: "COMERCIAL"|"GESTOR" } para
+ * { tipoLideranca: X } e delega para PATCH do endpoint unificado.
+ */
 import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
 import {
-  badRequest,
   forbidden,
   notFound,
   ok,
   requireBackofficeWithScope,
 } from "@/lib/api-helpers";
-import { criarAuditLog } from "@/lib/audit";
-import { z } from "zod";
+import * as equipeIdRoute from "../../../equipe/[id]/route";
 
-export async function GET(
+export const GET = async (
   req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
+  ctx: { params: { id: string } },
+): Promise<Response> => {
+  const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  const lideranca = await prisma.lideranca.findUnique({
-    where: { id: params.id },
+  const lideranca = await prisma.equipe.findUnique({
+    where: { id: ctx.params.id },
     include: {
-      usuario: {
-        select: { id: true, email: true, status: true },
-      },
-      comerciais: {
+      usuario: { select: { id: true, email: true, status: true } },
+      subordinados: {
         include: {
-          usuario: {
-            select: { email: true },
-          },
-          _count: {
-            select: { parceiros: true },
-          },
+          usuario: { select: { email: true } },
+          _count: { select: { parceiros: true } },
         },
       },
       gestores: {
         include: {
-          usuario: {
-            select: { email: true },
-          },
-          _count: {
-            select: { parceiros: true },
-          },
+          usuario: { select: { email: true } },
+          _count: { select: { parceiros: true } },
         },
       },
-
     },
   });
 
-  if (!lideranca) {
+  if (!lideranca || lideranca.tipo !== "LIDERANCA") {
     return notFound("Liderança não encontrada");
   }
-
-  if (lideranca.backofficeId !== backofficeId) {
-    return forbidden();
-  }
+  if (lideranca.backofficeId !== backofficeId) return forbidden();
 
   return ok({
     id: lideranca.id,
     nome: lideranca.nome,
     email: lideranca.usuario.email,
     cpf: lideranca.cpf,
-    tipo: lideranca.tipo,
+    tipo: lideranca.tipoLideranca,
     status: lideranca.status,
     createdAt: lideranca.createdAt,
     backofficeId: lideranca.backofficeId,
     equipe: {
-      comerciais: lideranca.comerciais.map((c) => ({
+      comerciais: lideranca.subordinados.map((c) => ({
         id: c.id,
         nome: c.nome,
         email: c.usuario.email,
@@ -84,97 +75,40 @@ export async function GET(
       })),
     },
   });
-}
+};
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
-  if (error) return error;
-
-  const body = await req.json();
-  const { status } = z
-    .object({
-      status: z.enum(["ATIVO", "INATIVO"]).optional(),
-    })
-    .parse(body);
-
-  const lideranca = await prisma.lideranca.findUnique({
-    where: { id: params.id },
-  });
-
-  if (!lideranca) {
-    return notFound("Liderança não encontrada");
+  ctx: { params: { id: string } },
+): Promise<Response> {
+  let body: any;
+  try {
+    body = await req.json();
+  } catch {
+    return equipeIdRoute.PATCH(req, ctx);
   }
 
-  if (lideranca.backofficeId !== backofficeId) {
-    return forbidden();
+  const { tipo, ...rest } = body;
+  const adapted: Record<string, unknown> = { ...rest };
+  if (tipo) {
+    if (tipo === "COMERCIAL" || tipo === "GESTOR") {
+      adapted.tipoLideranca = tipo;
+    }
   }
 
-  const updated = await prisma.lideranca.update({
-    where: { id: params.id },
-    data: { status },
-  });
-
-  await criarAuditLog({
-    usuarioId: session!.user.id,
-    acao: "ATUALIZAR_LIDERANCA",
-    entidade: "lideranca",
-    entidadeId: params.id,
-    detalhes: { status },
-  });
-
-  return ok(updated);
-}
-
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
-  if (error) return error;
-
-  const lideranca = await prisma.lideranca.findUnique({
-    where: { id: params.id },
-    include: {
-      _count: {
-        select: {
-          comerciais: true,
-          gestores: true,
-        },
-      },
+  const adaptedReq = new NextRequest(
+    `http://localhost/api/v1/backoffice/equipe/${ctx.params.id}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(adapted),
     },
-  });
+  ) as NextRequest;
 
-  if (!lideranca) {
-    return notFound("Liderança não encontrada");
-  }
-
-  if (lideranca.backofficeId !== backofficeId) {
-    return forbidden();
-  }
-
-  if (lideranca._count.comerciais > 0 || lideranca._count.gestores > 0) {
-    return badRequest(
-      "Não é possível excluir liderança com equipe vinculada. Transfira os membros primeiro.",
-    );
-  }
-
-  await prisma.$transaction(async (tx) => {
-    await tx.lideranca.update({
-      where: { id: params.id },
-      data: { status: "INATIVO" },
-    });
-  });
-
-  await criarAuditLog({
-    usuarioId: session!.user.id,
-    acao: "DESATIVAR_LIDERANCA",
-    entidade: "lideranca",
-    entidadeId: params.id,
-    detalhes: { motivo: "Desativado pelo backoffice" },
-  });
-
-  return ok({ message: "Liderança desativada com sucesso" });
+  return equipeIdRoute.PATCH(adaptedReq, ctx);
 }
+
+export const DELETE = (
+  req: NextRequest,
+  ctx: { params: { id: string } },
+): Promise<Response> => equipeIdRoute.DELETE(req, ctx);

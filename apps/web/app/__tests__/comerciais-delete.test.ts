@@ -49,13 +49,14 @@ describe('DELETE Comercial - Soft Delete do Usuario', () => {
       },
     });
 
-    const lideranca = await prisma.lideranca.create({
+    const lideranca = await prisma.equipe.create({
       data: {
         usuarioId: liderancaUsuario.id,
         nome: 'Lideranca Delete Test',
         cpf: uniqueCpf(),
         backofficeId,
-        tipo: 'COMERCIAL',
+        tipo: "LIDERANCA",
+        tipoLideranca: 'COMERCIAL',
       },
     });
     liderancaId = lideranca.id;
@@ -76,13 +77,15 @@ describe('DELETE Comercial - Soft Delete do Usuario', () => {
       },
     });
 
-    const comercial = await prisma.comercial.create({
+    const comercial = await prisma.equipe.create({
       data: {
         usuarioId: comercialUsuario.id,
         liderancaId,
         nome: 'Comercial Soft Delete',
         cpf: uniqueCpf(),
         percentualComissao: 5.0,
+        tipo: "COMERCIAL",
+        tipoLideranca: null,
       },
     });
 
@@ -93,9 +96,9 @@ describe('DELETE Comercial - Soft Delete do Usuario', () => {
     });
 
     // Deletar registros relacionados e o comercial
-    await prisma.comissaoComercial.deleteMany({ where: { comercialId: comercial.id } });
-    await prisma.metaComercial.deleteMany({ where: { comercialId: comercial.id } });
-    await prisma.comercial.delete({ where: { id: comercial.id } });
+    await prisma.comissaoEquipe.deleteMany({ where: { equipeId: comercial.id } });
+    await prisma.metaEquipe.deleteMany({ where: { equipeId: comercial.id } });
+    await prisma.equipe.delete({ where: { id: comercial.id } });
 
     // Verificar: usuario ainda existe com status INATIVO
     const usuario = await prisma.usuario.findUnique({
@@ -105,7 +108,7 @@ describe('DELETE Comercial - Soft Delete do Usuario', () => {
     expect(usuario!.status).toBe('INATIVO');
 
     // Verificar: comercial foi deletado
-    const comercialDb = await prisma.comercial.findUnique({
+    const comercialDb = await prisma.equipe.findUnique({
       where: { id: comercial.id },
     });
     expect(comercialDb).toBeNull();
@@ -121,13 +124,15 @@ describe('DELETE Comercial - Soft Delete do Usuario', () => {
       },
     });
 
-    const comercial = await prisma.comercial.create({
+    const comercial = await prisma.equipe.create({
       data: {
         usuarioId: comercialUsuario.id,
         liderancaId,
         nome: 'Comercial No Cascade',
         cpf: uniqueCpf(),
         percentualComissao: 5.0,
+        tipo: "COMERCIAL",
+        tipoLideranca: null,
       },
     });
 
@@ -208,19 +213,21 @@ describe('DELETE Comercial - Soft Delete do Usuario', () => {
       },
     });
 
-    const comercial = await prisma.comercial.create({
+    const comercial = await prisma.equipe.create({
       data: {
         usuarioId: comercialUsuario.id,
         liderancaId,
         nome: 'Comercial Cascade Delete',
         cpf: uniqueCpf(),
         percentualComissao: 5.0,
+        tipo: "COMERCIAL",
+        tipoLideranca: null,
       },
     });
 
-    await prisma.comissaoComercial.create({
+    await prisma.comissaoEquipe.create({
       data: {
-        comercialId: comercial.id,
+        equipeId: comercial.id,
         mesReferencia: '2026-01',
         valorVendas: 10000,
         valorComissao: 500,
@@ -228,9 +235,9 @@ describe('DELETE Comercial - Soft Delete do Usuario', () => {
       },
     });
 
-    await prisma.metaComercial.create({
+    await prisma.metaEquipe.create({
       data: {
-        comercialId: comercial.id,
+        equipeId: comercial.id,
         mesReferencia: '2026-01',
         valorMeta: 50000,
       },
@@ -238,8 +245,8 @@ describe('DELETE Comercial - Soft Delete do Usuario', () => {
 
     // Simular DELETE: deleteMany comissões/metas, soft delete usuario, delete comercial
     await Promise.all([
-      prisma.comissaoComercial.deleteMany({ where: { comercialId: comercial.id } }),
-      prisma.metaComercial.deleteMany({ where: { comercialId: comercial.id } }),
+      prisma.comissaoEquipe.deleteMany({ where: { equipeId: comercial.id } }),
+      prisma.metaEquipe.deleteMany({ where: { equipeId: comercial.id } }),
     ]);
 
     await prisma.usuario.update({
@@ -247,15 +254,15 @@ describe('DELETE Comercial - Soft Delete do Usuario', () => {
       data: { status: 'INATIVO' },
     });
 
-    await prisma.comercial.delete({ where: { id: comercial.id } });
+    await prisma.equipe.delete({ where: { id: comercial.id } });
 
-    const comissoes = await prisma.comissaoComercial.findMany({
-      where: { comercialId: comercial.id },
+    const comissoes = await prisma.comissaoEquipe.findMany({
+      where: { equipeId: comercial.id },
     });
     expect(comissoes).toHaveLength(0);
 
-    const metas = await prisma.metaComercial.findMany({
-      where: { comercialId: comercial.id },
+    const metas = await prisma.metaEquipe.findMany({
+      where: { equipeId: comercial.id },
     });
     expect(metas).toHaveLength(0);
 

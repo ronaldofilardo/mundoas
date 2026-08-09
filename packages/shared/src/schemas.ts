@@ -316,11 +316,31 @@ export const processarPlanilhaSchema = z.object({
   mesReferencia: z.string().regex(/^\d{4}-\d{2}$/, "Formato: YYYY-MM"),
 });
 
-export const criarComercialSchema = z.object({
+// `criarComercialSchema` / `atualizarComercialSchema` agora são aliases do
+// schema unificado de equipe (ver abaixo) para manter compatibilidade de imports.
+
+export const criarEquipeSchema = z.object({
   nome: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
   email: z.string().email("Email inválido"),
   cpf: z.string().refine((val) => validarCPF(val), { message: "CPF inválido" }),
   telefone: z.string().optional(),
+  tipo: z.enum(["COMERCIAL", "LIDERANCA"], {
+    errorMap: () => ({ message: "Tipo deve ser COMERCIAL ou LIDERANCA" }),
+  }),
+  tipoLideranca: z
+    .enum(["COMERCIAL", "GESTOR"])
+    .optional(),
+  funcao: z
+    .enum([
+      "GERENTE_CIRE",
+      "SUPERVISOR_ATIVO",
+      "SUPERVISOR_RECEPTIVO",
+      "SUPERVISOR_FRANQUIA",
+      "SUPERVISOR_ATENDIMENTO",
+      "GERENTE_ATENDIMENTO",
+      "SUPERVISOR_COMERCIAL",
+    ])
+    .optional(),
   percentualComissao: z
     .union([z.string(), z.number()])
     .refine(
@@ -332,24 +352,28 @@ export const criarComercialSchema = z.object({
     )
     .optional()
     .default(0),
-  funcao: z.enum([
-    "GERENTE_CIRE",
-    "SUPERVISOR_ATIVO",
-    "SUPERVISOR_RECEPTIVO",
-    "SUPERVISOR_FRANQUIA",
-    "SUPERVISOR_ATENDIMENTO",
-    "GERENTE_ATENDIMENTO",
-    "SUPERVISOR_COMERCIAL",
-  ]).optional(),
+  liderancaId: z.string().optional(),
+  status: z.enum(["ATIVO", "INATIVO"]).optional(),
 });
 
-export const atualizarComercialSchema = z.object({
+export const atualizarEquipeSchema = z.object({
   nome: z.string().min(3).optional(),
   email: z.string().email().optional(),
   cpf: z.string().optional(),
   telefone: z.string().optional(),
-  funcao: z.string().optional(),
-  lideranca: z.enum(["COMERCIAL", "GESTOR"]).optional(),
+  tipo: z.enum(["COMERCIAL", "LIDERANCA"]).optional(),
+  tipoLideranca: z.enum(["COMERCIAL", "GESTOR"]).optional(),
+  funcao: z
+    .enum([
+      "GERENTE_CIRE",
+      "SUPERVISOR_ATIVO",
+      "SUPERVISOR_RECEPTIVO",
+      "SUPERVISOR_FRANQUIA",
+      "SUPERVISOR_ATENDIMENTO",
+      "GERENTE_ATENDIMENTO",
+      "SUPERVISOR_COMERCIAL",
+    ])
+    .optional(),
   percentualComissao: z
     .union([z.string(), z.number()])
     .refine(
@@ -360,8 +384,14 @@ export const atualizarComercialSchema = z.object({
       { message: "Deve estar entre 0 e 100" },
     )
     .optional(),
+  liderancaId: z.string().nullable().optional(),
   status: z.enum(["ATIVO", "INATIVO"]).optional(),
 });
+
+// Compatibilidade (scripts/testes antigos)
+export const criarComercialSchema = criarEquipeSchema;
+export const atualizarComercialSchema = atualizarEquipeSchema;
+export const atualizarLiderancaSchema = atualizarEquipeSchema;
 
 export const upsertMetaComercialSchema = z
   .object({
@@ -421,6 +451,9 @@ export type CadastrarIndicadoInput = z.infer<typeof cadastrarIndicadoSchema>;
 export type ProcessarPlanilhaInput = z.infer<typeof processarPlanilhaSchema>;
 export type CriarComercialInput = z.infer<typeof criarComercialSchema>;
 export type AtualizarComercialInput = z.infer<typeof atualizarComercialSchema>;
+export type AtualizarLiderancaInput = z.infer<typeof atualizarLiderancaSchema>;
+export type CriarEquipeInput = z.infer<typeof criarEquipeSchema>;
+export type AtualizarEquipeInput = z.infer<typeof atualizarEquipeSchema>;
 export type UpsertMetaComercialInput = z.infer<typeof upsertMetaComercialSchema>;
 export type PreferenciaCicloParceiroInput = z.infer<
   typeof preferenciaCicloParceiroSchema

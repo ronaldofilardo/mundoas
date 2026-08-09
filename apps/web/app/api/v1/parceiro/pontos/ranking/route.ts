@@ -21,10 +21,10 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const backofficeId = parceiro?.comercial?.lideranca?.backofficeId || parceiro?.gestor?.lideranca?.backofficeId;
+    const backofficeId = (parceiro?.comercial?.lideranca?.backofficeId || parceiro?.gestor?.lideranca?.backofficeId) ?? undefined;
 
     // Buscar ciclo vigente se não especificado
-    let cicloId = cicloPontosId;
+    let cicloId = cicloPontosId ?? undefined;
     if (!cicloId) {
       const cicloVigente = await prisma.cicloPontos.findFirst({
         where: {
@@ -37,21 +37,24 @@ export async function GET(req: NextRequest) {
         return badRequest("Nenhum ciclo vigente encontrado");
       }
 
-      cicloId = cicloVigente.id;
+      cicloId = cicloVigente.id ?? undefined;
     }
 
     // Gerar ranking atual do ciclo
     // Buscar todas as lideranças e seus parceiros
-    const liderancas = await prisma.lideranca.findMany({
-      where: { backofficeId },
+    const liderancas = await prisma.equipe.findMany({
+      where: { backofficeId, tipo: "LIDERANCA" },
       include: {
-        comerciais: { include: { parceiros: { select: { id: true, nome: true } } } },
+        subordinados: {
+          where: { tipo: "COMERCIAL" },
+          include: { parceiros: { select: { id: true, nome: true } } },
+        },
         gestores: { include: { parceiros: { select: { id: true, nome: true } } } }
       }
     });
 
     const parceiros = [
-      ...liderancas.flatMap(l => l.comerciais.flatMap(c => c.parceiros)),
+      ...liderancas.flatMap(l => l.subordinados.flatMap(c => c.parceiros)),
       ...liderancas.flatMap(l => l.gestores.flatMap(g => g.parceiros))
     ];
 

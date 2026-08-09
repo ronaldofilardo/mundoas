@@ -13,18 +13,18 @@ export async function GET(req: NextRequest) {
   const limit = parseInt(searchParams.get("limit") || "50");
   const skip = (page - 1) * limit;
 
-  const liderancas = await prisma.lideranca.findMany({
-    where: { backofficeId },
+  const liderancas = await prisma.equipe.findMany({
+    where: { backofficeId, tipo: "LIDERANCA" },
     select: { id: true },
   });
   const liderancaIds = liderancas.map((l) => l.id);
 
   const where: Record<string, unknown> = {
-    comercial: { liderancaId: { in: liderancaIds } },
+    equipe: { liderancaId: { in: liderancaIds } },
   };
 
   if (consultorPfId) {
-    where.comercialId = consultorPfId;
+    where.equipeId = consultorPfId;
   }
 
   if (mesReferencia) {
@@ -32,10 +32,10 @@ export async function GET(req: NextRequest) {
   }
 
   const [comissoes, total, consultores] = await Promise.all([
-    prisma.comissaoComercial.findMany({
+    prisma.comissaoEquipe.findMany({
       where,
       include: {
-        comercial: {
+        equipe: {
           select: { id: true, nome: true, cpf: true, liderancaId: true },
         },
       },
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
       take: limit,
       skip,
     }),
-    prisma.comissaoComercial.count({ where }),
+    prisma.comissaoEquipe.count({ where }),
     prisma.consultorPf.findMany({
       where: { liderancaId: { in: liderancaIds } },
       select: { id: true, nome: true, cpf: true },

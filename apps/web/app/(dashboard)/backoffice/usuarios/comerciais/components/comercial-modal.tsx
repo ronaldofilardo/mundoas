@@ -14,12 +14,13 @@ export function ComercialModal({ comercial, onSave, onClose }: ComercialModalPro
     ...comercial,
     telefone: comercial.telefone || "",
     funcao: comercial.funcao || "",
-    lideranca: comercial.lideranca,
+    lideranca: comercial.lideranca || comercial.tipoLideranca,
     tipo: comercial.tipo,
   });
 
-  const [isLideranca, setIsLideranca] = useState<boolean>(!!comercial.lideranca);
-  const [tipoLideranca, setTipoLideranca] = useState<string>(comercial.lideranca || "");
+  const liderancaInicial = comercial.lideranca || comercial.tipoLideranca || "";
+  const [isLideranca, setIsLideranca] = useState<boolean>(!!liderancaInicial);
+  const [tipoLideranca, setTipoLideranca] = useState<string>(liderancaInicial);
   const [tipo, setTipo] = useState<string>(comercial.tipo || "");
 
 const funcoes = [

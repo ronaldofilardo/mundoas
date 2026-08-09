@@ -64,13 +64,15 @@ export async function createTestLideranca(backofficeId: string) {
     },
   });
 
-  const lideranca = await prisma.lideranca.create({
+  const lideranca = await prisma.equipe.create({
     data: {
       usuarioId: usuario.id,
       nome: "Lideranca Teste",
       cpf: uniqueCpf(),
       backofficeId,
-      tipo: "COMERCIAL",
+      tipo: "LIDERANCA",
+      tipoLideranca: "COMERCIAL",
+      status: "ATIVO",
     },
   });
 
@@ -90,7 +92,7 @@ export async function createTestComercial(liderancaId: string, backofficeId: str
     },
   });
 
-  const comercial = await prisma.comercial.create({
+  const comercial = await prisma.equipe.create({
     data: {
       usuarioId: usuario.id,
       liderancaId,
@@ -98,6 +100,8 @@ export async function createTestComercial(liderancaId: string, backofficeId: str
       nome: "Comercial Teste",
       cpf: uniqueCpf(),
       percentualComissao: 5.0,
+      tipo: "COMERCIAL",
+      tipoLideranca: null,
     },
   });
 

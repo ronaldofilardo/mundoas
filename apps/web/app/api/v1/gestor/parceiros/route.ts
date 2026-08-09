@@ -69,8 +69,8 @@ export async function POST(req: NextRequest) {
       return badRequest("Gestor não encontrado");
     }
 
-    const lideranca = await prisma.lideranca.findUnique({
-      where: { id: gestor.liderancaId },
+    const lideranca = await prisma.equipe.findFirst({
+      where: { id: gestor.liderancaId, tipo: "LIDERANCA" },
       select: { backofficeId: true },
     });
     if (!lideranca) {

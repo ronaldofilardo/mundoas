@@ -131,13 +131,14 @@ describe("GET /api/v1/backoffice/relatorio-comissoes - consultor-pf", () => {
     });
     cleanupIds.usuarios.push(liderancaUsuario.id);
 
-    const lideranca = await prisma.lideranca.create({
+    const lideranca = await prisma.equipe.create({
       data: {
         usuarioId: liderancaUsuario.id,
         nome: "Lideranca Rel Test",
         cpf: uniqueCpf(),
         backofficeId,
-        tipo: "COMERCIAL",
+        tipo: "LIDERANCA",
+        tipoLideranca: "COMERCIAL",
       },
     });
     liderancaId = lideranca.id;
@@ -189,7 +190,7 @@ describe("GET /api/v1/backoffice/relatorio-comissoes - consultor-pf", () => {
       await prisma.consultorPf.delete({ where: { id } }).catch(() => {});
     }
     for (const id of cleanupIds.liderancas) {
-      await prisma.lideranca.delete({ where: { id } }).catch(() => {});
+      await prisma.equipe.delete({ where: { id } }).catch(() => {});
     }
     for (const id of cleanupIds.backoffices) {
       await prisma.backoffice.delete({ where: { id } }).catch(() => {});

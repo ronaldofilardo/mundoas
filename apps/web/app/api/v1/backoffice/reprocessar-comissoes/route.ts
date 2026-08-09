@@ -32,12 +32,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar se o comercial pertence ao gestor
-    const comercial = await prisma.comercial.findUnique({
+    const comercial = await prisma.equipe.findUnique({
       where: { id: comercialId },
       include: { lideranca: { select: { backofficeId: true } } }
     });
 
-    if (!comercial || comercial.lideranca?.backofficeId !== backofficeId) {
+    if (
+      !comercial ||
+      comercial.tipo !== "COMERCIAL" ||
+      comercial.lideranca?.backofficeId !== backofficeId
+    ) {
       return badRequest("Comercial não encontrado ou não pertence a este gestor");
     }
 
@@ -112,15 +116,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Criar/atualizar comissão do comercial
-    await prisma.comissaoComercial.upsert({
+    await prisma.comissaoEquipe.upsert({
       where: {
-        comercialId_mesReferencia: {
-          comercialId,
+        equipeId_mesReferencia: {
+          equipeId: comercialId,
           mesReferencia: mesReferencia,
         },
       },
       create: {
-        comercialId,
+        equipeId: comercialId,
         mesReferencia,
         valorVendas: totalVendas,
         valorComissao: comissaoTotal,
@@ -138,15 +142,15 @@ export async function POST(req: NextRequest) {
     });
 
     // Atualizar meta do comercial
-    await prisma.metaComercial.upsert({
+    await prisma.metaEquipe.upsert({
       where: {
-        comercialId_mesReferencia: {
-          comercialId,
+        equipeId_mesReferencia: {
+          equipeId: comercialId,
           mesReferencia: mesReferencia,
         },
       },
       create: {
-        comercialId,
+        equipeId: comercialId,
         mesReferencia,
         valorMeta: 0,
         valorAtingido: totalVendas,
@@ -228,10 +232,11 @@ export async function GET(req: NextRequest) {
   });
 
   // Buscar comerciais do gestor
-  const liderancas = await prisma.lideranca.findMany({
-    where: { backofficeId },
+  const liderancas = await prisma.equipe.findMany({
+    where: { backofficeId, tipo: "LIDERANCA" },
     include: {
-      comerciais: {
+      subordinados: {
+        where: { tipo: "COMERCIAL" },
         select: {
           id: true,
           nome: true,
@@ -242,7 +247,7 @@ export async function GET(req: NextRequest) {
     }
   });
 
-  const comerciais = liderancas.flatMap(l => l.comerciais);
+  const comerciais = liderancas.flatMap(l => l.subordinados);
 
   return ok({
     mesReferencia,

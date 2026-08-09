@@ -230,7 +230,7 @@ export async function calcularComissaoComercial(params: {
 }> {
   const { comercialId, valorProcedimento, dataReferencia, tipoProcedimento } = params;
 
-  const comercial = await prisma.comercial.findUnique({
+  const comercial = await prisma.equipe.findUnique({
     where: { id: comercialId },
     select: {
       funcao: true,
@@ -243,11 +243,11 @@ export async function calcularComissaoComercial(params: {
   });
 
   if (!comercial) {
-    throw new Error("Comercial não encontrado");
+    throw new Error("Equipe não encontrada");
   }
 
   const { funcao, lideranca } = comercial;
-  const backofficeId = lideranca?.backofficeId;
+  const backofficeId = lideranca?.backofficeId ?? undefined;
 
   const regraComercial = await prisma.regraComercial.findUnique({
     where: { backofficeId },
@@ -336,7 +336,7 @@ export async function calcularComissaoConsultorPf(params: {
     throw new Error("Consultor PF não encontrado");
   }
 
-  const backofficeId = consultorPf.lideranca.backofficeId;
+  const backofficeId = consultorPf.lideranca.backofficeId ?? undefined;
 
   const regraComercial = await prisma.regraComercial.findUnique({
     where: { backofficeId },

@@ -20,16 +20,16 @@ export async function GET(req: NextRequest) {
   if (error) return error;
 
   // Buscar todas as lideranças deste Gestor PF
-  const liderancas = await prisma.lideranca.findMany({
-    where: { backofficeId },
+  const liderancas = await prisma.equipe.findMany({
+    where: { backofficeId, tipo: "LIDERANCA" },
     include: {
-      comerciais: { select: { id: true } },
+      subordinados: { where: { tipo: "COMERCIAL" }, select: { id: true } },
       gestores: { select: { id: true } },
     },
   });
 
   // Coletar todos os IDs de comerciais e gestores
-  const comercialIds = liderancas.flatMap(l => l.comerciais.map(c => c.id));
+  const comercialIds = liderancas.flatMap(l => l.subordinados.map(c => c.id));
   const gestorIds = liderancas.flatMap(l => l.gestores.map(g => g.id));
 
   // Buscar TODOS os parceiros: vinculados a comerciais/gestores OU sem vínculo (órfãos)

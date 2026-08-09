@@ -6,8 +6,8 @@ export async function GET(req: NextRequest) {
   const { session, lideranca, error } = await requireLiderancaWithScope();
   if (error) return error;
 
-  const liderancaData = await prisma.lideranca.findUnique({
-    where: { id: lideranca!.id },
+  const liderancaData = await prisma.equipe.findFirst({
+    where: { id: lideranca!.id, tipo: "LIDERANCA" },
     include: {
       consultorPfs: {
         include: {
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     lideranca: {
       id: liderancaData?.id,
       nome: liderancaData?.nome,
-      tipo: liderancaData?.tipo,
+      tipo: liderancaData?.tipoLideranca,
     },
     equipe,
     resumo,

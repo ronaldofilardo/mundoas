@@ -6,8 +6,8 @@ export async function GET(_req: NextRequest) {
   const { comercialId, error } = await requireComercialWithScope();
   if (error) return error;
 
-  const metas = await prisma.metaComercial.findMany({
-    where: { comercialId },
+  const metas = await prisma.metaEquipe.findMany({
+    where: { equipeId: comercialId },
     orderBy: { mesReferencia: "desc" },
     take: 12,
   });

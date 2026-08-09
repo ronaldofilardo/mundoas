@@ -140,8 +140,8 @@ export async function parsePlanilhaProducao(
   let comercialPorId = new Map<string, string>();
 
   try {
-    liderancas = await prisma.lideranca.findMany({
-      where: { backofficeId },
+    liderancas = await prisma.equipe.findMany({
+      where: { backofficeId, tipo: "LIDERANCA" },
       select: { id: true },
     });
     liderancaIds = liderancas.map((l) => l.id);
@@ -154,7 +154,7 @@ export async function parsePlanilhaProducao(
     console.log("[parsePlanilhaProducao] IDs das lideranças:", liderancaIds);
 
     const [comerciaisResult, consultoresPfResult] = await Promise.all([
-      prisma.comercial.findMany({
+      prisma.equipe.findMany({
         where: { liderancaId: { in: liderancaIds } },
         select: { id: true, nome: true },
       }),

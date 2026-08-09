@@ -28,7 +28,7 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
           },
           {
             label: "Metas & Produção",
-            href: "/backoffice/comissionamento?tab=comerciais",
+            href: "/backoffice/comissionamento/equipe?tab=metas",
             icon: "goals",
           },
           {

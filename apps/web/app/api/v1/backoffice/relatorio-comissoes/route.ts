@@ -17,10 +17,13 @@ export async function GET(req: NextRequest) {
     return badRequest("Parâmetros obrigatórios: inicio e fim (formato: YYYY-MM)");
   }
 
-  const liderancas = await prisma.lideranca.findMany({
-    where: { backofficeId },
+  const liderancas = await prisma.equipe.findMany({
+    where: { backofficeId, tipo: "LIDERANCA" },
     include: {
-      comerciais: { select: { id: true, funcao: true, nome: true } },
+      subordinados: {
+        where: { tipo: "COMERCIAL" },
+        select: { id: true, funcao: true, nome: true },
+      },
       consultorPfs: { select: { id: true, nome: true, cpf: true } },
     },
   });
@@ -140,7 +143,7 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const comerciaisDoGestor = liderancas.flatMap(l => l.comerciais);
+  const comerciaisDoGestor = liderancas.flatMap(l => l.subordinados);
   let comercialIds = comerciaisDoGestor.map(c => c.id);
 
   if (funcao) {
@@ -163,18 +166,18 @@ export async function GET(req: NextRequest) {
   }
 
   const where: any = {
-    comercialId: { in: comercialIds },
+    equipeId: { in: comercialIds },
     mesReferencia: { gte: inicio, lte: fim },
   };
 
   if (comercialId) {
-    where.comercialId = comercialId;
+    where.equipeId = comercialId;
   }
 
-  const comissoes = await prisma.comissaoComercial.findMany({
+  const comissoes = await prisma.comissaoEquipe.findMany({
     where,
     include: {
-      comercial: {
+      equipe: {
         include: {
           usuario: { select: { nome: true, email: true } },
         },
@@ -191,7 +194,7 @@ export async function GET(req: NextRequest) {
 
   comissoes.forEach((c) => {
     const mes = c.mesReferencia;
-    const funcao = c.comercial.funcao || "SEM_FUNCAO";
+    const funcao = c.equipe.funcao || "SEM_FUNCAO";
 
     const atualMes = porMes.get(mes) || { totalVendas: 0, totalComissao: 0, quantidade: 0 };
     atualMes.totalVendas += Number(c.valorVendas);
@@ -203,7 +206,7 @@ export async function GET(req: NextRequest) {
     atualFuncao.totalVendas += Number(c.valorVendas);
     atualFuncao.totalComissao += Number(c.valorComissao);
     atualFuncao.quantidade += 1;
-    atualFuncao.comerciais.add(c.comercial.id);
+    atualFuncao.comerciais.add(c.equipe.id);
     porFuncao.set(funcao, atualFuncao);
 
     totalGeralVendas += Number(c.valorVendas);
@@ -216,10 +219,10 @@ export async function GET(req: NextRequest) {
       id: c.id,
       mesReferencia: c.mesReferencia,
       comercial: {
-        id: c.comercial.id,
-        nome: c.comercial.nome,
-        email: c.comercial.usuario.email,
-        funcao: c.comercial.funcao,
+        id: c.equipe.id,
+        nome: c.equipe.nome,
+        email: c.equipe.usuario.email,
+        funcao: c.equipe.funcao,
       },
       valorVendas: Number(c.valorVendas),
       valorComissao: Number(c.valorComissao),
@@ -246,7 +249,7 @@ export async function GET(req: NextRequest) {
         quantidade: comissoes.length,
       },
     },
-    comerciais: liderancas.flatMap(l => l.comerciais.map(c => ({ id: c.id, nome: c.nome, funcao: c.funcao }))),
+    comerciais: liderancas.flatMap(l => l.subordinados.map(c => ({ id: c.id, nome: c.nome, funcao: c.funcao }))),
   });
 }
 

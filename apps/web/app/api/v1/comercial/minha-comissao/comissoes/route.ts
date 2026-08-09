@@ -13,8 +13,8 @@ export async function GET(req: NextRequest) {
     return unauthorized();
   }
 
-  const comercial = await prisma.comercial.findUnique({
-    where: { usuarioId: session.user.id },
+  const comercial = await prisma.equipe.findFirst({
+    where: { usuarioId: session.user.id, tipo: "COMERCIAL" },
     select: { id: true },
   });
 
@@ -22,8 +22,8 @@ export async function GET(req: NextRequest) {
     return unauthorized();
   }
 
-  const comissoes = await prisma.comissaoComercial.findMany({
-    where: { comercialId: comercial.id },
+  const comissoes = await prisma.comissaoEquipe.findMany({
+    where: { equipeId: comercial.id },
     orderBy: { mesReferencia: "desc" },
     take: 24, // Últimos 24 meses
   });

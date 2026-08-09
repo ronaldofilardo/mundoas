@@ -23,6 +23,7 @@ declare module "next-auth" {
     backofficeId: string | null;
     parceiroId: string | null;
     comercialId: string | null;
+    equipeId: string | null;
   }
   interface Session {
     user: {
@@ -36,6 +37,7 @@ declare module "next-auth" {
       backofficeId: string | null;
       parceiroId: string | null;
       comercialId: string | null;
+      equipeId: string | null;
     };
   }
 }
@@ -50,5 +52,6 @@ declare module "next-auth/jwt" {
     backofficeId: string | null;
     parceiroId: string | null;
     comercialId: string | null;
+    equipeId: string | null;
   }
 }

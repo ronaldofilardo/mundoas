@@ -39,16 +39,16 @@ async function main() {
   console.log("   ID:", cicloVigente.id);
 
   // Buscar produções
-  const liderancas = await prisma.lideranca.findMany({
-    where: { backofficeId },
+  const liderancas = await prisma.equipe.findMany({
+    where: { backofficeId, tipo: "LIDERANCA" },
     include: {
-      comerciais: { include: { parceiros: { select: { id: true } } } },
+      subordinados: { include: { parceiros: { select: { id: true } } } },
       gestores: { include: { parceiros: { select: { id: true } } } }
     }
   });
 
   const parceiroIds = [
-    ...liderancas.flatMap(l => l.comerciais.flatMap(c => c.parceiros.map(p => p.id))),
+    ...liderancas.flatMap(l => l.subordinados.flatMap(c => c.parceiros.map(p => p.id))),
     ...liderancas.flatMap(l => l.gestores.flatMap(g => g.parceiros.map(p => p.id)))
   ];
 

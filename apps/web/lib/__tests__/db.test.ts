@@ -68,9 +68,9 @@ describe("lib/db.ts — resolução de @prisma/client", () => {
 });
 
 describe("lib/db.ts — queries reais sem P2022 (banco DEV)", () => {
-  it("Lideranca.findMany não falha com column not found", async () => {
+  it("Equipe.findMany não falha com column not found", async () => {
     await expect(
-      prismaModule.prisma.lideranca.findMany({ take: 1 }),
+      prismaModule.prisma.equipe.findMany({ take: 1 }),
     ).resolves.toBeDefined();
   });
 
@@ -80,9 +80,9 @@ describe("lib/db.ts — queries reais sem P2022 (banco DEV)", () => {
     ).resolves.toBeDefined();
   });
 
-  it("Comercial.findMany funciona (sanity check)", async () => {
+  it("MetaEquipe.findMany funciona (sanity check)", async () => {
     await expect(
-      prismaModule.prisma.comercial.findMany({ take: 1 }),
+      prismaModule.prisma.metaEquipe.findMany({ take: 1 }),
     ).resolves.toBeDefined();
   });
 });

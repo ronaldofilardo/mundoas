@@ -62,10 +62,14 @@ export function useRelatorioComissoes() {
 
   async function fetchComerciais() {
     try {
-      const res = await fetch("/api/v1/backoffice/comerciais");
+      const res = await fetch("/api/v1/backoffice/equipe");
       if (res.ok) {
         const data = await res.json();
-        setComerciais(data);
+        const todos = [
+          ...(data.liderancas ?? []).map((l: { id: string; nome: string; funcao?: string }) => ({ id: l.id, nome: l.nome, funcao: l.funcao })),
+          ...(data.comerciais ?? []).map((c: { id: string; nome: string; funcao?: string }) => ({ id: c.id, nome: c.nome, funcao: c.funcao })),
+        ];
+        setComerciais(todos);
       }
     } catch {
       toast.error("Erro ao carregar comerciais");

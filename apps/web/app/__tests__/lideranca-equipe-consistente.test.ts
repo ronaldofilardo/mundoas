@@ -38,13 +38,14 @@ describe("API - Liderança Equipe Page", () => {
       },
     });
 
-    const lideranca = await prisma.lideranca.create({
+    const lideranca = await prisma.equipe.create({
       data: {
         usuarioId: liderancaUsuario.id,
         nome: "Lideranca Teste Equipe",
         cpf: uniqueCpf(),
         backofficeId: backoffice.id,
-        tipo: "COMERCIAL",
+        tipo: "LIDERANCA",
+        tipoLideranca: "COMERCIAL",
       },
     });
 
@@ -89,7 +90,7 @@ describe("API - Liderança Equipe Page", () => {
 
   describe("GET /api/v1/lideranca/equipe", () => {
     it("deve retornar equipe da liderança autenticada", async () => {
-      const liderancaData = await prisma.lideranca.findUnique({
+      const liderancaData = await prisma.equipe.findUnique({
         where: { id: liderancaId },
         include: {
           consultorPfs: {
@@ -106,7 +107,7 @@ describe("API - Liderança Equipe Page", () => {
     });
 
     it("deve retornar totais zerados quando sem equipe", async () => {
-      const liderancaData = await prisma.lideranca.findUnique({
+      const liderancaData = await prisma.equipe.findUnique({
         where: { id: liderancaId },
         include: {
           consultorPfs: true,
@@ -122,7 +123,7 @@ describe("API - Liderança Equipe Page", () => {
         `consultorpf-equipe-teste-${Date.now()}${Math.random().toString(36).slice(2)}@asa.test`,
       );
 
-      const liderancaData = await prisma.lideranca.findUnique({
+      const liderancaData = await prisma.equipe.findUnique({
         where: { id: liderancaId },
         include: {
           consultorPfs: {
@@ -148,7 +149,7 @@ describe("API - Liderança Equipe Page", () => {
         `consultorpf2-${Date.now()}${Math.random().toString(36).slice(2)}@asa.test`,
       );
 
-      const liderancaData = await prisma.lideranca.findUnique({
+      const liderancaData = await prisma.equipe.findUnique({
         where: { id: liderancaId },
         include: {
           consultorPfs: true,
@@ -257,7 +258,7 @@ describe("API - Liderança Equipe Page", () => {
 
       expect(consultorPf.id).toBeDefined();
 
-      const liderancaData = await prisma.lideranca.findUnique({
+      const liderancaData = await prisma.equipe.findUnique({
         where: { id: liderancaId },
         include: {
           consultorPfs: {

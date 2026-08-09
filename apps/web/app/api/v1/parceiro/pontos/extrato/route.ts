@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0");
 
     // Buscar ciclo vigente se não especificado
-    let cicloId = cicloPontosId;
+    let cicloId = cicloPontosId ?? undefined;
     if (!cicloId) {
       const parceiro = await prisma.parceiro.findUnique({
         where: { id: parceiroId },
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
         },
       });
 
-      const backofficeId = parceiro?.comercial?.lideranca?.backofficeId || parceiro?.gestor?.lideranca?.backofficeId;
+      const backofficeId = (parceiro?.comercial?.lideranca?.backofficeId || parceiro?.gestor?.lideranca?.backofficeId) ?? undefined;
 
       const cicloVigente = await prisma.cicloPontos.findFirst({
         where: {
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
         return badRequest("Nenhum ciclo vigente encontrado");
       }
 
-      cicloId = cicloVigente.id;
+      cicloId = cicloVigente.id ?? undefined;
     }
 
     // Buscar movimentações

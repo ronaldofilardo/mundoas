@@ -2,14 +2,12 @@
 
 import { Suspense, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { TabComerciais } from "./components/tab-comerciais";
 import { TabRegras } from "./components/tab-regras";
 import { TabEquipes } from "./components/tab-equipes";
 
-type TabType = "comerciais" | "regras" | "equipes";
+type TabType = "regras" | "equipes";
 
 const TABS: { id: TabType; label: string; icon: string }[] = [
-  { id: "comerciais", label: "Comerciais", icon: "👥" },
   { id: "regras", label: "Regras", icon: "📋" },
   { id: "equipes", label: "Equipes", icon: "🏢" },
 ];
@@ -22,13 +20,13 @@ function ComissionamentoContent() {
   const tabParam = searchParams?.get("tab") ?? null;
   const activeTab: TabType = TAB_IDS.has(tabParam as TabType)
     ? (tabParam as TabType)
-    : "comerciais";
+    : "regras";
 
   useEffect(() => {
     if (!searchParams) return;
     const hasTab = searchParams.has("tab");
     if (!hasTab) {
-      router.replace("/backoffice/comissionamento?tab=comerciais", { scroll: false });
+      router.replace("/backoffice/comissionamento?tab=regras", { scroll: false });
     }
   }, [searchParams, router]);
 
@@ -60,7 +58,6 @@ function ComissionamentoContent() {
         </div>
 
         <div className="p-6">
-          {activeTab === "comerciais" && <TabComerciais />}
           {activeTab === "regras" && <TabRegras />}
           {activeTab === "equipes" && <TabEquipes />}
         </div>
@@ -75,7 +72,7 @@ export default function ComissionamentoPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Comissionamento</h1>
         <p className="text-gray-500 text-sm">
-          Gerencie os comerciais e as regras de comissão
+          Gerencie as regras de comissão e visualize as equipes
         </p>
       </div>
 

@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const backofficeId = parceiro?.comercial?.lideranca?.backofficeId || parceiro?.gestor?.lideranca?.backofficeId;
+    const backofficeId = (parceiro?.comercial?.lideranca?.backofficeId || parceiro?.gestor?.lideranca?.backofficeId) ?? undefined;
 
     // Buscar ciclo vigente
     const cicloVigente = await prisma.cicloPontos.findFirst({
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
         _sum: { quantidade: true },
         where: {
           parceiroId,
-          cicloPontosId: cicloVigente.id,
+          cicloPontosId: cicloVigente.id ?? undefined,
           tipo: "CREDITO",
         },
       });
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
         _sum: { quantidade: true },
         where: {
           parceiroId,
-          cicloPontosId: cicloVigente.id,
+          cicloPontosId: cicloVigente.id ?? undefined,
           tipo: "DEBITO",
         },
       });
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
         _sum: { quantidade: true },
         where: {
           parceiroId,
-          cicloPontosId: cicloVigente.id,
+          cicloPontosId: cicloVigente.id ?? undefined,
           tipo: "ESTORNO",
         },
       });

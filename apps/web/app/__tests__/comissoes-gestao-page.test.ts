@@ -49,13 +49,15 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
       },
     });
 
-    const lideranca = await prisma.lideranca.create({
+    const lideranca = await prisma.equipe.create({
       data: {
         usuarioId: liderancaUsuario.id,
         nome: "Lideranca Comercial",
         cpf: uniqueCpf(),
         backofficeId,
-        tipo: "COMERCIAL",
+        tipo: "LIDERANCA",
+        tipoLideranca: "COMERCIAL",
+        status: "ATIVO",
       },
     });
     liderancaId = lideranca.id;
@@ -63,7 +65,7 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
 
   beforeEach(async () => {
     // Limpar comerciais existentes antes de cada teste
-    await prisma.comercial.deleteMany({ where: { liderancaId } }).catch(() => {});
+    await prisma.equipe.deleteMany({ where: { liderancaId, tipo: "COMERCIAL" } }).catch(() => {});
 
     // Criar comercial para testes
     const comercialUsuario = await prisma.usuario.create({
@@ -77,7 +79,7 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
     });
     comercialUsuarioId = comercialUsuario.id;
 
-    const comercial = await prisma.comercial.create({
+    const comercial = await prisma.equipe.create({
       data: {
         usuarioId: comercialUsuario.id,
         liderancaId,
@@ -85,14 +87,16 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
         cpf: uniqueCpf(),
         percentualComissao: 3.0,
         status: "ATIVO",
+        tipo: "COMERCIAL",
+        tipoLideranca: null,
       },
     });
     comercialId = comercial.id;
   });
 
   afterAll(async () => {
-    await prisma.comercial.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
-    await prisma.lideranca.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
+    await prisma.equipe.deleteMany({ where: { tipo: "COMERCIAL", usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
+    await prisma.equipe.deleteMany({ where: { tipo: "LIDERANCA", usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
     await prisma.backoffice.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
     await prisma.usuario.deleteMany({ where: { email: { endsWith: "@asa.test" } } }).catch(() => {});
     await prisma.usuario.deleteMany({ where: { email: { contains: "@asa.test" } } }).catch(() => {});
@@ -110,7 +114,7 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
         },
       });
 
-      const novoComercial = await prisma.comercial.create({
+      const novoComercial = await prisma.equipe.create({
         data: {
           usuarioId: usuario.id,
           liderancaId, nome: "Novo Comercial",
@@ -118,6 +122,8 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
           funcao: "SUPERVISOR_COMERCIAL",
           percentualComissao: 4.0,
           status: "ATIVO",
+          tipo: "COMERCIAL",
+          tipoLideranca: null,
         },
       });
 
@@ -125,13 +131,13 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
       expect(novoComercial.funcao).toBe("SUPERVISOR_COMERCIAL");
 
       // Limpeza
-      await prisma.comercial.delete({ where: { id: novoComercial.id } }).catch(() => {});
+      await prisma.equipe.delete({ where: { id: novoComercial.id } }).catch(() => {});
       await prisma.usuario.delete({ where: { id: usuario.id } }).catch(() => {});
     });
 
     it("deve listar todos os comerciais do backoffice", async () => {
-      const comerciais = await prisma.comercial.findMany({
-        where: { liderancaId },
+      const comerciais = await prisma.equipe.findMany({
+        where: { liderancaId, tipo: "COMERCIAL" },
         include: { usuario: true },
       });
 
@@ -142,9 +148,9 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
 
   describe("Metas Mensais", () => {
     it("deve criar meta para comercial", async () => {
-      const meta = await prisma.metaComercial.create({
+      const meta = await prisma.metaEquipe.create({
         data: {
-          comercialId,
+          equipeId: comercialId,
           mesReferencia: "2026-01",
           valorMeta: 10000.0,
         },
@@ -156,15 +162,15 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
     });
 
     it("deve atualizar meta existente", async () => {
-      const meta = await prisma.metaComercial.create({
+      const meta = await prisma.metaEquipe.create({
         data: {
-          comercialId,
+          equipeId: comercialId,
           mesReferencia: "2026-02",
           valorMeta: 15000.0,
         },
       });
 
-      const metaAtualizada = await prisma.metaComercial.update({
+      const metaAtualizada = await prisma.metaEquipe.update({
         where: { id: meta.id },
         data: { valorMeta: 20000.0 },
       });
@@ -173,21 +179,21 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
     });
 
     it("deve listar metas de todos os comerciais (visão geral)", async () => {
-      await prisma.metaComercial.create({
+      await prisma.metaEquipe.create({
         data: {
-          comercialId,
+          equipeId: comercialId,
           mesReferencia: "2026-03",
           valorMeta: 12000.0,
         },
       });
 
-      const metas = await prisma.metaComercial.findMany({
-        where: { comercialId },
-        include: { comercial: { include: { usuario: true } } },
+      const metas = await prisma.metaEquipe.findMany({
+        where: { equipeId: comercialId },
+        include: { equipe: { include: { usuario: true } } },
       });
 
       expect(metas).toHaveLength(1);
-      expect(metas[0].comercial.nome).toBe("Comercial Teste");
+      expect(metas[0].equipe.nome).toBe("Comercial Teste");
     });
   });
 
@@ -195,7 +201,7 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
     it("deve atualizar nome e email do comercial", async () => {
       const novoEmail = `novo.email.${Date.now()}@asa.test`;
       
-      const comercialAtualizado = await prisma.comercial.update({
+      const comercialAtualizado = await prisma.equipe.update({
         where: { id: comercialId },
         data: { nome: "Comercial Atualizado" },
       });
@@ -210,7 +216,7 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
     });
 
     it("deve atualizar função do comercial", async () => {
-      const comercialAtualizado = await prisma.comercial.update({
+      const comercialAtualizado = await prisma.equipe.update({
         where: { id: comercialId },
         data: { funcao: "GERENTE_CIRE" },
       });
@@ -219,7 +225,7 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
     });
 
     it("deve atualizar status do comercial", async () => {
-      const comercialAtualizado = await prisma.comercial.update({
+      const comercialAtualizado = await prisma.equipe.update({
         where: { id: comercialId },
         data: { status: "INATIVO" },
       });
@@ -229,7 +235,7 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
 
     it("deve atualizar CPF do comercial", async () => {
       const novoCpf = uniqueCpf();
-      const comercialAtualizado = await prisma.comercial.update({
+      const comercialAtualizado = await prisma.equipe.update({
         where: { id: comercialId },
         data: { cpf: novoCpf },
       });
@@ -251,20 +257,22 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
         },
       });
 
-      const comercialTemp = await prisma.comercial.create({
+      const comercialTemp = await prisma.equipe.create({
         data: {
           usuarioId: usuarioTemp.id,
           liderancaId, nome: "Comercial Temp",
           cpf: uniqueCpf(),
           percentualComissao: 3.0,
           status: "ATIVO",
+          tipo: "COMERCIAL",
+          tipoLideranca: null,
         },
       });
 
       // Deletar comercial
-      await prisma.comercial.delete({ where: { id: comercialTemp.id } });
+      await prisma.equipe.delete({ where: { id: comercialTemp.id } });
 
-      const comercialDeletado = await prisma.comercial.findUnique({
+      const comercialDeletado = await prisma.equipe.findUnique({
         where: { id: comercialTemp.id },
       });
 
@@ -285,20 +293,22 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
         },
       });
 
-      const comercialTemp = await prisma.comercial.create({
+      const comercialTemp = await prisma.equipe.create({
         data: {
           usuarioId: usuarioTemp.id,
           liderancaId, nome: "Comercial Com Comissao",
           cpf: uniqueCpf(),
           percentualComissao: 3.0,
           status: "ATIVO",
+          tipo: "COMERCIAL",
+          tipoLideranca: null,
         },
       });
 
       // Criar comissão
-      await prisma.comissaoComercial.create({
+      await prisma.comissaoEquipe.create({
         data: {
-          comercialId: comercialTemp.id,
+          equipeId: comercialTemp.id,
           mesReferencia: "2026-01",
           valorVendas: 50000.0,
           valorComissao: 1500.0,
@@ -307,13 +317,13 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
       });
 
       // Deletar comercial (deve deletar comissões em cascata)
-      await prisma.comissaoComercial.deleteMany({
-        where: { comercialId: comercialTemp.id },
+      await prisma.comissaoEquipe.deleteMany({
+        where: { equipeId: comercialTemp.id },
       });
-      await prisma.comercial.delete({ where: { id: comercialTemp.id } });
+      await prisma.equipe.delete({ where: { id: comercialTemp.id } });
 
-      const comissoesRestantes = await prisma.comissaoComercial.findMany({
-        where: { comercialId: comercialTemp.id },
+      const comissoesRestantes = await prisma.comissaoEquipe.findMany({
+        where: { equipeId: comercialTemp.id },
       });
 
       expect(comissoesRestantes).toHaveLength(0);
@@ -330,32 +340,34 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
         },
       });
 
-      const comercialTemp = await prisma.comercial.create({
+      const comercialTemp = await prisma.equipe.create({
         data: {
           usuarioId: usuarioTemp.id,
           liderancaId, nome: "Comercial Com Meta",
           cpf: uniqueCpf(),
           percentualComissao: 3.0,
           status: "ATIVO",
+          tipo: "COMERCIAL",
+          tipoLideranca: null,
         },
       });
 
       // Criar metas
-      await prisma.metaComercial.createMany({
+      await prisma.metaEquipe.createMany({
         data: [
-          { comercialId: comercialTemp.id, mesReferencia: "2026-01", valorMeta: 10000.0 },
-          { comercialId: comercialTemp.id, mesReferencia: "2026-02", valorMeta: 15000.0 },
+          { equipeId: comercialTemp.id, mesReferencia: "2026-01", valorMeta: 10000.0 },
+          { equipeId: comercialTemp.id, mesReferencia: "2026-02", valorMeta: 15000.0 },
         ],
       });
 
       // Deletar metas primeiro
-      await prisma.metaComercial.deleteMany({
-        where: { comercialId: comercialTemp.id },
+      await prisma.metaEquipe.deleteMany({
+        where: { equipeId: comercialTemp.id },
       });
-      await prisma.comercial.delete({ where: { id: comercialTemp.id } });
+      await prisma.equipe.delete({ where: { id: comercialTemp.id } });
 
-      const metasRestantes = await prisma.metaComercial.findMany({
-        where: { comercialId: comercialTemp.id },
+      const metasRestantes = await prisma.metaEquipe.findMany({
+        where: { equipeId: comercialTemp.id },
       });
 
       expect(metasRestantes).toHaveLength(0);

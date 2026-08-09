@@ -6,13 +6,13 @@ export async function GET() {
   const { session, backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  const liderancas = await prisma.lideranca.findMany({
-    where: { backofficeId },
+  const liderancas = await prisma.equipe.findMany({
+    where: { backofficeId, tipo: "LIDERANCA" },
     include: {
       usuario: {
         select: { id: true, nome: true, email: true },
       },
-      comerciais: {
+      subordinados: {
         include: {
           usuario: { select: { email: true, status: true } },
           _count: { select: { parceiros: true } },
@@ -36,18 +36,18 @@ export async function GET() {
   const equipes = liderancas.map((l) => ({
     id: l.id,
     nome: l.nome,
-    tipo: l.tipo,
+    tipo: l.tipoLideranca,
     email: l.usuario.email,
     status: l.status,
     totais: {
-      comerciais: l.comerciais.length,
+      comerciais: l.subordinados.length,
       gestores: l.gestores.length,
       consultoresPf: l.consultorPfs.length,
       parceiros:
-        l.comerciais.reduce((acc, c) => acc + c._count.parceiros, 0) +
+        l.subordinados.reduce((acc, c) => acc + c._count.parceiros, 0) +
         l.gestores.reduce((acc, g) => acc + g._count.parceiros, 0),
     },
-    comerciais: l.comerciais.map((c) => ({
+    comerciais: l.subordinados.map((c) => ({
       id: c.id,
       nome: c.nome,
       email: c.usuario.email,

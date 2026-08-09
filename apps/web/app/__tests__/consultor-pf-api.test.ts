@@ -36,13 +36,14 @@ describe("API - Lideranca Consultores PF", () => {
       },
     });
 
-    const lideranca = await prisma.lideranca.create({
+    const lideranca = await prisma.equipe.create({
       data: {
         usuarioId: liderancaUsuario.id,
         nome: "Lideranca Teste",
         cpf: uniqueCpf(),
         backofficeId: backoffice.id,
-        tipo: "COMERCIAL",
+        tipo: "LIDERANCA",
+        tipoLideranca: "COMERCIAL",
       },
     });
 

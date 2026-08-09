@@ -6,6 +6,16 @@ export interface ConsultorPfResumo {
   status: string;
 }
 
+export interface ComercialResumo {
+  id: string;
+  nome: string;
+  cpf: string;
+  email: string;
+  funcao?: string | null;
+  percentualComissao?: number;
+  status: string;
+}
+
 export interface EquipeItem {
   id: string;
   nome: string;
@@ -13,8 +23,11 @@ export interface EquipeItem {
   email: string;
   status: string;
   tipo?: string;
-  funcao?: string;
+  funcao?: string | null;
   tipoLideranca?: string | null;
+  percentualComissao?: number;
+  liderancaId?: string | null;
   kind: "comercial" | "lideranca";
   consultorPfs?: ConsultorPfResumo[];
+  comerciais?: ComercialResumo[];
 }

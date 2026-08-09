@@ -49,13 +49,14 @@ describe("Comercial sem Liderança", () => {
       },
     });
 
-    const lideranca = await prisma.lideranca.create({
+    const lideranca = await prisma.equipe.create({
       data: {
         usuarioId: liderancaUsuario.id,
         nome: "Lideranca Test",
         cpf: uniqueCpf(),
         backofficeId,
-        tipo: "COMERCIAL",
+        tipo: "LIDERANCA",
+        tipoLideranca: "COMERCIAL",
       },
     });
     liderancaId = lideranca.id;
@@ -70,7 +71,7 @@ describe("Comercial sem Liderança", () => {
       },
     });
 
-    const comercialSemLideranca = await prisma.comercial.create({
+    const comercialSemLideranca = await prisma.equipe.create({
       data: {
         usuarioId: usuarioSemLideranca.id,
         nome: "Comercial Sem Lideranca",
@@ -80,6 +81,7 @@ describe("Comercial sem Liderança", () => {
         percentualComissao: 5.0,
         funcao: "SUPERVISOR_ATIVO",
         tipoLideranca: null,
+        tipo: "COMERCIAL",
       },
     });
     comercialSemLiderancaId = comercialSemLideranca.id;
@@ -94,7 +96,7 @@ describe("Comercial sem Liderança", () => {
       },
     });
 
-    const comercialComLideranca = await prisma.comercial.create({
+    const comercialComLideranca = await prisma.equipe.create({
       data: {
         usuarioId: usuarioComLideranca.id,
         nome: "Comercial Com Lideranca",
@@ -104,6 +106,7 @@ describe("Comercial sem Liderança", () => {
         percentualComissao: 5.0,
         funcao: "GERENTE_CIRE",
         tipoLideranca: "COMERCIAL",
+        tipo: "COMERCIAL",
       },
     });
     comercialComLiderancaId = comercialComLideranca.id;
@@ -113,16 +116,16 @@ describe("Comercial sem Liderança", () => {
     // Cleanup
     const ids = [comercialSemLiderancaId, comercialComLiderancaId].filter(Boolean);
     if (ids.length > 0) {
-      await prisma.comercial.deleteMany({
+      await prisma.equipe.deleteMany({
         where: { id: { in: ids } },
       });
     }
-    await prisma.lideranca.deleteMany({ where: { id: liderancaId } });
+    await prisma.equipe.deleteMany({ where: { id: liderancaId } });
     await prisma.backoffice.deleteMany({ where: { id: backofficeId } });
   });
 
   it("deve criar comercial sem liderança (liderancaId = null)", async () => {
-    const comercial = await prisma.comercial.findUnique({
+    const comercial = await prisma.equipe.findUnique({
       where: { id: comercialSemLiderancaId },
       include: { usuario: true },
     });
@@ -135,7 +138,7 @@ describe("Comercial sem Liderança", () => {
   });
 
   it("deve criar comercial com liderança (liderancaId != null)", async () => {
-    const comercial = await prisma.comercial.findUnique({
+    const comercial = await prisma.equipe.findUnique({
       where: { id: comercialComLiderancaId },
       include: { usuario: true, lideranca: true },
     });
@@ -148,7 +151,7 @@ describe("Comercial sem Liderança", () => {
   });
 
   it("deve listar comerciais sem liderança quando buscar por liderancaId = null", async () => {
-    const comerciaisSemLideranca = await prisma.comercial.findMany({
+    const comerciaisSemLideranca = await prisma.equipe.findMany({
       where: {
         liderancaId: null,
         usuario: { tipo: "COMERCIAL" },
@@ -165,7 +168,7 @@ describe("Comercial sem Liderança", () => {
   });
 
   it("deve listar comerciais com liderança quando buscar por liderancaId != null", async () => {
-    const comerciaisComLideranca = await prisma.comercial.findMany({
+    const comerciaisComLideranca = await prisma.equipe.findMany({
       where: {
         liderancaId: { not: null },
         usuario: { tipo: "COMERCIAL" },
@@ -196,7 +199,7 @@ describe("Comercial sem Liderança", () => {
       },
     });
 
-    const comercialTemp = await prisma.comercial.create({
+    const comercialTemp = await prisma.equipe.create({
       data: {
         usuarioId: usuarioTemp.id,
         nome: "Temp",
@@ -204,11 +207,13 @@ describe("Comercial sem Liderança", () => {
         liderancaId: null,
         backofficeId,
         percentualComissao: 0,
+        tipo: "COMERCIAL",
+        tipoLideranca: null,
       },
     });
 
     // Atualizar para ter liderança
-    const atualizado = await prisma.comercial.update({
+    const atualizado = await prisma.equipe.update({
       where: { id: comercialTemp.id },
       data: {
         liderancaId,
@@ -220,7 +225,7 @@ describe("Comercial sem Liderança", () => {
     expect(atualizado.tipoLideranca).toBe("COMERCIAL");
 
     // Cleanup
-    await prisma.comercial.delete({ where: { id: comercialTemp.id } });
+    await prisma.equipe.delete({ where: { id: comercialTemp.id } });
     await prisma.usuario.delete({ where: { id: usuarioTemp.id } });
   });
 
@@ -235,7 +240,7 @@ describe("Comercial sem Liderança", () => {
       },
     });
 
-    const comercialTemp = await prisma.comercial.create({
+    const comercialTemp = await prisma.equipe.create({
       data: {
         usuarioId: usuarioTemp.id,
         nome: "Temp2",
@@ -244,11 +249,12 @@ describe("Comercial sem Liderança", () => {
         backofficeId,
         percentualComissao: 0,
         tipoLideranca: "COMERCIAL",
+        tipo: "COMERCIAL",
       },
     });
 
     // Atualizar para não ter liderança
-    const atualizado = await prisma.comercial.update({
+    const atualizado = await prisma.equipe.update({
       where: { id: comercialTemp.id },
       data: {
         liderancaId: null,
@@ -260,16 +266,16 @@ describe("Comercial sem Liderança", () => {
     expect(atualizado.tipoLideranca).toBeNull();
 
     // Cleanup
-    await prisma.comercial.delete({ where: { id: comercialTemp.id } });
+    await prisma.equipe.delete({ where: { id: comercialTemp.id } });
     await prisma.usuario.delete({ where: { id: usuarioTemp.id } });
   });
 
   it("deve buscar todos os comerciais (com e sem liderança) em uma única query", async () => {
     // Simular a query que a API GET usa
-    const liderancas = await prisma.lideranca.findMany({
-      where: { backofficeId },
+    const liderancas = await prisma.equipe.findMany({
+      where: { backofficeId, tipo: "LIDERANCA" },
       include: {
-        comerciais: {
+        subordinados: {
           include: {
             usuario: { select: { id: true, email: true, status: true } },
           },
@@ -277,9 +283,9 @@ describe("Comercial sem Liderança", () => {
       },
     });
 
-    const comerciaisComLideranca = liderancas.flatMap((l) => l.comerciais);
+    const comerciaisComLideranca = liderancas.flatMap((l) => l.subordinados);
 
-    const comerciaisSemLideranca = await prisma.comercial.findMany({
+    const comerciaisSemLideranca = await prisma.equipe.findMany({
       where: {
         liderancaId: null,
         backofficeId,

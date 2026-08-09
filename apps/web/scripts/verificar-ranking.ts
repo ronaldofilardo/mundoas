@@ -25,16 +25,16 @@ async function main() {
   console.log(`Ciclo: ${ciclo.nome}`);
 
   // Buscar todos os parceiros
-  const liderancas = await prisma.lideranca.findMany({
-    where: { backofficeId: backoffice.id },
+  const liderancas = await prisma.equipe.findMany({
+    where: { backofficeId: backoffice.id, tipo: "LIDERANCA" },
     include: {
-      comerciais: { include: { parceiros: { select: { id: true, nome: true, cpf: true } } } },
+      subordinados: { include: { parceiros: { select: { id: true, nome: true, cpf: true } } } },
       gestores: { include: { parceiros: { select: { id: true, nome: true, cpf: true } } } }
     }
   });
 
   const parceiros = [
-    ...liderancas.flatMap(l => l.comerciais.flatMap(c => c.parceiros)),
+    ...liderancas.flatMap(l => l.subordinados.flatMap(c => c.parceiros)),
     ...liderancas.flatMap(l => l.gestores.flatMap(g => g.parceiros))
   ];
 

@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     if (error) return error;
 
     const { searchParams } = new URL(req.url);
-    const cicloPontosId = searchParams.get("cicloPontosId");
+    const cicloPontosId = searchParams.get("cicloPontosId") ?? undefined;
 
     const where: any = {
       parceiroId,
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const backofficeId = parceiro?.comercial?.lideranca?.backofficeId || parceiro?.gestor?.lideranca?.backofficeId;
+    const backofficeId = (parceiro?.comercial?.lideranca?.backofficeId || parceiro?.gestor?.lideranca?.backofficeId) ?? undefined;
 
     const cicloVigente = await prisma.cicloPontos.findFirst({
       where: {
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
       _sum: { quantidade: true },
       where: {
         parceiroId,
-        cicloPontosId: cicloVigente.id,
+        cicloPontosId: cicloVigente.id ?? undefined,
         tipo: "CREDITO",
       },
     });
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
       _sum: { quantidade: true },
       where: {
         parceiroId,
-        cicloPontosId: cicloVigente.id,
+        cicloPontosId: cicloVigente.id ?? undefined,
         tipo: "DEBITO",
       },
     });
@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
       _sum: { quantidade: true },
       where: {
         parceiroId,
-        cicloPontosId: cicloVigente.id,
+        cicloPontosId: cicloVigente.id ?? undefined,
         tipo: "ESTORNO",
       },
     });
@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
         data: {
           parceiroId,
           premioId,
-          cicloPontosId: cicloVigente.id,
+          cicloPontosId: cicloVigente.id ?? undefined,
           pontosDebitados: premio.custoPontos,
           status: "SOLICITADO",
         },
@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
       await tx.movimentacaoPontos.create({
         data: {
           parceiroId,
-          cicloPontosId: cicloVigente.id,
+          cicloPontosId: cicloVigente.id ?? undefined,
           tipo: "DEBITO",
           origem: "RESGATE",
           quantidade: premio.custoPontos,

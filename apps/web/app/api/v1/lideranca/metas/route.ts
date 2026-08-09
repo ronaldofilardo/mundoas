@@ -13,8 +13,8 @@ export async function GET() {
   if (error) return error;
 
   const [metasLideranca, consultoresPf] = await Promise.all([
-    prisma.metaLideranca.findMany({
-      where: { liderancaId: lideranca.id },
+    prisma.metaEquipe.findMany({
+      where: { equipeId: lideranca.id },
       orderBy: { createdAt: "desc" },
     }),
     prisma.consultorPf.findMany({
@@ -67,18 +67,18 @@ export async function POST(req: NextRequest) {
 
   const { mesReferencia, valorMeta } = parsed.data;
 
-  const existing = await prisma.metaLideranca.findFirst({
-    where: { liderancaId: lideranca.id, mesReferencia },
+  const existing = await prisma.metaEquipe.findFirst({
+    where: { equipeId: lideranca.id, mesReferencia },
   });
 
   const meta = existing
-    ? await prisma.metaLideranca.update({
+    ? await prisma.metaEquipe.update({
         where: { id: existing.id },
         data: { valorMeta },
       })
-    : await prisma.metaLideranca.create({
+    : await prisma.metaEquipe.create({
         data: {
-          liderancaId: lideranca.id,
+          equipeId: lideranca.id,
           mesReferencia,
           valorMeta,
         },

@@ -56,8 +56,8 @@ export async function GET(req: NextRequest) {
     return badRequest("Ano inválido");
   }
 
-  const liderancas = await prisma.lideranca.findMany({
-    where: { backofficeId },
+  const liderancas = await prisma.equipe.findMany({
+    where: { backofficeId, tipo: "LIDERANCA" },
     select: { id: true },
   });
   const liderancaIds = liderancas.map((l) => l.id);

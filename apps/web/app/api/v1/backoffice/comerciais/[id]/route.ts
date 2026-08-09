@@ -1,3 +1,9 @@
+/**
+ * Endpoint legado /api/v1/backoffice/comerciais/[id] — thin proxy para
+ * /api/v1/backoffice/equipe/[id]. Mantém o shape de resposta esperado pelos
+ * consumidores atuais. A edição/deleção vai pelo handler unificado, que
+ * fixa o bug de senhaHash="" e aplica escopo backoffice correto.
+ */
 import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
 import {
@@ -7,40 +13,34 @@ import {
   ok,
   requireBackofficeWithScope,
 } from "@/lib/api-helpers";
-import { atualizarComercialSchema } from "@asa/shared";
 import { criarAuditLog } from "@/lib/audit";
+import * as equipeIdRoute from "../../../equipe/[id]/route";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { id: string } },
-) {
-  const { backofficeId, error } = await requireBackofficeWithScope();
-  if (error) return error;
+export const GET = async (
+  req: NextRequest,
+  ctx: { params: { id: string } },
+): Promise<Response> => {
+  const backofficeRes = await requireBackofficeWithScope();
+  if (backofficeRes.error) return backofficeRes.error;
+  const { backofficeId } = backofficeRes;
 
-  // Buscar comercial e verificar se pertence a este backoffice
-  const comercial = await prisma.comercial.findFirst({
-    where: { id: params.id },
+  const comercial = await prisma.equipe.findFirst({
+    where: { id: ctx.params.id, tipo: "COMERCIAL" },
     include: {
-      backoffice: {
-        select: { id: true },
-      },
-      lideranca: {
-        select: { backofficeId: true },
-      },
-      usuario: {
-        select: { id: true, email: true, status: true },
-      },
+      backoffice: { select: { id: true } },
+      lideranca: { select: { backofficeId: true } },
+      usuario: { select: { id: true, email: true, status: true } },
     },
   });
-  
+
   if (!comercial) return notFound("Comercial não encontrado");
-  
-  if (comercial.lideranca && comercial.lideranca.backofficeId !== backofficeId) {
+  if (
+    comercial.lideranca &&
+    comercial.lideranca.backofficeId !== backofficeId
+  ) {
     return forbidden();
   }
-  if (comercial.backofficeId !== backofficeId) {
-    return forbidden();
-  }
+  if (comercial.backofficeId !== backofficeId) return forbidden();
 
   return ok({
     id: comercial.id,
@@ -52,154 +52,40 @@ export async function GET(
     createdAt: comercial.createdAt,
     liderancaId: comercial.liderancaId,
     tipoLideranca: comercial.tipoLideranca,
+    funcao: comercial.funcao,
   });
-}
+};
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } },
-) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
-  if (error) return error;
-
-  const body = await req.json();
-  const parsed = atualizarComercialSchema.safeParse(body);
-  if (!parsed.success) {
-    return badRequest(parsed.error.errors.map((e) => e.message).join(", "));
-  }
-
-  // Buscar comercial e verificar permissão
-  const comercial = await prisma.comercial.findFirst({
-    where: { id: params.id },
-    include: { 
-      usuario: true,
-      backoffice: { select: { id: true } },
-      lideranca: { select: { backofficeId: true } }
-    },
-  });
-  
-  if (!comercial) return notFound("Comercial não encontrado");
-  
-  if (comercial.lideranca && comercial.lideranca.backofficeId !== backofficeId) {
-    return forbidden();
-  }
-  if (comercial.backofficeId !== backofficeId) {
-    return forbidden();
-  }
-
-  const dataToUpdate: any = { ...parsed.data };
-  
-  if (dataToUpdate.percentualComissao !== undefined) {
-    dataToUpdate.percentualComissao =
-      typeof dataToUpdate.percentualComissao === "string"
-        ? parseFloat(dataToUpdate.percentualComissao)
-        : dataToUpdate.percentualComissao;
-  }
-
-  if (dataToUpdate.lideranca !== undefined) {
-    dataToUpdate.tipoLideranca = dataToUpdate.lideranca;
-    delete dataToUpdate.lideranca;
-  }
-
-  const usuarioUpdate: any = {};
-  if (dataToUpdate.nome) {
-    usuarioUpdate.nome = dataToUpdate.nome;
-    delete dataToUpdate.nome;
-  }
-  if (dataToUpdate.email) {
-    usuarioUpdate.email = dataToUpdate.email.toLowerCase().trim();
-    delete dataToUpdate.email;
-  }
-  if (dataToUpdate.status) {
-    usuarioUpdate.status = dataToUpdate.status;
-    delete dataToUpdate.status;
-  }
-  if (dataToUpdate.telefone) {
-    usuarioUpdate.telefone = dataToUpdate.telefone;
-    delete dataToUpdate.telefone;
-  }
-
-  const updated = await prisma.comercial.update({
-    where: { id: params.id },
-    data: dataToUpdate,
-  });
-
-  if (Object.keys(usuarioUpdate).length > 0) {
-    await prisma.usuario.update({
-      where: { id: comercial.usuarioId },
-      data: usuarioUpdate,
-    });
-  }
-
-  await criarAuditLog({
-    usuarioId: session!.user.id,
-    acao: "ATUALIZAR_COMERCIAL",
-    entidade: "comercial",
-    entidadeId: params.id,
-    detalhes: parsed.data,
-  });
-
-  return ok(updated);
-}
-
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } },
-) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
-  if (error) return error;
-
-  // Buscar comercial e verificar permissão
-  const comercial = await prisma.comercial.findFirst({
-    where: { id: params.id },
-    include: { 
-      usuario: true,
-      comissoes: true,
-      metas: true,
-      procedimentos: true,
-      lideranca: { select: { backofficeId: true } }
-    },
-  });
-  
-  if (!comercial) return notFound("Comercial não encontrado");
-  
-  if (comercial.lideranca && comercial.lideranca.backofficeId !== backofficeId) {
-    return forbidden();
-  }
-  if (comercial.backofficeId !== backofficeId) {
-    return forbidden();
-  }
-
+  ctx: { params: { id: string } },
+): Promise<Response> {
+  let body: any;
   try {
-    // Soft delete do usuario associado (se existir)
-    if (comercial.usuarioId) {
-      await prisma.usuario.update({
-        where: { id: comercial.usuarioId },
-        data: { status: "INATIVO" },
-      }).catch((err) => {
-        console.error("Erro ao inativar usuário:", err.message);
-      });
-    }
-
-    // Soft delete: inativar comercial ao invés de deletar (preserva dados históricos)
-    await prisma.comercial.update({
-      where: { id: params.id },
-      data: { status: "INATIVO" },
-    });
-
-    await criarAuditLog({
-      usuarioId: session!.user.id,
-      acao: "DESATIVAR_COMERCIAL",
-      entidade: "comercial",
-      entidadeId: params.id,
-      detalhes: { nome: comercial.nome, cpf: comercial.cpf },
-    });
-
-    return ok({ message: "Comercial inativado com sucesso (dados preservados)" });
-  } catch (error: any) {
-    console.error("Erro ao deletar comercial:", error);
-    return badRequest("Erro ao deletar comercial: " + error.message);
+    body = await req.json();
+  } catch {
+    return badRequest("Corpo inválido");
   }
+
+  const { lideranca, tipo: _tipoLegacy, ...rest } = body;
+  const adapted: Record<string, unknown> = { ...rest };
+  if (lideranca !== undefined) {
+    adapted.tipoLideranca = lideranca || null;
+  }
+
+  const adaptedReq = new NextRequest(
+    `http://localhost/api/v1/backoffice/equipe/${ctx.params.id}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(adapted),
+    },
+  ) as NextRequest;
+
+  return equipeIdRoute.PATCH(adaptedReq, ctx);
 }
 
-
+export const DELETE = (
+  req: NextRequest,
+  ctx: { params: { id: string } },
+): Promise<Response> => equipeIdRoute.DELETE(req, ctx);

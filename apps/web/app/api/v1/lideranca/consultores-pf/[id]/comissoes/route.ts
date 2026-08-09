@@ -19,8 +19,8 @@ export async function GET(
     return notFound("Consultor PF não encontrado");
   }
 
-  const comissoes = await prisma.comissaoComercial.findMany({
-    where: { comercialId: params.id },
+  const comissoes = await prisma.comissaoConsultorPf.findMany({
+    where: { consultorPfId: params.id },
     orderBy: { mesReferencia: "desc" },
     take: 24,
   });

@@ -68,7 +68,7 @@ describe("isLinkActive", () => {
 });
 
 describe("manifesto — Metas & Produção", () => {
-  it("perfil backoffice expõe link 'Metas & Produção' apontando para ?tab=comerciais", async () => {
+  it("perfil backoffice expõe link 'Metas & Produção' apontando para a aba unificada de metas", async () => {
     const { NAV_PROFILES } = await import("@/lib/nav/manifest");
     const comissionamento = NAV_PROFILES.backoffice.groups.find(
       (g) => g.title === "Comissionamento",
@@ -76,7 +76,7 @@ describe("manifesto — Metas & Produção", () => {
     expect(comissionamento).toBeDefined();
     const link = comissionamento!.links.find((l) => l.label === "Metas & Produção");
     expect(link).toBeDefined();
-    expect(link?.href).toBe("/backoffice/comissionamento?tab=comerciais");
+    expect(link?.href).toBe("/backoffice/comissionamento/equipe?tab=metas");
     expect(link?.icon).toBe("goals");
   });
 

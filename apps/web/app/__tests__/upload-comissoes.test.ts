@@ -45,13 +45,14 @@ describe("Upload de Planilha e Comissões", () => {
       },
     });
 
-    const lideranca = await prisma.lideranca.create({
+    const lideranca = await prisma.equipe.create({
       data: {
         usuarioId: liderancaUsuario.id,
         nome: "Lideranca Upload Test",
         cpf: uniqueCpf(),
         backofficeId,
-        tipo: "COMERCIAL",
+        tipo: "LIDERANCA",
+        tipoLideranca: "COMERCIAL",
       },
     });
     liderancaId = lideranca.id;
@@ -99,7 +100,7 @@ describe("Upload de Planilha e Comissões", () => {
       },
     });
 
-    const comercial = await prisma.comercial.create({
+    const comercial = await prisma.equipe.create({
       data: {
         usuarioId: comercialUsuario.id,
         liderancaId,
@@ -107,19 +108,21 @@ describe("Upload de Planilha e Comissões", () => {
         cpf: uniqueCpf(),
         percentualComissao: 5.0,
         status: "ATIVO",
+        tipo: "COMERCIAL",
+        tipoLideranca: null,
       },
     });
     comercialId = comercial.id;
   });
 
   afterAll(async () => {
-    await prisma.comercial.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
+    await prisma.equipe.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
     await prisma.indicado.deleteMany({ where: { parceiro: { usuario: { email: { endsWith: "@asa.test" } } } } }).catch(() => {});
     await prisma.parceiro.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
     await prisma.regraComercial.deleteMany({ where: { backofficeId } }).catch(() => {});
     await prisma.regraGestor.deleteMany({ where: { backofficeId } }).catch(() => {});
-    await prisma.comissaoComercial.deleteMany({ where: { comercial: { usuario: { email: { endsWith: "@asa.test" } } } } }).catch(() => {});
-    await prisma.lideranca.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
+    await prisma.comissaoEquipe.deleteMany({ where: { comercial: { usuario: { email: { endsWith: "@asa.test" } } } } }).catch(() => {});
+    await prisma.equipe.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
     await prisma.backoffice.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
     await prisma.usuario.deleteMany({ where: { email: { endsWith: "@asa.test" } } }).catch(() => {});
   });
@@ -188,13 +191,15 @@ describe("Upload de Planilha e Comissões", () => {
         },
       });
 
-      const comercial = await prisma.comercial.create({
+      const comercial = await prisma.equipe.create({
         data: {
           usuarioId: comercialUsuario.id,
           liderancaId, nome: "Comercial Comissão Test",
           cpf: uniqueCpf(),
           funcao: "SUPERVISOR_COMERCIAL",
           status: "ATIVO",
+          tipo: "COMERCIAL",
+          tipoLideranca: null,
         },
       });
 
@@ -203,7 +208,7 @@ describe("Upload de Planilha e Comissões", () => {
     });
 
     it("deve listar todos os comerciais do backoffice", async () => {
-      const comerciais = await prisma.comercial.findMany({
+      const comerciais = await prisma.equipe.findMany({
         where: { liderancaId },
         include: { usuario: true },
       });
@@ -212,7 +217,7 @@ describe("Upload de Planilha e Comissões", () => {
     });
 
     it("deve atualizar dados do comercial via modal de edição", async () => {
-      const comercial = await prisma.comercial.findFirst({
+      const comercial = await prisma.equipe.findFirst({
         where: { liderancaId },
       });
 
@@ -220,7 +225,7 @@ describe("Upload de Planilha e Comissões", () => {
         throw new Error("Comercial não encontrado");
       }
 
-      const atualizado = await prisma.comercial.update({
+      const atualizado = await prisma.equipe.update({
         where: { id: comercial.id },
         data: { funcao: "GERENTE_CIRE" },
       });
@@ -239,17 +244,19 @@ describe("Upload de Planilha e Comissões", () => {
         },
       });
 
-      const comercialTemp = await prisma.comercial.create({
+      const comercialTemp = await prisma.equipe.create({
         data: {
           usuarioId: comercialUsuario.id,
           liderancaId, nome: "Comercial Temp",
           cpf: uniqueCpf(),
           status: "ATIVO",
+          tipo: "COMERCIAL",
+          tipoLideranca: null,
         },
       });
 
       // Criar comissão de teste
-      await prisma.comissaoComercial.create({
+      await prisma.comissaoEquipe.create({
         data: {
           comercialId: comercialTemp.id,
           mesReferencia: "2026-01",
@@ -260,14 +267,14 @@ describe("Upload de Planilha e Comissões", () => {
       });
 
       // Deletar em cascata
-      await prisma.comissaoComercial.deleteMany({
+      await prisma.comissaoEquipe.deleteMany({
         where: { comercialId: comercialTemp.id },
       });
-      await prisma.comercial.delete({
+      await prisma.equipe.delete({
         where: { id: comercialTemp.id },
       });
 
-      const comissoesRestantes = await prisma.comissaoComercial.findMany({
+      const comissoesRestantes = await prisma.comissaoEquipe.findMany({
         where: { comercialId: comercialTemp.id },
       });
 
@@ -277,7 +284,7 @@ describe("Upload de Planilha e Comissões", () => {
 
   describe("Metas Mensais de Comissões", () => {
     it("deve criar meta mensal para comercial", async () => {
-      const comercial = await prisma.comercial.findFirst({
+      const comercial = await prisma.equipe.findFirst({
         where: { liderancaId },
       });
 
@@ -285,7 +292,7 @@ describe("Upload de Planilha e Comissões", () => {
         throw new Error("Comercial não encontrado");
       }
 
-      const meta = await prisma.metaComercial.create({
+      const meta = await prisma.metaEquipe.create({
         data: {
           comercialId: comercial.id,
           mesReferencia: "2026-01",
@@ -299,7 +306,7 @@ describe("Upload de Planilha e Comissões", () => {
     });
 
     it("deve atualizar meta atingida automaticamente", async () => {
-      const comercial = await prisma.comercial.findFirst({
+      const comercial = await prisma.equipe.findFirst({
         where: { liderancaId },
       });
 
@@ -308,7 +315,7 @@ describe("Upload de Planilha e Comissões", () => {
       }
 
       // Criar meta
-      const meta = await prisma.metaComercial.create({
+      const meta = await prisma.metaEquipe.create({
         data: {
           comercialId: comercial.id,
           mesReferencia: "2026-02",
@@ -318,7 +325,7 @@ describe("Upload de Planilha e Comissões", () => {
       });
 
       // Atualizar meta
-      const metaAtualizada = await prisma.metaComercial.update({
+      const metaAtualizada = await prisma.metaEquipe.update({
         where: { id: meta.id },
         data: { valorAtingido: 25000.0 },
       });
@@ -327,7 +334,7 @@ describe("Upload de Planilha e Comissões", () => {
     });
 
     it("deve listar metas de todos os comerciais (visão geral)", async () => {
-      const metas = await prisma.metaComercial.findMany({
+      const metas = await prisma.metaEquipe.findMany({
         where: {
           comercial: {
             liderancaId, },
@@ -463,7 +470,7 @@ describe("Upload de Planilha e Comissões", () => {
   describe("Upload de Planilha - Identificação de Comercial", () => {
     it("deve identificar comercial pelo nome 'Usuário da conta'", async () => {
       const usuarioDaConta = "Comercial Upload Test";
-      const comercial = await prisma.comercial.findFirst({
+      const comercial = await prisma.equipe.findFirst({
         where: {
           liderancaId, nome: {
             contains: usuarioDaConta,
@@ -478,7 +485,7 @@ describe("Upload de Planilha e Comissões", () => {
 
     it("deve retornar null se comercial não for encontrado", async () => {
       const usuarioDaConta = "Comercial Inexistente";
-      const comercial = await prisma.comercial.findFirst({
+      const comercial = await prisma.equipe.findFirst({
         where: {
           liderancaId, nome: {
             contains: usuarioDaConta,
@@ -517,7 +524,7 @@ describe("Upload de Planilha e Comissões", () => {
 
   describe("Comissões - Cálculo e Pagamento", () => {
     it("deve calcular comissão para comercial", async () => {
-      const comercial = await prisma.comercial.findFirst({
+      const comercial = await prisma.equipe.findFirst({
         where: { liderancaId },
       });
 
@@ -525,7 +532,7 @@ describe("Upload de Planilha e Comissões", () => {
         throw new Error("Comercial não encontrado");
       }
 
-      const comissao = await prisma.comissaoComercial.create({
+      const comissao = await prisma.comissaoEquipe.create({
         data: {
           comercialId: comercial.id,
           mesReferencia: "2026-03",
@@ -540,7 +547,7 @@ describe("Upload de Planilha e Comissões", () => {
     });
 
     it("deve atualizar status da comissão para PAGA", async () => {
-      const comissao = await prisma.comissaoComercial.findFirst({
+      const comissao = await prisma.comissaoEquipe.findFirst({
         where: { status: "CALCULADA" },
       });
 
@@ -548,7 +555,7 @@ describe("Upload de Planilha e Comissões", () => {
         throw new Error("Comissão não encontrada");
       }
 
-      const atualizada = await prisma.comissaoComercial.update({
+      const atualizada = await prisma.comissaoEquipe.update({
         where: { id: comissao.id },
         data: {
           status: "PAGA",

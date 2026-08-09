@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Obter backofficeId através do comercial ou gestor
-    const backofficeId = parceiro.comercial?.lideranca?.backofficeId || parceiro.gestor?.lideranca?.backofficeId;
+    const backofficeId = (parceiro.comercial?.lideranca?.backofficeId || parceiro.gestor?.lideranca?.backofficeId) ?? undefined;
 
     const periodicidadeEscolhida =
       parceiro.periodicidadeCicloEscolhida ?? null;
@@ -60,6 +60,8 @@ export async function GET(req: NextRequest) {
         OR: [{ status: "EM_ANDAMENTO" }, { status: "RESGATE_ABERTO" }],
       },
     });
+
+    const cicloPontosId = cicloVigente?.id ?? null;
 
     if (!cicloVigente) {
       return ok({

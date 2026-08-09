@@ -61,8 +61,8 @@ export async function POST(req: NextRequest) {
     const { session, comercial, error } = await requireComercialWithScope();
     if (error) return error;
 
-    const lideranca = await prisma.lideranca.findUnique({
-      where: { id: comercial.liderancaId! },
+    const lideranca = await prisma.equipe.findFirst({
+      where: { id: comercial.liderancaId!, tipo: "LIDERANCA" },
       select: { backofficeId: true },
     });
     if (!lideranca) {

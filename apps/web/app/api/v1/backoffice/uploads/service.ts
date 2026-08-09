@@ -202,14 +202,15 @@ export async function processUploadPlanilha(
   // Step 3: Batch fetch all comerciais and gestores
   const uniqueUsuariosDaConta = [...new Set(validRows.map(r => r.usuarioDaConta).filter(Boolean))];
   
-  const [comerciais, gestores] = await Promise.all([
-    uniqueUsuariosDaConta.length > 0 ? prisma.comercial.findMany({
-      where: {
-        lideranca: { backofficeId },
-        nome: { in: uniqueUsuariosDaConta, mode: "insensitive" },
-      },
-      select: { id: true, nome: true },
-    }) : [],
+    const [comerciais, gestores] = await Promise.all([
+      uniqueUsuariosDaConta.length > 0 ? prisma.equipe.findMany({
+        where: {
+          lideranca: { backofficeId },
+          tipo: "COMERCIAL",
+          nome: { in: uniqueUsuariosDaConta, mode: "insensitive" },
+        },
+        select: { id: true, nome: true },
+      }) : [],
     uniqueUsuariosDaConta.length > 0 ? prisma.gestor.findMany({
       where: {
         lideranca: { backofficeId },

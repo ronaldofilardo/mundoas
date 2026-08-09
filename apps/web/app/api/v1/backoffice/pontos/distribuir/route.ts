@@ -190,17 +190,17 @@ export async function GET(req: NextRequest) {
     }
 
 // Buscar todas as lideranças deste backoffice
-    const liderancas = await prisma.lideranca.findMany({
-      where: { backofficeId },
+    const liderancas = await prisma.equipe.findMany({
+      where: { backofficeId, tipo: "LIDERANCA" },
       include: {
-        comerciais: { include: { parceiros: true } },
+        subordinados: { include: { parceiros: true } },
         gestores: { include: { parceiros: true } }
       }
     });
 
     // Coletar todos os IDs de parceiros
     const parceiroIds = [
-      ...liderancas.flatMap(l => l.comerciais.flatMap(c => c.parceiros.map(p => p.id))),
+      ...liderancas.flatMap(l => l.subordinados.flatMap(c => c.parceiros.map(p => p.id))),
       ...liderancas.flatMap(l => l.gestores.flatMap(g => g.parceiros.map(p => p.id)))
     ];
 

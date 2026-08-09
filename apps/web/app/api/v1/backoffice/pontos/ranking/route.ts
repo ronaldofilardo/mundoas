@@ -75,10 +75,10 @@ export async function GET(req: NextRequest) {
 
     // Gerar ranking atual do ciclo (sem snapshot)
     // Buscar todas as lideranças e seus parceiros
-    const liderancas = await prisma.lideranca.findMany({
-      where: { backofficeId },
+    const liderancas = await prisma.equipe.findMany({
+      where: { backofficeId, tipo: 'LIDERANCA' },
       include: {
-        comerciais: { 
+        subordinados: { 
           include: { 
             parceiros: { 
               select: { 
@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
     });
 
     const parceiros = [
-      ...liderancas.flatMap(l => l.comerciais.flatMap(c => c.parceiros)),
+      ...liderancas.flatMap(l => l.subordinados.flatMap(c => c.parceiros)),
       ...liderancas.flatMap(l => l.gestores.flatMap(g => g.parceiros))
     ];
 

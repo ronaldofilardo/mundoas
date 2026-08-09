@@ -13,9 +13,12 @@ describe('Correções da Tabela de Metas - Validação', () => {
     '../(dashboard)/backoffice/comissionamento/components/tab-comerciais.tsx'
   );
 
+  // Após a unificação, a página de metas passou a ser uma aba dentro de
+  // comissionamento/equipe. Validamos a nova aba de metas (tab-metas.tsx),
+  // que substitui a antiga página usuarios/comerciais.
   const pageComerciaisPath = join(
     __dirname,
-    '../(dashboard)/backoffice/usuarios/comerciais/page.tsx'
+    '../(dashboard)/backoffice/comissionamento/equipe/components/tab-metas.tsx'
   );
 
   it('tab-comerciais.tsx deve usar table-auto com scroll horizontal e header sticky (sem sticky horizontal nas células)', () => {
@@ -47,16 +50,12 @@ describe('Correções da Tabela de Metas - Validação', () => {
     expect(content).toContain('sticky top-0');
   });
 
-  it('page.tsx (usuarios/comerciais) deve usar table-fixed em vez de sticky positioning', () => {
+  it('tab-metas.tsx (aba unificada de metas) deve usar table-auto com scroll horizontal e header sticky', () => {
     const content = readFileSync(pageComerciaisPath, 'utf-8');
     
-    // Deve ter table-fixed
-    expect(content).toContain('table-fixed');
-    
-    // Deve ter larguras fixas
-    expect(content).toContain('w-[150px]'); // Comercial
-    expect(content).toContain('w-[90px]');  // Função
-    expect(content).toContain('w-[130px]'); // Ações
+    // Deve ter table-auto e largura mínima para scroll horizontal
+    expect(content).toContain('table-auto');
+    expect(content).toContain('min-w');
     
     // Não deve ter sticky positioning hardcoded nas células
     const lines = content.split('\n');
@@ -70,9 +69,9 @@ describe('Correções da Tabela de Metas - Validação', () => {
       expect(tbodyContent).not.toContain('sticky left-[320px]');
     }
     
-    // Deve ter scroll apenas vertical
-    expect(content).toContain('overflow-y-auto');
-    expect(content).toContain('overflow-x-hidden');
+    // Deve ter scroll horizontal e header sticky no topo
+    expect(content).toContain('overflow-x-auto');
+    expect(content).toContain('sticky top-0');
   });
 
   it('ambos os arquivos devem ter 12 colunas de meses visíveis', () => {
@@ -96,7 +95,7 @@ describe('Correções da Tabela de Metas - Validação', () => {
     expect(content).not.toMatch(/<table[^>]*>.*<\/table>.*<table[^>]*>/s);
   });
 
-  it('page.tsx não deve usar duas tabelas separadas', () => {
+  it('tab-metas.tsx (aba unificada) não deve usar duas tabelas separadas', () => {
     const content = readFileSync(pageComerciaisPath, 'utf-8');
     
     // Não deve ter a estrutura de duas tabelas lado a lado

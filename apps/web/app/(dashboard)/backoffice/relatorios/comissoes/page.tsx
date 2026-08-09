@@ -59,10 +59,16 @@ export default function RelatorioComissoesPage() {
   const [comerciais, setComerciais] = useState<Array<{ id: string; nome: string }>>([]);
 
   useEffect(() => {
-    // Buscar comerciais para o filtro
-    fetch("/api/v1/backoffice/comerciais")
+    // Buscar membros da equipe para o filtro
+    fetch("/api/v1/backoffice/equipe")
       .then((res) => res.json())
-      .then((data) => setComerciais(data))
+      .then((data) => {
+        const todos = [
+          ...(data.liderancas ?? []).map((l: { id: string; nome: string }) => ({ id: l.id, nome: l.nome })),
+          ...(data.comerciais ?? []).map((c: { id: string; nome: string }) => ({ id: c.id, nome: c.nome })),
+        ];
+        setComerciais(todos);
+      })
       .catch(() => {});
   }, []);
 

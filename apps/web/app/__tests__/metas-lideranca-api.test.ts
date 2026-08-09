@@ -36,13 +36,14 @@ describe("API - Lideranca Metas", () => {
       },
     });
 
-    const lideranca = await prisma.lideranca.create({
+    const lideranca = await prisma.equipe.create({
       data: {
         usuarioId: liderancaUsuario.id,
         nome: "Lideranca Teste",
         cpf: uniqueCpf(),
         backofficeId: backoffice.id,
-        tipo: "COMERCIAL",
+        tipo: "LIDERANCA",
+        tipoLideranca: "COMERCIAL",
       },
     });
 
@@ -86,7 +87,7 @@ describe("API - Lideranca Metas", () => {
 
   describe("GET /api/v1/lideranca/metas", () => {
     it("deve listar metas da lideranca", async () => {
-      await prisma.metaLideranca.create({
+      await prisma.metaEquipe.create({
         data: {
           liderancaId,
           mesReferencia: "2026-07",
@@ -95,7 +96,7 @@ describe("API - Lideranca Metas", () => {
         },
       });
 
-      const metas = await prisma.metaLideranca.findMany({
+      const metas = await prisma.metaEquipe.findMany({
         where: { liderancaId },
         orderBy: { createdAt: "desc" },
       });
@@ -107,7 +108,7 @@ describe("API - Lideranca Metas", () => {
     });
 
     it("deve retornar metas vazias quando nao existem", async () => {
-      const metas = await prisma.metaLideranca.findMany({
+      const metas = await prisma.metaEquipe.findMany({
         where: { liderancaId: "00000000-0000-0000-0000-000000000000" },
       });
 
@@ -117,16 +118,16 @@ describe("API - Lideranca Metas", () => {
 
   describe("POST /api/v1/lideranca/metas", () => {
     it("deve criar meta para lideranca", async () => {
-      const existing = await prisma.metaLideranca.findFirst({
+      const existing = await prisma.metaEquipe.findFirst({
         where: { liderancaId, mesReferencia: "2026-08" },
       });
 
       const meta = existing
-        ? await prisma.metaLideranca.update({
+        ? await prisma.metaEquipe.update({
             where: { id: existing.id },
             data: { valorMeta: 60000 },
           })
-        : await prisma.metaLideranca.create({
+        : await prisma.metaEquipe.create({
             data: {
               liderancaId,
               mesReferencia: "2026-08",
@@ -140,7 +141,7 @@ describe("API - Lideranca Metas", () => {
     });
 
     it("deve atualizar meta existente da lideranca (upsert)", async () => {
-      await prisma.metaLideranca.create({
+      await prisma.metaEquipe.create({
         data: {
           liderancaId,
           mesReferencia: "2026-09",
@@ -148,14 +149,14 @@ describe("API - Lideranca Metas", () => {
         },
       });
 
-      const existing = await prisma.metaLideranca.findFirst({
+      const existing = await prisma.metaEquipe.findFirst({
         where: { liderancaId, mesReferencia: "2026-09" },
       });
 
       expect(existing).toBeDefined();
       expect(Number(existing!.valorMeta)).toBe(40000);
 
-      const updated = await prisma.metaLideranca.update({
+      const updated = await prisma.metaEquipe.update({
         where: { id: existing!.id },
         data: { valorMeta: 50000 },
       });

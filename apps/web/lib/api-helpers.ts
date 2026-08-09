@@ -197,19 +197,19 @@ export async function requireComercialWithScope() {
   if (session.user.tipo !== "COMERCIAL")
     return { session: null, comercialId: null, comercial: null, liderancaId: null, error: forbidden() };
 
-  const comercial = await prisma.comercial.findUnique({
+  const equipembro = await prisma.equipe.findUnique({
     where: { usuarioId: session.user.id },
-    select: { id: true, status: true, liderancaId: true, nome: true, cpf: true },
+    select: { id: true, status: true, liderancaId: true, nome: true, cpf: true, tipo: true },
   });
 
-  if (!comercial)
+  if (!equipembro)
     return { session: null, comercialId: null, comercial: null, liderancaId: null, error: forbidden() };
 
   return {
     session,
-    comercialId: comercial.id,
-    comercial,
-    liderancaId: comercial.liderancaId,
+    comercialId: equipembro.id,
+    comercial: equipembro,
+    liderancaId: equipembro.liderancaId,
     error: null,
   };
 }
@@ -221,9 +221,9 @@ export async function requireLiderancaWithScope() {
   if (session.user.tipo !== "LIDERANCA")
     return { session: null, liderancaId: null, backofficeId: null, error: forbidden() };
 
-  const lideranca = await prisma.lideranca.findUnique({
+  const lideranca = await prisma.equipe.findUnique({
     where: { usuarioId: session.user.id },
-    select: { id: true, status: true, tipo: true, backofficeId: true },
+    select: { id: true, status: true, tipo: true, tipoLideranca: true, backofficeId: true },
   });
 
   if (!lideranca)

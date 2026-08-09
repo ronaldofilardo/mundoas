@@ -100,14 +100,14 @@ export async function processarUploadPlanilhaPF(
     const idxFormaPagamento = getColIndex("Forma Pagamento");
 
     // Buscar parceiros do backoffice
-    const liderancas = await prisma.lideranca.findMany({
-      where: { backofficeId },
+    const liderancas = await prisma.equipe.findMany({
+      where: { backofficeId, tipo: "LIDERANCA" },
       select: { id: true },
     });
     const liderancaIds = liderancas.map((l) => l.id);
 
     const [comerciais, consultoresPf] = await Promise.all([
-      prisma.comercial.findMany({
+      prisma.equipe.findMany({
         where: { liderancaId: { in: liderancaIds } },
         select: { id: true, nome: true },
       }),

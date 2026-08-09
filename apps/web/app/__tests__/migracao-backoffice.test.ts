@@ -281,13 +281,14 @@ it('deve criar backoffice com liderancas', async () => {
       include: { backoffice: true },
     });
 
-    const lideranca = await prisma.lideranca.create({
+    const lideranca = await prisma.equipe.create({
       data: {
         usuarioId: usuarioBackoffice.id,
         nome: 'Lideranca Teste',
         cpf: uniqueCpf(),
         backofficeId: usuarioBackoffice.backoffice!.id,
-        tipo: 'COMERCIAL',
+        tipo: "LIDERANCA",
+        tipoLideranca: 'COMERCIAL',
       },
     });
 

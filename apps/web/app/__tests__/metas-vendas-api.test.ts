@@ -106,13 +106,14 @@ describe("GET /api/v1/backoffice/metas-vendas", () => {
     });
     createdUsuarioIds.push(liderancaUsuario.id);
 
-    const lideranca = await prisma.lideranca.create({
+    const lideranca = await prisma.equipe.create({
       data: {
         usuarioId: liderancaUsuario.id,
         nome: "Lideranca Metas Test",
         cpf: uniqueCpf(),
         backofficeId,
-        tipo: "COMERCIAL",
+        tipo: "LIDERANCA",
+        tipoLideranca: "COMERCIAL",
       },
     });
     liderancaId = lideranca.id;

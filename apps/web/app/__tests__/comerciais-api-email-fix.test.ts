@@ -62,10 +62,10 @@ describe("Fix: Email Duplicado na Criacao de Comercial", () => {
 
   afterAll(async () => {
     // Cleanup em ordem para respeitar constraints
-    await prisma.comercial.deleteMany({
+    await prisma.equipe.deleteMany({
       where: { id: { in: cleanupIds.comerciais } },
     }).catch(() => {});
-    await prisma.lideranca.deleteMany({
+    await prisma.equipe.deleteMany({
       where: { id: { in: cleanupIds.liderancas } },
     }).catch(() => {});
     await prisma.usuario.deleteMany({
@@ -109,13 +109,14 @@ describe("Fix: Email Duplicado na Criacao de Comercial", () => {
     cleanupIds.usuarios.push(usuarioLideranca.id);
 
     // Criar lideranca
-    const lideranca = await prisma.lideranca.create({
+    const lideranca = await prisma.equipe.create({
       data: {
         usuarioId: usuarioLideranca.id,
         nome: "Lideranca Fix",
         cpf: uniqueCpf(),
         backofficeId,
-        tipo: "COMERCIAL",
+        tipo: "LIDERANCA",
+        tipoLideranca: "COMERCIAL",
       },
     });
     liderancaId = lideranca.id;
@@ -133,13 +134,15 @@ describe("Fix: Email Duplicado na Criacao de Comercial", () => {
     cleanupIds.usuarios.push(usuarioComercial.id);
 
     // Criar comercial vinculado a lideranca
-    const comercial = await prisma.comercial.create({
+    const comercial = await prisma.equipe.create({
       data: {
         usuarioId: usuarioComercial.id,
         liderancaId: lideranca.id,
         nome: "Comercial Fix",
         cpf,
         percentualComissao: 0,
+        tipo: "COMERCIAL",
+        tipoLideranca: null,
       },
     });
     cleanupIds.comerciais.push(comercial.id);
@@ -190,7 +193,7 @@ describe("Fix: Email Duplicado na Criacao de Comercial", () => {
     const email2 = `com2-fix-${unique()}@asa.test`;
 
     // Reutilizar a lideranca criada no teste anterior (ou criar nova)
-    let lideranca = await prisma.lideranca.findFirst({
+    let lideranca = await prisma.equipe.findFirst({
       where: { backofficeId, tipo: "COMERCIAL" },
     });
 
@@ -207,13 +210,14 @@ describe("Fix: Email Duplicado na Criacao de Comercial", () => {
       });
       cleanupIds.usuarios.push(uLider.id);
 
-      lideranca = await prisma.lideranca.create({
+      lideranca = await prisma.equipe.create({
         data: {
           usuarioId: uLider.id,
           nome: "Lideranca Dup",
           cpf: uniqueCpf(),
           backofficeId,
-          tipo: "COMERCIAL",
+          tipo: "LIDERANCA",
+          tipoLideranca: "COMERCIAL",
         },
       });
       cleanupIds.liderancas.push(lideranca.id);
@@ -230,13 +234,15 @@ describe("Fix: Email Duplicado na Criacao de Comercial", () => {
     });
     cleanupIds.usuarios.push(u1.id);
 
-    const c1 = await prisma.comercial.create({
+    const c1 = await prisma.equipe.create({
       data: {
         usuarioId: u1.id,
         liderancaId: lideranca.id,
         nome: "Comercial 1",
         cpf: cpf1,
         percentualComissao: 0,
+        tipo: "COMERCIAL",
+        tipoLideranca: null,
       },
     });
     cleanupIds.comerciais.push(c1.id);
@@ -251,13 +257,15 @@ describe("Fix: Email Duplicado na Criacao de Comercial", () => {
     });
     cleanupIds.usuarios.push(u2.id);
 
-    const c2 = await prisma.comercial.create({
+    const c2 = await prisma.equipe.create({
       data: {
         usuarioId: u2.id,
         liderancaId: lideranca.id,
         nome: "Comercial 2",
         cpf: cpf2,
         percentualComissao: 0,
+        tipo: "COMERCIAL",
+        tipoLideranca: null,
       },
     });
     cleanupIds.comerciais.push(c2.id);
