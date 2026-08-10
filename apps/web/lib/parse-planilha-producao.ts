@@ -135,9 +135,11 @@ export async function parsePlanilhaProducao(
   let liderancaIds: string[] = [];
   let comerciais: any[] = [];
   let consultoresPf: any[] = [];
+  let gestores: any[] = [];
   let parceiros: any[] = [];
   let consultorPorNome = new Map<string, any>();
   let comercialPorId = new Map<string, string>();
+  let gestorPorNome = new Map<string, any>();
 
   try {
     liderancas = await prisma.equipe.findMany({
@@ -153,24 +155,33 @@ export async function parsePlanilhaProducao(
     );
     console.log("[parsePlanilhaProducao] IDs das lideranças:", liderancaIds);
 
-    const [comerciaisResult, consultoresPfResult] = await Promise.all([
-      prisma.equipe.findMany({
-        where: { liderancaId: { in: liderancaIds } },
-        select: { id: true, nome: true },
-      }),
-      prisma.consultorPf.findMany({
-        where: { liderancaId: { in: liderancaIds }, status: "ATIVO" },
-        select: { id: true, nome: true },
-      }),
-    ]);
-    comerciais = comerciaisResult;
-    consultoresPf = consultoresPfResult;
+const [comerciaisResult, consultoresPfResult, gestoresResult] = await Promise.all([
+       prisma.equipe.findMany({
+         where: { liderancaId: { in: liderancaIds } },
+         select: { id: true, nome: true },
+       }),
+       prisma.consultorPf.findMany({
+         where: { liderancaId: { in: liderancaIds }, status: "ATIVO" },
+         select: { id: true, nome: true },
+       }),
+       prisma.gestor.findMany({
+         where: { lideranca: { backofficeId } },
+         select: { id: true, nome: true },
+       }),
+     ]);
+     comerciais = comerciaisResult;
+     consultoresPf = consultoresPfResult;
+     gestores = gestoresResult;
 
-    consultorPorNome = new Map(
-      consultoresPf.map((c) => [normalizarNome(c.nome), c]),
-    );
+     consultorPorNome = new Map(
+       consultoresPf.map((c) => [normalizarNome(c.nome), c]),
+     );
 
-    comercialPorId = new Map(comerciais.map((c) => [c.id, c.nome]));
+     comercialPorId = new Map(comerciais.map((c) => [c.id, c.nome]));
+
+     gestorPorNome = new Map(
+       gestores.map((g) => [normalizarNome(g.nome), g]),
+     );
 
     // Buscar parceiros do backoffice para validação de CPF no preview
     parceiros = await prisma.parceiro.findMany({
@@ -274,6 +285,7 @@ export async function parsePlanilhaProducao(
     let parceiroEncontrado: any | undefined;
     let indicadoEncontrado: any | undefined;
     let consultorPf: any = null;
+    let gestorEncontrado: any = null;
 
     if (status === "VALIDO") {
       if (!cpfValido) {
@@ -305,10 +317,13 @@ export async function parsePlanilhaProducao(
         }
       }
 
-      if (status === "VALIDO" && usuarioDaConta) {
-        consultorPf =
-          consultorPorNome.get(normalizarNome(usuarioDaConta)) ?? null;
-      }
+if (status === "VALIDO" && usuarioDaConta) {
+         const nomeNormalizado = normalizarNome(usuarioDaConta);
+         consultorPf =
+           consultorPorNome.get(nomeNormalizado) ?? null;
+         gestorEncontrado =
+           gestorPorNome.get(nomeNormalizado) ?? null;
+       }
     }
 
     // Contabilizar
@@ -338,7 +353,7 @@ export async function parsePlanilhaProducao(
         comercialNome: parceiroEncontrado
           ? comercialPorId.get(parceiroEncontrado.comercialId ?? "")
           : undefined,
-        gestorNome: undefined,
+        gestorNome: gestorEncontrado?.nome,
         consultorPfNome: consultorPf?.nome,
         valorComissao: 0,
       });

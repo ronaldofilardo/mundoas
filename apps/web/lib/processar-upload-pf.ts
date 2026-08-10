@@ -106,24 +106,32 @@ export async function processarUploadPlanilhaPF(
     });
     const liderancaIds = liderancas.map((l) => l.id);
 
-    const [comerciais, consultoresPf] = await Promise.all([
-      prisma.equipe.findMany({
-        where: { liderancaId: { in: liderancaIds } },
-        select: { id: true, nome: true },
-      }),
-      prisma.consultorPf.findMany({
-        where: { liderancaId: { in: liderancaIds }, status: "ATIVO" },
-        select: { id: true, nome: true },
-      }),
-    ]);
+const [comerciais, consultoresPf, gestores] = await Promise.all([
+        prisma.equipe.findMany({
+          where: { liderancaId: { in: liderancaIds } },
+          select: { id: true, nome: true },
+        }),
+        prisma.consultorPf.findMany({
+          where: { liderancaId: { in: liderancaIds }, status: "ATIVO" },
+          select: { id: true, nome: true },
+        }),
+        prisma.gestor.findMany({
+          where: { lideranca: { backofficeId } },
+          select: { id: true, nome: true },
+        }),
+      ]);
 
-    const consultorPorNome = new Map(
-      consultoresPf.map((c) => [normalizarNome(c.nome), c.id]),
-    );
+      const consultorPorNome = new Map(
+        consultoresPf.map((c) => [normalizarNome(c.nome), c.id]),
+      );
 
-    const comercialPorNome = new Map(
-      comerciais.map((c) => [normalizarNome(c.nome), c.id]),
-    );
+      const comercialPorNome = new Map(
+        comerciais.map((c) => [normalizarNome(c.nome), c.id]),
+      );
+
+      const gestorPorNome = new Map(
+        gestores.map((g) => [normalizarNome(g.nome), g.id]),
+      );
 
     const parceiros = await prisma.parceiro.findMany({
       where: { backofficeId },
@@ -245,6 +253,7 @@ export async function processarUploadPlanilhaPF(
       let indicadoId: string | null = null;
       let consultorPfId: string | null = null;
       let comercialId: string | null = null;
+      let gestorIdFromNome: string | null = null;
       let orfao = false;
       const motivosOrfao: string[] = [];
 
@@ -275,11 +284,16 @@ export async function processarUploadPlanilhaPF(
         }
       }
 
-      if (usuarioDaConta) {
-        const nomeNormalizado = normalizarNome(usuarioDaConta);
-        consultorPfId = consultorPorNome.get(nomeNormalizado) ?? null;
-        comercialId = comercialPorNome.get(nomeNormalizado) ?? null;
-      }
+if (usuarioDaConta) {
+          const nomeNormalizado = normalizarNome(usuarioDaConta);
+          consultorPfId = consultorPorNome.get(nomeNormalizado) ?? null;
+          comercialId = comercialPorNome.get(nomeNormalizado) ?? null;
+          gestorIdFromNome = gestorPorNome.get(nomeNormalizado) ?? null;
+          if (gestorIdFromNome) {
+            // Prioritize gestor from usuario da conta if available
+            // We'll assign later when building procedimento record
+          }
+        }
 
       const valorComissao = 0;
       const mesReferencia = dataReferencia
@@ -318,7 +332,7 @@ export async function processarUploadPlanilhaPF(
         valorComissao,
         statusComissao: "PENDENTE",
         comercialId: comercialId ?? parceiroEncontrado.comercialId,
-        gestorId: parceiroEncontrado.gestorId,
+        gestorId: gestorIdFromNome ?? parceiroEncontrado.gestorId,
         consultorPfId,
       });
 
