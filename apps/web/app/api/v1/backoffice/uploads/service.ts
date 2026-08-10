@@ -35,6 +35,7 @@ interface ProcessedRow {
   isOrfao: boolean;
   comercialId: string | null;
   gestorId: string | null;
+  consultorPfId: string | null;
   dataRef: Date;
   totalPago: number;
   procedimento: {
@@ -51,6 +52,7 @@ interface ProcessedRow {
     indicadoId: string | null;
     comercialId: string | null;
     gestorId: string | null;
+    consultorPfId: string | null;
     uploadId: string;
   };
 }
@@ -199,10 +201,10 @@ export async function processUploadPlanilha(
 
   const indicadoMap = new Map(indicados.map(i => [i.cpf, i]));
 
-  // Step 3: Batch fetch all comerciais and gestores
+  // Step 3: Batch fetch all comerciais, gestores and consultores PF
   const uniqueUsuariosDaConta = [...new Set(validRows.map(r => r.usuarioDaConta).filter(Boolean))];
   
-    const [comerciais, gestores] = await Promise.all([
+    const [comerciais, gestores, consultoresPf] = await Promise.all([
       uniqueUsuariosDaConta.length > 0 ? prisma.equipe.findMany({
         where: {
           lideranca: { backofficeId },
@@ -218,10 +220,19 @@ export async function processUploadPlanilha(
       },
       select: { id: true, nome: true },
     }) : [],
+    uniqueUsuariosDaConta.length > 0 ? prisma.consultorPf.findMany({
+      where: {
+        lideranca: { backofficeId },
+        status: "ATIVO",
+        nome: { in: uniqueUsuariosDaConta, mode: "insensitive" },
+      },
+      select: { id: true, nome: true },
+    }) : [],
   ]);
 
   const comercialMap = new Map(comerciais.map(c => [c.nome.toLowerCase(), c.id]));
   const gestorMap = new Map(gestores.map(g => [g.nome.toLowerCase(), g.id]));
+  const consultorPfMap = new Map(consultoresPf.map(c => [c.nome.toLowerCase(), c.id]));
 
   // Step 4: Process all rows with in-memory lookups
   let processedRows = 0;
@@ -241,6 +252,7 @@ export async function processUploadPlanilha(
 
     let comercialId: string | null = null;
     let gestorId: string | null = null;
+    let consultorPfId: string | null = null;
     let parceiroId: string | null = null;
     let indicadoId: string | null = null;
 
@@ -258,6 +270,10 @@ export async function processUploadPlanilha(
         // 2. Buscar Gestor
         else if (gestorMap.has(userLower)) {
           gestorId = gestorMap.get(userLower)!;
+        }
+        // 3. Buscar Consultor PF
+        else if (consultorPfMap.has(userLower)) {
+          consultorPfId = consultorPfMap.get(userLower)!;
         }
       }
     }
@@ -289,6 +305,7 @@ export async function processUploadPlanilha(
       indicadoId,
       comercialId,
       gestorId,
+      consultorPfId,
       uploadId: upload.id,
     });
 

@@ -10,9 +10,30 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status");
   const mesReferencia = searchParams.get("mesReferencia");
   const parceiroId = searchParams.get("parceiroId");
+  const consultorPfId = searchParams.get("consultorPfId");
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "50");
   const skip = (page - 1) * limit;
+
+  // Buscar lideranças do backoffice para obter comerciais e consultores PF
+  const liderancas = await prisma.equipe.findMany({
+    where: { backofficeId, tipo: "LIDERANCA" },
+    select: { id: true },
+  });
+  const liderancaIds = liderancas.map((l) => l.id);
+
+  const [comerciais, consultoresPf] = await Promise.all([
+    prisma.equipe.findMany({
+      where: { liderancaId: { in: liderancaIds }, tipo: "COMERCIAL", status: "ATIVO" },
+      select: { id: true, nome: true, funcao: true },
+      orderBy: { nome: "asc" },
+    }),
+    prisma.consultorPf.findMany({
+      where: { liderancaId: { in: liderancaIds }, status: "ATIVO" },
+      select: { id: true, nome: true },
+      orderBy: { nome: "asc" },
+    }),
+  ]);
 
   // Escopo principal: procedimentos de uploads deste backoffice.
   // Captura inclusive órfãos (parceiroId null), já que sempre têm uploadId.
@@ -38,6 +59,10 @@ export async function GET(req: NextRequest) {
     const inicioMes = new Date(Number(ano), Number(mes) - 1, 1);
     const fimMes = new Date(Number(ano), Number(mes), 0, 23, 59, 59);
     where.dataReferencia = { gte: inicioMes, lte: fimMes };
+  }
+
+  if (consultorPfId) {
+    where.consultorPfId = consultorPfId;
   }
 
   const [procedimentos, total, parceiros, mesesDisponiveis] = await Promise.all([
@@ -78,11 +103,13 @@ export async function GET(req: NextRequest) {
     procedimentos,
     parceiros,
     mesesDisponiveis: Array.from(mesesSet),
+    comerciais,
+    consultoresPf,
     pagination: {
       page,
       limit,
       total,
       totalPages: Math.ceil(total / limit),
     },
-});
+  });
 }

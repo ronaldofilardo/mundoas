@@ -9,6 +9,11 @@ interface Parceiro {
   cpf: string;
 }
 
+interface ConsultorPf {
+  id: string;
+  nome: string;
+}
+
 interface Procedimento {
   id: string;
   dataReferencia: string;
@@ -37,6 +42,7 @@ interface ProducaoData {
   procedimentos: Procedimento[];
   parceiros: Parceiro[];
   mesesDisponiveis: string[];
+  consultoresPf: ConsultorPf[];
   pagination: {
     page: number;
     limit: number;
@@ -51,12 +57,13 @@ export default function BackofficeProducao() {
   const [filterStatus, setFilterStatus] = useState("TODOS");
   const [filterMes, setFilterMes] = useState("");
   const [filterParceiro, setFilterParceiro] = useState("");
+  const [filterConsultorPf, setFilterConsultorPf] = useState("");
   const [filterSearch, setFilterSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchProducao();
-  }, [filterStatus, filterMes, filterParceiro, currentPage]);
+  }, [filterStatus, filterMes, filterParceiro, filterConsultorPf, currentPage]);
 
   async function fetchProducao() {
     setLoading(true);
@@ -68,6 +75,7 @@ export default function BackofficeProducao() {
       if (filterStatus !== "TODOS") params.set("status", filterStatus);
       if (filterMes) params.set("mesReferencia", filterMes);
       if (filterParceiro) params.set("parceiroId", filterParceiro);
+      if (filterConsultorPf) params.set("consultorPfId", filterConsultorPf);
 
       const res = await fetch(`/api/v1/backoffice/producao?${params}`);
       const json = await res.json();
@@ -142,6 +150,9 @@ export default function BackofficeProducao() {
         p.unidade.toLowerCase().includes(search) ||
         p.formaPagamento.toLowerCase().includes(search)
       );
+    }
+    if (filterConsultorPf && p.consultorPf?.id !== filterConsultorPf) {
+      return false;
     }
     return true;
   });
@@ -233,6 +244,22 @@ export default function BackofficeProducao() {
             {data?.parceiros?.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.nome}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={filterConsultorPf}
+            onChange={(e) => {
+              setFilterConsultorPf(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="text-sm border rounded px-3 py-2"
+          >
+            <option value="">Todos os Usuários da Conta</option>
+            {data?.consultoresPf?.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nome}
               </option>
             ))}
           </select>
