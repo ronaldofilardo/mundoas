@@ -193,6 +193,7 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
                   <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[220px]">Email</th>
                   <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[170px]">Função / Tipo</th>
                   <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[100px]">Status</th>
+                  <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[220px]">Consultores</th>
                   <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[160px]">Ações</th>
                 </tr>
               </thead>
@@ -281,6 +282,22 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
                         </span>
                       </td>
                       <td className="p-3 border-t">
+                        <div className="flex flex-wrap gap-1">
+                          {(item.consultorPfs ?? []).length === 0 ? (
+                            <span className="text-xs text-gray-400">-</span>
+                          ) : (
+                            item.consultorPfs!.map((cp) => (
+                              <span
+                                key={cp.id}
+                                className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700"
+                              >
+                                {cp.nome}
+                              </span>
+                            ))
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3 border-t">
                         <div className="flex gap-1 justify-center">
                           {item.kind === "comercial" && (
                             <Fragment>
@@ -330,7 +347,7 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
                       ((item.consultorPfs?.length ?? 0) > 0 ||
                         (item.comerciais?.length ?? 0) > 0) && (
                         <tr className="bg-gray-50">
-                           <td colSpan={5} className="p-0 border-t">
+                           <td colSpan={6} className="p-0 border-t">
                             <div className="pl-10 pr-3 py-3 space-y-4">
                               {item.comerciais && item.comerciais.length > 0 && (
                                 <div>

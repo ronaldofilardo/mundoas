@@ -22,6 +22,7 @@ function mapMembro(m: any): EquipeItem {
       cpf: cp.cpf,
       email: cp.email,
       status: cp.status,
+      setores: cp.setores ?? [],
     })),
     comerciais: (m.comerciais ?? []).map((c: any) => ({
       id: c.id,

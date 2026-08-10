@@ -26,7 +26,26 @@ export async function GET(req: NextRequest) {
     where,
     include: {
       usuario: { select: { id: true, email: true, status: true } },
-      lideranca: { select: { id: true, nome: true } },
+      lideranca: {
+        select: {
+          id: true,
+          nome: true,
+          consultorPfs: {
+            select: {
+              id: true,
+              nome: true,
+              cpf: true,
+              status: true,
+              usuario: { select: { email: true } },
+              setores: {
+                select: {
+                  setor: { select: { id: true, nome: true } },
+                },
+              },
+            },
+          },
+        },
+      },
       consultorPfs: {
         select: {
           id: true,
@@ -34,6 +53,11 @@ export async function GET(req: NextRequest) {
           cpf: true,
           status: true,
           usuario: { select: { email: true } },
+          setores: {
+            select: {
+              setor: { select: { id: true, nome: true } },
+            },
+          },
         },
       },
       subordinados: {
@@ -62,12 +86,16 @@ export async function GET(req: NextRequest) {
       tipoLideranca: l.tipoLideranca,
       funcao: l.funcao,
       status: l.status,
-      consultoresPf: l.consultorPfs.map((c) => ({
+      consultorPfs: l.consultorPfs.map((c) => ({
         id: c.id,
         nome: c.nome,
         cpf: c.cpf,
         email: c.usuario.email,
         status: c.status,
+        setores: c.setores.map((s) => ({
+          id: s.setor.id,
+          nome: s.setor.nome,
+        })),
       })),
       comerciais: l.subordinados.map((c) => ({
         id: c.id,
@@ -92,6 +120,17 @@ export async function GET(req: NextRequest) {
       status: c.status,
       liderancaId: c.liderancaId,
       tipoLideranca: c.tipoLideranca,
+      consultorPfs: (c.lideranca?.consultorPfs ?? []).map((cp: any) => ({
+        id: cp.id,
+        nome: cp.nome,
+        cpf: cp.cpf,
+        email: cp.usuario.email,
+        status: cp.status,
+        setores: cp.setores?.map((s: any) => ({
+          id: s.setor.id,
+          nome: s.setor.nome,
+        })) ?? [],
+      })),
     }));
 
   return ok({ liderancas, comerciais });

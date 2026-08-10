@@ -4,6 +4,7 @@ export interface ConsultorPfResumo {
   cpf: string;
   email: string;
   status: string;
+  setores?: Array<{ id: string; nome: string }>;
 }
 
 export interface ComercialResumo {
