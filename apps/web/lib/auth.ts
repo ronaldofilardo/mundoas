@@ -38,7 +38,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           if (user) {
             console.log(
-              `[auth] Found usuario: ${email}, status: ${user.status}, tipo: ${user.tipo}, papel: ${user.papel}`
+              `[auth] Found usuario: ${email}, status: ${user.status}, tipo: ${user.tipo}, papel: ${user.papel}, senhaTemporaria: ${user.senhaTemporaria}`
             );
 
             if (user.status !== "ATIVO" && user.status !== undefined) {
@@ -60,6 +60,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 email: user.email,
                 tipo: user.tipo as TipoAcesso,
                 papel: user.papel,
+                senhaTemporaria: user.senhaTemporaria,
                 consultorId: user.consultor?.id ?? null,
                 estabelecimentoId: null,
                 backofficeId: user.backoffice?.id ?? null,
@@ -104,6 +105,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 email: usuarioEstab.email,
                 tipo: "ESTABELECIMENTO" as TipoAcesso,
                 papel: null,
+                senhaTemporaria: usuarioEstab.senhaTemporaria,
                 consultorId: null,
                 estabelecimentoId: usuarioEstab.estabelecimentoId,
                 backofficeId: null,
@@ -131,6 +133,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (user.id) token.id = user.id;
         token.tipo = (user as any).tipo;
         token.papel = (user as any).papel;
+        token.senhaTemporaria = (user as any).senhaTemporaria;
         token.consultorId = (user as any).consultorId;
         token.estabelecimentoId = (user as any).estabelecimentoId;
         token.backofficeId = (user as any).backofficeId;
@@ -144,6 +147,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         (session.user as any).id = token.id;
         (session.user as any).tipo = token.tipo;
         (session.user as any).papel = token.papel;
+        (session.user as any).senhaTemporaria = token.senhaTemporaria;
         (session.user as any).consultorId = token.consultorId;
         (session.user as any).estabelecimentoId = token.estabelecimentoId;
         (session.user as any).backofficeId = token.backofficeId;

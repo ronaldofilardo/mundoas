@@ -42,9 +42,6 @@ export default function LoginPage() {
     if (!senha.trim()) {
       setSenhaError("Senha é obrigatória");
       isValid = false;
-    } else if (senha.length < 6) {
-      setSenhaError("Senha deve ter no mínimo 6 caracteres");
-      isValid = false;
     }
 
     return isValid;

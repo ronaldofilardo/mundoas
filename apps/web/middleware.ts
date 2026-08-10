@@ -90,6 +90,7 @@ function isLocalhostOrigin(origin: string): boolean {
 type SessionUser = {
   tipo?: string;
   papel?: string | null;
+  senhaTemporaria?: boolean;
 };
 
 const ROUTE_RULES: Array<{
@@ -131,6 +132,14 @@ function authorizeByPapel(
   user: SessionUser,
 ): NextResponse | null {
   const { pathname } = req.nextUrl;
+
+  // Verificar se precisa trocar senha no primeiro acesso
+  if (user.senhaTemporaria === true && !pathname.startsWith("/primeiro-acesso")) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/primeiro-acesso";
+    url.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(url);
+  }
 
   const rule = ROUTE_RULES.find((r) => pathname.startsWith(r.prefix));
   if (!rule) return null;
@@ -226,6 +235,7 @@ export async function middleware(req: NextRequest) {
     const user: SessionUser = {
       tipo: token.tipo as string | undefined,
       papel: (token as any).papel ?? null,
+      senhaTemporaria: (token as any).senhaTemporaria ?? false,
     };
 
     const deny = authorizeByPapel(req, user);
