@@ -12,8 +12,6 @@ import {
 } from "@/lib/api-helpers";
 import { criarParceiroSchema, atualizarParceiroSchema } from "@asa/shared";
 import { criarAuditLog } from "@/lib/audit";
-import { generateResetToken, hashToken } from "@/lib/password-reset";
-import { getBaseUrl } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   const { session, backofficeId, error } = await requireBackofficeWithScope();
@@ -135,10 +133,7 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  const resetToken = generateResetToken();
-  const resetLink = `${getBaseUrl()}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
-
-await criarAuditLog({
+  await criarAuditLog({
     usuarioId: session.user.id,
     acao: "CRIAR",
     entidade: "PARCEIRO",
@@ -146,7 +141,7 @@ await criarAuditLog({
     detalhes: { nome, email, cpf: cpfUnmasked },
   });
 
-  return created({ link: resetLink });
+  return created({ id: parceiro.id, nome, email });
 }
 
 export async function PUT(req: NextRequest) {

@@ -28,7 +28,6 @@ model Usuario {
   gestor              Gestor?
   gestoresConsultores GestorConsultor[]    @relation("gestor_atribuicoes")
   parceiro            Parceiro?
-  passwordResetTokens PasswordResetToken[]
 
   @@map("usuarios")
 }
@@ -168,7 +167,6 @@ model UsuarioEstabelecimento {
   criadoEm            DateTime                  @default(now()) @map("criado_em")
   atualizadoEm        DateTime                  @default(now()) @updatedAt @map("atualizado_em")
   senhaTemporaria     Boolean                   @default(true) @map("senha_temporaria")
-  passwordResetTokens PasswordResetToken[]
   estabelecimento     Estabelecimento           @relation(fields: [estabelecimentoId], references: [id])
 
   @@index([estabelecimentoId])
@@ -189,22 +187,6 @@ model GestorConsultor {
   @@map("gestores_consultores")
 }
 
-model PasswordResetToken {
-  id                       String                  @id @default(uuid()) @db.Uuid
-  usuarioId                String?                 @map("usuario_id") @db.Uuid
-  usuarioEstabelecimentoId String?                 @map("usuario_estabelecimento_id") @db.Uuid
-  token                    String                  @unique @db.VarChar(255)
-  expiresAt                DateTime                @map("expires_at")
-  criadoEm                 DateTime                @default(now()) @map("criado_em")
-  usuarioEstabelecimento   UsuarioEstabelecimento? @relation(fields: [usuarioEstabelecimentoId], references: [id], onDelete: Restrict)
-  usuario                  Usuario?                @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
-
-  @@index([usuarioId])
-  @@index([usuarioEstabelecimentoId])
-  @@index([expiresAt])
-  @@map("password_reset_tokens")
-}
-
 model Backoffice {
   id                        String               @id @default(uuid()) @db.Uuid
   usuarioId                 String               @unique @map("usuario_id") @db.Uuid
@@ -223,8 +205,101 @@ model Backoffice {
   regrasComerciais          RegraComercial[]
   regrasGestores            RegraGestor[]
   setores                  Setor[]
+  assinatura                Assinatura?
 
   @@map("backoffices")
+}
+
+enum StatusAssinatura {
+  ATIVA
+  INADIMPLENTE
+  BLOQUEADA_MANUAL
+  CORTESIA
+  CANCELADA
+}
+
+enum StatusPagamentoFatura {
+  PENDING
+  RECEIVED
+  CONFIRMED
+  OVERDUE
+  REFUNDED
+  DELETED
+}
+
+enum FormaPagamentoFatura {
+  BOLETO
+  PIX
+}
+
+model Assinatura {
+  id                    String            @id @default(uuid()) @db.Uuid
+  backofficeId          String            @unique @map("backoffice_id") @db.Uuid
+  asaasCustomerId       String?           @map("asaas_customer_id") @db.VarChar(100)
+  asaasSubscriptionId   String?           @map("asaas_subscription_id") @db.VarChar(100)
+  statusAssinatura      StatusAssinatura  @default(ATIVA) @map("status_assinatura")
+
+  bloqueadoEm           DateTime?         @map("bloqueado_em")
+  bloqueadoPorUsuarioId String?           @map("bloqueado_por_usuario_id") @db.Uuid
+  motivoBloqueio        String?           @map("motivo_bloqueio")
+
+  cortesiaDesde         DateTime?         @map("cortesia_desde")
+  cortesiaPorUsuarioId  String?           @map("cortesia_por_usuario_id") @db.Uuid
+  motivoCortesia        String?           @map("motivo_cortesia")
+  cortesiaExpiraEm      DateTime?         @map("cortesia_expira_em")
+
+  criadoEm              DateTime          @default(now()) @map("criado_em")
+  atualizadoEm          DateTime          @default(now()) @updatedAt @map("atualizado_em")
+
+  backoffice            Backoffice        @relation(fields: [backofficeId], references: [id], onDelete: Restrict)
+  faturas               FaturaAsaas[]
+
+  @@index([statusAssinatura])
+  @@map("assinaturas")
+}
+
+model FaturaAsaas {
+  id                     String                 @id @default(uuid()) @db.Uuid
+  assinaturaId           String                 @map("assinatura_id") @db.Uuid
+  asaasPaymentId         String?                @unique @map("asaas_payment_id") @db.VarChar(100)
+
+  valor                  Decimal                @db.Decimal(10, 2)
+  vencimento             DateTime               @db.Date
+  statusPagamento        StatusPagamentoFatura  @default(PENDING) @map("status_pagamento")
+  formaPagamento         FormaPagamentoFatura?  @map("forma_pagamento")
+
+  linkFatura             String?                @map("link_fatura")
+  linkBoleto             String?                @map("link_boleto")
+  pixCopiaCola           String?                @map("pix_copia_cola")
+  pixQrCodeBase64        String?                @map("pix_qrcode_base64")
+
+  // Marcação manual — usado enquanto a integração real com o Asaas
+  // (Fase 3, webhook) ainda não está em produção.
+  pagoManualmente        Boolean                @default(false) @map("pago_manualmente")
+  marcadoPagoPorUsuarioId String?               @map("marcado_pago_por_usuario_id") @db.Uuid
+  marcadoPagoEm          DateTime?              @map("marcado_pago_em")
+
+  pagoEm                 DateTime?              @map("pago_em")
+  criadoEm               DateTime               @default(now()) @map("criado_em")
+
+  assinatura             Assinatura             @relation(fields: [assinaturaId], references: [id], onDelete: Cascade)
+
+  @@index([assinaturaId])
+  @@index([statusPagamento])
+  @@map("faturas_asaas")
+}
+
+model AsaasWebhookEvent {
+  id            String    @id @default(uuid()) @db.Uuid
+  asaasEventId  String?   @unique @map("asaas_event_id") @db.VarChar(150)
+  tipoEvento    String    @map("tipo_evento") @db.VarChar(100)
+  payloadJson   Json      @map("payload_json")
+  processadoEm  DateTime? @map("processado_em")
+  erro          String?
+
+  criadoEm      DateTime  @default(now()) @map("criado_em")
+
+  @@map("asaas_webhook_events")
 }
 
 enum TipoEquipe {
