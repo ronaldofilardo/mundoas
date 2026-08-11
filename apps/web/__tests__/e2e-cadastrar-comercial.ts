@@ -5,7 +5,7 @@
  * incluindo validações, criação no banco, e verificações finais.
  *
  * USAGE:
- *   npx tsx scripts/e2e-cadastrar-comercial.ts
+ *   npx tsx apps/web/__tests__/e2e-cadastrar-comercial.ts
  *
  * REQUIREMENTS:
  *   - DATABASE_URL apontando para o banco de teste/local
