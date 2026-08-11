@@ -91,6 +91,7 @@ type SessionUser = {
   tipo?: string;
   papel?: string | null;
   senhaTemporaria?: boolean;
+  backofficeId?: string | null;
 };
 
 const ROUTE_RULES: Array<{
@@ -156,6 +157,39 @@ function authorizeByPapel(
   url.pathname = dashboardForPapel(user);
   url.searchParams.set("error", "permission_denied");
   return NextResponse.redirect(url);
+}
+
+
+// ---------------------------------------------------------------------------
+// Bloqueio por assinatura — consulta rota interna (Node runtime, usa Prisma)
+// ---------------------------------------------------------------------------
+async function checarAcessoUnidade(
+  req: NextRequest,
+  backofficeId: string,
+): Promise<NextResponse | null> {
+  try {
+    const url = req.nextUrl.clone();
+    url.pathname = "/api/internal/acesso-unidade";
+    url.search = `?backofficeId=${backofficeId}`;
+
+    const res = await fetch(url.toString(), {
+      headers: { cookie: req.headers.get("cookie") ?? "" },
+    });
+
+    if (!res.ok) return null; // falha na checagem não deve travar o usuário
+
+    const data = (await res.json()) as { liberado: boolean };
+    if (data.liberado) return null;
+
+    const redirectUrl = req.nextUrl.clone();
+    redirectUrl.pathname = "/acesso-suspenso";
+    redirectUrl.search = "";
+    return NextResponse.redirect(redirectUrl);
+  } catch {
+    // Em caso de erro de rede/etc, não bloqueia — evita derrubar o sistema
+    // inteiro por uma falha transitória na checagem de billing.
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -236,10 +270,28 @@ export async function middleware(req: NextRequest) {
       tipo: token.tipo as string | undefined,
       papel: (token as any).papel ?? null,
       senhaTemporaria: (token as any).senhaTemporaria ?? false,
+      backofficeId: (token as any).backofficeId ?? null,
     };
 
     const deny = authorizeByPapel(req, user);
     if (deny) return deny;
+
+    // ------ Bloqueio por assinatura (billing) ---------------------------------
+    // Só se aplica a quem de fato é a unidade (BACKOFFICE com backofficeId).
+    // Admin nunca é bloqueado por essa checagem, senão fica sem conseguir
+    // liberar a própria unidade que ele bloqueou.
+    const ehUnidadeBackoffice =
+      user.tipo === "BACKOFFICE" ||
+      (user.tipo === "GESTOR" && user.papel === "BACKOFFICE");
+
+    if (
+      ehUnidadeBackoffice &&
+      user.backofficeId &&
+      !pathname.startsWith("/acesso-suspenso")
+    ) {
+      const bloqueioResp = await checarAcessoUnidade(req, user.backofficeId);
+      if (bloqueioResp) return bloqueioResp;
+    }
   }
 
   return NextResponse.next();

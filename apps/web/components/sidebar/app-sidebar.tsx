@@ -35,6 +35,15 @@ export function AppSidebar() {
 
   const [query, setQuery] = useState("");
   const [isMac, setIsMac] = useState(false);
+  const [lembreteFinanceiro, setLembreteFinanceiro] = useState(false);
+
+  useEffect(() => {
+    if (profile.id !== "backoffice") return;
+    fetch("/api/v1/backoffice/lembrete-financeiro")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setLembreteFinanceiro(Boolean(data?.mostrar)))
+      .catch(() => setLembreteFinanceiro(false));
+  }, [profile.id]);
 
   useEffect(() => {
     if (typeof navigator === "undefined") return;
@@ -156,6 +165,15 @@ export function AppSidebar() {
                         <NavIcon name={link.icon} />
                       </span>
                       <span className="truncate">{link.label}</span>
+                      {link.href === "/backoffice/financeiro" && lembreteFinanceiro && (
+                        <span
+                          title="Mensalidade do mês ainda não paga"
+                          className="ml-auto text-sm"
+                          aria-label="Lembrete de pagamento pendente"
+                        >
+                          💳
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );

@@ -59,7 +59,9 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
       },
       {
         title: "Conta",
-        links: [],
+        links: [
+          { label: "Financeiro", href: "/backoffice/financeiro", icon: "payments" },
+        ],
       },
     ],
   },
@@ -214,6 +216,8 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
         title: "Plataforma",
         links: [
           { label: "Usuários", href: "/admin/usuarios", icon: "users" },
+          { label: "Unidades", href: "/admin/backoffices", icon: "establishment" },
+          { label: "Financeiro", href: "/admin/financeiro", icon: "payments" },
         ],
       },
     ],
