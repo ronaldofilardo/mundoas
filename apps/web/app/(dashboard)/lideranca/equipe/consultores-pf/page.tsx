@@ -12,6 +12,7 @@ import {
   salvarMeta,
   validarValorMeta,
 } from "./utils";
+import { UploadPlanilhaConsultoresPf } from "./_components/upload-planilha-consultores-pf";
 
 interface ConsultorPf {
   id: string;
@@ -123,12 +124,15 @@ export default function ConsultoresPfPage() {
             Gerencie seus {consultores.length} consultores PF
           </p>
         </div>
-        <Link
-          href="/lideranca/consultores-pf/novo"
-          className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
-        >
-          Novo Consultor PF
-        </Link>
+        <div className="flex gap-2">
+          <UploadPlanilhaConsultoresPf />
+          <Link
+            href="/lideranca/consultores-pf/novo"
+            className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
+          >
+            Novo Consultor PF
+          </Link>
+        </div>
       </div>
 
       <div className="card">
