@@ -22,11 +22,6 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
         title: "Comissionamento",
         links: [
           {
-            label: "Equipe",
-            href: "/backoffice/comissionamento/equipe",
-            icon: "users",
-          },
-          {
             label: "Metas & Produção",
             href: "/backoffice/comissionamento/equipe?tab=metas",
             icon: "goals",
@@ -47,7 +42,6 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
         title: "Produção",
         links: [
           { label: "Upload de planilha", href: "/backoffice/producao?tab=upload", icon: "upload" },
-          { label: "Procedimentos", href: "/backoffice/producao/procedimentos", icon: "procedures" },
           { label: "Relatórios", href: "/backoffice/producao/relatorios", icon: "reports" },
         ],
       },
@@ -160,7 +154,6 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
         links: [
           { label: "Cadastrar cliente", href: "/parceiro/indicados", icon: "referrals" },
           { label: "Pontos", href: "/parceiro/pontos", icon: "points" },
-          { label: "Comissões", href: "/parceiro/comissoes", icon: "commissions" },
         ],
       },
       {

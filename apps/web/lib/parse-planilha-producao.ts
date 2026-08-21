@@ -8,10 +8,10 @@ interface PreviewRow {
   procedimento: string;
   cpf: string;
   tipoProcedimento: string;
-  totalPago: number;
   unidade: string;
   usuarioDaConta: string;
   valorComissao?: number;
+  valorTotal?: number;
   status: "VALIDO" | "ORFAO" | "REJEITADO";
   motivo?: string;
   parceiroNome?: string;
@@ -41,7 +41,6 @@ const COLUNAS_OBRIGATORIAS = [
   "Data de Referência",
   "Paciente",
   "Procedimento",
-  "Total Pago",
   "Usuário da conta",
 ];
 
@@ -115,20 +114,23 @@ export async function parsePlanilhaProducao(
   }
 
   // Mapear índices das colunas
-  const getColIndex = (nome: string) =>
-    Object.values(headers).findIndex(
-      (h) => String(h).trim().toLowerCase() === nome.toLowerCase(),
-    );
+  const normalizar = (s: string) =>
+    s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const getColIndex = (nome: string) => {
+    const n = normalizar(nome);
+    return Object.values(headers).findIndex((h) => normalizar(h) === n);
+  };
 
   const idxDataRef = getColIndex("Data de Referência");
   const idxPaciente = getColIndex("Paciente");
   const idxCpf = getColIndex("CPF");
   const idxProcedimento = getColIndex("Procedimento");
-  const idxTotalPago = getColIndex("Total Pago");
   const idxUsuarioConta = getColIndex("Usuário da conta");
   const idxUnidade = getColIndex("Unidade");
   const idxTipoProcedimento = getColIndex("Tipo Procedimento");
   const idxFormaPagamento = getColIndex("Forma Pagamento");
+  const idxValorTotal = getColIndex("Total Pago");
 
   // Buscar parceiros do backoffice
   let liderancas: any[] = [];
@@ -220,7 +222,6 @@ const [comerciaisResult, consultoresPfResult, gestoresResult] = await Promise.al
     const paciente = String(row[idxPaciente] || "").trim();
     const cpfRaw = String(row[idxCpf] || "").trim();
     const procedimento = String(row[idxProcedimento] || "").trim();
-    const totalPagoRaw = row[idxTotalPago];
     const usuarioDaConta = String(row[idxUsuarioConta] || "").trim();
     const unidade = idxUnidade >= 0 ? String(row[idxUnidade] || "").trim() : "";
     const tipoProcedimento =
@@ -231,6 +232,19 @@ const [comerciaisResult, consultoresPfResult, gestoresResult] = await Promise.al
       idxFormaPagamento >= 0
         ? String(row[idxFormaPagamento] || "").trim()
         : "PARTICULAR";
+const valorTotalRaw =
+      idxValorTotal >= 0 ? String(row[idxValorTotal] || "").trim() : "";
+    let valorTotal = 0;
+    if (valorTotalRaw) {
+      const limpo = valorTotalRaw.replace(/[^\d,-]/g, "");
+      if (limpo.includes(",")) {
+        valorTotal = parseFloat(limpo.replace(/\./g, "").replace(",", "."));
+      } else if (/^\d+\.\d{1,2}$/.test(limpo)) {
+        valorTotal = parseFloat(limpo);
+      } else {
+        valorTotal = parseFloat(limpo.replace(/\./g, ""));
+      }
+    }
 
     // Validar dados
     let status: "VALIDO" | "ORFAO" | "REJEITADO" = "VALIDO";
@@ -252,19 +266,6 @@ const [comerciaisResult, consultoresPfResult, gestoresResult] = await Promise.al
         status = "REJEITADO";
         motivo = "Data de referência inválida";
       }
-    }
-
-    // Validar total pago
-    let totalPago: number = 0;
-    if (
-      totalPagoRaw === null ||
-      totalPagoRaw === undefined ||
-      isNaN(Number(totalPagoRaw))
-    ) {
-      status = "REJEITADO";
-      motivo = "Total pago inválido";
-    } else {
-      totalPago = Number(totalPagoRaw);
     }
 
     // Validar paciente
@@ -344,7 +345,6 @@ if (status === "VALIDO" && usuarioDaConta) {
         cpf,
         procedimento,
         tipoProcedimento,
-        totalPago,
         unidade: unidade || "NÃO INFORMADA",
         usuarioDaConta,
         status,
@@ -356,6 +356,7 @@ if (status === "VALIDO" && usuarioDaConta) {
         gestorNome: gestorEncontrado?.nome,
         consultorPfNome: consultorPf?.nome,
         valorComissao: 0,
+        valorTotal,
       });
     }
   }

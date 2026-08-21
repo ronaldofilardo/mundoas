@@ -84,20 +84,23 @@ export async function processarUploadPlanilhaPF(
       {} as Record<string, string>,
     );
 
-    const getColIndex = (nome: string) =>
-      Object.values(headers).findIndex(
-        (h) => String(h).trim().toLowerCase() === nome.toLowerCase(),
-      );
+    const normalizar = (s: string) =>
+      s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    const getColIndex = (nome: string) => {
+      const n = normalizar(nome);
+      return Object.values(headers).findIndex((h) => normalizar(h) === n);
+    };
 
     const idxDataRef = getColIndex("Data de Referência");
     const idxPaciente = getColIndex("Paciente");
     const idxCpf = getColIndex("CPF");
     const idxProcedimento = getColIndex("Procedimento");
-    const idxTotalPago = getColIndex("Total Pago");
     const idxUsuarioConta = getColIndex("Usuário da conta");
     const idxUnidade = getColIndex("Unidade");
     const idxTipoProcedimento = getColIndex("Tipo Procedimento");
     const idxFormaPagamento = getColIndex("Forma Pagamento");
+    const idxValorTotal = getColIndex("Total Pago");
 
     // Buscar parceiros do backoffice
     const liderancas = await prisma.equipe.findMany({
@@ -168,7 +171,6 @@ const [comerciais, consultoresPf, gestores] = await Promise.all([
       const paciente = String(row[idxPaciente] || "").trim();
       const cpfRaw = String(row[idxCpf] || "").trim();
       const procedimento = String(row[idxProcedimento] || "").trim();
-      const totalPagoRaw = row[idxTotalPago];
       const usuarioDaConta = String(row[idxUsuarioConta] || "").trim();
       const unidade =
         idxUnidade >= 0
@@ -182,6 +184,19 @@ const [comerciais, consultoresPf, gestores] = await Promise.all([
         idxFormaPagamento >= 0
           ? String(row[idxFormaPagamento] || "").trim()
           : "PARTICULAR";
+      const valorTotalRaw =
+        idxValorTotal >= 0 ? String(row[idxValorTotal] || "").trim() : "";
+      let valorTotal = 0;
+      if (valorTotalRaw) {
+        const limpo = valorTotalRaw.replace(/[^\d.,-]/g, "");
+        if (limpo.includes(",")) {
+          valorTotal = parseFloat(limpo.replace(/\./g, "").replace(",", "."));
+        } else if (/^\d+\.\d{1,2}$/.test(limpo)) {
+          valorTotal = parseFloat(limpo);
+        } else {
+          valorTotal = parseFloat(limpo.replace(/\./g, ""));
+        }
+      }
 
       const dadosOriginais = {
         linha: i + 1,
@@ -189,11 +204,11 @@ const [comerciais, consultoresPf, gestores] = await Promise.all([
         paciente,
         cpf: cpfRaw,
         procedimento,
-        totalPago: totalPagoRaw ?? null,
         usuarioDaConta,
         unidade,
         tipoProcedimento,
         formaPagamento,
+        valorTotal: valorTotalRaw,
       };
 
       const cpf = cpfRaw.replace(/\D/g, "");
@@ -212,18 +227,6 @@ const [comerciais, consultoresPf, gestores] = await Promise.all([
           rejected = true;
           motivosRejeicao.push("data_referencia_invalida");
         }
-      }
-
-      let totalPago: number = 0;
-      if (
-        totalPagoRaw === null ||
-        totalPagoRaw === undefined ||
-        isNaN(Number(totalPagoRaw))
-      ) {
-        rejected = true;
-        motivosRejeicao.push("total_pago_invalido");
-      } else {
-        totalPago = Number(totalPagoRaw);
       }
 
       if (!paciente) {
@@ -320,7 +323,6 @@ if (usuarioDaConta) {
         dataReferencia,
         dataPagamento: new Date(),
         formaPagamento,
-        totalPago,
         paciente,
         procedimento,
         cpf,
@@ -330,7 +332,7 @@ if (usuarioDaConta) {
         parceiroId: parceiroEncontrado.id,
         uploadId,
         valorComissao,
-        statusComissao: "PENDENTE",
+        valorTotal,
         comercialId: comercialId ?? parceiroEncontrado.comercialId,
         gestorId: gestorIdFromNome ?? parceiroEncontrado.gestorId,
         consultorPfId,

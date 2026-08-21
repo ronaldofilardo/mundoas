@@ -8,16 +8,16 @@ datasource db {
 }
 
 model Usuario {
-  id                  String               @id @default(uuid()) @db.Uuid
-  nome                String               @db.VarChar(255)
-  email               String               @unique @db.VarChar(255)
-  senhaHash           String               @map("senha_hash") @db.VarChar(255)
+  id                  String            @id @default(uuid()) @db.Uuid
+  nome                String            @db.VarChar(255)
+  email               String            @unique @db.VarChar(255)
+  senhaHash           String            @map("senha_hash") @db.VarChar(255)
   tipo                TipoUsuario
-  telefone            String?              @db.VarChar(20)
-  status              StatusUsuario        @default(ATIVO)
-  criadoEm            DateTime             @default(now()) @map("criado_em")
-  atualizadoEm        DateTime             @default(now()) @updatedAt @map("atualizado_em")
-  senhaTemporaria     Boolean              @default(true) @map("senha_temporaria")
+  telefone            String?           @db.VarChar(20)
+  status              StatusUsuario     @default(ATIVO)
+  criadoEm            DateTime          @default(now()) @map("criado_em")
+  atualizadoEm        DateTime          @default(now()) @updatedAt @map("atualizado_em")
+  senhaTemporaria     Boolean           @default(true) @map("senha_temporaria")
   papel               PapelGestor?
   auditLogs           AuditLog[]
   backoffice          Backoffice?
@@ -26,7 +26,7 @@ model Usuario {
   cupomConfig         CupomConfig[]
   equipe              Equipe?
   gestor              Gestor?
-  gestoresConsultores GestorConsultor[]    @relation("gestor_atribuicoes")
+  gestoresConsultores GestorConsultor[] @relation("gestor_atribuicoes")
   parceiro            Parceiro?
 
   @@map("usuarios")
@@ -157,17 +157,17 @@ model AuditLog {
 }
 
 model UsuarioEstabelecimento {
-  id                  String                    @id @default(uuid()) @db.Uuid
-  estabelecimentoId   String                    @map("estabelecimento_id") @db.Uuid
-  nome                String                    @db.VarChar(255)
-  email               String                    @unique @db.VarChar(255)
-  senhaHash           String                    @map("senha_hash") @db.VarChar(255)
-  tipo                TipoAcessoEstabelecimento @default(PROPRIETARIO)
-  ativo               Boolean                   @default(true)
-  criadoEm            DateTime                  @default(now()) @map("criado_em")
-  atualizadoEm        DateTime                  @default(now()) @updatedAt @map("atualizado_em")
-  senhaTemporaria     Boolean                   @default(true) @map("senha_temporaria")
-  estabelecimento     Estabelecimento           @relation(fields: [estabelecimentoId], references: [id])
+  id                String                    @id @default(uuid()) @db.Uuid
+  estabelecimentoId String                    @map("estabelecimento_id") @db.Uuid
+  nome              String                    @db.VarChar(255)
+  email             String                    @unique @db.VarChar(255)
+  senhaHash         String                    @map("senha_hash") @db.VarChar(255)
+  tipo              TipoAcessoEstabelecimento @default(PROPRIETARIO)
+  ativo             Boolean                   @default(true)
+  criadoEm          DateTime                  @default(now()) @map("criado_em")
+  atualizadoEm      DateTime                  @default(now()) @updatedAt @map("atualizado_em")
+  senhaTemporaria   Boolean                   @default(true) @map("senha_temporaria")
+  estabelecimento   Estabelecimento           @relation(fields: [estabelecimentoId], references: [id])
 
   @@index([estabelecimentoId])
   @@map("usuarios_estabelecimentos")
@@ -196,62 +196,37 @@ model Backoffice {
   percentualComissaoMax     Decimal              @default(100.00) @map("percentual_comissao_max") @db.Decimal(5, 2)
   createdAt                 DateTime             @default(now()) @map("created_at")
   updatedAt                 DateTime             @default(now()) @updatedAt @map("updated_at")
+  assinatura                Assinatura?
   usuario                   Usuario              @relation(fields: [usuarioId], references: [id])
   ciclosPontos              CicloPontos[]
   configuracoesPontos       ConfiguracaoPontos[]
   equipe                    Equipe[]
   parceiros                 Parceiro[]
   premios                   Premio[]
-  regrasComerciais          RegraComercial[]
-  regrasGestores            RegraGestor[]
-  setores                  Setor[]
-  assinatura                Assinatura?
+  regrasComerciais          RegraComercial?
+  regrasFaltas              RegraFalta?
+  regrasGestores            RegraGestor?
+  setores                   Setor[]
 
   @@map("backoffices")
 }
 
-enum StatusAssinatura {
-  ATIVA
-  INADIMPLENTE
-  BLOQUEADA_MANUAL
-  CORTESIA
-  CANCELADA
-}
-
-enum StatusPagamentoFatura {
-  PENDING
-  RECEIVED
-  CONFIRMED
-  OVERDUE
-  REFUNDED
-  DELETED
-}
-
-enum FormaPagamentoFatura {
-  BOLETO
-  PIX
-}
-
 model Assinatura {
-  id                    String            @id @default(uuid()) @db.Uuid
-  backofficeId          String            @unique @map("backoffice_id") @db.Uuid
-  asaasCustomerId       String?           @map("asaas_customer_id") @db.VarChar(100)
-  asaasSubscriptionId   String?           @map("asaas_subscription_id") @db.VarChar(100)
-  statusAssinatura      StatusAssinatura  @default(ATIVA) @map("status_assinatura")
-
-  bloqueadoEm           DateTime?         @map("bloqueado_em")
-  bloqueadoPorUsuarioId String?           @map("bloqueado_por_usuario_id") @db.Uuid
-  motivoBloqueio        String?           @map("motivo_bloqueio")
-
-  cortesiaDesde         DateTime?         @map("cortesia_desde")
-  cortesiaPorUsuarioId  String?           @map("cortesia_por_usuario_id") @db.Uuid
-  motivoCortesia        String?           @map("motivo_cortesia")
-  cortesiaExpiraEm      DateTime?         @map("cortesia_expira_em")
-
-  criadoEm              DateTime          @default(now()) @map("criado_em")
-  atualizadoEm          DateTime          @default(now()) @updatedAt @map("atualizado_em")
-
-  backoffice            Backoffice        @relation(fields: [backofficeId], references: [id], onDelete: Restrict)
+  id                    String           @id @default(uuid()) @db.Uuid
+  backofficeId          String           @unique @map("backoffice_id") @db.Uuid
+  asaasCustomerId       String?          @map("asaas_customer_id") @db.VarChar(100)
+  asaasSubscriptionId   String?          @map("asaas_subscription_id") @db.VarChar(100)
+  statusAssinatura      StatusAssinatura @default(ATIVA) @map("status_assinatura")
+  bloqueadoEm           DateTime?        @map("bloqueado_em")
+  bloqueadoPorUsuarioId String?          @map("bloqueado_por_usuario_id") @db.Uuid
+  motivoBloqueio        String?          @map("motivo_bloqueio")
+  cortesiaDesde         DateTime?        @map("cortesia_desde")
+  cortesiaPorUsuarioId  String?          @map("cortesia_por_usuario_id") @db.Uuid
+  motivoCortesia        String?          @map("motivo_cortesia")
+  cortesiaExpiraEm      DateTime?        @map("cortesia_expira_em")
+  criadoEm              DateTime         @default(now()) @map("criado_em")
+  atualizadoEm          DateTime         @default(now()) @updatedAt @map("atualizado_em")
+  backoffice            Backoffice       @relation(fields: [backofficeId], references: [id])
   faturas               FaturaAsaas[]
 
   @@index([statusAssinatura])
@@ -259,30 +234,23 @@ model Assinatura {
 }
 
 model FaturaAsaas {
-  id                     String                 @id @default(uuid()) @db.Uuid
-  assinaturaId           String                 @map("assinatura_id") @db.Uuid
-  asaasPaymentId         String?                @unique @map("asaas_payment_id") @db.VarChar(100)
-
-  valor                  Decimal                @db.Decimal(10, 2)
-  vencimento             DateTime               @db.Date
-  statusPagamento        StatusPagamentoFatura  @default(PENDING) @map("status_pagamento")
-  formaPagamento         FormaPagamentoFatura?  @map("forma_pagamento")
-
-  linkFatura             String?                @map("link_fatura")
-  linkBoleto             String?                @map("link_boleto")
-  pixCopiaCola           String?                @map("pix_copia_cola")
-  pixQrCodeBase64        String?                @map("pix_qrcode_base64")
-
-  // Marcação manual — usado enquanto a integração real com o Asaas
-  // (Fase 3, webhook) ainda não está em produção.
-  pagoManualmente        Boolean                @default(false) @map("pago_manualmente")
+  id                      String                @id @default(uuid()) @db.Uuid
+  assinaturaId            String                @map("assinatura_id") @db.Uuid
+  asaasPaymentId          String?               @unique @map("asaas_payment_id") @db.VarChar(100)
+  valor                   Decimal               @db.Decimal(10, 2)
+  vencimento              DateTime              @db.Date
+  statusPagamento         StatusPagamentoFatura @default(PENDING) @map("status_pagamento")
+  formaPagamento          FormaPagamentoFatura? @map("forma_pagamento")
+  linkFatura              String?               @map("link_fatura")
+  linkBoleto              String?               @map("link_boleto")
+  pixCopiaCola            String?               @map("pix_copia_cola")
+  pixQrCodeBase64         String?               @map("pix_qrcode_base64")
+  pagoManualmente         Boolean               @default(false) @map("pago_manualmente")
   marcadoPagoPorUsuarioId String?               @map("marcado_pago_por_usuario_id") @db.Uuid
-  marcadoPagoEm          DateTime?              @map("marcado_pago_em")
-
-  pagoEm                 DateTime?              @map("pago_em")
-  criadoEm               DateTime               @default(now()) @map("criado_em")
-
-  assinatura             Assinatura             @relation(fields: [assinaturaId], references: [id], onDelete: Cascade)
+  marcadoPagoEm           DateTime?             @map("marcado_pago_em")
+  pagoEm                  DateTime?             @map("pago_em")
+  criadoEm                DateTime              @default(now()) @map("criado_em")
+  assinatura              Assinatura            @relation(fields: [assinaturaId], references: [id], onDelete: Cascade)
 
   @@index([assinaturaId])
   @@index([statusPagamento])
@@ -290,46 +258,40 @@ model FaturaAsaas {
 }
 
 model AsaasWebhookEvent {
-  id            String    @id @default(uuid()) @db.Uuid
-  asaasEventId  String?   @unique @map("asaas_event_id") @db.VarChar(150)
-  tipoEvento    String    @map("tipo_evento") @db.VarChar(100)
-  payloadJson   Json      @map("payload_json")
-  processadoEm  DateTime? @map("processado_em")
-  erro          String?
-
-  criadoEm      DateTime  @default(now()) @map("criado_em")
+  id           String    @id @default(uuid()) @db.Uuid
+  asaasEventId String?   @unique @map("asaas_event_id") @db.VarChar(150)
+  tipoEvento   String    @map("tipo_evento") @db.VarChar(100)
+  payloadJson  Json      @map("payload_json")
+  processadoEm DateTime? @map("processado_em")
+  erro         String?
+  criadoEm     DateTime  @default(now()) @map("criado_em")
 
   @@map("asaas_webhook_events")
 }
 
-enum TipoEquipe {
-  COMERCIAL
-  LIDERANCA
-}
-
 model Equipe {
-  id                 String          @id @default(uuid()) @db.Uuid
-  usuarioId          String          @unique @map("usuario_id") @db.Uuid
-  nome               String          @db.VarChar(255)
-  cpf                String          @unique @db.VarChar(14)
-  backofficeId       String?         @map("backoffice_id") @db.Uuid
+  id                 String           @id @default(uuid()) @db.Uuid
+  usuarioId          String           @unique @map("usuario_id") @db.Uuid
+  nome               String           @db.VarChar(255)
+  cpf                String           @unique @db.VarChar(14)
+  backofficeId       String?          @map("backoffice_id") @db.Uuid
   tipo               TipoEquipe
-  tipoLideranca      TipoLideranca?  @map("tipo_lideranca")
+  tipoLideranca      TipoLideranca?   @map("tipo_lideranca")
   funcao             FuncaoComercial?
-  percentualComissao Decimal         @default(0) @map("percentual_comissao") @db.Decimal(5, 2)
-  status             StatusUsuario   @default(ATIVO)
-  liderancaId        String?         @map("lideranca_id") @db.Uuid
-  createdAt          DateTime        @default(now()) @map("created_at")
-  updatedAt          DateTime        @updatedAt @map("updated_at")
-  backoffice         Backoffice?     @relation(fields: [backofficeId], references: [id], onDelete: Restrict)
-  lideranca          Equipe?         @relation("equipe_hierarquia", fields: [liderancaId], references: [id], onDelete: Restrict)
-  subordinados       Equipe[]        @relation("equipe_hierarquia")
-  usuario            Usuario         @relation(fields: [usuarioId], references: [id])
+  percentualComissao Decimal          @default(0) @map("percentual_comissao") @db.Decimal(5, 2)
+  status             StatusUsuario    @default(ATIVO)
+  liderancaId        String?          @map("lideranca_id") @db.Uuid
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
   comissoes          ComissaoEquipe[]
+  consultorPfs       ConsultorPf[]
+  backoffice         Backoffice?      @relation(fields: [backofficeId], references: [id], onDelete: Restrict)
+  lideranca          Equipe?          @relation("equipe_hierarquia", fields: [liderancaId], references: [id], onDelete: Restrict)
+  subordinados       Equipe[]         @relation("equipe_hierarquia")
+  usuario            Usuario          @relation(fields: [usuarioId], references: [id])
+  gestores           Gestor[]
   metas              MetaEquipe[]
   parceiros          Parceiro[]
-  consultorPfs       ConsultorPf[]
-  gestores           Gestor[]
   procedimentos      ProcedimentoPF[]
 
   @@index([backofficeId])
@@ -358,36 +320,36 @@ model Gestor {
 }
 
 model ConsultorPf {
-  id            String             @id @default(uuid()) @db.Uuid
-  usuarioId     String             @unique @map("usuario_id") @db.Uuid
-  nome          String             @db.VarChar(255)
-  cpf           String             @unique @db.VarChar(14)
-  liderancaId   String             @map("lideranca_id") @db.Uuid
-  status        StatusUsuario      @default(ATIVO)
-  criadoEm      DateTime           @default(now()) @map("criado_em")
-  atualizadoEm  DateTime           @default(now()) @updatedAt @map("atualizado_em")
+  id            String                @id @default(uuid()) @db.Uuid
+  usuarioId     String                @unique @map("usuario_id") @db.Uuid
+  nome          String                @db.VarChar(255)
+  cpf           String                @unique @db.VarChar(14)
+  liderancaId   String                @map("lideranca_id") @db.Uuid
+  status        StatusUsuario         @default(ATIVO)
+  criadoEm      DateTime              @default(now()) @map("criado_em")
+  atualizadoEm  DateTime              @default(now()) @updatedAt @map("atualizado_em")
+  comissoes     ComissaoConsultorPf[]
   setores       ConsultorPfSetor[]
-  lideranca     Equipe             @relation(fields: [liderancaId], references: [id])
-  usuario       Usuario            @relation(fields: [usuarioId], references: [id])
+  lideranca     Equipe                @relation(fields: [liderancaId], references: [id])
+  usuario       Usuario               @relation(fields: [usuarioId], references: [id])
   metas         MetaConsultorPf[]
   procedimentos ProcedimentoPF[]
-  comissoes     ComissaoConsultorPf[]
 
   @@index([liderancaId])
   @@map("consultores_pf")
 }
 
 model ComissaoConsultorPf {
-  id              String         @id @default(uuid()) @db.Uuid
-  consultorPfId   String         @map("consultor_pf_id") @db.Uuid
-  mesReferencia   String         @map("mes_referencia")
-  valorProducao   Decimal        @default(0) @map("valor_producao") @db.Decimal(12, 2)
-  valorComissao   Decimal        @default(0) @map("valor_comissao") @db.Decimal(12, 2)
-  status          StatusComissao @default(CALCULADA)
-  dataPagamento   DateTime?      @map("data_pagamento")
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
-  consultorPf     ConsultorPf    @relation(fields: [consultorPfId], references: [id], onDelete: Cascade)
+  id            String         @id @default(uuid()) @db.Uuid
+  consultorPfId String         @map("consultor_pf_id") @db.Uuid
+  mesReferencia String         @map("mes_referencia")
+  valorProducao Decimal        @default(0) @map("valor_producao") @db.Decimal(12, 2)
+  valorComissao Decimal        @default(0) @map("valor_comissao") @db.Decimal(12, 2)
+  status        StatusComissao @default(CALCULADA)
+  dataPagamento DateTime?      @map("data_pagamento")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  consultorPf   ConsultorPf    @relation(fields: [consultorPfId], references: [id], onDelete: Cascade)
 
   @@unique([consultorPfId, mesReferencia])
   @@index([consultorPfId])
@@ -396,12 +358,12 @@ model ComissaoConsultorPf {
 
 model Setor {
   id           String             @id @default(uuid()) @db.Uuid
-  backofficeId String?            @map("backoffice_id") @db.Uuid
   nome         String             @db.VarChar(100)
   descricao    String?            @db.VarChar(255)
   ativo        Boolean            @default(true)
   criadoEm     DateTime           @default(now()) @map("criado_em")
   atualizadoEm DateTime           @default(now()) @updatedAt @map("atualizado_em")
+  backofficeId String?            @map("backoffice_id") @db.Uuid
   consultores  ConsultorPfSetor[]
   metas        MetaConsultorPf[]
   backoffice   Backoffice?        @relation(fields: [backofficeId], references: [id], onDelete: Cascade)
@@ -426,15 +388,15 @@ model ConsultorPfSetor {
 }
 
 model MetaEquipe {
-  id            String    @id @default(uuid()) @db.Uuid
-  equipeId      String    @map("equipe_id") @db.Uuid
-  mesReferencia String    @map("mes_referencia")
-  valorMeta     Decimal   @default(0) @map("valor_meta") @db.Decimal(12, 2)
-  valorAtingido Decimal   @default(0) @map("valor_atingido") @db.Decimal(12, 2)
-  valorComissao Decimal   @default(0) @map("valor_comissao") @db.Decimal(12, 2)
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  equipe        Equipe    @relation(fields: [equipeId], references: [id], onDelete: Cascade)
+  id            String   @id @default(uuid()) @db.Uuid
+  equipeId      String   @map("equipe_id") @db.Uuid
+  mesReferencia String   @map("mes_referencia")
+  valorMeta     Decimal  @default(0) @map("valor_meta") @db.Decimal(12, 2)
+  valorAtingido Decimal  @default(0) @map("valor_atingido") @db.Decimal(12, 2)
+  valorComissao Decimal  @default(0) @map("valor_comissao") @db.Decimal(12, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  equipe        Equipe   @relation(fields: [equipeId], references: [id], onDelete: Cascade)
 
   @@unique([equipeId, mesReferencia])
   @@index([equipeId])
@@ -444,15 +406,15 @@ model MetaEquipe {
 model MetaConsultorPf {
   id            String      @id @default(uuid()) @db.Uuid
   consultorPfId String      @map("consultor_pf_id") @db.Uuid
-  setorId       String?     @map("setor_id") @db.Uuid
   mesReferencia String      @map("mes_referencia")
   valorMeta     Decimal     @default(0) @map("valor_meta") @db.Decimal(12, 2)
   valorAtingido Decimal     @default(0) @map("valor_atingido") @db.Decimal(12, 2)
-  criadoPorId   String?     @map("criado_por_id") @db.Uuid
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @default(now()) @updatedAt @map("updated_at")
+  setorId       String?     @map("setor_id") @db.Uuid
+  criadoPorId   String?     @map("criado_por_id") @db.Uuid
   consultorPf   ConsultorPf @relation(fields: [consultorPfId], references: [id], onDelete: Cascade)
-  setor         Setor?      @relation(fields: [setorId], references: [id], onDelete: SetNull)
+  setor         Setor?      @relation(fields: [setorId], references: [id])
 
   @@unique([consultorPfId, setorId, mesReferencia])
   @@index([consultorPfId])
@@ -461,16 +423,17 @@ model MetaConsultorPf {
 }
 
 model ComissaoEquipe {
-  id            String    @id @default(uuid()) @db.Uuid
-  equipeId      String    @map("equipe_id") @db.Uuid
-  mesReferencia String    @map("mes_referencia")
-  valorVendas   Decimal   @default(0) @map("valor_vendas") @db.Decimal(12, 2)
-  valorComissao Decimal   @default(0) @map("valor_comissao") @db.Decimal(12, 2)
+  id            String         @id @default(uuid()) @db.Uuid
+  equipeId      String         @map("equipe_id") @db.Uuid
+  mesReferencia String         @map("mes_referencia")
+  valorVendas   Decimal        @default(0) @map("valor_vendas") @db.Decimal(12, 2)
+  valorComissao Decimal        @default(0) @map("valor_comissao") @db.Decimal(12, 2)
   status        StatusComissao @default(CALCULADA)
-  dataPagamento DateTime? @map("data_pagamento")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  equipe        Equipe    @relation(fields: [equipeId], references: [id], onDelete: Cascade)
+  dataPagamento DateTime?      @map("data_pagamento")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  temFalta      Boolean        @default(false) @map("tem_falta")
+  equipe        Equipe         @relation(fields: [equipeId], references: [id], onDelete: Cascade)
 
   @@unique([equipeId, mesReferencia])
   @@index([equipeId])
@@ -479,7 +442,6 @@ model ComissaoEquipe {
 
 model RegraComercial {
   id                String     @id @default(uuid()) @db.Uuid
-  backofficeId      String     @unique @map("backoffice_id") @db.Uuid
   cartaoAcessoSaude Decimal    @default(0) @map("cartao_acesso_saude") @db.Decimal(5, 2)
   cireAtivo         Decimal    @default(0) @map("cire_ativo") @db.Decimal(5, 2)
   cireReceptivo     Decimal    @default(0) @map("cire_receptivo") @db.Decimal(5, 2)
@@ -488,6 +450,7 @@ model RegraComercial {
   unidade           Decimal    @default(0) @map("unidade") @db.Decimal(5, 2)
   createdAt         DateTime   @default(now()) @map("created_at")
   updatedAt         DateTime   @updatedAt @map("updated_at")
+  backofficeId      String     @unique @map("backoffice_id") @db.Uuid
   backoffice        Backoffice @relation(fields: [backofficeId], references: [id], onDelete: Cascade)
 
   @@index([backofficeId])
@@ -496,7 +459,6 @@ model RegraComercial {
 
 model RegraGestor {
   id                    String     @id @default(uuid()) @db.Uuid
-  backofficeId          String     @unique @map("backoffice_id") @db.Uuid
   gerenteCire           Decimal    @default(0) @map("gerente_cire") @db.Decimal(5, 2)
   supervisorAtivo       Decimal    @default(0) @map("supervisor_ativo") @db.Decimal(5, 2)
   supervisorReceptivo   Decimal    @default(0) @map("supervisor_receptivo") @db.Decimal(5, 2)
@@ -506,10 +468,28 @@ model RegraGestor {
   supervisorComercial   Decimal    @default(0) @map("supervisor_comercial") @db.Decimal(5, 2)
   createdAt             DateTime   @default(now()) @map("created_at")
   updatedAt             DateTime   @updatedAt @map("updated_at")
+  backofficeId          String     @unique @map("backoffice_id") @db.Uuid
   backoffice            Backoffice @relation(fields: [backofficeId], references: [id], onDelete: Cascade)
 
   @@index([backofficeId])
   @@map("regras_gestores")
+}
+
+model RegraFalta {
+  id                            String     @id @default(uuid()) @db.Uuid
+  backofficeId                  String     @unique @map("backoffice_id") @db.Uuid
+  consultorUnidadeComFalta      Decimal    @default(0) @map("consultor_unidade_com_falta") @db.Decimal(9, 4)
+  consultorUnidadeSemFalta      Decimal    @default(0) @map("consultor_unidade_sem_falta") @db.Decimal(9, 4)
+  supervisorAtendimentoComFalta Decimal    @default(0) @map("supervisor_atendimento_com_falta") @db.Decimal(9, 4)
+  supervisorAtendimentoSemFalta Decimal    @default(0) @map("supervisor_atendimento_sem_falta") @db.Decimal(9, 4)
+  gerenteComercialComFalta      Decimal    @default(0) @map("gerente_comercial_com_falta") @db.Decimal(9, 4)
+  gerenteComercialSemFalta      Decimal    @default(0) @map("gerente_comercial_sem_falta") @db.Decimal(9, 4)
+  createdAt                     DateTime   @default(now()) @map("created_at")
+  updatedAt                     DateTime   @updatedAt @map("updated_at")
+  backoffice                    Backoffice @relation(fields: [backofficeId], references: [id], onDelete: Cascade)
+
+  @@index([backofficeId])
+  @@map("regras_faltas")
 }
 
 model Parceiro {
@@ -584,16 +564,16 @@ model UploadPlanilhaBackoffice {
 }
 
 model ProcedimentoPFRaw {
-  id              String                   @id @default(uuid()) @db.Uuid
-  uploadId        String                   @map("upload_id") @db.Uuid
-  linhaOriginal   Int                      @map("linha_original")
-  dadosOriginais  Json                     @map("dados_originais")
-  valido          Boolean                  @default(false)
-  motivoRejeicao  String?                  @map("motivo_rejeicao") @db.VarChar(500)
-  orfao           Boolean                  @default(false)
-  motivoOrfao     String?                  @map("motivo_orfao") @db.VarChar(500)
-  createdAt       DateTime                 @default(now()) @map("created_at")
-  upload          UploadPlanilhaBackoffice @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  id             String                   @id @default(uuid()) @db.Uuid
+  uploadId       String                   @map("upload_id") @db.Uuid
+  linhaOriginal  Int                      @map("linha_original")
+  dadosOriginais Json                     @map("dados_originais")
+  valido         Boolean                  @default(false)
+  motivoRejeicao String?                  @map("motivo_rejeicao") @db.VarChar(500)
+  orfao          Boolean                  @default(false)
+  motivoOrfao    String?                  @map("motivo_orfao") @db.VarChar(500)
+  createdAt      DateTime                 @default(now()) @map("created_at")
+  upload         UploadPlanilhaBackoffice @relation(fields: [uploadId], references: [id], onDelete: Cascade)
 
   @@index([uploadId])
   @@index([valido])
@@ -606,7 +586,6 @@ model ProcedimentoPF {
   dataReferencia   DateTime                 @map("data_referencia")
   dataPagamento    DateTime                 @map("data_pagamento")
   formaPagamento   String                   @map("forma_pagamento") @db.VarChar(50)
-  totalPago        Decimal                  @map("total_pago") @db.Decimal(10, 2)
   paciente         String                   @db.VarChar(255)
   procedimento     String                   @db.VarChar(255)
   cpf              String                   @db.VarChar(14)
@@ -616,7 +595,7 @@ model ProcedimentoPF {
   parceiroId       String?                  @map("parceiro_id") @db.Uuid
   uploadId         String                   @map("upload_id") @db.Uuid
   valorComissao    Decimal                  @default(0) @map("valor_comissao") @db.Decimal(10, 2)
-  statusComissao   StatusProcedimento       @default(PENDENTE) @map("status_comissao")
+  valorTotal       Decimal?                 @default(0) @map("valor_total") @db.Decimal(10, 2)
   createdAt        DateTime                 @default(now()) @map("created_at")
   updatedAt        DateTime                 @updatedAt @map("updated_at")
   comercialId      String?                  @map("comercial_id") @db.Uuid
@@ -689,6 +668,7 @@ model CicloPontos {
   atualizadoEm          DateTime             @updatedAt @map("atualizado_em")
   periodicidade         PeriodicidadeCiclo   @default(ANUAL) @map("periodicidade")
   backofficeId          String               @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @map("backoffice_id") @db.Uuid
+  inicioResgateEm       DateTime?            @map("inicio_resgate_em")
   backoffice            Backoffice           @relation(fields: [backofficeId], references: [id])
   movimentacoes         MovimentacaoPontos[]
   rankingSnapshots      RankingSnapshot[]
@@ -755,17 +735,17 @@ model RankingPosicao {
 
 model Premio {
   id           String               @id @default(uuid()) @db.Uuid
-  backofficeId String               @map("backoffice_id") @db.Uuid
   nome         String               @db.VarChar(255)
-  codigo       String               @db.VarChar(50)
-  tipo         String               @db.VarChar(50)
   descricao    String
   custoPontos  Int                  @map("custo_pontos")
   ativo        Boolean              @default(true)
   imagemUrl    String?              @map("imagem_url")
   criadoEm     DateTime             @default(now()) @map("criado_em")
   atualizadoEm DateTime             @updatedAt @map("atualizado_em")
-  backoffice   Backoffice           @relation(fields: [backofficeId], references: [id], onDelete: Restrict)
+  backofficeId String               @map("backoffice_id") @db.Uuid
+  codigo       String               @db.VarChar(50)
+  tipo         String               @db.VarChar(50)
+  backoffice   Backoffice           @relation(fields: [backofficeId], references: [id])
   solicitacoes SolicitacaoResgate[]
 
   @@index([backofficeId])
@@ -795,6 +775,33 @@ model SolicitacaoResgate {
   @@index([cicloPontosId])
   @@index([status])
   @@map("solicitacoes_resgate")
+}
+
+enum StatusAssinatura {
+  ATIVA
+  INADIMPLENTE
+  BLOQUEADA_MANUAL
+  CORTESIA
+  CANCELADA
+}
+
+enum StatusPagamentoFatura {
+  PENDING
+  RECEIVED
+  CONFIRMED
+  OVERDUE
+  REFUNDED
+  DELETED
+}
+
+enum FormaPagamentoFatura {
+  BOLETO
+  PIX
+}
+
+enum TipoEquipe {
+  COMERCIAL
+  LIDERANCA
 }
 
 enum TipoUsuario {
@@ -894,12 +901,6 @@ enum StatusUpload {
 }
 
 enum StatusComissao {
-  PENDENTE
-  CALCULADA
-  PAGA
-}
-
-enum StatusProcedimento {
   PENDENTE
   CALCULADA
   PAGA

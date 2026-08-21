@@ -21,14 +21,13 @@ interface Procedimento {
   dataReferencia: string;
   dataPagamento: string;
   formaPagamento: string;
-  totalPago: string;
   paciente: string;
   procedimento: string;
   cpf: string;
   tipoProcedimento: string;
   unidade: string;
   valorComissao: string;
-  statusComissao: string;
+  valorTotal?: number;
   parceiro: { id: string; nome: string; cpf: string } | null;
   indicado: { id: string; nome: string; cpf: string } | null;
   comercial: { id: string; nome: string; funcao?: string } | null;
@@ -64,7 +63,6 @@ export default function BackofficeProducao() {
 function BackofficeProducaoInner() {
   const [data, setData] = useState<ProducaoData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState("TODOS");
   const [filterMes, setFilterMes] = useState("");
   const [filterParceiro, setFilterParceiro] = useState("");
   const [filterConsultorPf, setFilterConsultorPf] = useState("");
@@ -83,7 +81,7 @@ function BackofficeProducaoInner() {
 
   useEffect(() => {
     fetchProducao();
-  }, [filterStatus, filterMes, filterParceiro, filterConsultorPf, currentPage]);
+  }, [filterMes, filterParceiro, filterConsultorPf, currentPage]);
 
   async function fetchProducao() {
     setLoading(true);
@@ -92,7 +90,6 @@ function BackofficeProducaoInner() {
         page: currentPage.toString(),
         limit: "50",
       });
-      if (filterStatus !== "TODOS") params.set("status", filterStatus);
       if (filterMes) params.set("mesReferencia", filterMes);
       if (filterParceiro) params.set("parceiroId", filterParceiro);
       if (filterConsultorPf) params.set("consultorPfId", filterConsultorPf);
@@ -119,19 +116,6 @@ function BackofficeProducaoInner() {
   function formatCpf(cpf: string) {
     if (!cpf || cpf.length < 11) return cpf || "-";
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-  }
-
-  function formatStatus(status: string) {
-    switch (status) {
-      case "PAGA":
-        return { label: "Pago", class: "bg-green-100 text-green-800" };
-      case "CALCULADA":
-        return { label: "Calculada", class: "bg-blue-100 text-blue-800" };
-      case "PENDENTE":
-        return { label: "Pendente", class: "bg-yellow-100 text-yellow-800" };
-      default:
-        return { label: status, class: "bg-gray-100 text-gray-800" };
-    }
   }
 
   function formatMes(mes: string) {
@@ -165,11 +149,6 @@ function BackofficeProducaoInner() {
     0
   ) || 0;
 
-  const totalReceita = filteredProcedimentos?.reduce(
-    (sum, p) => sum + Number(p.totalPago),
-    0
-  ) || 0;
-
   if (loading && !data) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -190,12 +169,6 @@ function BackofficeProducaoInner() {
           </p>
         </div>
         <div className="flex gap-6 text-right">
-          <div>
-            <p className="text-xs text-gray-500">Total Receita</p>
-            <p className="text-lg font-bold text-gray-900">
-              R$ {totalReceita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-            </p>
-          </div>
           <div>
             <p className="text-xs text-gray-500">Total Comissões</p>
             <p className="text-lg font-bold text-green-600">
@@ -248,20 +221,6 @@ function BackofficeProducaoInner() {
       {activeTab === "lista" && (
         <div className="card">
         <div className="flex flex-wrap gap-3 mb-4">
-          <select
-            value={filterStatus}
-            onChange={(e) => {
-              setFilterStatus(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="text-sm border rounded px-3 py-2"
-          >
-            <option value="TODOS">Todos Status</option>
-            <option value="PENDENTE">Pendente</option>
-            <option value="CALCULADA">Calculada</option>
-            <option value="PAGA">Pago</option>
-          </select>
-
           <select
             value={filterMes}
             onChange={(e) => {
@@ -327,14 +286,11 @@ function BackofficeProducaoInner() {
                 <th className="text-left p-2 font-medium text-gray-600">Paciente</th>
                 <th className="text-left p-2 font-medium text-gray-600">CPF</th>
                 <th className="text-left p-2 font-medium text-gray-600">Procedimento</th>
-                <th className="text-left p-2 font-medium text-gray-600">Tipo</th>
+                <th className="text-left p-2 font-medium text-gray-600">Total Pago</th>
                 <th className="text-left p-2 font-medium text-gray-600">Unidade</th>
-                <th className="text-left p-2 font-medium text-gray-600">Forma Pgto</th>
                 <th className="text-left p-2 font-medium text-gray-600">Usuário da Conta</th>
                 <th className="text-left p-2 font-medium text-gray-600">Parceiro</th>
                 <th className="text-left p-2 font-medium text-gray-600">Mês Ref.</th>
-                <th className="text-left p-2 font-medium text-gray-600">Status</th>
-                <th className="text-right p-2 font-medium text-gray-600">Total Pago</th>
               </tr>
             </thead>
             <tbody>
@@ -344,9 +300,10 @@ function BackofficeProducaoInner() {
                   <td className="p-2 text-gray-900 font-medium">{p.paciente}</td>
                   <td className="p-2 text-gray-600">{formatCpf(p.cpf)}</td>
                   <td className="p-2 text-gray-600">{p.procedimento}</td>
-                  <td className="p-2 text-gray-600">{p.tipoProcedimento}</td>
+                  <td className="p-2 text-gray-600">
+                    R$ {Number(p.valorTotal || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </td>
                   <td className="p-2 text-gray-600">{p.unidade}</td>
-                  <td className="p-2 text-gray-600">{p.formaPagamento || "-"}</td>
                   <td className="p-2 text-gray-600">
                     {p.comercial?.nome || p.consultorPf?.nome || "-"}
                   </td>
@@ -360,20 +317,12 @@ function BackofficeProducaoInner() {
                   <td className="p-2 text-gray-600">
                     {p.upload?.mesReferencia ? formatMes(p.upload.mesReferencia) : "-"}
                   </td>
-                  <td className="p-2">
-                    <span className={`text-xs px-2 py-0.5 rounded ${formatStatus(p.statusComissao).class}`}>
-                      {formatStatus(p.statusComissao).label}
-                    </span>
-                  </td>
-                  <td className="p-2 text-right text-gray-900">
-                    R$ {Number(p.totalPago).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </td>
                 </tr>
               ))}
 
               {filteredProcedimentos?.length === 0 && (
                 <tr>
-                  <td colSpan={12} className="p-8 text-center text-gray-500">
+                  <td colSpan={9} className="p-8 text-center text-gray-500">
                     Nenhum procedimento encontrado
                   </td>
                 </tr>

@@ -48,10 +48,10 @@ interface PreviewRow {
   procedimento: string;
   cpf: string;
   tipoProcedimento: string;
-  totalPago: number;
   unidade: string;
   usuarioDaConta: string;
   valorComissao?: number;
+  valorTotal?: number;
   status: "VALIDO" | "ORFAO" | "REJEITADO";
   motivo?: string;
   parceiroNome?: string;
@@ -401,7 +401,7 @@ export function UploadPlanilhaPreview({
           Apenas arquivos Excel (.xlsx ou .xls). A planilha deve conter as
           colunas:{" "}
           <span className="font-medium">
-            Data de Referência, Paciente, CPF, Procedimento, Total Pago, Usuário
+            Data de Referência, Paciente, CPF, Procedimento, Usuário
             da conta
           </span>
         </p>
@@ -540,9 +540,6 @@ export function UploadPlanilhaPreview({
                       CPF
                     </th>
                     <th className="text-left p-2 font-medium text-gray-600">
-                      Tipo
-                    </th>
-                    <th className="text-left p-2 font-medium text-gray-600">
                       Unidade
                     </th>
                     <th className="text-left p-2 font-medium text-gray-600">
@@ -553,9 +550,6 @@ export function UploadPlanilhaPreview({
                     </th>
                     <th className="text-right p-2 font-medium text-gray-600">
                       Total Pago
-                    </th>
-                    <th className="text-right p-2 font-medium text-gray-600">
-                      Comissão
                     </th>
                     <th className="text-center p-2 font-medium text-gray-600">
                       Status
@@ -581,9 +575,6 @@ export function UploadPlanilhaPreview({
                           "$1.$2.$3-$4",
                         )}
                       </td>
-                      <td className="p-2 text-gray-600">
-                        {row.tipoProcedimento}
-                      </td>
                       <td className="p-2 text-gray-600">{row.unidade}</td>
                       <td className="p-2 text-gray-600">
                         {row.usuarioDaConta || "-"}
@@ -604,15 +595,9 @@ export function UploadPlanilhaPreview({
                           );
                         })()}
                       </td>
-                      <td className="p-2 text-right text-gray-900">
-                        R${" "}
-                        {Number(row.totalPago).toLocaleString("pt-BR", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </td>
                       <td className="p-2 text-right text-gray-500">
                         R${" "}
-                        {(row.valorComissao || 0).toLocaleString("pt-BR", {
+                        {(row.valorTotal || 0).toLocaleString("pt-BR", {
                           minimumFractionDigits: 2,
                         })}
                       </td>
