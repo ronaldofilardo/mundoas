@@ -754,7 +754,6 @@ model MovimentacaoPontos {
   @@index([cicloPontosId])
   @@index([origem])
   @@index([referenciaProcedimentoId])
-  @@index([referenciaProcedimentoId, origem, tipo])
   @@index([referenciaSolicitacaoResgateId])
   @@map("movimentacoes_pontos")
 }

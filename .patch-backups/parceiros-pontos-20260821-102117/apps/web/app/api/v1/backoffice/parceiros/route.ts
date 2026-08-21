@@ -12,7 +12,6 @@ import {
 } from "@/lib/api-helpers";
 import { criarParceiroSchema, atualizarParceiroSchema } from "@asa/shared";
 import { criarAuditLog } from "@/lib/audit";
-import { criarEscopoParceiro } from "@/lib/parceiros-pontos-regras";
 
 export async function GET(req: NextRequest) {
   const { session, backofficeId, error } = await requireBackofficeWithScope();
@@ -34,7 +33,6 @@ export async function GET(req: NextRequest) {
   // Buscar TODOS os parceiros: vinculados a comerciais/gestores OU sem vínculo (órfãos)
   const parceiros = await prisma.parceiro.findMany({
     where: {
-      ...criarEscopoParceiro(backofficeId),
       OR: [
         { comercialId: { in: comercialIds } },
         { gestorId: { in: gestorIds } },
@@ -159,7 +157,7 @@ export async function PUT(req: NextRequest) {
   const { id, nome, email, cpf } = validation.data;
 
   const parceiro = await prisma.parceiro.findUnique({
-    where: { id, ...criarEscopoParceiro(backofficeId) },
+    where: { id },
     include: { usuario: true },
   });
 
@@ -229,7 +227,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   const parceiro = await prisma.parceiro.findUnique({
-    where: { id, ...criarEscopoParceiro(backofficeId) },
+    where: { id },
   });
 
   if (!parceiro) {

@@ -45,10 +45,14 @@ vi.mock('next-auth', () => ({
 vi.mock('next/server', () => ({
   NextRequest: class {},
   NextResponse: {
-    json: (data: unknown, init?: { status?: number }) => ({
-      status: init?.status ?? 200,
-      json: () => Promise.resolve(data),
-    }),
+    json: (data: unknown, init?: { status?: number }) => {
+      const headers = new Headers();
+      return {
+        status: init?.status ?? 200,
+        json: () => Promise.resolve(data),
+        headers,
+      };
+    },
   },
 }));
 

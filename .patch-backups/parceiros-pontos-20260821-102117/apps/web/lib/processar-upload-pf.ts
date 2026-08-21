@@ -1,5 +1,4 @@
 import { prisma } from "@asa/database";
-import { validarCPF } from "@/lib/pontos-utils";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
@@ -255,7 +254,7 @@ const [comerciais, consultoresPf, gestores] = await Promise.all([
       };
 
       const cpf = cpfRaw.replace(/\D/g, "");
-      const cpfValido = validarCPF(cpf);
+      const cpfValido = cpf.length === 11;
 
       let rejected = false;
       const motivosRejeicao: string[] = [];

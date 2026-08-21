@@ -7,7 +7,6 @@ import {
 } from "@/lib/api-helpers";
 import { prisma } from "@asa/database";
 import { z } from "zod";
-import { criarEscopoPremio } from "@/lib/parceiros-pontos-regras";
 
 const SolicitarResgateSchema = z.object({
   premioId: z.string().uuid("ID do prêmio inválido"),
@@ -84,21 +83,22 @@ export async function POST(req: NextRequest) {
 
     const { premioId } = validation.data;
 
-    // O prêmio precisa pertencer ao mesmo backoffice do parceiro.
+    // Buscar prêmio
+    const premio = await prisma.premio.findUnique({
+      where: { id: premioId },
+    });
+
+    if (!premio || !premio.ativo) {
+      return badRequest("Prêmio não encontrado ou indisponível");
+    }
+
+    // Buscar ciclo vigente do backoffice do parceiro
     const parceiro = await prisma.parceiro.findUnique({
       where: { id: parceiroId },
       select: { backofficeId: true },
     });
 
     const backofficeId = parceiro?.backofficeId ?? undefined;
-
-    const premio = await prisma.premio.findFirst({
-      where: criarEscopoPremio(premioId, backofficeId),
-    });
-
-    if (!premio) {
-      return badRequest("Prêmio não encontrado ou indisponível");
-    }
     const now = new Date();
 
     const cicloVigente = await prisma.cicloPontos.findFirst({

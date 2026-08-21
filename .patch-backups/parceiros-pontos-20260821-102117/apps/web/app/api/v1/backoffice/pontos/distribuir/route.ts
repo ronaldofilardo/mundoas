@@ -9,7 +9,6 @@ import { rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@asa/database";
 import { calcularPontosDeProducao, obterCicloVigente } from "@/lib/pontos-utils";
 import { Decimal } from "@prisma/client/runtime/library";
-import { obterValorBasePontos, validarValorBasePontos, serializarValorMonetario } from "@/lib/parceiros-pontos-regras";
 
 export async function POST(req: NextRequest) {
   // Rate limiting: 10 requisições por minuto
@@ -100,14 +99,14 @@ export async function POST(req: NextRequest) {
     }
 
 // Calcular pontos baseado no total pago e configuração vigente
-    const valorBasePontos = obterValorBasePontos(producao.valorTotal);
+    const valorComissao = Number(producao.valorComissao) || 0;
 
-    if (!validarValorBasePontos(valorBasePontos)) {
-      return badRequest("Valor pago deve ser maior que zero para gerar pontos");
+    if (valorComissao <= 0) {
+      return badRequest("Valor de comissão deve ser maior que zero para gerar pontos");
     }
 
     const pontos = await calcularPontosDeProducao(
-      valorBasePontos,
+      valorComissao,
       dataProducao,
       backofficeId,
     );
@@ -241,7 +240,7 @@ export async function GET(req: NextRequest) {
       let erroCalculo = null;
       try {
         pontosPotenciais = await calcularPontosDeProducao(
-          producao.valorTotal ?? 0,
+          producao.valorComissao,
           producao.dataReferencia,
           backofficeId,
         );
@@ -256,7 +255,6 @@ export async function GET(req: NextRequest) {
         procedimento: producao.procedimento,
         paciente: producao.paciente,
         valorComissao: producao.valorComissao?.toString() || "0",
-        valorTotal: serializarValorMonetario(producao.valorTotal),
         parceiro: producao.parceiro,
         pontosDistribuidos: pontos ? {
           id: pontos.id,
