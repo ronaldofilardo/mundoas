@@ -21,7 +21,7 @@ interface RowData {
   dataRef: Date | null;
   dataPag: Date | null;
   formaPag: string;
-  totalPago: number | null;
+  valorComissao: number | null;
   paciente: string;
   procedimento: string;
   tipoProc: string;
@@ -37,12 +37,12 @@ interface ProcessedRow {
   gestorId: string | null;
   consultorPfId: string | null;
   dataRef: Date;
-  totalPago: number;
+  valorComissao: number;
   procedimento: {
     dataReferencia: Date;
     dataPagamento: Date;
     formaPagamento: string;
-    totalPago: number;
+    valorComissao: number;
     paciente: string;
     procedimento: string;
     cpf: string;
@@ -75,6 +75,14 @@ export async function processUploadPlanilha(
     "Usuário da conta",
   ] as const;
 
+  const COLUNAS_TOTAL_PAGO_ALTERNATIVAS = [
+    "Total Pago",
+    "Total Pagto",
+    "Valor Total",
+    "Total Pagamento",
+    "TotalPago",
+  ];
+
   const allRows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", range: 0 });
 
   // Cabeçalhos estão sempre na linha 2 (índice 1), pois a linha 1 contém "REceita bruta analitica"
@@ -83,7 +91,17 @@ export async function processUploadPlanilha(
   const headerRow = allRows[startRow];
   const dataRows = allRows.slice(startRow + 1);
 
-  const missingCols = COLUNAS_PLANILHA.filter((col) => !headerRow.includes(col));
+  // Encontrar qual nome de coluna "Total Pago" está presente na planilha
+  const totalPagoCol = COLUNAS_TOTAL_PAGO_ALTERNATIVAS.find((col) => headerRow.includes(col));
+  if (!totalPagoCol) {
+    throw new Error(`Coluna "Total Pago" não encontrada. Nomes aceitos: ${COLUNAS_TOTAL_PAGO_ALTERNATIVAS.join(", ")}`);
+  }
+
+  const colunasObrigatoriasComTotalPago = COLUNAS_PLANILHA.map((col) =>
+    col === "Total Pago" ? totalPagoCol : col
+  );
+
+  const missingCols = colunasObrigatoriasComTotalPago.filter((col) => !headerRow.includes(col));
   if (missingCols.length > 0) {
     throw new Error(`Colunas faltando: ${missingCols.join(", ")}`);
   }
@@ -124,7 +142,7 @@ export async function processUploadPlanilha(
     const dataRef = parseDate(row["Data de Referência"]);
     const dataPag = parseDate(row["Data do Pagamento"]);
     const formaPag = String(row["Forma de Pagamento"] || "").trim();
-    const totalPago = parseNumber(row["Total Pago"]);
+    const valorComissao = parseNumber(row[totalPagoCol]);
     const paciente = String(row["Paciente"] || "").trim();
     const procedimento = String(row["Procedimento"] || "").trim();
     
@@ -136,7 +154,7 @@ export async function processUploadPlanilha(
     const usuarioDaConta = String(row["Usuário da conta"] || "").trim();
 
     const todosVazios = 
-      (!dataRef || !dataPag) && !formaPag && !totalPago &&
+      (!dataRef || !dataPag) && !formaPag && !valorComissao &&
       !paciente && !procedimento && !cpfRaw && !tipoProc && !unidade && !usuarioDaConta;
     
     if (todosVazios) {
@@ -144,7 +162,7 @@ export async function processUploadPlanilha(
       continue;
     }
 
-    if (!dataRef || !dataPag || !totalPago || !cpf || cpf.length !== 11 || cpf === "00000000000") {
+    if (!dataRef || !dataPag || !valorComissao || !cpf || cpf.length !== 11 || cpf === "00000000000") {
       rejectedRows.push(rowIndex);
       continue;
     }
@@ -155,7 +173,7 @@ export async function processUploadPlanilha(
       continue;
     }
 
-    if (totalPago < 0) {
+    if (valorComissao < 0) {
       rejectedRows.push(rowIndex);
       continue;
     }
@@ -174,7 +192,7 @@ export async function processUploadPlanilha(
       dataRef,
       dataPag,
       formaPag,
-      totalPago,
+      valorComissao,
       paciente,
       procedimento,
       tipoProc,
@@ -286,7 +304,7 @@ export async function processUploadPlanilha(
         vendasPorComercialMes[comercialId] = {};
       }
       vendasPorComercialMes[comercialId][mesRef] =
-        (vendasPorComercialMes[comercialId][mesRef] || 0) + row.totalPago!;
+        (vendasPorComercialMes[comercialId][mesRef] || 0) + row.valorComissao!;
     } else {
       linhasSemComercial++;
     }
@@ -295,7 +313,7 @@ export async function processUploadPlanilha(
       dataReferencia: row.dataRef,
       dataPagamento: row.dataPag,
       formaPagamento: row.formaPag,
-      totalPago: Number(row.totalPago),
+      valorComissao: Number(row.valorComissao),
       paciente: row.paciente,
       procedimento: row.procedimento,
       cpf: row.cpf,
@@ -412,7 +430,7 @@ async function processarPontosBatch(procedimentos: any[], backofficeId: string) 
     if (!configId) continue;
 
     const pontos = await calcularPontosDeProducao(
-      p.totalPago,
+      p.valorComissao,
       p.tipoProcedimento,
       p.procedimento,
     );

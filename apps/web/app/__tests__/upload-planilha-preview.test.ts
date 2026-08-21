@@ -42,7 +42,7 @@ describe('UploadPlanilhaPreview - Estrutura de Dados', () => {
           procedimento: 'Consulta',
           cpf: '12345678901',
           tipoProcedimento: 'ROTINA',
-          totalPago: 150,
+          valorComissao: 150,
           unidade: 'Matriz',
           usuarioDaConta: 'comercial1',
           valorComissao: 0,

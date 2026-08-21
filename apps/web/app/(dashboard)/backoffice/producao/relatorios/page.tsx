@@ -2,207 +2,165 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { useRelatorioComissoes } from "./hooks/use-relatorio-comissoes";
-import { formatBRL, formatMonth, formatFuncao } from "./utils";
-import { FiltrosRelatorio } from "./components/filtros-relatorio";
+import { useProducaoRelatorio } from "./hooks/use-producao-relatorio";
+import { formatBRL, formatMonth } from "./utils";
+import { FiltrosProducaoRelatorio } from "./components/filtros-producao-relatorio";
 
-export default function RelatorioComissoesPage() {
+export default function RelatorioProducaoPage() {
   const {
-    comissoes,
-    resumo,
-    tipo,
-    setTipo,
-    loading,
-    comerciais,
-    consultores,
+    procedimentos,
+    parceiros,
     mesesDisponiveis,
-    fetchRelatorio,
-  } = useRelatorioComissoes();
+    consultoresPf,
+    comerciais,
+    resumo,
+    loading,
+    pagination,
+    fetchProducao,
+  } = useProducaoRelatorio();
 
-  const [inicio, setInicio] = useState("");
-  const [fim, setFim] = useState("");
-  const [comercialId, setComercialId] = useState("");
-  const [funcao, setFuncao] = useState("");
-  const [reprocessando, setReprocessando] = useState(false);
-  const [procedimentosSemComercial, setProcedimentosSemComercial] = useState<{count: number; totalVendas: number} | null>(null);
+  const [mesReferencia, setMesReferencia] = useState("");
+  const [parceiroId, setParceiroId] = useState("");
+  const [consultorPfId, setConsultorPfId] = useState("");
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const funcoesDisponiveis = useMemo(() =>
-    Array.from(new Set(comerciais.map(c => c.funcao!).filter(Boolean))).sort(),
-    [comerciais]
-  );
+  const filteredProcedimentos = useMemo(() => {
+    return (procedimentos ?? []).filter((p) => {
+      if (search) {
+        const s = search.toLowerCase();
+        return (
+          p.paciente.toLowerCase().includes(s) ||
+          p.procedimento.toLowerCase().includes(s) ||
+          p.cpf.includes(s) ||
+          p.unidade.toLowerCase().includes(s) ||
+          p.formaPagamento.toLowerCase().includes(s) ||
+          (p.comercial?.nome || "").toLowerCase().includes(s) ||
+          (p.consultorPf?.nome || "").toLowerCase().includes(s)
+        );
+      }
+      if (consultorPfId && p.consultorPf?.id !== consultorPfId) {
+        return false;
+      }
+      return true;
+    });
+  }, [procedimentos, search, consultorPfId]);
 
   async function handleBuscar() {
-    if (!inicio || !fim) {
-      toast.error("Selecione o período inicial e final");
-      return;
-    }
-    await fetchRelatorio({ inicio, fim, comercialId, funcao, tipo });
+    await fetchProducao({
+      mesReferencia: mesReferencia || undefined,
+      parceiroId: parceiroId || undefined,
+      consultorPfId: consultorPfId || undefined,
+      page: currentPage,
+    });
   }
 
   function handleExportarCSV() {
-    const isConsultor = tipo === "consultor-pf";
-    const headers = isConsultor
-      ? ["Mês", "Consultor PF", "CPF", "Produção", "Comissão", "Status", "Pagamento"]
-      : ["Mês", "Comercial", "Função", "Vendas", "Comissão", "Status", "Pagamento"];
-    const rows = comissoes.map((c) => {
-      if (isConsultor) {
-        return [
-          c.mesReferencia,
-          c.consultorPf?.nome || "-",
-          c.consultorPf?.cpf || "-",
-          (c.valorProducao || 0).toFixed(2),
-          c.valorComissao.toFixed(2),
-          c.status,
-          c.dataPagamento || "-",
-        ];
-      }
-      return [
-        c.mesReferencia,
-        c.comercial?.nome || "-",
-        c.comercial?.funcao || "-",
-        (c.valorVendas || 0).toFixed(2),
-        c.valorComissao.toFixed(2),
-        c.status,
-        c.dataPagamento || "-",
-      ];
-    });
+    const headers = [
+      "Data Referência",
+      "Paciente",
+      "CPF",
+      "Procedimento",
+      "Valor Total",
+      "Comissão",
+      "Forma Pagamento",
+      "Unidade",
+      "Comercial",
+      "Consultor PF",
+      "Parceiro",
+      "Mês Referência",
+      "Arquivo Upload",
+    ];
+    const rows = filteredProcedimentos.map((p) => [
+      new Date(p.dataReferencia).toLocaleDateString("pt-BR"),
+      p.paciente,
+      p.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"),
+      p.procedimento,
+      Number(p.valorTotal || 0).toFixed(2),
+      Number(p.valorComissao).toFixed(2),
+      p.formaPagamento,
+      p.unidade,
+      p.comercial?.nome || "-",
+      p.consultorPf?.nome || "-",
+      p.parceiro?.nome || "Sem vínculo",
+      p.upload?.mesReferencia ? formatMonth(p.upload.mesReferencia) : "-",
+      p.upload?.nomeArquivo || "-",
+    ]);
     const csv = [headers, ...rows].map((row) => row.join(";")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `relatorio-comissoes-${tipo}-${inicio}-a-${fim}.csv`;
+    link.download = `relatorio-producao-${mesReferencia || "todos"}-${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
     toast.success("Relatório exportado!");
   }
 
-  async function handleVerificarSemComercial() {
-    if (!inicio) {
-      toast.error("Selecione o mês de referência");
-      return;
-    }
-    try {
-      const res = await fetch(`/api/v1/backoffice/reprocessar-comissoes?mes=${inicio}`);
-      const data = await res.json();
-      setProcedimentosSemComercial({
-        count: data.procedimentosSemComercial,
-        totalVendas: data.totalVendasSemComissional,
-      });
-      if (data.procedimentosSemComercial > 0) {
-        toast.info(`${data.procedimentosSemComercial} procedimento(s) sem comercial`);
-      } else {
-        toast.success("Todos os procedimentos já possuem comercial!");
-      }
-    } catch {
-      toast.error("Erro ao verificar procedimentos");
-    }
+  function formatCpf(cpf: string) {
+    if (!cpf || cpf.length < 11) return cpf || "-";
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
   }
 
-  async function handleReprocessar() {
-    if (!comercialId || !inicio) {
-      toast.error("Selecione comercial e mês");
-      return;
-    }
-    setReprocessando(true);
-    try {
-      const res = await fetch("/api/v1/backoffice/reprocessar-comissoes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comercialId, mesReferencia: inicio }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        toast.error(err.error || "Erro ao reprocessar");
-        return;
-      }
-      const data = await res.json();
-      toast.success(`${data.procedimentosVinculados} procedimentos vinculados!`);
-      setProcedimentosSemComercial(null);
-      handleBuscar();
-    } catch {
-      toast.error("Erro ao reprocessar");
-    } finally {
-      setReprocessando(false);
-    }
+  function formatDate(dateStr: string) {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
   }
-
-  const isConsultor = tipo === "consultor-pf";
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">📊 Relatório de Comissões</h1>
+        <h1 className="text-2xl font-bold text-gray-900">📊 Relatório de Produção</h1>
         <p className="text-gray-500 text-sm mt-1">
-          Acompanhe as comissões pagas e calculadas por período
+          Dados baseados na Lista de Produção (procedimentos importados via upload)
         </p>
       </div>
 
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => { setTipo("comercial"); setFuncao(""); setComercialId(""); }}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-smooth ${
-            !isConsultor ? "bg-primary-600 text-white shadow-sm" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-          }`}
-        >
-          🧑‍💼 Comerciais
-        </button>
-        <button
-          onClick={() => { setTipo("consultor-pf"); setFuncao(""); setComercialId(""); }}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-smooth ${
-            isConsultor ? "bg-primary-600 text-white shadow-sm" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-          }`}
-        >
-          🩺 Consultores PF
-        </button>
-      </div>
-
-      <FiltrosRelatorio
-        inicio={inicio}
-        fim={fim}
-        comercialId={comercialId}
-        funcao={funcao}
+      <FiltrosProducaoRelatorio
+        mesReferencia={mesReferencia}
+        parceiroId={parceiroId}
+        consultorPfId={consultorPfId}
+        search={search}
         mesesDisponiveis={mesesDisponiveis}
-        comerciais={comerciais}
-        funcoesDisponiveis={funcoesDisponiveis}
-        onInicioChange={setInicio}
-        onFimChange={setFim}
-        onComercialIdChange={setComercialId}
-        onFuncaoChange={setFuncao}
+        parceiros={parceiros}
+        consultoresPf={consultoresPf}
+        onMesChange={setMesReferencia}
+        onParceiroChange={setParceiroId}
+        onConsultorPfChange={setConsultorPfId}
+        onSearchChange={setSearch}
         onBuscar={handleBuscar}
         onExportarCSV={handleExportarCSV}
         loading={loading}
-        showFuncao={!isConsultor}
       />
 
       {loading ? (
         <div className="text-center py-12 text-gray-400">Carregando...</div>
       ) : resumo ? (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="card">
-              <h3 className="text-sm text-gray-600">{isConsultor ? "Total Produção" : "Total Vendas"}</h3>
-              <p className="text-2xl font-bold text-green-600">
-                {formatBRL(isConsultor ? (resumo.totalGeral.totalProducao || 0) : (resumo.totalGeral.totalVendas || 0))}
+              <h3 className="text-sm text-gray-600">Total Procedimentos</h3>
+              <p className="text-2xl font-bold text-gray-900">{resumo.totalProcedimentos}</p>
+            </div>
+            <div className="card">
+              <h3 className="text-sm text-gray-600">Total Valor (R$)</h3>
+              <p className="text-2xl font-bold text-green-600">{formatBRL(resumo.totalValorTotal)}</p>
+            </div>
+            <div className="card">
+              <h3 className="text-sm text-gray-600">Total Comissões (R$)</h3>
+              <p className="text-2xl font-bold text-blue-600">{formatBRL(resumo.totalComissao)}</p>
+            </div>
+            <div className="card">
+              <h3 className="text-sm text-gray-600">Méd. Comissão/Proc.</h3>
+              <p className="text-2xl font-bold text-purple-600">
+                {resumo.totalProcedimentos > 0
+                  ? formatBRL(resumo.totalComissao / resumo.totalProcedimentos)
+                  : formatBRL(0)}
               </p>
-              {isConsultor && resumo.totalGeral.totalProducaoCalculada !== undefined && (
-                <p className={`text-xs mt-1 ${Math.abs((resumo.totalGeral.totalProducao || 0) - (resumo.totalGeral.totalProducaoCalculada || 0)) > 0.01 ? "text-red-600" : "text-gray-500"}`}>
-                  Calculado: {formatBRL(resumo.totalGeral.totalProducaoCalculada || 0)}
-                </p>
-              )}
-            </div>
-            <div className="card">
-              <h3 className="text-sm text-gray-600">Total Comissões</h3>
-              <p className="text-2xl font-bold text-blue-600">{formatBRL(resumo.totalGeral.totalComissao)}</p>
-            </div>
-            <div className="card">
-              <h3 className="text-sm text-gray-600">Quantidade</h3>
-              <p className="text-2xl font-bold text-gray-900">{resumo.totalGeral.quantidade}</p>
-              {isConsultor && (resumo.totalGeral.totalDivergencias || 0) > 0 && (
-                <p className="text-xs mt-1 text-red-600 font-medium">
-                  ⚠️ {resumo.totalGeral.totalDivergencias} divergência(s)
-                </p>
-              )}
             </div>
           </div>
 
@@ -213,20 +171,18 @@ export default function RelatorioComissoesPage() {
                 <thead>
                   <tr className="border-b bg-gray-50">
                     <th className="text-left p-2">Mês</th>
-                    <th className="text-right p-2">{isConsultor ? "Produção" : "Vendas"}</th>
-                    <th className="text-right p-2">Comissões</th>
-                    <th className="text-right p-2">Qtd</th>
+                    <th className="text-right p-2">Qtd. Procedimentos</th>
+                    <th className="text-right p-2">Total Valor</th>
+                    <th className="text-right p-2">Total Comissões</th>
                   </tr>
                 </thead>
                 <tbody>
                   {resumo.porMes.map((m) => (
                     <tr key={m.mes} className="border-b">
                       <td className="p-2 font-medium">{formatMonth(m.mes)}</td>
-                      <td className="p-2 text-right text-green-600">
-                        {formatBRL(isConsultor ? (m.totalProducao || 0) : (m.totalVendas || 0))}
-                      </td>
+                      <td className="p-2 text-right">{m.qtdProcedimentos}</td>
+                      <td className="p-2 text-right text-green-600">{formatBRL(m.totalValorTotal)}</td>
                       <td className="p-2 text-right text-blue-600">{formatBRL(m.totalComissao)}</td>
-                      <td className="p-2 text-right">{m.quantidade}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -234,151 +190,152 @@ export default function RelatorioComissoesPage() {
             </div>
           </div>
 
-          {!isConsultor && resumo.porFuncao && (
-            <div className="card">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Resumo por Função</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b bg-gray-50">
-                      <th className="text-left p-2">Função</th>
-                      <th className="text-right p-2">Vendas</th>
-                      <th className="text-right p-2">Comissões</th>
-                      <th className="text-right p-2">Qtd</th>
-                      <th className="text-right p-2">Comerciais</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {resumo.porFuncao.map((f) => (
-                      <tr key={f.funcao || "-"} className="border-b">
-                        <td className="p-2 font-medium">{formatFuncao(f.funcao || undefined)}</td>
-                        <td className="p-2 text-right text-green-600">{formatBRL(f.totalVendas)}</td>
-                        <td className="p-2 text-right text-blue-600">{formatBRL(f.totalComissao)}</td>
-                        <td className="p-2 text-right">{f.quantidade}</td>
-                        <td className="p-2 text-right">{f.comerciaisCount}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {isConsultor && (
-            <div className="card">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Produção por consultor/mês</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b bg-gray-50">
-                      <th className="text-left p-2">Consultor PF</th>
-                      <th className="text-left p-2">CPF</th>
-                      <th className="text-left p-2">Mês</th>
-                      <th className="text-right p-2">Produção (Comissão)</th>
-                      <th className="text-right p-2">Produção Calculada</th>
-                      <th className="text-center p-2">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {comissoes.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                          Nenhuma produção encontrada.
-                        </td>
-                      </tr>
-                    ) : (
-                      comissoes.map((c) => {
-                        const valorProducao = c.valorProducao || 0;
-                        const valorCalculado = c.valorProducaoCalculado ?? valorProducao;
-                        const divergente = c.divergente === true;
-                        return (
-                          <tr key={c.id} className="border-b hover:bg-gray-50">
-                            <td className="p-2 font-medium">{c.consultorPf?.nome || "-"}</td>
-                            <td className="p-2">{c.consultorPf?.cpf || "-"}</td>
-                            <td className="p-2">{formatMonth(c.mesReferencia)}</td>
-                            <td className="p-2 text-right text-green-600">{formatBRL(valorProducao)}</td>
-                            <td className={`p-2 text-right ${divergente ? "text-red-600 font-semibold" : "text-gray-700"}`}>
-                              {formatBRL(valorCalculado)}
-                            </td>
-                            <td className="p-2 text-center">
-                              {divergente ? (
-                                <span
-                                  title={`Divergência de ${formatBRL(Math.abs(valorProducao - valorCalculado))} entre a produção gravada e a soma dos procedimentos.`}
-                                  className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800"
-                                >
-                                  ⚠️ Divergente
-                                </span>
-                              ) : (
-                                <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
-                                  ✓ OK
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Comissões Detalhadas</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Resumo por Comercial</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-gray-50">
-                    <th className="text-left p-2">Mês</th>
-                    {isConsultor ? (
-                      <>
-                        <th className="text-left p-2">Consultor PF</th>
-                        <th className="text-left p-2">CPF</th>
-                      </>
-                    ) : (
-                      <>
-                        <th className="text-left p-2">Comercial</th>
-                        <th className="text-left p-2">Função</th>
-                      </>
-                    )}
-                    <th className="text-right p-2">{isConsultor ? "Produção" : "Vendas"}</th>
-                    <th className="text-right p-2">Comissão</th>
-                    <th className="text-left p-2">Status</th>
+                    <th className="text-left p-2">Comercial</th>
+                    <th className="text-left p-2">Função</th>
+                    <th className="text-right p-2">Qtd. Procedimentos</th>
+                    <th className="text-right p-2">Total Valor</th>
+                    <th className="text-right p-2">Total Comissões</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {comissoes.length === 0 ? (
+                  {resumo.porComercial.map((c) => (
+                    <tr key={c.comercialId} className="border-b">
+                      <td className="p-2 font-medium">{c.comercialNome}</td>
+                      <td className="p-2 text-gray-600">{c.funcao?.replace(/_/g, " ") || "-"}</td>
+                      <td className="p-2 text-right">{c.qtdProcedimentos}</td>
+                      <td className="p-2 text-right text-green-600">{formatBRL(c.totalValorTotal)}</td>
+                      <td className="p-2 text-right text-blue-600">{formatBRL(c.totalComissao)}</td>
+                    </tr>
+                  ))}
+                  {resumo.porComercial.length === 0 && (
                     <tr>
-                      <td colSpan={isConsultor ? 6 : 6} className="px-6 py-8 text-center text-gray-500">
-                        Nenhuma comissão encontrada.
-                      </td>
+                      <td colSpan={5} className="p-8 text-center text-gray-500">Nenhum comercial encontrado</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Resumo por Parceiro</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-gray-50">
+                    <th className="text-left p-2">Parceiro</th>
+                    <th className="text-right p-2">Qtd. Procedimentos</th>
+                    <th className="text-right p-2">Total Valor</th>
+                    <th className="text-right p-2">Total Comissões</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {resumo.porParceiro.map((p) => (
+                    <tr key={p.parceiroId} className="border-b">
+                      <td className="p-2 font-medium">{p.parceiroNome}</td>
+                      <td className="p-2 text-right">{p.qtdProcedimentos}</td>
+                      <td className="p-2 text-right text-green-600">{formatBRL(p.totalValorTotal)}</td>
+                      <td className="p-2 text-right text-blue-600">{formatBRL(p.totalComissao)}</td>
+                    </tr>
+                  ))}
+                  {resumo.porParceiro.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="p-8 text-center text-gray-500">Nenhum parceiro encontrado</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Resumo por Consultor PF</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-gray-50">
+                    <th className="text-left p-2">Consultor PF</th>
+                    <th className="text-right p-2">Qtd. Procedimentos</th>
+                    <th className="text-right p-2">Total Valor</th>
+                    <th className="text-right p-2">Total Comissões</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {resumo.porConsultorPf.map((c) => (
+                    <tr key={c.consultorPfId} className="border-b">
+                      <td className="p-2 font-medium">{c.consultorPfNome}</td>
+                      <td className="p-2 text-right">{c.qtdProcedimentos}</td>
+                      <td className="p-2 text-right text-green-600">{formatBRL(c.totalValorTotal)}</td>
+                      <td className="p-2 text-right text-blue-600">{formatBRL(c.totalComissao)}</td>
+                    </tr>
+                  ))}
+                  {resumo.porConsultorPf.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="p-8 text-center text-gray-500">Nenhum consultor PF encontrado</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Procedimentos Detalhados</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b bg-gray-50">
+                    <th className="text-left p-2">Data Ref.</th>
+                    <th className="text-left p-2">Paciente</th>
+                    <th className="text-left p-2">CPF</th>
+                    <th className="text-left p-2">Procedimento</th>
+                    <th className="text-right p-2">Valor Total</th>
+                    <th className="text-right p-2">Comissão</th>
+                    <th className="text-left p-2">Forma Pag.</th>
+                    <th className="text-left p-2">Unidade</th>
+                    <th className="text-left p-2">Comercial</th>
+                    <th className="text-left p-2">Consultor PF</th>
+                    <th className="text-left p-2">Parceiro</th>
+                    <th className="text-left p-2">Mês Ref.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredProcedimentos.length === 0 ? (
+                    <tr>
+                      <td colSpan={12} className="p-8 text-center text-gray-500">Nenhum procedimento encontrado</td>
                     </tr>
                   ) : (
-                    comissoes.map((c) => (
-                      <tr key={c.id} className="border-b hover:bg-gray-50">
-                        <td className="p-2">{formatMonth(c.mesReferencia)}</td>
-                        {isConsultor ? (
-                          <>
-                            <td className="p-2 font-medium">{c.consultorPf?.nome || "-"}</td>
-                            <td className="p-2">{c.consultorPf?.cpf || "-"}</td>
-                          </>
-                        ) : (
-                          <>
-                            <td className="p-2 font-medium">{c.comercial?.nome || "-"}</td>
-                            <td className="p-2">{formatFuncao(c.comercial?.funcao)}</td>
-                          </>
-                        )}
+                    filteredProcedimentos.map((p) => (
+                      <tr key={p.id} className="border-b hover:bg-gray-50">
+                        <td className="p-2 text-gray-600">{formatDate(p.dataReferencia)}</td>
+                        <td className="p-2 text-gray-900 font-medium">{p.paciente}</td>
+                        <td className="p-2 text-gray-600">{formatCpf(p.cpf)}</td>
+                        <td className="p-2 text-gray-600">{p.procedimento}</td>
                         <td className="p-2 text-right text-green-600">
-                          {formatBRL(isConsultor ? (c.valorProducao || 0) : (c.valorVendas || 0))}
+                          {formatBRL(Number(p.valorTotal || 0))}
                         </td>
-                        <td className="p-2 text-right text-blue-600 font-semibold">{formatBRL(c.valorComissao)}</td>
+                        <td className="p-2 text-right text-blue-600 font-medium">
+                          {formatBRL(Number(p.valorComissao))}
+                        </td>
+                        <td className="p-2 text-gray-600">{p.formaPagamento}</td>
+                        <td className="p-2 text-gray-600">{p.unidade}</td>
+                        <td className="p-2 text-gray-600">{p.comercial?.nome || "-"}</td>
+                        <td className="p-2 text-gray-600">{p.consultorPf?.nome || "-"}</td>
                         <td className="p-2">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            c.status === "PAGA" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                          }`}>
-                            {c.status}
-                          </span>
+                          {p.parceiro ? (
+                            <span className="text-blue-600">{p.parceiro.nome}</span>
+                          ) : (
+                            <span className="text-orange-500 text-xs">Sem vínculo</span>
+                          )}
+                        </td>
+                        <td className="p-2 text-gray-600">
+                          {p.upload?.mesReferencia ? formatMonth(p.upload.mesReferencia) : "-"}
                         </td>
                       </tr>
                     ))
@@ -386,11 +343,39 @@ export default function RelatorioComissoesPage() {
                 </tbody>
               </table>
             </div>
+
+            {pagination.totalPages > 1 && (
+              <div className="flex justify-center gap-2 mt-4">
+                <button
+                  onClick={() => {
+                    setCurrentPage((p) => Math.max(1, p - 1));
+                    handleBuscar();
+                  }}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 text-xs border rounded disabled:opacity-50"
+                >
+                  Anterior
+                </button>
+                <span className="text-xs text-gray-500 py-1">
+                  {currentPage} / {pagination.totalPages}
+                </span>
+                <button
+                  onClick={() => {
+                    setCurrentPage((p) => Math.min(pagination.totalPages, p + 1));
+                    handleBuscar();
+                  }}
+                  disabled={currentPage === pagination.totalPages}
+                  className="px-3 py-1 text-xs border rounded disabled:opacity-50"
+                >
+                  Próxima
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ) : (
         <div className="text-center py-12 text-gray-500">
-          Selecione um período e clique em "Buscar" para carregar o relatório
+          Selecione os filtros e clique em "Buscar" para carregar o relatório
         </div>
       )}
     </div>

@@ -152,7 +152,7 @@ describe('API - Parceiro Indicados', () => {
       expect(data.length).toBeGreaterThan(0);
     });
 
-    it('deve incluir estrutura correta do indicado', async () => {
+it('deve incluir estrutura correta do indicado', async () => {
       mockAuthAsParceiro(parceiroId);
       const response = await indicadosHandlers.GET(
         makeRequest('http://localhost/api/v1/parceiro/indicados'),
@@ -165,7 +165,6 @@ describe('API - Parceiro Indicados', () => {
       expect(indicado).toHaveProperty('cpf');
       expect(indicado).toHaveProperty('telefone');
       expect(indicado).toHaveProperty('status');
-      expect(indicado).toHaveProperty('totalProcedimentos');
       expect(indicado).toHaveProperty('createdAt');
     });
 

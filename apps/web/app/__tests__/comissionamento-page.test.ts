@@ -159,6 +159,6 @@ describe("ComissionamentoPage - cabeçalho estático (validação por source)", 
   });
 
   it("renderiza a descrição do módulo", () => {
-    expect(source).toMatch(/Gerencie os comerciais e as regras de comiss\u00e3o/);
+    expect(source).toMatch(/Gerencie as regras de comissão e visualize as equipes/);
   });
 });

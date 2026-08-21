@@ -17,7 +17,6 @@ describe("producao-backoffice - buildProducaoWhere", () => {
       { upload: { backofficeId: "bo-1" } },
       { parceiro: { backofficeId: "bo-1" } },
     ]);
-    expect(where.statusComissao).toBeUndefined();
     expect(where.parceiroId).toBeUndefined();
   });
 
@@ -49,20 +48,6 @@ describe("producao-backoffice - buildProducaoWhere", () => {
     expect(range.lt.toISOString()).toBe("2027-01-01T00:00:00.000Z");
   });
 
-  it("ignora status 'TODOS'", () => {
-    const where = buildProducaoWhere({ backofficeId: "bo-1", ano: 2026, status: "TODOS" });
-    expect(where.statusComissao).toBeUndefined();
-  });
-
-  it("filtra por status quando diferente de TODOS", () => {
-    const where = buildProducaoWhere({
-      backofficeId: "bo-1",
-      ano: 2026,
-      status: "PAGA",
-    });
-    expect(where.statusComissao).toBe("PAGA");
-  });
-
   it("aplica filtro de parceiroId sem remover o escopo de backoffice", () => {
     const where = buildProducaoWhere({
       backofficeId: "bo-1",
@@ -76,19 +61,17 @@ describe("producao-backoffice - buildProducaoWhere", () => {
     ]);
   });
 
-  it("combina todos os filtros simultaneamente", () => {
+  it("combina filtros simultaneamente", () => {
     const where = buildProducaoWhere({
       backofficeId: "bo-1",
       ano: 2026,
       mes: 3,
-      status: "CALCULADA",
       parceiroId: "parceiro-Y",
     });
     expect(where.OR).toEqual([
       { upload: { backofficeId: "bo-1" } },
       { parceiro: { backofficeId: "bo-1" } },
     ]);
-    expect(where.statusComissao).toBe("CALCULADA");
     expect(where.parceiroId).toBe("parceiro-Y");
     const range = where.dataReferencia as { gte: Date; lt: Date };
     expect(range.gte.toISOString()).toBe("2026-03-01T00:00:00.000Z");
@@ -97,15 +80,13 @@ describe("producao-backoffice - buildProducaoWhere", () => {
 });
 
 describe("producao-backoffice - tipo ProcedimentoProducao", () => {
-  it("campos esperados são number para totalPago e Date para dataReferencia", () => {
+  it("campos esperados são Date para dataReferencia", () => {
     const proc: ProcedimentoProducao = {
       id: "p1",
       dataReferencia: new Date("2026-07-15T10:00:00Z"),
-      totalPago: 150.5,
       consultorPfId: "c1",
       parceiroId: null,
     };
-    expect(proc.totalPago).toBe(150.5);
     expect(proc.dataReferencia).toBeInstanceOf(Date);
     expect(proc.consultorPfId).toBe("c1");
     expect(proc.parceiroId).toBeNull();

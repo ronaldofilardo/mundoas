@@ -12,7 +12,7 @@ describe("upload-planilha-preview - correções desta conversa", () => {
   describe("auto-detecção de mesReferencia (linha ~140)", () => {
     it("deve extrair mesReferencia de linha VALIDO com dataReferencia", () => {
       const previewRows = [
-        { status: "VALIDO", dataReferencia: "2024-03-15", paciente: "João", procedimento: "Consulta", totalPago: 100 },
+        { status: "VALIDO", dataReferencia: "2024-03-15", paciente: "João", procedimento: "Consulta", valorComissao: 100 },
       ];
       const linhaComData = previewRows.find(
         (r) => r.dataReferencia && /^\d{4}-\d{2}/.test(r.dataReferencia)
@@ -22,7 +22,7 @@ describe("upload-planilha-preview - correções desta conversa", () => {
 
     it("deve extrair mesReferencia de linha ORFAO com dataReferencia (fallback)", () => {
       const previewRows = [
-        { status: "ORFAO", dataReferencia: "2024-05-20", paciente: "Maria", procedimento: "Exame", totalPago: 50 },
+        { status: "ORFAO", dataReferencia: "2024-05-20", paciente: "Maria", procedimento: "Exame", valorComissao: 50 },
       ];
       const linhaComData = previewRows.find(
         (r) => r.dataReferencia && /^\d{4}-\d{2}/.test(r.dataReferencia)
@@ -32,7 +32,7 @@ describe("upload-planilha-preview - correções desta conversa", () => {
 
     it("deve extrair mesReferencia de linha REJEITADO com dataReferencia válida (fallback)", () => {
       const previewRows = [
-        { status: "REJEITADO", dataReferencia: "2024-07-10", paciente: "", procedimento: "Exame", totalPago: NaN },
+        { status: "REJEITADO", dataReferencia: "2024-07-10", paciente: "", procedimento: "Exame", valorComissao: NaN },
       ];
       const linhaComData = previewRows.find(
         (r) => r.dataReferencia && /^\d{4}-\d{2}/.test(r.dataReferencia)
@@ -42,8 +42,8 @@ describe("upload-planilha-preview - correções desta conversa", () => {
 
     it("deve priorizar VALIDO mas aceitar ORFAO/REJEITADO como fallback", () => {
       const previewRows = [
-        { status: "REJEITADO", dataReferencia: "2024-01-01", paciente: "", procedimento: "X", totalPago: NaN },
-        { status: "VALIDO", dataReferencia: "2024-03-15", paciente: "João", procedimento: "Consulta", totalPago: 100 },
+        { status: "REJEITADO", dataReferencia: "2024-01-01", paciente: "", procedimento: "X", valorComissao: NaN },
+        { status: "VALIDO", dataReferencia: "2024-03-15", paciente: "João", procedimento: "Consulta", valorComissao: 100 },
       ];
       const primeiraValida = previewRows.find((r) => r.status === "VALIDO");
       const linhaComData = previewRows.find(
@@ -55,8 +55,8 @@ describe("upload-planilha-preview - correções desta conversa", () => {
 
     it("deve retornar undefined quando nenhuma linha tem dataReferencia válida", () => {
       const previewRows = [
-        { status: "REJEITADO", dataReferencia: "invalida", paciente: "", procedimento: "X", totalPago: NaN },
-        { status: "REJEITADO", dataReferencia: "", paciente: "", procedimento: "Y", totalPago: NaN },
+        { status: "REJEITADO", dataReferencia: "invalida", paciente: "", procedimento: "X", valorComissao: NaN },
+        { status: "REJEITADO", dataReferencia: "", paciente: "", procedimento: "Y", valorComissao: NaN },
       ];
       const linhaComData = previewRows.find(
         (r) => r.dataReferencia && /^\d{4}-\d{2}/.test(r.dataReferencia)

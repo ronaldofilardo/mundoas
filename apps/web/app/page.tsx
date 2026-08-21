@@ -10,7 +10,7 @@ export default function HomePage() {
             <span className="text-primary-600 font-black text-sm">AS</span>
           </div>
           <span className="text-white font-bold text-lg tracking-tight">
-            Acesso Saúde <span className="font-normal opacity-80">Aqui</span>
+            Acesso Saúde
           </span>
         </div>
         <Link
@@ -37,9 +37,7 @@ export default function HomePage() {
           </h1>
           <div className="border-l-4 border-primary-500 pl-4 mb-8">
             <p className="text-gray-200 text-lg leading-relaxed">
-              Plataforma de gestão de cupons, consultas e comissões.
-              <br />
-              Bem-vindo à rede Acesso Saúde Aqui.
+              Plataforma de gestão de pontos, metas e comissões do grupo ACB.
             </p>
           </div>
           <Link
@@ -79,16 +77,8 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="bg-primary-600 px-8 py-6">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <span className="text-primary-600 font-black text-xs">AS</span>
-            </div>
-            <span className="text-white font-semibold text-sm">
-              Acesso Saúde Aqui
-            </span>
-          </div>
-          <p className="text-primary-200 text-xs text-center">
+        <div className="max-w-5xl mx-auto flex flex-col items-center justify-center gap-3 text-center">
+          <p className="text-primary-200 text-xs">
             Plataforma de gestão interna · Acesso Saúde ©{" "}
             {new Date().getFullYear()}
           </p>

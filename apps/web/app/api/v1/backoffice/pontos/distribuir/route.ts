@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
             id: true,
             nome: true,
             cpf: true,
+            backofficeId: true,
           },
         },
         comercial: {
@@ -60,13 +61,8 @@ export async function POST(req: NextRequest) {
       return badRequest("Produção não encontrada ou não tem parceiro associado");
     }
 
-    // Verificar permissão: o comercial ou gestor deve pertencer a uma liderança deste backoffice
-    const pertenceAobackoffice = (
-      producao.comercial?.lideranca?.backofficeId === backofficeId ||
-      producao.gestor?.lideranca?.backofficeId === backofficeId
-    );
-
-    if (!pertenceAobackoffice) {
+    // Verificar permissão: o parceiro da produção deve pertencer a este backoffice
+    if (producao.parceiro?.backofficeId !== backofficeId) {
       return unauthorized();
     }
 
@@ -103,14 +99,14 @@ export async function POST(req: NextRequest) {
     }
 
 // Calcular pontos baseado no total pago e configuração vigente
-    const totalPago = Number(producao.totalPago) || 0;
-    
-    if (totalPago <= 0) {
-      return badRequest("Total pago deve ser maior que zero para gerar pontos");
+    const valorComissao = Number(producao.valorComissao) || 0;
+
+    if (valorComissao <= 0) {
+      return badRequest("Valor de comissão deve ser maior que zero para gerar pontos");
     }
 
     const pontos = await calcularPontosDeProducao(
-      totalPago,
+      valorComissao,
       dataProducao,
       backofficeId,
     );
@@ -189,20 +185,17 @@ export async function GET(req: NextRequest) {
       cicloNome = cicloVigente.nome;
     }
 
-// Buscar todas as lideranças deste backoffice
-    const liderancas = await prisma.equipe.findMany({
-      where: { backofficeId, tipo: "LIDERANCA" },
-      include: {
-        subordinados: { include: { parceiros: true } },
-        gestores: { include: { parceiros: true } }
-      }
+    // Buscar todos os parceiros diretamente vinculados a este backoffice
+    const parceiros = await prisma.parceiro.findMany({
+      where: { backofficeId, status: "ATIVO" },
+      select: {
+        id: true,
+        nome: true,
+        cpf: true,
+      },
     });
 
-    // Coletar todos os IDs de parceiros
-    const parceiroIds = [
-      ...liderancas.flatMap(l => l.subordinados.flatMap(c => c.parceiros.map(p => p.id))),
-      ...liderancas.flatMap(l => l.gestores.flatMap(g => g.parceiros.map(p => p.id)))
-    ];
+    const parceiroIds = parceiros.map(p => p.id);
 
     // Buscar todas as produções com estes parceiros
     const producoes = await prisma.procedimentoPF.findMany({
@@ -247,7 +240,7 @@ export async function GET(req: NextRequest) {
       let erroCalculo = null;
       try {
         pontosPotenciais = await calcularPontosDeProducao(
-          producao.totalPago,
+          producao.valorComissao,
           producao.dataReferencia,
           backofficeId,
         );
@@ -261,7 +254,7 @@ export async function GET(req: NextRequest) {
         dataReferencia: producao.dataReferencia.toISOString(),
         procedimento: producao.procedimento,
         paciente: producao.paciente,
-        totalPago: producao.totalPago?.toString() || "0",
+        valorComissao: producao.valorComissao?.toString() || "0",
         parceiro: producao.parceiro,
         pontosDistribuidos: pontos ? {
           id: pontos.id,

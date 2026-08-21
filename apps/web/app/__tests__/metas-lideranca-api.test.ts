@@ -89,7 +89,7 @@ describe("API - Lideranca Metas", () => {
     it("deve listar metas da lideranca", async () => {
       await prisma.metaEquipe.create({
         data: {
-          liderancaId,
+          equipeId: liderancaId,
           mesReferencia: "2026-07",
           valorMeta: 50000,
           valorAtingido: 12000,
@@ -97,7 +97,7 @@ describe("API - Lideranca Metas", () => {
       });
 
       const metas = await prisma.metaEquipe.findMany({
-        where: { liderancaId },
+        where: { equipeId: liderancaId },
         orderBy: { createdAt: "desc" },
       });
 
@@ -109,7 +109,7 @@ describe("API - Lideranca Metas", () => {
 
     it("deve retornar metas vazias quando nao existem", async () => {
       const metas = await prisma.metaEquipe.findMany({
-        where: { liderancaId: "00000000-0000-0000-0000-000000000000" },
+        where: { equipeId: "00000000-0000-0000-0000-000000000000" },
       });
 
       expect(metas.length).toBe(0);
@@ -119,7 +119,7 @@ describe("API - Lideranca Metas", () => {
   describe("POST /api/v1/lideranca/metas", () => {
     it("deve criar meta para lideranca", async () => {
       const existing = await prisma.metaEquipe.findFirst({
-        where: { liderancaId, mesReferencia: "2026-08" },
+        where: { equipeId: liderancaId, mesReferencia: "2026-08" },
       });
 
       const meta = existing
@@ -129,28 +129,28 @@ describe("API - Lideranca Metas", () => {
           })
         : await prisma.metaEquipe.create({
             data: {
-              liderancaId,
+              equipeId: liderancaId,
               mesReferencia: "2026-08",
               valorMeta: 60000,
             },
           });
 
       expect(meta.id).toBeDefined();
-      expect(meta.liderancaId).toBe(liderancaId);
+      expect(meta.equipeId).toBe(liderancaId);
       expect(Number(meta.valorMeta)).toBe(60000);
     });
 
     it("deve atualizar meta existente da lideranca (upsert)", async () => {
       await prisma.metaEquipe.create({
         data: {
-          liderancaId,
+          equipeId: liderancaId,
           mesReferencia: "2026-09",
           valorMeta: 40000,
         },
       });
 
       const existing = await prisma.metaEquipe.findFirst({
-        where: { liderancaId, mesReferencia: "2026-09" },
+        where: { equipeId: liderancaId, mesReferencia: "2026-09" },
       });
 
       expect(existing).toBeDefined();

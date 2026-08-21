@@ -131,7 +131,7 @@ export async function GET(req: NextRequest) {
       innerMap = new Map();
       realizadoPorConsultorMes.set(p.consultorPfId, innerMap);
     }
-    innerMap.set(mesKey, (innerMap.get(mesKey) ?? 0) + toNumber(p.totalPago));
+    innerMap.set(mesKey, (innerMap.get(mesKey) ?? 0) + toNumber(p.valorComissao));
   }
 
   const consultoresResumo: ConsultorResumo[] = consultoresPf.map((c) => {

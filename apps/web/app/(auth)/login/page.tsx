@@ -17,7 +17,6 @@ export default function LoginPage() {
     cpfParceiro: "",
     cpfIndicado: "",
     nomeIndicado: "",
-    telefoneIndicado: "",
   });
   const [indicarLoading, setIndicarLoading] = useState(false);
   const [indicadoCpfValidation, setIndicadoCpfValidation] = useState<
@@ -126,7 +125,6 @@ export default function LoginPage() {
         cpfParceiro: "",
         cpfIndicado: "",
         nomeIndicado: "",
-        telefoneIndicado: "",
       });
     } catch (e) {
       toast.error("Erro ao indicar cliente");
@@ -178,7 +176,6 @@ export default function LoginPage() {
           </div>
           <div>
             <span className="text-white font-bold text-lg">Acesso Saúde</span>
-            <span className="text-primary-200 text-sm ml-1">Aqui</span>
           </div>
         </div>
 
@@ -188,9 +185,7 @@ export default function LoginPage() {
             <br />e cuidar de você.
           </h2>
           <p className="text-primary-100 text-lg leading-relaxed">
-            Plataforma de gestão de cupons,
-            <br />
-            consultas e comissões da rede Acesso Saúde.
+            Plataforma de gestão de pontos, metas e comissões do grupo ACB.
           </p>
         </div>
 
@@ -213,12 +208,11 @@ export default function LoginPage() {
               <span className="text-primary-600 font-bold text-lg">
                 Acesso Saúde
               </span>
-              <span className="text-gray-400 text-sm ml-1">Aqui</span>
             </div>
           </div>
 
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            Bem-vindo de volta
+            Feliz Dia!
           </h1>
           <p className="text-gray-500 mb-8">
             Entre com suas credenciais para acessar
@@ -307,12 +301,12 @@ export default function LoginPage() {
               Indicar Cliente
             </button>
             <p className="text-center text-xs text-gray-400 mt-2">
-              Funcionários indicam clientes para receber comissões
+              Parceiros indicam clientes para receber pontos.
             </p>
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-8">
-            Acesso Saúde Aqui © {new Date().getFullYear()}
+            Plataforma de gestão interna · Acesso Saúde © {new Date().getFullYear()}
           </p>
         </div>
       </div>
@@ -334,8 +328,8 @@ export default function LoginPage() {
             </div>
 
             <p className="text-sm text-gray-500 mb-4">
-              Vincule um cliente ao seu CPF para receber comissões sobre os
-              procedimentos realizados.
+              Vincule um cliente ao seu CPF para receber pontos sobre os procedimentos
+              realizados.
             </p>
 
             <form onSubmit={handleIndicar} className="space-y-4">
@@ -421,24 +415,6 @@ export default function LoginPage() {
                     ✓ CPF disponível
                   </p>
                 )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Telefone (opcional)
-                </label>
-                <input
-                  type="text"
-                  value={indicarForm.telefoneIndicado}
-                  onChange={(e) =>
-                    setIndicarForm({
-                      ...indicarForm,
-                      telefoneIndicado: e.target.value,
-                    })
-                  }
-                  placeholder="(00) 00000-0000"
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus-ring"
-                />
               </div>
 
               <div className="flex gap-3 pt-2">

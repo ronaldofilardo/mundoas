@@ -10,7 +10,6 @@ interface Indicado {
   cpf: string;
   telefone: string | null;
   status: string;
-  totalProcedimentos: number;
   createdAt: string;
   desvinculadoEm: string | null;
 }
@@ -179,9 +178,6 @@ export default function ParceiroIndicados() {
               <div className="flex justify-between items-center pt-2 border-t">
                 <span className="text-xs text-gray-500">
                   Desde {formatDate(i.createdAt)}
-                </span>
-                <span className="text-sm font-medium text-primary-600">
-                  {i.totalProcedimentos} procedimentos
                 </span>
               </div>
             </div>

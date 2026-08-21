@@ -61,19 +61,16 @@ export async function POST(req: NextRequest) {
 
     const { valorPorPonto, tipoArredondamento } = validation.data;
 
-    // Encerrar configuração anterior se houver
-    const configAnterior = await prisma.configuracaoPontos.findFirst({
+    // Só pode haver um ciclo em andamento
+    const vigenteAtual = await prisma.configuracaoPontos.findFirst({
       where: {
         backofficeId,
         vigenteAte: null,
       },
     });
 
-    if (configAnterior) {
-      await prisma.configuracaoPontos.update({
-        where: { id: configAnterior.id },
-        data: { vigenteAte: new Date() },
-      });
+    if (vigenteAtual) {
+      return badRequest("Já existe um ciclo em andamento. Edite o vigente em vez de criar outro.");
     }
 
     // Criar nova configuração

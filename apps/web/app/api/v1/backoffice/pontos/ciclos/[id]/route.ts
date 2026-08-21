@@ -70,6 +70,10 @@ export async function PATCH(
       where: { id: cicloId },
       data: {
         status: novoStatus,
+        ...(novoStatus === "RESGATE_ABERTO" && {
+          // Se inicioResgateEm já está definido, mantém; senão usa now
+          inicioResgateEm: ciclo.inicioResgateEm ?? new Date(),
+        }),
         ...(novoStatus === "ENCERRADO" && {
           processadoExpiracaoEm: new Date(),
         }),

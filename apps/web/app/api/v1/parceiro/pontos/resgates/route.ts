@@ -92,21 +92,21 @@ export async function POST(req: NextRequest) {
       return badRequest("Prêmio não encontrado ou indisponível");
     }
 
-    // Buscar ciclo vigente do gestor do parceiro
+    // Buscar ciclo vigente do backoffice do parceiro
     const parceiro = await prisma.parceiro.findUnique({
       where: { id: parceiroId },
-      select: { 
-        comercial: { select: { lideranca: { select: { backofficeId: true } } } },
-        gestor: { select: { lideranca: { select: { backofficeId: true } } } }
-      },
+      select: { backofficeId: true },
     });
 
-    const backofficeId = (parceiro?.comercial?.lideranca?.backofficeId || parceiro?.gestor?.lideranca?.backofficeId) ?? undefined;
+    const backofficeId = parceiro?.backofficeId ?? undefined;
+    const now = new Date();
 
     const cicloVigente = await prisma.cicloPontos.findFirst({
       where: {
         backofficeId,
         status: "RESGATE_ABERTO",
+        inicioResgateEm: { lte: now },
+        fimResgateEm: { gte: now },
       },
     });
 

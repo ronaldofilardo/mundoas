@@ -28,7 +28,6 @@ export async function GET(req: NextRequest) {
         },
       },
       _sum: {
-        totalPago: true,
         valorComissao: true,
       },
     }),
@@ -37,7 +36,7 @@ export async function GET(req: NextRequest) {
   return ok({
     totalParceiros: parceiros,
     totalIndicados: indicados,
-    producaoMes: Number(producao._sum.totalPago) || 0,
+    producaoMes: Number(producao._sum.valorComissao) || 0,
     comissaoMes: Number(producao._sum.valorComissao) || 0,
   });
 }

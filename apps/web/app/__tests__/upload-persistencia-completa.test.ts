@@ -29,7 +29,7 @@ describe("processarUploadPlanilhaPF - classificação de linha", () => {
     const dataReferenciaRaw = rowData["Data de Referência"];
     const paciente = String(rowData["Paciente"] ?? "").trim();
     const procedimento = String(rowData["Procedimento"] ?? "").trim();
-    const totalPagoRaw = rowData["Total Pago"];
+    const valorComissaoRaw = rowData["Total Pago"];
     const cpfRaw = String(rowData["CPF"] ?? "").trim();
 
     // Validações de rejeição
@@ -47,7 +47,7 @@ describe("processarUploadPlanilhaPF - classificação de linha", () => {
       rejeitado = true;
       motivosRejeicao.push("procedimento_ausente");
     }
-    if (totalPagoRaw === null || totalPagoRaw === undefined || isNaN(Number(totalPagoRaw))) {
+    if (valorComissaoRaw === null || valorComissaoRaw === undefined || isNaN(Number(valorComissaoRaw))) {
       rejeitado = true;
       motivosRejeicao.push("total_pago_invalido");
     }
@@ -164,7 +164,7 @@ describe("procedimentos_pf_raw - auditoria completa", () => {
         paciente: "Maria",
         cpf: "07102342950",
         procedimento: "Consulta",
-        totalPago: 250,
+        valorComissao: 250,
         usuarioDaConta: "Consultor A",
         unidade: "Unidade Norte",
         tipoProcedimento: "PARTICULAR",

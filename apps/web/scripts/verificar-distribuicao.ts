@@ -79,7 +79,7 @@ async function main() {
     const temPonto = movimentacoes.find(m => m.referenciaProcedimentoId === proc.id);
     console.log(`  - ${proc.paciente} | ${proc.procedimento.substring(0, 40)}...`);
     console.log(`    Parceiro: ${proc.parceiro!.nome}`);
-    console.log(`    Valor: R$ ${proc.totalPago}`);
+    console.log(`    Valor: R$ ${proc.valorComissao}`);
     console.log(`    Data: ${proc.dataReferencia.toLocaleDateString("pt-BR")}`);
     console.log(`    Pontos: ${temPonto ? `✅ ${temPonto.quantidade}` : '❌ NÃO DISTRIBUÍDO'}`);
     console.log("");

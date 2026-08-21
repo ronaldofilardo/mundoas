@@ -73,49 +73,18 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Gerar ranking atual do ciclo (sem snapshot)
-    // Buscar todas as lideranças e seus parceiros
-    const liderancas = await prisma.equipe.findMany({
-      where: { backofficeId, tipo: 'LIDERANCA' },
-      include: {
-        subordinados: { 
-          include: { 
-            parceiros: { 
-              select: { 
-                id: true, 
-                nome: true, 
-                cpf: true,
-                usuario: { select: { email: true } }
-              } 
-            } 
-          } 
-        },
-        gestores: { 
-          include: { 
-            parceiros: { 
-              select: { 
-                id: true, 
-                nome: true, 
-                cpf: true,
-                usuario: { select: { email: true } }
-              } 
-            } 
-          } 
-        }
+    // Buscar todos os parceiros diretamente vinculados a este backoffice
+    const parceiros = await prisma.parceiro.findMany({
+      where: { backofficeId, status: 'ATIVO' },
+      select: {
+        id: true,
+        nome: true,
+        cpf: true,
+        usuario: { select: { email: true } }
       }
     });
 
-    const parceiros = [
-      ...liderancas.flatMap(l => l.subordinados.flatMap(c => c.parceiros)),
-      ...liderancas.flatMap(l => l.gestores.flatMap(g => g.parceiros))
-    ];
-
-    // Remover duplicatas
-    const parceirosUnicos = Array.from(
-      new Map(parceiros.map(p => [p.id, p])).values()
-    );
-
-    if (parceirosUnicos.length === 0) {
+    if (parceiros.length === 0) {
       const resultado = {
         ranking: {
           ciclo: {
@@ -127,7 +96,6 @@ export async function GET(req: NextRequest) {
         },
       };
       
-      // Cache mesmo se vazio
       rankingCache.set(cacheKey, resultado);
       
       return ok(resultado);
@@ -135,7 +103,7 @@ export async function GET(req: NextRequest) {
 
     // Calcular pontos acumulados por parceiro no ciclo em paralelo
     const rankingAtual = await Promise.all(
-      parceirosUnicos.map(async (p) => {
+      parceiros.map(async (p) => {
         const [creditos, debitos, estornos] = await Promise.all([
           prisma.movimentacaoPontos.aggregate({
             _sum: { quantidade: true },
@@ -167,6 +135,19 @@ export async function GET(req: NextRequest) {
         const d = debitos._sum.quantidade || 0;
         const e = estornos._sum.quantidade || 0;
 
+        // Calcular total da produção (faturamento) dos procedimentos do parceiro no período do ciclo
+        const prod = await prisma.procedimentoPF.aggregate({
+          _sum: { valorComissao: true },
+          where: {
+            parceiroId: p.id,
+            dataReferencia: {
+              gte: ciclo.inicioAcumuloEm,
+              lte: ciclo.fimAcumuloEm || new Date(),
+            },
+          },
+        });
+        const totalProducao = Number(prod._sum.valorComissao || 0);
+
         return {
           parceiro: {
             id: p.id,
@@ -175,6 +156,7 @@ export async function GET(req: NextRequest) {
             email: p.usuario?.email,
           },
           pontos: c - d + e,
+          totalProducao,
         };
       }),
     );
@@ -186,6 +168,7 @@ export async function GET(req: NextRequest) {
         posicao: index + 1,
         parceiro: item.parceiro,
         pontosAcumulados: item.pontos,
+        totalProducao: item.totalProducao,
       }));
 
     const resultado = {

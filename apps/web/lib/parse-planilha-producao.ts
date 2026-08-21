@@ -67,10 +67,6 @@ export async function parsePlanilhaProducao(
     raw: false,
   });
 
-  console.log("[parsePlanilhaProducao] Total de linhas:", jsonData.length);
-  console.log("[parsePlanilhaProducao] Linha 1:", jsonData[0]);
-  console.log("[parsePlanilhaProducao] Linha 2 (cabeçalhos):", jsonData[1]);
-
   if (!jsonData || jsonData.length < 2) {
     throw new Error("Planilha vazia ou sem cabeçalhos");
   }
@@ -88,28 +84,17 @@ export async function parsePlanilhaProducao(
     {} as Record<string, string>,
   );
 
-  console.log("[parsePlanilhaProducao] Headers mapeados:", headers);
-
   const colunasEncontradas = Object.values(headers).map((h) => h.toLowerCase());
-
-  console.log(
-    "[parsePlanilhaProducao] Colunas encontradas:",
-    colunasEncontradas,
-  );
 
   // Validar colunas obrigatórias
   const colunasObrigatoriasEncontradas = COLUNAS_OBRIGATORIAS.filter((col) =>
     colunasEncontradas.includes(col.toLowerCase()),
   );
 
-  console.log("[parsePlanilhaProducao] Colunas obrigatórias esperadas:", COLUNAS_OBRIGATORIAS);
-  console.log("[parsePlanilhaProducao] Colunas obrigatórias encontradas:", colunasObrigatoriasEncontradas);
-
   if (colunasObrigatoriasEncontradas.length !== COLUNAS_OBRIGATORIAS.length) {
     const faltantes = COLUNAS_OBRIGATORIAS.filter(
       (col) => !colunasEncontradas.includes(col.toLowerCase()),
     );
-    console.error("[parsePlanilhaProducao] Colunas faltando:", faltantes);
     throw new Error(`Colunas obrigatórias faltando: ${faltantes.join(", ")}`);
   }
 
@@ -122,6 +107,14 @@ export async function parsePlanilhaProducao(
     return Object.values(headers).findIndex((h) => normalizar(h) === n);
   };
 
+  const getColIndexFlexible = (nomes: string[]) => {
+    for (const nome of nomes) {
+      const idx = getColIndex(nome);
+      if (idx >= 0) return idx;
+    }
+    return -1;
+  };
+
   const idxDataRef = getColIndex("Data de Referência");
   const idxPaciente = getColIndex("Paciente");
   const idxCpf = getColIndex("CPF");
@@ -130,7 +123,13 @@ export async function parsePlanilhaProducao(
   const idxUnidade = getColIndex("Unidade");
   const idxTipoProcedimento = getColIndex("Tipo Procedimento");
   const idxFormaPagamento = getColIndex("Forma Pagamento");
-  const idxValorTotal = getColIndex("Total Pago");
+  const idxValorTotal = getColIndexFlexible([
+    "Total Pago",
+    "Total Pagto",
+    "Valor Total",
+    "Total Pagamento",
+    "TotalPago",
+  ]);
 
   // Buscar parceiros do backoffice
   let liderancas: any[] = [];
@@ -149,13 +148,6 @@ export async function parsePlanilhaProducao(
       select: { id: true },
     });
     liderancaIds = liderancas.map((l) => l.id);
-
-    console.log("[parsePlanilhaProducao] Backoffice ID:", backofficeId);
-    console.log(
-      "[parsePlanilhaProducao] Lideranças encontradas:",
-      liderancas.length,
-    );
-    console.log("[parsePlanilhaProducao] IDs das lideranças:", liderancaIds);
 
 const [comerciaisResult, consultoresPfResult, gestoresResult] = await Promise.all([
        prisma.equipe.findMany({
@@ -236,7 +228,7 @@ const valorTotalRaw =
       idxValorTotal >= 0 ? String(row[idxValorTotal] || "").trim() : "";
     let valorTotal = 0;
     if (valorTotalRaw) {
-      const limpo = valorTotalRaw.replace(/[^\d,-]/g, "");
+      const limpo = valorTotalRaw.replace(/[^\d.,-]/g, "");
       if (limpo.includes(",")) {
         valorTotal = parseFloat(limpo.replace(/\./g, "").replace(",", "."));
       } else if (/^\d+\.\d{1,2}$/.test(limpo)) {

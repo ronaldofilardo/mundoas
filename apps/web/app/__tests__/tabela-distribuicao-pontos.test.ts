@@ -12,7 +12,7 @@ interface Producao {
   paciente: string;
   procedimento: string;
   parceiro: { nome: string };
-  totalPago: string;
+  valorComissao: string;
   dataReferencia: string;
   pontosPotenciais: number;
   pontosDistribuidos: { pontos: number } | null;
@@ -54,7 +54,7 @@ const mockData: Producao[] = [
     paciente: "Marcia Costa De Oliveira",
     procedimento: "Hemograma com contagem de plaquetas",
     parceiro: { nome: "Tania Karla" },
-    totalPago: "17.03",
+    valorComissao: "17.03",
     dataReferencia: "2026-07-06",
     pontosPotenciais: 0,
     pontosDistribuidos: null,
@@ -64,7 +64,7 @@ const mockData: Producao[] = [
     paciente: "Rosangela Depieri",
     procedimento: "Consulta Eletiva Clínico Geral",
     parceiro: { nome: "Tania Karla" },
-    totalPago: "69.9",
+    valorComissao: "69.9",
     dataReferencia: "2026-07-06",
     pontosPotenciais: 1,
     pontosDistribuidos: null,
@@ -74,7 +74,7 @@ const mockData: Producao[] = [
     paciente: "Camila Iagla Pires",
     procedimento: "Consulta Eletiva Clínico Geral",
     parceiro: { nome: "Tania Karla" },
-    totalPago: "69.9",
+    valorComissao: "69.9",
     dataReferencia: "2026-07-06",
     pontosPotenciais: 1,
     pontosDistribuidos: { pontos: 1 },
@@ -84,7 +84,7 @@ const mockData: Producao[] = [
     paciente: "ELIDIANE DOS SANTOS PAULINO DOS ANJOS",
     procedimento: "Consulta Eletiva Oftalmologia - Saude Ocular",
     parceiro: { nome: "Joao Silva" },
-    totalPago: "79.9",
+    valorComissao: "79.9",
     dataReferencia: "2026-07-05",
     pontosPotenciais: 1,
     pontosDistribuidos: { pontos: 1 },

@@ -9,7 +9,7 @@ describe("Upload de Planilha e Comissões", () => {
   let liderancaId: string;
   let parceiroId: string;
   let indicadoId: string;
-  let comercialId: string;
+  let comercialEquipeId: string;
 
   beforeAll(async () => {
     // Criar usuário Backoffice
@@ -89,7 +89,7 @@ describe("Upload de Planilha e Comissões", () => {
     });
     indicadoId = indicado.id;
 
-    // Criar comercial
+    // Criar comercial (equipe com tipo COMERCIAL)
     const comercialUsuario = await prisma.usuario.create({
       data: {
         nome: "Comercial Upload Test",
@@ -112,17 +112,17 @@ describe("Upload de Planilha e Comissões", () => {
         tipoLideranca: null,
       },
     });
-    comercialId = comercial.id;
+    comercialEquipeId = comercial.id;
   });
 
   afterAll(async () => {
+    await prisma.comissaoEquipe.deleteMany({ where: { equipe: { usuario: { email: { endsWith: "@asa.test" } } } } }).catch(() => {});
+    await prisma.metaEquipe.deleteMany({ where: { equipe: { usuario: { email: { endsWith: "@asa.test" } } } } }).catch(() => {});
     await prisma.equipe.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
     await prisma.indicado.deleteMany({ where: { parceiro: { usuario: { email: { endsWith: "@asa.test" } } } } }).catch(() => {});
     await prisma.parceiro.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
     await prisma.regraComercial.deleteMany({ where: { backofficeId } }).catch(() => {});
     await prisma.regraGestor.deleteMany({ where: { backofficeId } }).catch(() => {});
-    await prisma.comissaoEquipe.deleteMany({ where: { comercial: { usuario: { email: { endsWith: "@asa.test" } } } } }).catch(() => {});
-    await prisma.equipe.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
     await prisma.backoffice.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
     await prisma.usuario.deleteMany({ where: { email: { endsWith: "@asa.test" } } }).catch(() => {});
   });
@@ -258,7 +258,7 @@ describe("Upload de Planilha e Comissões", () => {
       // Criar comissão de teste
       await prisma.comissaoEquipe.create({
         data: {
-          comercialId: comercialTemp.id,
+          equipeId: comercialTemp.id,
           mesReferencia: "2026-01",
           valorVendas: 10000.0,
           valorComissao: 500.0,
@@ -268,14 +268,14 @@ describe("Upload de Planilha e Comissões", () => {
 
       // Deletar em cascata
       await prisma.comissaoEquipe.deleteMany({
-        where: { comercialId: comercialTemp.id },
+        where: { equipeId: comercialTemp.id },
       });
       await prisma.equipe.delete({
         where: { id: comercialTemp.id },
       });
 
       const comissoesRestantes = await prisma.comissaoEquipe.findMany({
-        where: { comercialId: comercialTemp.id },
+        where: { equipeId: comercialTemp.id },
       });
 
       expect(comissoesRestantes).toHaveLength(0);
@@ -294,7 +294,7 @@ describe("Upload de Planilha e Comissões", () => {
 
       const meta = await prisma.metaEquipe.create({
         data: {
-          comercialId: comercial.id,
+          equipeId: comercial.id,
           mesReferencia: "2026-01",
           valorMeta: 50000.0,
         },
@@ -317,7 +317,7 @@ describe("Upload de Planilha e Comissões", () => {
       // Criar meta
       const meta = await prisma.metaEquipe.create({
         data: {
-          comercialId: comercial.id,
+          equipeId: comercial.id,
           mesReferencia: "2026-02",
           valorMeta: 30000.0,
           valorAtingido: 15000.0,
@@ -336,11 +336,12 @@ describe("Upload de Planilha e Comissões", () => {
     it("deve listar metas de todos os comerciais (visão geral)", async () => {
       const metas = await prisma.metaEquipe.findMany({
         where: {
-          comercial: {
+          equipe: {
+            tipo: "COMERCIAL",
             liderancaId, },
         },
         include: {
-          comercial: {
+          equipe: {
             include: {
               usuario: true,
             },
@@ -349,7 +350,7 @@ describe("Upload de Planilha e Comissões", () => {
       });
 
       expect(metas.length).toBeGreaterThan(0);
-      expect(metas[0].comercial).toBeDefined();
+      expect(metas[0].equipe).toBeDefined();
     });
   });
 
@@ -534,7 +535,7 @@ describe("Upload de Planilha e Comissões", () => {
 
       const comissao = await prisma.comissaoEquipe.create({
         data: {
-          comercialId: comercial.id,
+          equipeId: comercial.id,
           mesReferencia: "2026-03",
           valorVendas: 80000.0,
           valorComissao: 4000.0, // 5%

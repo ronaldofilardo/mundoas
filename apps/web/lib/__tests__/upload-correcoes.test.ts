@@ -17,10 +17,9 @@ import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vite
 // vi.hoisted garante que isso é executado antes de qualquer import.
 const { mockPrisma } = vi.hoisted(() => ({
   mockPrisma: {
-    lideranca: { findMany: vi.fn() },
-    comercial: { findMany: vi.fn() },
-    gestor: { findMany: vi.fn() },
+    equipe: { findMany: vi.fn() },
     consultorPf: { findMany: vi.fn() },
+    gestor: { findMany: vi.fn() },
     parceiro: { findMany: vi.fn() },
   },
 }));
@@ -43,18 +42,19 @@ const createMockExcel = (data: any[][], fileName = 'test.xlsx'): File => {
 };
 
 const resetarMocks = () => {
-  mockPrisma.lideranca.findMany.mockReset();
-  mockPrisma.comercial.findMany.mockReset();
-  mockPrisma.gestor.findMany.mockReset();
+  mockPrisma.equipe.findMany.mockReset();
   mockPrisma.consultorPf.findMany.mockReset();
+  mockPrisma.gestor.findMany.mockReset();
   mockPrisma.parceiro.findMany.mockReset();
 };
 
 const mocksVazios = () => {
-  mockPrisma.lideranca.findMany.mockResolvedValue([]);
-  mockPrisma.comercial.findMany.mockResolvedValue([]);
-  mockPrisma.gestor.findMany.mockResolvedValue([]);
+  // Primeira chamada: liderancas (tipo LIDERANCA)
+  mockPrisma.equipe.findMany
+    .mockResolvedValueOnce([]) // liderancas
+    .mockResolvedValueOnce([]); // comerciais
   mockPrisma.consultorPf.findMany.mockResolvedValue([]);
+  mockPrisma.gestor.findMany.mockResolvedValue([]);
   mockPrisma.parceiro.findMany.mockResolvedValue([]);
 };
 
@@ -129,12 +129,15 @@ describe('Regressão: escopo da variável consultorPf', () => {
   });
 
   it('não deve lançar erro ao processar linha válida com consultorPf', async () => {
-    mockPrisma.lideranca.findMany.mockResolvedValue([{ id: 'lid1' }]);
-    mockPrisma.comercial.findMany.mockResolvedValue([]);
-    mockPrisma.gestor.findMany.mockResolvedValue([]);
+    // Primeira chamada: findMany({ where: { backofficeId, tipo: "LIDERANCA" } })
+    // Segunda chamada: findMany({ where: { liderancaId: { in: [...] } } })
+    mockPrisma.equipe.findMany
+      .mockResolvedValueOnce([{ id: 'lid1' }]) // liderancas
+      .mockResolvedValueOnce([]); // comerciais
     mockPrisma.consultorPf.findMany.mockResolvedValue([
       { id: 'cp1', nome: 'Carlos Consultor' },
     ]);
+    mockPrisma.gestor.findMany.mockResolvedValue([]);
     mockPrisma.parceiro.findMany.mockResolvedValue([
       {
         id: 'p1',
@@ -166,12 +169,13 @@ describe('Regressão: escopo da variável consultorPf', () => {
   });
 
   it('deve retornar consultorPfNome undefined quando não há usuário da conta', async () => {
-    mockPrisma.lideranca.findMany.mockResolvedValue([{ id: 'lid1' }]);
-    mockPrisma.comercial.findMany.mockResolvedValue([]);
-    mockPrisma.gestor.findMany.mockResolvedValue([]);
+    mockPrisma.equipe.findMany
+      .mockResolvedValueOnce([{ id: 'lid1' }]) // liderancas
+      .mockResolvedValueOnce([]); // comerciais
     mockPrisma.consultorPf.findMany.mockResolvedValue([
       { id: 'cp1', nome: 'Carlos' },
     ]);
+    mockPrisma.gestor.findMany.mockResolvedValue([]);
     mockPrisma.parceiro.findMany.mockResolvedValue([
       {
         id: 'p1',
@@ -199,12 +203,13 @@ describe('Regressão: escopo da variável consultorPf', () => {
   });
 
   it('deve processar múltiplas linhas válidas e inválidas corretamente', async () => {
-    mockPrisma.lideranca.findMany.mockResolvedValue([{ id: 'lid1' }]);
-    mockPrisma.comercial.findMany.mockResolvedValue([]);
-    mockPrisma.gestor.findMany.mockResolvedValue([]);
+    mockPrisma.equipe.findMany
+      .mockResolvedValueOnce([{ id: 'lid1' }]) // liderancas
+      .mockResolvedValueOnce([]); // comerciais
     mockPrisma.consultorPf.findMany.mockResolvedValue([
       { id: 'cp1', nome: 'Carlos' },
     ]);
+    mockPrisma.gestor.findMany.mockResolvedValue([]);
     mockPrisma.parceiro.findMany.mockResolvedValue([
       {
         id: 'p1',
@@ -232,6 +237,99 @@ describe('Regressão: escopo da variável consultorPf', () => {
     expect(result.previewRows).toHaveLength(3);
     expect(result.summary.validos).toBe(2);
     expect(result.summary.rejeitados).toBe(1);
+  });
+});
+
+describe('Regressão: parsing de valores decimais (Total Pago)', () => {
+  // Corrige o bug em que o regex de limpeza (/[^\d,-]/) removia o PONTO
+  // decimal, corrompendo valores como "17.03" -> 1703 e "69.9" -> 699.
+  // O xlsx (raw:false) retorna células numéricas com ponto decimal.
+
+  beforeEach(() => {
+    resetarMocks();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('deve preservar decimais com ponto vindo do xlsx (número 17.03)', async () => {
+    mocksVazios();
+
+    const planilha = [
+      ['REceita bruta analitica'],
+      ['Data de Referência', 'Paciente', 'CPF', 'Procedimento', 'Total Pago', 'Usuário da conta'],
+      ['01/07/2026', 'Marcia', '12345678901', 'Hemograma', 17.03, 'admin'],
+    ];
+
+    const file = createMockExcel(planilha);
+    const result = await parsePlanilhaProducao(file, mockBackofficeId);
+
+    expect(result.previewRows[0].valorTotal).toBe(17.03);
+  });
+
+  it('não deve multiplicar por 100 valores com ponto decimal (69.9, 169.9)', async () => {
+    mocksVazios();
+
+    const planilha = [
+      ['REceita bruta analitica'],
+      ['Data de Referência', 'Paciente', 'CPF', 'Procedimento', 'Total Pago', 'Usuário da conta'],
+      ['01/07/2026', 'Rosangela', '11111111111', 'Consulta', 69.9, 'admin'],
+      ['02/07/2026', 'Valdeni', '22222222222', 'Consulta', 169.9, 'admin'],
+    ];
+
+    const file = createMockExcel(planilha);
+    const result = await parsePlanilhaProducao(file, mockBackofficeId);
+
+    expect(result.previewRows[0].valorTotal).toBe(69.9);
+    expect(result.previewRows[1].valorTotal).toBe(169.9);
+  });
+
+  it('deve tratar vírgula decimal brasileira (17,03) como 17.03', async () => {
+    mocksVazios();
+
+    const planilha = [
+      ['REceita bruta analitica'],
+      ['Data de Referência', 'Paciente', 'CPF', 'Procedimento', 'Total Pago', 'Usuário da conta'],
+      ['01/07/2026', 'Paciente A', '12345678901', 'Exame', '17,03', 'admin'],
+    ];
+
+    const file = createMockExcel(planilha);
+    const result = await parsePlanilhaProducao(file, mockBackofficeId);
+
+    expect(result.previewRows[0].valorTotal).toBe(17.03);
+  });
+
+  it('deve tratar milhar brasileiro com vírgula decimal (1.234,56)', async () => {
+    mocksVazios();
+
+    const planilha = [
+      ['REceita bruta analitica'],
+      ['Data de Referência', 'Paciente', 'CPF', 'Procedimento', 'Total Pago', 'Usuário da conta'],
+      ['01/07/2026', 'Paciente B', '12345678901', 'Exame', '1.234,56', 'admin'],
+    ];
+
+    const file = createMockExcel(planilha);
+    const result = await parsePlanilhaProducao(file, mockBackofficeId);
+
+    expect(result.previewRows[0].valorTotal).toBe(1234.56);
+  });
+
+  it('deve manter valores inteiros inalterados (150, 125)', async () => {
+    mocksVazios();
+
+    const planilha = [
+      ['REceita bruta analitica'],
+      ['Data de Referência', 'Paciente', 'CPF', 'Procedimento', 'Total Pago', 'Usuário da conta'],
+      ['01/07/2026', 'Paciente C', '12345678901', 'Consulta', 150, 'admin'],
+      ['02/07/2026', 'Paciente D', '12345678901', 'Exame', 125, 'admin'],
+    ];
+
+    const file = createMockExcel(planilha);
+    const result = await parsePlanilhaProducao(file, mockBackofficeId);
+
+    expect(result.previewRows[0].valorTotal).toBe(150);
+    expect(result.previewRows[1].valorTotal).toBe(125);
   });
 });
 

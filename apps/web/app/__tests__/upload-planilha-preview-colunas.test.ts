@@ -1,5 +1,5 @@
 /**
- * Testes das alterações no componente UploadPlanilhaPreview - Backoffice
+* Testes das alterações no componente UploadPlanilhaPreview - Backoffice
  *
  * Valida:
  *  - Remoção da coluna "Procedimento" do preview
@@ -173,10 +173,10 @@ describe('UploadPlanilhaPreview - estrutura da tabela de preview', () => {
     expect(thead).toContain('Status');
   });
 
-  it('deve manter as colunas "CPF" e "Tipo" no cabeçalho', () => {
+  it('deve manter as colunas "CPF" e "Unidade" no cabeçalho', () => {
     const thead = extractTableSection(source);
     expect(thead).toContain('CPF');
-    expect(thead).toContain('Tipo');
+    expect(thead).toContain('Unidade');
   });
 
   it('deve usar a função getConsultorPfBadgeProps para renderizar a coluna Consultor PF', () => {

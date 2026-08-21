@@ -8,8 +8,8 @@ import { describe, it, expect, vi } from 'vitest';
 describe('Componentes de Pontos - Backoffice', () => {
   describe('DistribuirPontos (Simulação)', () => {
     it('deve calcular pontos para produção', () => {
-      const calcularPontos = (totalPago: number, valorPorPonto: number) => {
-        return Math.round(totalPago / valorPorPonto);
+      const calcularPontos = (valorComissao: number, valorPorPonto: number) => {
+        return Math.round(valorComissao / valorPorPonto);
       };
 
       expect(calcularPontos(150, 100)).toBe(2);
@@ -62,7 +62,7 @@ describe('Componentes de Pontos - Backoffice', () => {
           id: '1',
           paciente: 'Paciente 1',
           procedimento: 'Consulta',
-          totalPago: 150,
+          valorComissao: 150,
           pontosPotenciais: 2,
           pontosDistribuidos: null,
         },
@@ -70,7 +70,7 @@ describe('Componentes de Pontos - Backoffice', () => {
           id: '2',
           paciente: 'Paciente 2',
           procedimento: 'Exame',
-          totalPago: 300,
+          valorComissao: 300,
           pontosPotenciais: 3,
           pontosDistribuidos: { id: 'mov1', pontos: 3 },
         },

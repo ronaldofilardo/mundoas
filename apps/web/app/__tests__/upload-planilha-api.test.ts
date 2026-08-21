@@ -17,10 +17,9 @@ describe('API Upload Planilha - Preview', () => {
           procedimento: 'Consulta',
           cpf: '12345678901',
           tipoProcedimento: 'ROTINA',
-          totalPago: 150.00,
+          valorComissao: 150.00,
           unidade: 'Matriz',
           usuarioDaConta: 'comercial1',
-          valorComissao: 0,
           status: 'VALIDO',
         } as const,
       ],
@@ -41,7 +40,7 @@ describe('API Upload Planilha - Preview', () => {
     expect(mockPreviewResponse.summary.total).toBe(1);
     expect(mockPreviewResponse.summary.validos).toBe(1);
     expect(mockPreviewResponse.summary.totalComissao).toBe(0);
-    expect(mockPreviewResponse.previewRows[0].valorComissao).toBe(0);
+    expect(mockPreviewResponse.previewRows[0].valorComissao).toBe(150.00);
   });
 
   it('deve identificar colunas obrigatórias faltando', () => {
@@ -194,11 +193,11 @@ describe('API Upload Planilha - Upload', () => {
 
 describe('API Upload Planilha - Regras de Negócio', () => {
   it('não deve calcular comissão no preview (será processado posteriormente)', () => {
-    const totalPago = 1000;
+    const valorTotal = 1000;
     const valorComissao = 0; // Comissão será calculada depois
 
     expect(valorComissao).toBe(0);
-    expect(valorComissao).not.toBe(totalPago * 0.1);
+    expect(valorComissao).not.toBe(valorTotal * 0.1);
   });
 
   it('deve considerar linha como órfã quando CPF não tem parceiro', () => {
@@ -245,8 +244,8 @@ describe('API Upload Planilha - Regras de Negócio', () => {
   });
 
   it('deve rejeitar linha com total pago inválido', () => {
-    const validarLinha = (totalPago: number | null | undefined): { valido: boolean; motivo?: string } => {
-      if (totalPago === null || totalPago === undefined || isNaN(totalPago)) {
+    const validarLinha = (valorComissao: number | null | undefined): { valido: boolean; motivo?: string } => {
+      if (valorComissao === null || valorComissao === undefined || isNaN(valorComissao)) {
         return { valido: false, motivo: 'Total pago inválido' };
       }
       return { valido: true };

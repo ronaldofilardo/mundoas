@@ -13,6 +13,7 @@ export default function PrimeiroAcessoPage() {
   const [showSenhaAtual, setShowSenhaAtual] = useState(false);
   const [showNovaSenha, setShowNovaSenha] = useState(false);
   const [showConfirmarSenha, setShowConfirmarSenha] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const router = useRouter();
 
   const validateForm = (): boolean => {
@@ -85,28 +86,7 @@ export default function PrimeiroAcessoPage() {
         return;
       }
 
-      toast.success("Senha alterada com sucesso! Redirecionando...");
-      setTimeout(async () => {
-        // Buscar sessão para saber o tipo de usuário e redirecionar corretamente
-        const sessionRes = await fetch("/api/auth/session");
-        const session = await sessionRes.json();
-        const tipo = session?.user?.tipo;
-        const papel = session?.user?.papel;
-
-        let redirectUrl = "/login";
-        if (tipo === "ADMIN") redirectUrl = "/admin/usuarios";
-        else if (tipo === "GESTOR" && papel === "BACKOFFICE") redirectUrl = "/backoffice/dashboard";
-        else if (tipo === "GESTOR" && papel === "GESTOR_PJ") redirectUrl = "/gestor/dashboard";
-        else if (tipo === "BACKOFFICE") redirectUrl = "/backoffice/dashboard";
-        else if (tipo === "GESTOR_PJ") redirectUrl = "/gestor/dashboard";
-        else if (tipo === "PARCEIRO") redirectUrl = "/parceiro/indicados";
-        else if (tipo === "ESTABELECIMENTO") redirectUrl = "/estabelecimento/dashboard";
-        else if (tipo === "CONSULTOR") redirectUrl = "/consultor/estabelecimentos";
-        else if (tipo === "LIDERANCA") redirectUrl = "/lideranca";
-
-        router.push(redirectUrl);
-        router.refresh();
-      }, 1500);
+      setShowSuccessModal(true);
     } catch (e) {
       toast.error("Erro de conexão. Tente novamente.");
     } finally {
@@ -114,9 +94,15 @@ export default function PrimeiroAcessoPage() {
     }
   }
 
+  function handleSuccessConfirm() {
+    router.push("/login");
+    router.refresh();
+  }
+
   return (
-    <div className="min-h-screen flex bg-gray-50">
-      <div className="hidden lg:flex lg:w-1/2 bg-primary-600 flex-col justify-between p-12">
+    <>
+      <div className="min-h-screen flex bg-gray-50">
+        <div className="hidden lg:flex lg:w-1/2 bg-primary-600 flex-col justify-between p-12">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow">
             <span className="text-primary-600 font-black text-sm">AS</span>
@@ -161,14 +147,14 @@ export default function PrimeiroAcessoPage() {
 
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Primeiro Acesso</h1>
           <p className="text-gray-500 mb-8">
-            Sua senha atual é os 5 primeiros dígitos do seu CPF.
+            Sua senha atual é o <strong>CPF completo (somente números)</strong>.
             Crie uma nova senha segura.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Senha Atual (CPF) <span className="text-red-500">*</span>
+                Senha Atual (CPF completo) <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
@@ -184,7 +170,7 @@ export default function PrimeiroAcessoPage() {
                       ? "border-red-400 focus:ring-red-200"
                       : "border-gray-300 focus:ring-primary-200"
                   } disabled:bg-gray-50 disabled:text-gray-500`}
-                  placeholder="00000"
+                  placeholder="00000000000"
                   autoComplete="current-password"
                 />
                 <button
@@ -339,5 +325,30 @@ export default function PrimeiroAcessoPage() {
         </div>
       </div>
     </div>
+
+    {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="success-modal-title">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 text-center">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 id="success-modal-title" className="text-xl font-bold text-gray-900 mb-2">
+              Senha alterada com sucesso!
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Sua nova senha foi definida. Você será redirecionado para a tela de login.
+            </p>
+            <button
+              onClick={handleSuccessConfirm}
+              className="w-full bg-primary-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-primary-700 active:scale-95 transition-smooth focus-ring shadow-sm hover:shadow-md"
+            >
+              Continuar para login
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

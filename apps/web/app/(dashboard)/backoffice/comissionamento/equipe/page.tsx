@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { TabEquipe } from "./components/tab-equipe";
 import { TabMetas } from "./components/tab-metas";
@@ -21,13 +21,20 @@ const TABS: { id: TabType; label: string; icon: string }[] = [
 
 const TAB_IDS = new Set<TabType>(TABS.map((t) => t.id));
 
+function getDefaultMesReferencia(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
 function ComissionamentoEquipeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams?.get("tab") ?? null;
+  const mesParam = searchParams?.get("mes") ?? null;
   const activeTab: TabType = TAB_IDS.has(tabParam as TabType)
     ? (tabParam as TabType)
     : "equipe";
+  const mesReferencia = mesParam ?? getDefaultMesReferencia();
 
   const { itens, loading, refetch } = useEquipe();
 
@@ -43,11 +50,23 @@ function ComissionamentoEquipeContent() {
 
   const handleTabChange = useCallback(
     (tab: TabType) => {
-      router.replace(`/backoffice/comissionamento/equipe?tab=${tab}`, {
+      router.replace(`/backoffice/comissionamento/equipe?tab=${tab}&mes=${mesReferencia}`, {
         scroll: false,
       });
     },
-    [router],
+    [router, mesReferencia],
+  );
+
+  const handleMesChange = useCallback(
+    (mes: string) => {
+      const params = new URLSearchParams(searchParams?.toString());
+      params.set("mes", mes);
+      params.set("tab", activeTab);
+      router.replace(`/backoffice/comissionamento/equipe?${params.toString()}`, {
+        scroll: false,
+      });
+    },
+    [router, searchParams, activeTab],
   );
 
   return (
@@ -86,8 +105,8 @@ function ComissionamentoEquipeContent() {
               {activeTab === "equipe" && (
                 <TabEquipe itens={itens} refetch={refetch} />
               )}
-              {activeTab === "metas" && <TabMetas itens={itens} />}
-              {activeTab === "comissoes" && <TabComissoes itens={itens} />}
+              {activeTab === "metas" && <TabMetas itens={itens} mesReferencia={mesReferencia} onMesChange={handleMesChange} />}
+              {activeTab === "comissoes" && <TabComissoes itens={itens} mesReferencia={mesReferencia} onMesChange={handleMesChange} />}
               {activeTab === "consultores" && <TabConsultores itens={itens} />}
               {activeTab === "regras" && <TabRegras />}
             </>

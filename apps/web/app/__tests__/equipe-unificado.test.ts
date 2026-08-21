@@ -175,7 +175,14 @@ describe("GET /equipe - leitura em árvore", () => {
         status: "ATIVO",
         usuario: { email: "l@asa.com" },
         lideranca: null,
-        consultorPfs: [{ id: "cp1", nome: "CPF1", cpf: "22233344455566677555664445556667755", status: "ATIVO", usuario: { email: "cpf@asa.com" } }],
+        consultorPfs: [{
+          id: "cp1",
+          nome: "CPF1",
+          cpf: "22233344455566677555664445556667755",
+          status: "ATIVO",
+          usuario: { email: "cpf@asa.com" },
+          setores: [{ setor: { id: "set-1", nome: "Setor Teste" } }],
+        }],
         subordinados: [
           { id: "eq-c", nome: "Sub", cpf: "3334445556667755566", funcao: "GERENTE_CIRE", percentualComissao: 3, status: "ATIVO", usuario: { email: "s@asa.com" } },
         ],
@@ -199,7 +206,7 @@ describe("GET /equipe - leitura em árvore", () => {
     const body = await res.json();
     expect(body.liderancas).toHaveLength(1);
     expect(body.liderancas[0].tipoLideranca).toBe("COMERCIAL");
-    expect(body.liderancas[0].consultoresPf).toHaveLength(1);
+    expect(body.liderancas[0].consultorPfs).toHaveLength(1);
     expect(body.liderancas[0].comerciais).toHaveLength(1);
     expect(body.comerciais).toHaveLength(1);
     expect(body.comerciais[0].id).toBe("eq-c2");

@@ -66,7 +66,7 @@ async function main() {
     // Calcular pontos (usa data de referência ou data de criação)
     const dataRef = proc.dataReferencia || proc.createdAt;
     const pontos = await calcularPontosDeProducao(
-      proc.totalPago,
+      proc.valorComissao,
       dataRef,
       backoffice.id,
     );
@@ -84,7 +84,7 @@ async function main() {
       },
     });
 
-    console.log(`✅ ${proc.paciente}: ${pontos} pontos (R$ ${proc.totalPago})`);
+    console.log(`✅ ${proc.paciente}: ${pontos} pontos (R$ ${proc.valorComissao})`);
     totalDistribuido++;
     totalPontos += pontos;
   }

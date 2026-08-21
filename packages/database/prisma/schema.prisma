@@ -452,6 +452,7 @@ model RegraComercial {
   updatedAt         DateTime   @updatedAt @map("updated_at")
   backofficeId      String     @unique @map("backoffice_id") @db.Uuid
   backoffice        Backoffice @relation(fields: [backofficeId], references: [id], onDelete: Cascade)
+  itens             RegraComercialItem[]
 
   @@index([backofficeId])
   @@map("regras_comerciais")
@@ -470,6 +471,7 @@ model RegraGestor {
   updatedAt             DateTime   @updatedAt @map("updated_at")
   backofficeId          String     @unique @map("backoffice_id") @db.Uuid
   backoffice            Backoffice @relation(fields: [backofficeId], references: [id], onDelete: Cascade)
+  itens                 RegraGestorItem[]
 
   @@index([backofficeId])
   @@map("regras_gestores")
@@ -487,9 +489,60 @@ model RegraFalta {
   createdAt                     DateTime   @default(now()) @map("created_at")
   updatedAt                     DateTime   @updatedAt @map("updated_at")
   backoffice                    Backoffice @relation(fields: [backofficeId], references: [id], onDelete: Cascade)
+  itens                         RegraFaltaItem[]
 
   @@index([backofficeId])
   @@map("regras_faltas")
+}
+
+model RegraComercialItem {
+  id            String          @id @default(uuid()) @db.Uuid
+  regraComercialId String       @map("regra_comercial_id") @db.Uuid
+  nome          String          @db.VarChar(100)
+  percentual    Decimal         @default(0) @db.Decimal(5, 2)
+  tipo          RegraItemTipo   @default(CUSTOM)
+  ordem         Int             @default(0)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  regraComercial  RegraComercial @relation(fields: [regraComercialId], references: [id], onDelete: Cascade)
+
+  @@index([regraComercialId])
+  @@map("regras_comerciais_itens")
+}
+
+model RegraGestorItem {
+  id           String       @id @default(uuid()) @db.Uuid
+  regraGestorId String      @map("regra_gestor_id") @db.Uuid
+  nome         String       @db.VarChar(100)
+  percentual   Decimal      @default(0) @db.Decimal(5, 2)
+  tipo         RegraItemTipo @default(CUSTOM)
+  ordem        Int          @default(0)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  regraGestor  RegraGestor  @relation(fields: [regraGestorId], references: [id], onDelete: Cascade)
+
+  @@index([regraGestorId])
+  @@map("regras_gestores_itens")
+}
+
+model RegraFaltaItem {
+  id           String      @id @default(uuid()) @db.Uuid
+  regraFaltaId String      @map("regra_falta_id") @db.Uuid
+  nome         String      @db.VarChar(100)
+  percentual   Decimal     @default(0) @db.Decimal(9, 4)
+  tipo         RegraItemTipo @default(CUSTOM)
+  ordem        Int         @default(0)
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  regraFalta   RegraFalta  @relation(fields: [regraFaltaId], references: [id], onDelete: Cascade)
+
+  @@index([regraFaltaId])
+  @@map("regras_faltas_itens")
+}
+
+enum RegraItemTipo {
+  SISTEMA
+  CUSTOM
 }
 
 model Parceiro {

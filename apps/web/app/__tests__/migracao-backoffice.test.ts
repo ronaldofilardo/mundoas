@@ -51,11 +51,11 @@ describe('Migração BACKOFFICE - Validação do Banco de Dados', () => {
   });
 
   describe('2. Colunas Foreign Key', () => {
-    it('deve existir backoffice_id em liderancas', async () => {
+    it('deve existir backoffice_id em equipe (substitui liderancas)', async () => {
       const result = await prisma.$queryRaw<{ exists: boolean }>`
         SELECT EXISTS (
           SELECT 1 FROM information_schema.columns 
-          WHERE table_name = 'liderancas' AND column_name = 'backoffice_id'
+          WHERE table_name = 'equipe' AND column_name = 'backoffice_id'
         ) as exists
       `;
       expect(result[0].exists).toBe(true);
@@ -131,11 +131,11 @@ describe('Migração BACKOFFICE - Validação do Banco de Dados', () => {
   });
 
   describe('4. Foreign Keys', () => {
-    it('deve existir FK liderancas_backoffice_id_fkey', async () => {
+    it('deve existir FK equipe_backoffice_id_fkey (substitui liderancas_backoffice_id_fkey)', async () => {
       const result = await prisma.$queryRaw<{ exists: boolean }>`
         SELECT EXISTS (
           SELECT 1 FROM information_schema.table_constraints 
-          WHERE constraint_name = 'liderancas_backoffice_id_fkey'
+          WHERE constraint_name = 'equipe_backoffice_id_fkey'
         ) as exists
       `;
       expect(result[0].exists).toBe(true);
@@ -187,7 +187,7 @@ describe('Migração BACKOFFICE - Validação do Prisma Client', () => {
     });
   });
 
-it('deve buscar backoffice com include', async () => {
+  it('deve buscar backoffice com include', async () => {
     const cpfBusca = uniqueCpf();
     const usuario = await prisma.usuario.create({
       data: {
@@ -209,7 +209,7 @@ it('deve buscar backoffice com include', async () => {
       where: { usuarioId: usuario.id },
       include: {
         usuario: true,
-        liderancas: true,
+        equipe: true,
         configuracoesPontos: true,
         ciclosPontos: true,
         premios: true,
@@ -263,7 +263,7 @@ it('deve buscar backoffice com include', async () => {
 });
 
 describe('Migração BACKOFFICE - Validação de Relacionamentos', () => {
-it('deve criar backoffice com liderancas', async () => {
+  it('deve criar backoffice com equipe (liderancas/comerciais)', async () => {
     const usuarioBackoffice = await prisma.usuario.create({
       data: {
         nome: 'Backoffice Teste',
@@ -299,7 +299,7 @@ it('deve criar backoffice com liderancas', async () => {
     await prisma.usuario.update({ where: { id: usuarioBackoffice.id }, data: { status: 'INATIVO' } });
   });
 
-it('deve criar premio vinculado ao backoffice', async () => {
+  it('deve criar premio vinculado ao backoffice', async () => {
     const usuarioBackoffice = await prisma.usuario.create({
       data: {
         nome: 'Backoffice Premio',
@@ -317,7 +317,7 @@ it('deve criar premio vinculado ao backoffice', async () => {
       include: { backoffice: true },
     });
 
-const premio = await prisma.premio.create({
+    const premio = await prisma.premio.create({
       data: {
         backofficeId: usuarioBackoffice.backoffice!.id,
         nome: 'Prêmio Migração',

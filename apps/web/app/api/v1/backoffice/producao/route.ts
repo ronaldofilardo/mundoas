@@ -7,7 +7,6 @@ export async function GET(req: NextRequest) {
   if (error) return error;
 
   const { searchParams } = new URL(req.url);
-  const status = searchParams.get("status");
   const mesReferencia = searchParams.get("mesReferencia");
   const parceiroId = searchParams.get("parceiroId");
   const consultorPfId = searchParams.get("consultorPfId");
@@ -48,10 +47,6 @@ export async function GET(req: NextRequest) {
 
   if (parceiroId) {
     where.parceiroId = parceiroId;
-  }
-
-  if (status && status !== "TODOS") {
-    where.statusComissao = status;
   }
 
   if (mesReferencia) {

@@ -35,8 +35,6 @@ export function ParceirosPontos() {
     nome: "",
     email: "",
     cpf: "",
-    pixChave: "",
-    telefone: "",
   });
   const [saving, setSaving] = useState(false);
   const [cpfValidation, setCpfValidation] = useState<"valid" | "invalid" | "">(
@@ -68,8 +66,6 @@ export function ParceirosPontos() {
       nome: "",
       email: "",
       cpf: "",
-      pixChave: "",
-      telefone: "",
     });
     setCpfValidation("");
     setShowModal(true);
@@ -100,8 +96,6 @@ export function ParceirosPontos() {
       nome: p.nome,
       email: p.email,
       cpf: p.cpf,
-      pixChave: p.pixChave || "",
-      telefone: "",
     });
     setShowModal(true);
   }
@@ -154,6 +148,31 @@ export function ParceirosPontos() {
       toast.error("Erro ao salvar parceiro");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleReativar(p: Parceiro) {
+    if (!confirm(`Reativar ${p.nome}?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/v1/backoffice/parceiros/reactivate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: p.id }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        toast.error(data.error || "Erro ao reativar");
+        return;
+      }
+
+      toast.success("Parceiro reativado com sucesso");
+      fetchParceiros();
+    } catch (e) {
+      toast.error("Erro ao reativar parceiro");
     }
   }
 
@@ -262,7 +281,7 @@ export function ParceirosPontos() {
                   Email
                 </th>
                 <th className="text-left p-3 font-semibold text-gray-600">
-                  Clientes
+                  Indicados
                 </th>
                 <th className="text-left p-3 font-semibold text-gray-600">
                   Status
@@ -307,12 +326,19 @@ export function ParceirosPontos() {
                         >
                           Editar
                         </button>
-                        {p.status === "ATIVO" && (
+                        {p.status === "ATIVO" ? (
                           <button
                             onClick={() => handleDesligar(p)}
                             className="text-red-600 hover:text-red-800 text-xs font-medium"
                           >
                             Desligar
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleReativar(p)}
+                            className="text-green-600 hover:text-green-800 text-xs font-medium"
+                          >
+                            Reativar
                           </button>
                         )}
                       </div>

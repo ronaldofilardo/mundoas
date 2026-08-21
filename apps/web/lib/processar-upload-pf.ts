@@ -63,13 +63,41 @@ export async function processarUploadPlanilhaPF(
       raw: false,
     });
 
-    console.log(
-      "[processarUploadPlanilhaPF] Total de linhas:",
-      jsonData.length,
-    );
-
     if (!jsonData || jsonData.length < 2) {
       throw new Error("Planilha vazia ou sem cabeçalhos");
+    }
+
+    // Tornar o re-upload idempotente: remove os procedimentos/linhas brutas
+    // já existentes para este backoffice no mesmo mês de referência antes de
+    // inserir. O createMany com skipDuplicates NÃO atualiza linhas existentes,
+    // então re-envios colidiriam com registros antigos (ex.: valorTotal=0) e
+    // permaneceriam zerados na "Lista de Produção".
+    try {
+      const uploadAtual = await prisma.uploadPlanilhaBackoffice.findUnique({
+        where: { id: uploadId },
+        select: { mesReferencia: true },
+      });
+      if (uploadAtual?.mesReferencia) {
+        const [ano, mes] = uploadAtual.mesReferencia.split("-");
+        const inicioMes = new Date(Number(ano), Number(mes) - 1, 1);
+        const fimMes = new Date(Number(ano), Number(mes), 0, 23, 59, 59);
+        await prisma.procedimentoPF.deleteMany({
+          where: {
+            upload: { backofficeId },
+            dataReferencia: { gte: inicioMes, lte: fimMes },
+          },
+        });
+        await prisma.procedimentoPFRaw.deleteMany({
+          where: {
+            upload: { backofficeId, mesReferencia: uploadAtual.mesReferencia },
+          },
+        });
+      }
+    } catch (cleanupErr) {
+      console.warn(
+        "[processarUploadPlanilhaPF] Falha ao limpar registros anteriores do mês (não fatal):",
+        cleanupErr,
+      );
     }
 
     const headersRaw = jsonData[1] || [];
@@ -92,6 +120,14 @@ export async function processarUploadPlanilhaPF(
       return Object.values(headers).findIndex((h) => normalizar(h) === n);
     };
 
+    const getColIndexFlexible = (nomes: string[]) => {
+      for (const nome of nomes) {
+        const idx = getColIndex(nome);
+        if (idx >= 0) return idx;
+      }
+      return -1;
+    };
+
     const idxDataRef = getColIndex("Data de Referência");
     const idxPaciente = getColIndex("Paciente");
     const idxCpf = getColIndex("CPF");
@@ -100,7 +136,13 @@ export async function processarUploadPlanilhaPF(
     const idxUnidade = getColIndex("Unidade");
     const idxTipoProcedimento = getColIndex("Tipo Procedimento");
     const idxFormaPagamento = getColIndex("Forma Pagamento");
-    const idxValorTotal = getColIndex("Total Pago");
+    const idxValorTotal = getColIndexFlexible([
+      "Total Pago",
+      "Total Pagto",
+      "Valor Total",
+      "Total Pagamento",
+      "TotalPago",
+    ]);
 
     // Buscar parceiros do backoffice
     const liderancas = await prisma.equipe.findMany({
@@ -372,10 +414,6 @@ if (usuarioDaConta) {
         orphanedRows,
       },
     });
-
-    console.log(
-      `[processarUploadPlanilhaPF] Upload ${uploadId} processado: ${processedRows} procedimentos criados, ${rejectedRows} rejeitadas, ${orphanedRows} órfãs (todas em raw)`,
-    );
   } catch (error) {
     console.error("[processarUploadPlanilhaPF] Erro:", error);
     await prisma.uploadPlanilhaBackoffice.update({

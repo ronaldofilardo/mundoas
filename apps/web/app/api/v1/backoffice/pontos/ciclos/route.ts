@@ -13,6 +13,7 @@ const CreateCicloSchema = z.object({
   periodicidade: z.enum(["SEMESTRAL", "ANUAL"]),
   inicioAcumuloEm: z.string().datetime("Data inválida"),
   fimAcumuloEm: z.string().datetime("Data inválida"),
+  inicioResgateEm: z.string().datetime("Data inválida").optional(),
   fimResgateEm: z.string().datetime("Data inválida"),
 });
 
@@ -33,6 +34,7 @@ export async function GET(req: NextRequest) {
         periodicidade: c.periodicidade,
         inicioAcumuloEm: c.inicioAcumuloEm.toISOString(),
         fimAcumuloEm: c.fimAcumuloEm.toISOString(),
+        inicioResgateEm: c.inicioResgateEm?.toISOString(),
         fimResgateEm: c.fimResgateEm.toISOString(),
         status: c.status,
         processadoExpiracaoEm: c.processadoExpiracaoEm?.toISOString(),
@@ -56,11 +58,12 @@ export async function POST(req: NextRequest) {
       return badRequest(validation.error.message);
     }
 
-  const { nome, periodicidade, inicioAcumuloEm, fimAcumuloEm, fimResgateEm } =
+  const { nome, periodicidade, inicioAcumuloEm, fimAcumuloEm, inicioResgateEm, fimResgateEm } =
     validation.data;
 
   const inicio = new Date(inicioAcumuloEm);
   const fimAcumulo = new Date(fimAcumuloEm);
+  const inicioResgate = inicioResgateEm ? new Date(inicioResgateEm) : null;
   const fimResgate = new Date(fimResgateEm);
 
   if (inicio >= fimAcumulo) {
@@ -68,9 +71,19 @@ export async function POST(req: NextRequest) {
       "Data de fim de acúmulo deve ser posterior à data de início",
     );
   }
+  if (inicioResgate && fimAcumulo >= inicioResgate) {
+    return badRequest(
+      "Data de início do resgate deve ser posterior à data de fim de acúmulo",
+    );
+  }
   if (fimAcumulo >= fimResgate) {
     return badRequest(
       "Data de fim de resgate deve ser posterior à data de fim de acúmulo",
+    );
+  }
+  if (inicioResgate && inicioResgate >= fimResgate) {
+    return badRequest(
+      "Data de fim de resgate deve ser posterior à data de início do resgate",
     );
   }
 
@@ -97,6 +110,7 @@ export async function POST(req: NextRequest) {
       periodicidade,
       inicioAcumuloEm: inicio,
       fimAcumuloEm: fimAcumulo,
+      inicioResgateEm: inicioResgate,
       fimResgateEm: fimResgate,
       status: "EM_ANDAMENTO",
     },

@@ -114,7 +114,6 @@ describe('Componentes de Upload - Backoffice', () => {
         'Data de Referência',
         'Data do Pagamento',
         'Forma de Pagamento',
-        'Total Pago',
         'Paciente',
         'Procedimento',
         'CPF',
@@ -125,7 +124,6 @@ describe('Componentes de Upload - Backoffice', () => {
 
       const colunasEncontradas = [
         'Data de Referência',
-        'Total Pago',
         'Paciente',
         'Coluna Extra',
       ];
@@ -139,10 +137,10 @@ describe('Componentes de Upload - Backoffice', () => {
   describe('ProcessamentoUpload (Simulação)', () => {
     it('deve processar linhas válidas', () => {
       const linhas = [
-        { status: 'VALIDO', cpf: '12345678901', totalPago: 150 },
-        { status: 'VALIDO', cpf: '12345678902', totalPago: 200 },
-        { status: 'ORFÃO', cpf: '12345678903', totalPago: 100 },
-        { status: 'REJEITADO', cpf: '123', totalPago: 50 },
+        { status: 'VALIDO', cpf: '12345678901', valorComissao: 150 },
+        { status: 'VALIDO', cpf: '12345678902', valorComissao: 200 },
+        { status: 'ORFÃO', cpf: '12345678903', valorComissao: 100 },
+        { status: 'REJEITADO', cpf: '123', valorComissao: 50 },
       ];
 
       const validas = linhas.filter(l => l.status === 'VALIDO');
@@ -156,17 +154,17 @@ describe('Componentes de Upload - Backoffice', () => {
 
     it('deve calcular total de comissões por comercial', () => {
       const linhas = [
-        { comercialNome: 'Comercial 1', totalPago: 1000, comissao: 50 },
-        { comercialNome: 'Comercial 1', totalPago: 1500, comissao: 75 },
-        { comercialNome: 'Comercial 2', totalPago: 2000, comissao: 160 },
-        { comercialNome: 'Comercial 1', totalPago: 800, comissao: 40 },
+        { comercialNome: 'Comercial 1', valorComissao: 1000, comissao: 50 },
+        { comercialNome: 'Comercial 1', valorComissao: 1500, comissao: 75 },
+        { comercialNome: 'Comercial 2', valorComissao: 2000, comissao: 160 },
+        { comercialNome: 'Comercial 1', valorComissao: 800, comissao: 40 },
       ];
 
       const porComercial = linhas.reduce((acc, l) => {
         if (!acc[l.comercialNome]) {
           acc[l.comercialNome] = { totalVendas: 0, totalComissao: 0 };
         }
-        acc[l.comercialNome].totalVendas += l.totalPago;
+        acc[l.comercialNome].totalVendas += l.valorComissao;
         acc[l.comercialNome].totalComissao += l.comissao;
         return acc;
       }, {} as Record<string, { totalVendas: number; totalComissao: number }>);

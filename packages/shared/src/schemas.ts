@@ -283,8 +283,6 @@ export const criarParceiroSchema = z.object({
   nome: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
   email: z.string().email("Email inválido"),
   cpf: z.string().refine((val) => validarCPF(val), { message: "CPF inválido" }),
-  pixChave: z.string().optional(),
-  telefone: z.string().optional(),
 });
 
 export const atualizarParceiroSchema = z.object({
@@ -292,7 +290,6 @@ export const atualizarParceiroSchema = z.object({
   nome: z.string().min(3).optional(),
   email: z.string().email("Email inválido").optional(),
   cpf: z.string().refine((val) => validarCPF(val), { message: "CPF inválido" }).optional(),
-  pixChave: z.string().optional(),
   status: z.enum(["ATIVO", "DESLIGADO"]).optional(),
 });
 

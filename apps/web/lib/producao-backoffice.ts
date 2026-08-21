@@ -4,16 +4,15 @@ import { prisma } from "@asa/database";
 export type ProcedimentoProducao = {
   id: string;
   dataReferencia: Date;
-  totalPago: number;
   consultorPfId: string | null;
   parceiroId: string | null;
+  valorComissao: number;
 };
 
 export type GetProcedimentosParams = {
   backofficeId: string;
   ano: number;
   mes?: number | null;
-  status?: string | null;
   parceiroId?: string | null;
 };
 
@@ -29,10 +28,6 @@ export function buildProducaoWhere(
 
   if (params.parceiroId) {
     where.parceiroId = params.parceiroId;
-  }
-
-  if (params.status && params.status !== "TODOS") {
-    where.statusComissao = params.status as Prisma.ProcedimentoPFWhereInput["statusComissao"];
   }
 
   if (params.ano) {
@@ -60,17 +55,17 @@ export async function getProcedimentosDoBackoffice(
     select: {
       id: true,
       dataReferencia: true,
-      totalPago: true,
       consultorPfId: true,
       parceiroId: true,
+      valorComissao: true,
     },
   });
 
   return rows.map((r) => ({
     id: r.id,
     dataReferencia: r.dataReferencia,
-    totalPago: Number(r.totalPago),
     consultorPfId: r.consultorPfId,
     parceiroId: r.parceiroId,
+    valorComissao: Number(r.valorComissao),
   }));
 }

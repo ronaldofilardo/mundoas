@@ -240,7 +240,7 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
                     {producao.parceiro?.nome}
                   </td>
                   <td className="px-4 py-3 text-sm font-semibold text-green-600 text-right">
-                    R$ {producao.totalPago}
+                    R$ {producao.valorComissao}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600 text-center">
                     {new Date(producao.dataReferencia || producao.dataProcedimento).toLocaleDateString(

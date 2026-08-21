@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     return badRequest(validation.error.errors[0].message);
   }
 
-  const { nome, email, cpf, pixChave } = validation.data;
+  const { nome, email, cpf } = validation.data;
 
   const cpfUnmasked = cpf.replace(/\D/g, "");
 
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     return badRequest("E-mail já cadastrado");
   }
 
-  const passwordHash = await hash("123456", 10);
+  const passwordHash = await hash(cpfUnmasked, 10);
 
   const usuario = await prisma.usuario.create({
     data: {
@@ -119,6 +119,7 @@ export async function POST(req: NextRequest) {
       email,
       senhaHash: passwordHash,
       tipo: "PARCEIRO",
+      senhaTemporaria: true,
     },
   });
 
@@ -126,7 +127,6 @@ export async function POST(req: NextRequest) {
     data: {
       nome,
       cpf: cpfUnmasked,
-      pixChave: pixChave || null,
       usuarioId: usuario.id,
       backofficeId,
       status: "ATIVO",
@@ -154,7 +154,7 @@ export async function PUT(req: NextRequest) {
     return badRequest(validation.error.errors[0].message);
   }
 
-  const { id, nome, email, cpf, pixChave } = validation.data;
+  const { id, nome, email, cpf } = validation.data;
 
   const parceiro = await prisma.parceiro.findUnique({
     where: { id },
@@ -201,7 +201,6 @@ export async function PUT(req: NextRequest) {
     data: {
       nome,
       cpf: cpfUnmasked,
-      pixChave: pixChave || null,
     },
   });
 
@@ -210,7 +209,7 @@ export async function PUT(req: NextRequest) {
     acao: "ATUALIZAR",
     entidade: "PARCEIRO",
     entidadeId: id,
-    detalhes: { nome, cpf: cpfUnmasked, pixChave },
+    detalhes: { nome, cpf: cpfUnmasked },
   });
 
   return ok({ success: true });

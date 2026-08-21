@@ -5,8 +5,17 @@ export function usePontosData(activeTab: string, BackofficeId?: string) {
   const [data, setData] = useState<any>({});
   const [loading, setLoading] = useState(false);
 
+  // Tabs that use the /api/v1/backoffice/pontos/ pattern
+  const PONTOS_TABS = ["ciclos", "configuracao", "distribuir", "premios", "ranking", "resgates"];
+
   async function fetchData() {
     if (!BackofficeId) return;
+    
+    // Skip tabs that fetch their own data
+    if (!PONTOS_TABS.includes(activeTab)) {
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     try {

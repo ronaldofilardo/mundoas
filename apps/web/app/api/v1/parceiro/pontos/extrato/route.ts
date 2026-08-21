@@ -77,13 +77,44 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    // Calcular pontos totais do ciclo (igual ao ranking: CREDITO - DEBITO + ESTORNO)
+    const [creditos, debitos, estornos] = await Promise.all([
+      prisma.movimentacaoPontos.aggregate({
+        _sum: { quantidade: true },
+        where: {
+          parceiroId,
+          cicloPontosId: cicloId,
+          tipo: 'CREDITO',
+        },
+      }),
+      prisma.movimentacaoPontos.aggregate({
+        _sum: { quantidade: true },
+        where: {
+          parceiroId,
+          cicloPontosId: cicloId,
+          tipo: 'DEBITO',
+        },
+      }),
+      prisma.movimentacaoPontos.aggregate({
+        _sum: { quantidade: true },
+        where: {
+          parceiroId,
+          cicloPontosId: cicloId,
+          tipo: 'ESTORNO',
+        },
+      }),
+    ]);
+
+    const pontosTotaisCiclo = (creditos._sum.quantidade || 0) - (debitos._sum.quantidade || 0) + (estornos._sum.quantidade || 0);
+
     return ok({
       extrato: {
         cicloId,
         total,
         limit,
         offset,
-        movimentacoes: extratoComSaldo.reverse(), // Ordenar em ordem crescente para exibição
+        pontosTotaisCiclo,
+        movimentacoes: extratoComSaldo.reverse(),
       },
     });
   } catch (err) {

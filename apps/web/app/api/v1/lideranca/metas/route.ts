@@ -8,44 +8,117 @@ const metaLiderancaSchema = z.object({
   valorMeta: z.number().min(0),
 });
 
+const MESES = [
+  "01", "02", "03", "04", "05", "06",
+  "07", "08", "09", "10", "11", "12",
+] as const;
+
+function getAnoAtual(): number {
+  return new Date().getFullYear();
+}
+
+function composeMesReferencia(ano: number, mes: string): string {
+  return `${ano}-${mes}`;
+}
+
 export async function GET() {
   const { session, lideranca, error } = await requireLiderancaWithScope();
   if (error) return error;
 
-  const [metasLideranca, consultoresPf] = await Promise.all([
+  const ano = getAnoAtual();
+  const mesesReferencia = MESES.map((m) => composeMesReferencia(ano, m));
+
+  const consultoresPf = await prisma.consultorPf.findMany({
+    where: { liderancaId: lideranca.id, status: "ATIVO" },
+    select: { id: true, nome: true },
+  });
+
+  const consultorIds = consultoresPf.map((c) => c.id);
+
+  const [metasLideranca, metasConsultores, procedimentos] = await Promise.all([
     prisma.metaEquipe.findMany({
-      where: { equipeId: lideranca.id },
-      orderBy: { createdAt: "desc" },
+      where: { equipeId: lideranca.id, mesReferencia: { in: mesesReferencia } },
     }),
-    prisma.consultorPf.findMany({
-      where: { liderancaId: lideranca.id, status: "ATIVO" },
-      include: { metas: true },
+    prisma.metaConsultorPf.findMany({
+      where: { consultorPfId: { in: consultorIds }, mesReferencia: { in: mesesReferencia } },
+    }),
+    prisma.procedimentoPF.findMany({
+      where: {
+        consultorPfId: { in: consultorIds },
+        dataReferencia: {
+          gte: new Date(`${ano}-01-01`),
+          lt: new Date(`${ano + 1}-01-01`),
+        },
+      },
+      select: { consultorPfId: true, dataReferencia: true, valorComissao: true },
     }),
   ]);
 
-  const metasPorConsultorPf = await prisma.metaConsultorPf.findMany({
-    where: { consultorPfId: { in: consultoresPf.map((c) => c.id) } },
+  const metaLiderancaPorMes = new Map(metasLideranca.map((m) => [m.mesReferencia, Number(m.valorMeta)]));
+  const metaConsultorPorMes = new Map<string, Map<string, number>>();
+  for (const mc of metasConsultores) {
+    if (!metaConsultorPorMes.has(mc.consultorPfId)) {
+      metaConsultorPorMes.set(mc.consultorPfId, new Map());
+    }
+    metaConsultorPorMes.get(mc.consultorPfId)!.set(mc.mesReferencia, Number(mc.valorMeta));
+  }
+
+  const producaoPorConsultorMes = new Map<string, Map<string, number>>();
+  for (const p of procedimentos) {
+    if (!p.consultorPfId) continue;
+    const mesRef = `${p.dataReferencia.getFullYear()}-${String(p.dataReferencia.getMonth() + 1).padStart(2, "0")}`;
+    if (!producaoPorConsultorMes.has(p.consultorPfId)) {
+      producaoPorConsultorMes.set(p.consultorPfId, new Map());
+    }
+    const mapa = producaoPorConsultorMes.get(p.consultorPfId)!;
+    mapa.set(mesRef, (mapa.get(mesRef) || 0) + Number(p.valorComissao));
+  }
+
+  const mesesData = MESES.map((mes) => {
+    const mesRef = composeMesReferencia(ano, mes);
+    const metaLiderancaMes = metaLiderancaPorMes.get(mesRef) || 0;
+
+    let somaMetasConsultores = 0;
+    let somaAtingidoConsultores = 0;
+
+    const membros = consultoresPf.map((cp) => {
+      const meta = metaConsultorPorMes.get(cp.id)?.get(mesRef) || 0;
+      const atingido = producaoPorConsultorMes.get(cp.id)?.get(mesRef) || 0;
+      somaMetasConsultores += meta;
+      somaAtingidoConsultores += atingido;
+      return {
+        tipo: "CONSULTOR_PF" as const,
+        id: cp.id,
+        nome: cp.nome,
+        meta,
+        atingido,
+        percentual: meta > 0 ? Math.round((atingido / meta) * 100) : 0,
+      };
+    });
+
+    const metaEfetivaLideranca = metaLiderancaMes > 0 ? metaLiderancaMes : somaMetasConsultores;
+
+    return {
+      mes: mesRef,
+      mesLabel: mes,
+      lideranca: {
+        meta: metaEfetivaLideranca,
+        atingido: somaAtingidoConsultores,
+        percentual: metaEfetivaLideranca > 0 ? Math.round((somaAtingidoConsultores / metaEfetivaLideranca) * 100) : 0,
+      },
+      membros,
+      totais: {
+        meta: somaMetasConsultores,
+        atingido: somaAtingidoConsultores,
+        percentual: somaMetasConsultores > 0 ? Math.round((somaAtingidoConsultores / somaMetasConsultores) * 100) : 0,
+      },
+    };
   });
 
-  const membros = [
-    ...consultoresPf.map((cp) => ({
-      tipo: "CONSULTOR_PF" as const,
-      id: cp.id,
-      nome: cp.nome,
-      meta: cp.metas[0] || null,
-      totalParceiros: 0,
-    })),
-  ];
-
   return ok({
-    lideranca: {
-      id: lideranca.id,
-      metas: metasLideranca,
-    },
-    membros,
-    totais: {
-      consultoresPf: consultoresPf.length,
-    },
+    ano,
+    meses: mesesData,
+    consultores: consultoresPf.map((c) => ({ id: c.id, nome: c.nome })),
   });
 }
 

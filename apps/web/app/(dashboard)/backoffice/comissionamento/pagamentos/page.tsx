@@ -90,7 +90,7 @@ export default function PagamentosPage() {
         return;
       }
       const data = await res.json();
-      toast.success(`✅ ${data.mensagem} - Total: ${formatBRL(data.totalPago)}`);
+      toast.success(`✅ ${data.mensagem} - Total: ${formatBRL(data.valorComissao || 0)}`);
       setSelectedComissoes([]);
       fetchComissoes();
     } catch {

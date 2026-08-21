@@ -20,14 +20,12 @@ interface Procedimento {
   dataReferencia: string;
   dataPagamento: string;
   formaPagamento: string;
-  totalPago: string;
   paciente: string;
   procedimento: string;
   cpf: string;
   tipoProcedimento: string;
   unidade: string;
   valorComissao: string;
-  statusComissao: string;
   parceiro: { id: string; nome: string; cpf: string } | null;
   indicado: { id: string; nome: string; cpf: string } | null;
   comercial: { id: string; nome: string; funcao?: string } | null;
@@ -54,7 +52,6 @@ interface ProducaoData {
 export default function LiderancaProducaoPage() {
   const [data, setData] = useState<ProducaoData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState("TODOS");
   const [filterMes, setFilterMes] = useState("");
   const [filterConsultor, setFilterConsultor] = useState("");
   const [filterSearch, setFilterSearch] = useState("");
@@ -62,7 +59,7 @@ export default function LiderancaProducaoPage() {
 
   useEffect(() => {
     fetchProducao();
-  }, [filterStatus, filterMes, filterConsultor, currentPage]);
+  }, [filterMes, filterConsultor, currentPage]);
 
   async function fetchProducao() {
     setLoading(true);
@@ -71,7 +68,6 @@ export default function LiderancaProducaoPage() {
         page: currentPage.toString(),
         limit: "50",
       });
-      if (filterStatus !== "TODOS") params.set("status", filterStatus);
       if (filterMes) params.set("mesReferencia", filterMes);
       if (filterConsultor) params.set("consultorPfId", filterConsultor);
 
@@ -110,18 +106,6 @@ export default function LiderancaProducaoPage() {
       .join(" ");
   }
 
-  function formatStatus(status: string) {
-    switch (status) {
-      case "PAGA":
-        return { label: "Pago", class: "bg-green-100 text-green-800" };
-      case "CALCULADA":
-        return { label: "Calculada", class: "bg-blue-100 text-blue-800" };
-      case "PENDENTE":
-        return { label: "Pendente", class: "bg-yellow-100 text-yellow-800" };
-      default:
-        return { label: status, class: "bg-gray-100 text-gray-800" };
-    }
-  }
 
   function formatMes(mes: string) {
     if (!mes) return "-";
@@ -161,11 +145,6 @@ export default function LiderancaProducaoPage() {
     0
   ) || 0;
 
-  const totalReceita = filteredProcedimentos?.reduce(
-    (sum, p) => sum + Number(p.totalPago),
-    0
-  ) || 0;
-
   if (loading && !data) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -185,12 +164,6 @@ export default function LiderancaProducaoPage() {
         </div>
         <div className="flex gap-6 text-right">
           <div>
-            <p className="text-xs text-gray-500">Total Receita</p>
-            <p className="text-lg font-bold text-gray-900">
-              R$ {totalReceita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-            </p>
-          </div>
-          <div>
             <p className="text-xs text-gray-500">Total Comissões</p>
             <p className="text-lg font-bold text-green-600">
               R$ {totalComissao.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
@@ -201,19 +174,7 @@ export default function LiderancaProducaoPage() {
 
       <div className="card">
         <div className="flex flex-wrap gap-3 mb-4">
-          <select
-            value={filterStatus}
-            onChange={(e) => {
-              setFilterStatus(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="text-sm border rounded px-3 py-2"
-          >
-            <option value="TODOS">Todos Status</option>
-            <option value="PENDENTE">Pendente</option>
-            <option value="CALCULADA">Calculada</option>
-            <option value="PAGA">Pago</option>
-          </select>
+          
 
           <select
             value={filterMes}
@@ -271,8 +232,6 @@ export default function LiderancaProducaoPage() {
                 <th className="text-left p-2 font-medium text-gray-600">Comercial</th>
                 <th className="text-left p-2 font-medium text-gray-600">Consultor PF</th>
                 <th className="text-left p-2 font-medium text-gray-600">Mês Ref.</th>
-                <th className="text-left p-2 font-medium text-gray-600">Status</th>
-                <th className="text-right p-2 font-medium text-gray-600">Total Pago</th>
                 <th className="text-right p-2 font-medium text-gray-600">Comissão</th>
               </tr>
             </thead>
@@ -313,14 +272,6 @@ export default function LiderancaProducaoPage() {
                   <td className="p-2 text-gray-600">
                     {formatMesReferencia(p.dataReferencia)}
                   </td>
-                  <td className="p-2">
-                    <span className={`text-xs px-2 py-0.5 rounded ${formatStatus(p.statusComissao).class}`}>
-                      {formatStatus(p.statusComissao).label}
-                    </span>
-                  </td>
-                  <td className="p-2 text-right text-gray-900">
-                    R$ {Number(p.totalPago).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </td>
                   <td className="p-2 text-right text-green-600 font-medium">
                     R$ {Number(p.valorComissao).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </td>
@@ -329,7 +280,7 @@ export default function LiderancaProducaoPage() {
 
               {filteredProcedimentos?.length === 0 && (
                 <tr>
-                  <td colSpan={14} className="p-8 text-center text-gray-500">
+                  <td colSpan={12} className="p-8 text-center text-gray-500">
                     Nenhum procedimento encontrado
                   </td>
                 </tr>

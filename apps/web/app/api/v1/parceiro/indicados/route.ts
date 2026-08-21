@@ -22,9 +22,6 @@ export async function GET(req: NextRequest) {
       parceiroId,
       status: status as "ATIVO" | "DESVINCULADO",
     },
-    include: {
-      _count: { select: { procedimentos: true } },
-    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -34,7 +31,6 @@ export async function GET(req: NextRequest) {
     cpf: i.cpf,
     telefone: i.telefone,
     status: i.status,
-    totalProcedimentos: i._count.procedimentos,
     createdAt: i.createdAt,
     desvinculadoEm: i.desvinculadoEm,
   }));

@@ -81,7 +81,7 @@ async function main() {
       dataProcedimento: producao.dataReferencia.toISOString(),
       procedimento: producao.procedimento,
       paciente: producao.paciente,
-      totalPago: producao.totalPago?.toString() || "0",
+      valorComissao: producao.valorComissao?.toString() || "0",
       parceiro: producao.parceiro,
       pontosDistribuidos: pontos ? {
         id: pontos.id,
@@ -93,7 +93,7 @@ async function main() {
 
   console.log("\n📊 Produções para exibir na aba:");
   producoesComPontos.forEach((p, i) => {
-    console.log(`${i + 1}. ${p.paciente} - ${p.parceiro!.nome} - R$ ${p.totalPago} - ${p.pontosDistribuidos ? `✅ ${p.pontosDistribuidos.pontos} pts` : '❌ Sem pontos'}`);
+    console.log(`${i + 1}. ${p.paciente} - ${p.parceiro!.nome} - R$ ${p.valorComissao} - ${p.pontosDistribuidos ? `✅ ${p.pontosDistribuidos.pontos} pts` : '❌ Sem pontos'}`);
   });
 }
 

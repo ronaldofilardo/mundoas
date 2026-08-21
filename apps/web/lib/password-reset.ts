@@ -20,12 +20,18 @@ export function hashToken(token: string): string {
 /**
  * Validate password strength
  * Requirements: min 8 chars, 1 uppercase, 1 number, 1 special char
+ * @param allowCpfAsTemp - if true, allows 11-digit numeric CPF as valid (for partner first access)
  */
-export function validatePasswordStrength(password: string): {
+export function validatePasswordStrength(password: string, allowCpfAsTemp = false): {
   valid: boolean;
   errors: string[];
 } {
   const errors: string[] = [];
+
+  // Allow CPF (11 digits only) as temporary password for partners
+  if (allowCpfAsTemp && /^\d{11}$/.test(password)) {
+    return { valid: true, errors: [] };
+  }
 
   if (password.length < 8) {
     errors.push("Mínimo 8 caracteres");

@@ -13,14 +13,16 @@ export function RankingPontos({ data }: { data?: any[] }) {
               <th className="text-left p-2">#</th>
               <th className="text-left p-2">Parceiro</th>
               <th className="text-right p-2">Pontos</th>
+              <th className="text-right p-2">Produção (R$)</th>
             </tr>
           </thead>
           <tbody>
             {data.map((pos: any, i: number) => (
               <tr key={pos.id || i} className="border-b">
-                <td className="p-2">{i + 1}</td>
+                <td className="p-2">{pos.posicao ?? i + 1}</td>
                 <td className="p-2">{pos.parceiro?.nome}</td>
-                <td className="p-2 text-right font-semibold">{pos.pontos}</td>
+                <td className="p-2 text-right font-semibold">{pos.pontosAcumulados}</td>
+                <td className="p-2 text-right font-semibold">{Number(pos.totalProducao || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
               </tr>
             ))}
           </tbody>

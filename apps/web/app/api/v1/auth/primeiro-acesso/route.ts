@@ -20,11 +20,6 @@ export async function POST(req: NextRequest) {
       return badRequest("Senha atual e nova senha são obrigatórias");
     }
 
-    const passwordValidation = validatePasswordStrength(novaSenha);
-    if (!passwordValidation.valid) {
-      return badRequest(passwordValidation.errors.join(", "));
-    }
-
     const sessionRes = await fetch(`${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/auth/session`, {
       headers: {
         cookie: req.headers.get("cookie") || "",
@@ -44,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     const usuario = await prisma.usuario.findUnique({
       where: { id: userId },
-      select: { id: true, senhaHash: true, senhaTemporaria: true, email: true, nome: true },
+      select: { id: true, senhaHash: true, senhaTemporaria: true, email: true, nome: true, tipo: true },
     });
 
     if (!usuario) {
@@ -53,6 +48,13 @@ export async function POST(req: NextRequest) {
 
     if (!usuario.senhaTemporaria) {
       return badRequest("Senha já foi alterada anteriormente");
+    }
+
+    // Allow CPF as temporary password for partners
+    const isParceiroPrimeiroAcesso = usuario.tipo === "PARCEIRO";
+    const passwordValidation = validatePasswordStrength(novaSenha, isParceiroPrimeiroAcesso);
+    if (!passwordValidation.valid) {
+      return badRequest(passwordValidation.errors.join(", "));
     }
 
     const senhaValida = await compare(senhaAtual, usuario.senhaHash);

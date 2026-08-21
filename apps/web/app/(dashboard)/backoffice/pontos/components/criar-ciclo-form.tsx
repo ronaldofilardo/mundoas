@@ -8,6 +8,7 @@ export function CriarCicloForm() {
   const [periodicidade, setPeriodicidade] = useState<"SEMESTRAL" | "ANUAL">("ANUAL");
   const [inicio, setInicio] = useState("");
   const [fimAcumulo, setFimAcumulo] = useState("");
+  const [inicioResgate, setInicioResgate] = useState("");
   const [fimResgate, setFimResgate] = useState("");
   const [salvando, setSalvando] = useState(false);
 
@@ -26,6 +27,7 @@ export function CriarCicloForm() {
           periodicidade,
           inicioAcumuloEm: new Date(inicio).toISOString(),
           fimAcumuloEm: new Date(fimAcumulo).toISOString(),
+          inicioResgateEm: inicioResgate ? new Date(inicioResgate).toISOString() : undefined,
           fimResgateEm: new Date(fimResgate).toISOString(),
         }),
       });
@@ -51,27 +53,31 @@ export function CriarCicloForm() {
       <h3 className="font-semibold text-gray-900 mb-3">Criar novo ciclo</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nome</label>
-          <input value={nome} onChange={(e) => setNome(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ex: 2026 - 1º Semestre" />
+          <label className="block text-xs text-gray-600 mb-1" htmlFor="nome">Nome</label>
+          <input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ex: 2026 - 1º Semestre" />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Periodicidade</label>
-          <select value={periodicidade} onChange={(e) => setPeriodicidade(e.target.value as any)} className="w-full px-3 py-2 border rounded-lg text-sm">
+          <label className="block text-xs text-gray-600 mb-1" htmlFor="periodicidade">Periodicidade</label>
+          <select id="periodicidade" value={periodicidade} onChange={(e) => setPeriodicidade(e.target.value as any)} className="w-full px-3 py-2 border rounded-lg text-sm">
             <option value="ANUAL">Anual</option>
             <option value="SEMESTRAL">Semestral</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Início</label>
-          <input type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+          <label className="block text-xs text-gray-600 mb-1" htmlFor="inicio">Início</label>
+          <input id="inicio" type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Fim Acúmulo</label>
-          <input type="date" value={fimAcumulo} onChange={(e) => setFimAcumulo(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+          <label className="block text-xs text-gray-600 mb-1" htmlFor="fimAcumulo">Fim Acúmulo</label>
+          <input id="fimAcumulo" type="date" value={fimAcumulo} onChange={(e) => setFimAcumulo(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Fim Resgate</label>
-          <input type="date" value={fimResgate} onChange={(e) => setFimResgate(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+          <label className="block text-xs text-gray-600 mb-1" htmlFor="inicioResgate">Início do Resgate (opcional)</label>
+          <input id="inicioResgate" type="date" value={inicioResgate} onChange={(e) => setInicioResgate(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-600 mb-1" htmlFor="fimResgate">Fim Resgate</label>
+          <input id="fimResgate" type="date" value={fimResgate} onChange={(e) => setFimResgate(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
       </div>
       <button onClick={handleCriar} disabled={salvando} className="mt-3 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50">

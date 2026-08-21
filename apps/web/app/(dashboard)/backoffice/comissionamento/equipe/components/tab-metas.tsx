@@ -27,15 +27,23 @@ const MESES = [
 
 interface TabMetasProps {
   itens: EquipeItem[];
+  mesReferencia: string;
+  onMesChange: (mes: string) => void;
 }
 
-export function TabMetas({ itens }: TabMetasProps) {
+export function TabMetas({ itens, mesReferencia, onMesChange }: TabMetasProps) {
   const { metasPorMembro, loading, refetch } = useEquipeMetas(itens);
-  const [anoReferencia] = useState(new Date().getFullYear());
   const [showInativos, setShowInativos] = useState(false);
   const [regrasComerciais, setRegrasComerciais] = useState<RegrasComerciais | null>(null);
   const [regrasGestores, setRegrasGestores] = useState<RegrasGestores | null>(null);
   const [regrasLoading, setRegrasLoading] = useState(true);
+
+  const [mesSelecionado, setMesSelecionado] = useState(mesReferencia.split("-")[1]);
+
+  useEffect(() => {
+    const mesFromUrl = mesReferencia.split("-")[1];
+    setMesSelecionado(mesFromUrl);
+  }, [mesReferencia]);
 
   useEffect(() => {
     async function fetchRegras() {
@@ -77,6 +85,13 @@ export function TabMetas({ itens }: TabMetasProps) {
     () => itens.filter((i) => showInativos || i.status === "ATIVO"),
     [itens, showInativos],
   );
+
+  const mesRefSelecionado = `${mesReferencia.split("-")[0]}-${mesSelecionado}`;
+
+  function handleMesChangeLocal(value: string) {
+    setMesSelecionado(value);
+    onMesChange(`${mesReferencia.split("-")[0]}-${value}`);
+  }
 
   async function handleSalvarMeta(
     membroId: string,
@@ -170,172 +185,151 @@ export function TabMetas({ itens }: TabMetasProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <h2 className="text-lg font-semibold text-gray-800">
-          Metas Anual ({anoReferencia})
+          Metas - {MESES.find(m => m.value === mesSelecionado)?.label}/{mesReferencia.split("-")[0]}
         </h2>
-        <label className="flex items-center gap-2 text-sm text-gray-600">
-          <input
-            type="checkbox"
-            checked={showInativos}
-            onChange={(e) => setShowInativos(e.target.checked)}
-            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-          />
-          Mostrar inativos
-        </label>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <label htmlFor="mes-select" className="text-sm text-gray-600">Mês:</label>
+            <select
+              id="mes-select"
+              value={mesSelecionado}
+              onChange={(e) => handleMesChangeLocal(e.target.value)}
+              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+            >
+              {MESES.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-gray-600">
+            <input
+              type="checkbox"
+              checked={showInativos}
+              onChange={(e) => setShowInativos(e.target.checked)}
+              className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            />
+            Mostrar inativos
+          </label>
+        </div>
       </div>
 
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm table-auto min-w-[1700px]">
+          <table className="w-full text-sm table-auto min-w-[800px]">
             <colgroup>
-              <col style={{ width: "240px" }} />
-              <col style={{ width: "120px" }} />
-              {MESES.map((m) => (
-                <col key={m.value} style={{ width: "110px" }} />
-              ))}
+              <col style={{ width: "280px" }} />
+              <col style={{ width: "160px" }} />
+              <col style={{ width: "160px" }} />
+              <col style={{ width: "160px" }} />
             </colgroup>
             <thead>
               <tr className="border-b bg-gray-50 sticky top-0 z-10">
-                <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[240px]">
-                  Membro
+                <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[280px]">
+                  Empresa/Setor
                 </th>
-                <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[120px]" />
-                {MESES.map((m) => (
-                  <th
-                    key={m.value}
-                    className="text-center p-2 font-semibold text-gray-700 bg-gray-50 w-[110px]"
-                  >
-                    {m.label}
-                  </th>
-                ))}
+                <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[160px]">
+                  Meta
+                </th>
+                <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[160px]">
+                  Produzido
+                </th>
+                <th className="text-center p-3 font-semibold text-gray-50 w-[160px]">
+                  Projeção
+                </th>
               </tr>
             </thead>
-            {itensVisiveis.map((m) => {
+            <tbody>
+              {itensVisiveis.map((m) => {
                 const metas = metasPorMembro[m.id] ?? [];
+                const meta = metas.find((mt) => mt.mesReferencia === mesRefSelecionado);
+                const valorMeta = meta ? Number(meta.valorMeta) : 0;
+                const valorAtingido = meta ? Number(meta.valorAtingido) : 0;
+                const valorComissao = meta ? Number(meta.valorComissao ?? 0) : 0;
+
                 const funcao =
                   m.funcao && m.funcao.trim() !== ""
                     ? m.funcao.replace(/_/g, " ")
                     : "-";
 
-                const renderInput = (
-                  mLabel: { value: string; label: string },
-                  valor: number | string,
-                  onSave: (mes: string, valor: string) => void,
-                ) => {
-                  const mesRef = `${anoReferencia}-${mLabel.value}`;
-                  return (
-                    <td key={mLabel.value} className="p-2">
-                      <div className="flex items-center gap-1">
+                const pct = getComissaoFromFuncao(
+                  { regrasComerciais, regrasGestores },
+                  funcao === "-" ? undefined : funcao,
+                );
+                const comissaoCalculada = pct && valorAtingido > 0
+                  ? calcularValorComissaoNum(String(valorAtingido), pct)
+                  : valorComissao;
+
+                const nomeExibicao = m.kind === "comercial"
+                  ? m.nome
+                  : m.kind === "lideranca"
+                    ? `${m.nome} (Liderança)`
+                    : m.nome;
+
+                return (
+                  <tr
+                    key={`${m.kind}-${m.id}-${mesSelecionado}`}
+                    className={`border-b hover:bg-gray-50 ${m.status === "INATIVO" ? "opacity-50" : ""}`}
+                  >
+                    <td className="p-3">
+                      <p className="font-medium text-gray-900 truncate">{nomeExibicao}</p>
+                      <p className="text-xs text-gray-500 truncate">{m.email}</p>
+                      <p className="text-xs text-gray-400">{funcao} • {m.status}</p>
+                    </td>
+                    <td className="p-3 text-center">
+                      <div className="flex items-center justify-center gap-1">
                         <span className="text-xs text-gray-500">R$</span>
                         <input
                           type="number"
                           step="0.01"
                           min="0"
-                          defaultValue={valor || ""}
-                          placeholder="0"
-                          className="w-full px-2 py-1 border rounded text-xs text-center focus-ring"
+                          defaultValue={valorMeta || ""}
+                          key={`meta-${m.id}-${mesSelecionado}`}
                           onBlur={(e) => {
                             const val = e.target.value;
-                            if (val) onSave(mesRef, val);
+                            if (val) handleSalvarMeta(m.id, mesRefSelecionado, val);
                           }}
+                          placeholder="0"
+                          className="w-[120px] px-2 py-1 border rounded text-xs text-center focus:ring"
                         />
                       </div>
                     </td>
-                  );
-                };
-
-                const renderComissao = (
-                  mLabel: { value: string; label: string },
-                  valorAtingido: number | string,
-                ) => {
-                  const mesRef = `${anoReferencia}-${mLabel.value}`;
-                  const pct = getComissaoFromFuncao(
-                    { regrasComerciais, regrasGestores },
-                    funcao === "-" ? undefined : funcao,
-                  );
-                  const valorComissao = pct ? calcularValorComissaoNum(String(valorAtingido || 0), pct) : "";
-                  return (
-                    <td key={mLabel.value} className="p-2">
-                      <div className="flex items-center gap-1">
+                    <td className="p-3 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="text-xs text-gray-500">R$</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          defaultValue={valorAtingido || ""}
+                          key={`producao-${m.id}-${mesSelecionado}`}
+                          onBlur={(e) => {
+                            const val = e.target.value;
+                            if (val) handleSalvarProducao(m.id, mesRefSelecionado, val, funcao === "-" ? undefined : funcao);
+                          }}
+                          placeholder="0"
+                          className="w-[120px] px-2 py-1 border rounded text-xs text-center focus:ring"
+                        />
+                      </div>
+                    </td>
+                    <td className="p-3 text-center">
+                      <div className="flex items-center justify-center gap-1">
                         <span className="text-xs text-gray-500">R$</span>
                         <input
                           type="text"
                           readOnly
-                          value={valorComissao ? valorComissao.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ""}
-                          placeholder="0"
-                          className="w-full px-2 py-1 border rounded text-xs text-center bg-gray-50 text-gray-600"
+                          value={comissaoCalculada ? comissaoCalculada.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0,00"}
+                          className="w-[120px] px-2 py-1 border rounded text-xs text-center bg-gray-50 text-gray-600"
                         />
                       </div>
                     </td>
-                  );
-                };
-
-                return (
-                  <tbody key={`${m.kind}-${m.id}`}>
-                    <tr
-                      className={`border-b hover:bg-gray-50 ${m.status === "INATIVO" ? "opacity-50" : ""}`}
-                    >
-                      <td className="p-3">
-                        <p className="font-medium text-gray-900 truncate">{m.nome}</p>
-                        <p className="text-xs text-gray-500 truncate">{m.email}</p>
-                      </td>
-                      <td className="p-3">
-                        <p className="text-xs font-semibold text-gray-500">Metas</p>
-                      </td>
-                      {MESES.map((mLabel) => {
-                        const mesRef = `${anoReferencia}-${mLabel.value}`;
-                        const meta = metas.find(
-                          (mt) => mt.mesReferencia === mesRef,
-                        );
-                        const valor = meta ? Number(meta.valorMeta) : "";
-                        return renderInput(mLabel, valor, (mes, v) =>
-                          handleSalvarMeta(m.id, mes, v),
-                        );
-                      })}
-                    </tr>
-                    <tr
-                      className={`border-b hover:bg-gray-50 ${m.status === "INATIVO" ? "opacity-50" : ""}`}
-                    >
-                       <td className="p-3" colSpan={1}>
-                        <p className="text-xs text-gray-800 font-medium truncate">
-                          {funcao}
-                        </p>
-                        <p className="text-xs text-gray-500">{m.status}</p>
-                      </td>
-                       <td className="p-3">
-                         <p className="text-xs font-semibold text-gray-500">Produção</p>
-                       </td>
-                       {MESES.map((mLabel) => {
-                         const mesRef = `${anoReferencia}-${mLabel.value}`;
-                         const meta = metas.find(
-                           (mt) => mt.mesReferencia === mesRef,
-                         );
-                         const valor = meta ? Number(meta.valorAtingido) : "";
-                         return renderInput(mLabel, valor, (mes, v) =>
-                           handleSalvarProducao(m.id, mes, v, funcao),
-                         );
-                       })}
-                    </tr>
-                    <tr
-                      className={`border-b hover:bg-gray-50 ${m.status === "INATIVO" ? "opacity-50" : ""}`}
-                    >
-                       <td className="p-3" colSpan={1} />
-                       <td className="p-3">
-                         <p className="text-xs font-semibold text-gray-500">Comissão</p>
-                       </td>
-                       {MESES.map((mLabel) => {
-                         const mesRef = `${anoReferencia}-${mLabel.value}`;
-                         const meta = metas.find(
-                           (mt) => mt.mesReferencia === mesRef,
-                         );
-                         const valorAtingido = meta ? Number(meta.valorAtingido) : "";
-                         return renderComissao(mLabel, valorAtingido);
-                       })}
-                    </tr>
-                  </tbody>
+                  </tr>
                 );
               })}
+            </tbody>
           </table>
         </div>
       </div>

@@ -91,7 +91,7 @@ async function main() {
     let pontosPotenciais = 0;
     try {
       pontosPotenciais = await calcularPontosDeProducao(
-        producao.totalPago,
+        producao.valorComissao,
         producao.dataReferencia,
         backofficeId,
       );
@@ -102,7 +102,7 @@ async function main() {
     console.log(`📌 ${producao.paciente}`);
     console.log(`   Procedimento: ${producao.procedimento.substring(0, 50)}...`);
     console.log(`   Parceiro: ${producao.parceiro!.nome}`);
-    console.log(`   Total: R$ ${producao.totalPago}`);
+    console.log(`   Total: R$ ${producao.valorComissao}`);
     console.log(`   Data: ${producao.dataReferencia.toLocaleDateString("pt-BR")}`);
     console.log(`   Pontos potenciais: ${pontosPotenciais}`);
     console.log(`   Status: ${pontos ? `✅ DISTRIBUÍDO (${pontos.quantidade} pts)` : '❌ NÃO DISTRIBUÍDO'}`);

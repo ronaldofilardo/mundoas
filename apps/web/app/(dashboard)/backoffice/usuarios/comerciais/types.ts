@@ -35,16 +35,26 @@ export interface Comissao {
   dataPagamento?: string | null;
 }
 
+export interface RegraItem {
+  id: string;
+  nome: string;
+  percentual: number;
+  ordem: number;
+}
+
 export interface RegrasComerciais {
+  id?: string;
   cartaoAcessoSaude: number;
   cireAtivo: number;
   cireReceptivo: number;
   franchisingAcesso: number;
   franchisingCartao: number;
   unidade: number;
+  itens?: RegraItem[];
 }
 
 export interface RegrasGestores {
+  id?: string;
   gerenteCire: number;
   supervisorAtivo: number;
   supervisorReceptivo: number;
@@ -52,6 +62,18 @@ export interface RegrasGestores {
   supervisorAtendimento: number;
   gerenteAtendimento: number;
   supervisorComercial: number;
+  itens?: RegraItem[];
+}
+
+export interface RegrasFaltas {
+  id?: string;
+  consultorUnidadeComFalta: number;
+  consultorUnidadeSemFalta: number;
+  supervisorAtendimentoComFalta: number;
+  supervisorAtendimentoSemFalta: number;
+  gerenteComercialComFalta: number;
+  gerenteComercialSemFalta: number;
+  itens?: RegraItem[];
 }
 
 export type ActiveTab = "regras" | "cadastro" | "comissoes";

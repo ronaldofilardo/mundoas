@@ -162,7 +162,6 @@ export async function PATCH(
   }
   if (dataToUpdate.status !== undefined) {
     usuarioUpdate.status = dataToUpdate.status;
-    delete dataToUpdate.status;
   }
   if (dataToUpdate.telefone !== undefined) {
     usuarioUpdate.telefone = dataToUpdate.telefone;

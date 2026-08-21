@@ -21,7 +21,7 @@ function pad2(n: number): string {
 type PorMes = {
   mesReferencia: string;
   valorAtingido: number;
-  totalPago: number;
+  valorComissao: number;
   realizadoAtual: number;
   realizadoNovo: number;
   diff: number;
@@ -35,7 +35,7 @@ type ConsultorDivergencia = {
   porMes: PorMes[];
   totais: {
     valorAtingido: number;
-    totalPago: number;
+    valorComissao: number;
     realizadoAtual: number;
     realizadoNovo: number;
     diff: number;
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
         linhasDivergentes: 0,
         diffTotal: 0,
         valorAtingidoSemProcedures: 0,
-        totalPagoSemValorAtingido: 0,
+        valorComissaoSemValorAtingido: 0,
       },
       porMes: [],
       consultores: [],
@@ -127,19 +127,19 @@ export async function GET(req: NextRequest) {
     inner.set(mesKey, (inner.get(mesKey) ?? 0) + valor);
   }
 
-  const totalPagoPorConsultor = new Map<string, Map<string, number>>();
+  const valorComissaoPorConsultor = new Map<string, Map<string, number>>();
   for (const p of procedimentos) {
     if (!p.consultorPfId) continue;
     const refDate =
       p.dataReferencia instanceof Date ? p.dataReferencia : new Date(p.dataReferencia);
     if (Number.isNaN(refDate.getTime())) continue;
     const mesKey = pad2(refDate.getUTCMonth() + 1);
-    const valor = toNumber(p.totalPago);
+    const valor = toNumber(p.valorComissao);
     if (valor === 0) continue;
-    let inner = totalPagoPorConsultor.get(p.consultorPfId);
+    let inner = valorComissaoPorConsultor.get(p.consultorPfId);
     if (!inner) {
       inner = new Map();
-      totalPagoPorConsultor.set(p.consultorPfId, inner);
+      valorComissaoPorConsultor.set(p.consultorPfId, inner);
     }
     inner.set(mesKey, (inner.get(mesKey) ?? 0) + valor);
   }
@@ -151,27 +151,27 @@ export async function GET(req: NextRequest) {
     linhasDivergentes: number;
     diffTotal: number;
     valorAtingidoTotal: number;
-    totalPagoTotal: number;
+    valorComissaoTotal: number;
   }[] = mesesKeys.map((mesKey) => ({
     mesReferencia: `${ano}-${mesKey}`,
     linhasDivergentes: 0,
     diffTotal: 0,
     valorAtingidoTotal: 0,
-    totalPagoTotal: 0,
+    valorComissaoTotal: 0,
   }));
 
   let linhasDivergentes = 0;
   let diffTotal = 0;
   let valorAtingidoSemProcedures = 0;
-  let totalPagoSemValorAtingido = 0;
+  let valorComissaoSemValorAtingido = 0;
   const mesesComMovimentoSet = new Set<string>();
 
   const consultores: ConsultorDivergencia[] = consultoresPf.map((c) => {
     const valorAtingidoMap = valorAtingidoPorConsultor.get(c.id) ?? new Map<string, number>();
-    const totalPagoMap = totalPagoPorConsultor.get(c.id) ?? new Map<string, number>();
+    const valorComissaoMap = valorComissaoPorConsultor.get(c.id) ?? new Map<string, number>();
 
     let totValorAtingido = 0;
-    let totTotalPago = 0;
+    let totValorComissao = 0;
     let totRealizadoAtual = 0;
     let totRealizadoNovo = 0;
     let totDiff = 0;
@@ -179,20 +179,20 @@ export async function GET(req: NextRequest) {
     const porMes: PorMes[] = mesesKeys.map((mesKey) => {
       const mesRef = `${ano}-${mesKey}`;
       const va = valorAtingidoMap.get(mesKey) ?? 0;
-      const tp = totalPagoMap.get(mesKey) ?? 0;
+      const tp = valorComissaoMap.get(mesKey) ?? 0;
       const atual = va + tp;
       const novo = tp;
       const diff = atual - novo;
 
       totValorAtingido += va;
-      totTotalPago += tp;
+      totValorComissao += tp;
       totRealizadoAtual += atual;
       totRealizadoNovo += novo;
       totDiff += diff;
 
       const mesResumo = resumoPorMes[Number(mesKey) - 1];
       mesResumo.valorAtingidoTotal += va;
-      mesResumo.totalPagoTotal += tp;
+      mesResumo.valorComissaoTotal += tp;
       if (diff > TOLERANCIA) {
         mesResumo.linhasDivergentes += 1;
         mesResumo.diffTotal += diff;
@@ -201,13 +201,13 @@ export async function GET(req: NextRequest) {
         mesesComMovimentoSet.add(mesRef);
       }
       if (va > 0 && tp === 0) valorAtingidoSemProcedures += va;
-      if (tp > 0 && va === 0) totalPagoSemValorAtingido += tp;
+      if (tp > 0 && va === 0) valorComissaoSemValorAtingido += tp;
       if (va > 0 || tp > 0) mesesComMovimentoSet.add(mesRef);
 
       return {
         mesReferencia: mesRef,
         valorAtingido: va,
-        totalPago: tp,
+        valorComissao: tp,
         realizadoAtual: atual,
         realizadoNovo: novo,
         diff,
@@ -222,7 +222,7 @@ export async function GET(req: NextRequest) {
       porMes,
       totais: {
         valorAtingido: totValorAtingido,
-        totalPago: totTotalPago,
+        valorComissao: totValorComissao,
         realizadoAtual: totRealizadoAtual,
         realizadoNovo: totRealizadoNovo,
         diff: totDiff,
@@ -245,7 +245,7 @@ export async function GET(req: NextRequest) {
       linhasDivergentes,
       diffTotal,
       valorAtingidoSemProcedures,
-      totalPagoSemValorAtingido,
+      valorComissaoSemValorAtingido,
     },
     porMes: resumoPorMes,
     consultores,

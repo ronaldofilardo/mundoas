@@ -9,23 +9,10 @@ export async function GET(req: NextRequest) {
     const { session, parceiroId, error } = await requireParceiroWithScope();
     if (error) return error;
 
-    const parceiro = await prisma.parceiro.findUnique({
+const parceiro = await prisma.parceiro.findUnique({
       where: { id: parceiroId },
       select: {
-        comercial: { 
-          select: { 
-            lideranca: { 
-              select: { backofficeId: true } 
-            } 
-          } 
-        },
-        gestor: { 
-          select: { 
-            lideranca: { 
-              select: { backofficeId: true } 
-            } 
-          } 
-        },
+        backofficeId: true,
         periodicidadeCicloEscolhida: true,
         _count: {
           select: { movimentacoesPontos: true },
@@ -44,8 +31,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Obter backofficeId através do comercial ou gestor
-    const backofficeId = (parceiro.comercial?.lideranca?.backofficeId || parceiro.gestor?.lideranca?.backofficeId) ?? undefined;
+    const backofficeId = parceiro.backofficeId ?? undefined;
 
     const periodicidadeEscolhida =
       parceiro.periodicidadeCicloEscolhida ?? null;
@@ -105,14 +91,49 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const c = creditos._sum.quantidade || 0;
+const c = creditos._sum.quantidade || 0;
     const d = debitos._sum.quantidade || 0;
     const e = estornos._sum.quantidade || 0;
     const saldo = c - d + e;
 
-    return ok({
+    // Calcular posição no ranking
+    const todosParceiros = await prisma.parceiro.findMany({
+      where: { backofficeId: cicloVigente.backofficeId, status: "ATIVO" },
+      select: { id: true },
+    });
+
+    let posicaoRanking: number | null = null;
+    if (todosParceiros.length > 0) {
+      const ranking = await Promise.all(
+        todosParceiros.map(async (p) => {
+          const [creditosP, debitosP, estornosP] = await Promise.all([
+            prisma.movimentacaoPontos.aggregate({
+              _sum: { quantidade: true },
+              where: { parceiroId: p.id, cicloPontosId: cicloVigente.id, tipo: "CREDITO" },
+            }),
+            prisma.movimentacaoPontos.aggregate({
+              _sum: { quantidade: true },
+              where: { parceiroId: p.id, cicloPontosId: cicloVigente.id, tipo: "DEBITO" },
+            }),
+            prisma.movimentacaoPontos.aggregate({
+              _sum: { quantidade: true },
+              where: { parceiroId: p.id, cicloPontosId: cicloVigente.id, tipo: "ESTORNO" },
+            }),
+          ]);
+          const pontos = (creditosP._sum.quantidade || 0) - (debitosP._sum.quantidade || 0) + (estornosP._sum.quantidade || 0);
+          return { id: p.id, pontos };
+        })
+      );
+
+      ranking.sort((a, b) => b.pontos - a.pontos);
+      const pos = ranking.findIndex((r) => r.id === parceiroId);
+      if (pos !== -1) posicaoRanking = pos + 1;
+    }
+
+return ok({
       carteira: {
         saldoAtual: saldo,
+        posicaoRanking,
         cicloPontosId: cicloVigente.id,
         cicloPontosNome: cicloVigente.nome,
         periodicidade: cicloVigente.periodicidade,

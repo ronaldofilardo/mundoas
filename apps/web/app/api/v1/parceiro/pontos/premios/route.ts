@@ -9,24 +9,36 @@ export async function GET(req: NextRequest) {
     const { session, parceiroId, error } = await requireParceiroWithScope();
     if (error) return error;
 
-    // Buscar informações do parceiro
+    // Buscar backofficeId diretamente do parceiro
     const parceiro = await prisma.parceiro.findUnique({
       where: { id: parceiroId },
-      select: { 
-        comercial: { select: { lideranca: { select: { backofficeId: true } } } },
-        gestor: { select: { lideranca: { select: { backofficeId: true } } } }
-      },
+      select: { backofficeId: true },
     });
 
-    const backofficeId = (parceiro?.comercial?.lideranca?.backofficeId || parceiro?.gestor?.lideranca?.backofficeId) ?? undefined;
+    const backofficeId = parceiro?.backofficeId ?? undefined;
+    const now = new Date();
 
-    // Buscar ciclo vigente
-    const cicloVigente = await prisma.cicloPontos.findFirst({
+    // Buscar ciclo com resgate aberto (prioriza RESGATE_ABERTO e verifica datas)
+    const cicloResgateAberto = await prisma.cicloPontos.findFirst({
       where: {
         backofficeId,
-        OR: [{ status: "EM_ANDAMENTO" }, { status: "RESGATE_ABERTO" }],
+        status: "RESGATE_ABERTO",
+        inicioResgateEm: { lte: now },
+        fimResgateEm: { gte: now },
       },
     });
+
+    // Se não há ciclo com resgate aberto, buscar ciclo em andamento para mostrar saldo
+    const cicloEmAndamento = !cicloResgateAberto
+      ? await prisma.cicloPontos.findFirst({
+          where: {
+            backofficeId,
+            status: "EM_ANDAMENTO",
+          },
+        })
+      : null;
+
+    const cicloVigente = cicloResgateAberto || cicloEmAndamento;
 
     // Calcular saldo atual
     let saldoAtual = 0;
@@ -80,8 +92,8 @@ export async function GET(req: NextRequest) {
       orderBy: { custoPontos: "asc" },
     });
 
-    // Determinar se está em período de resgate
-    const emPeriodoResgate = cicloVigente?.status === "RESGATE_ABERTO";
+    // Determinar se está em período de resgate (ciclo com RESGATE_ABERTO e datas válidas)
+    const emPeriodoResgate = !!cicloResgateAberto;
 
     return ok({
       catalogo: {

@@ -18,6 +18,7 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
   const [custoPontos, setCustoPontos] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,8 +26,11 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
     setMessage(null);
 
     try {
-      const response = await fetch("/api/v1/backoffice/pontos/premios", {
-        method: "POST",
+      const url = editId ? `/api/v1/backoffice/pontos/premios?id=${editId}` : "/api/v1/backoffice/pontos/premios";
+      const method = editId ? "PATCH" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           codigo,
@@ -39,18 +43,54 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || "Erro ao cadastrar prêmio");
+        throw new Error(result.message || "Erro ao salvar prêmio");
       }
 
-      setMessage({ type: "success", text: "Prêmio cadastrado com sucesso!" });
+      setMessage({ type: "success", text: editId ? "Prêmio atualizado com sucesso!" : "Prêmio cadastrado com sucesso!" });
       setCodigo("");
       setTipo("");
       setDescricao("");
       setCustoPontos("");
+      setEditId(null);
+      window.location.reload();
     } catch (error) {
-      setMessage({ type: "error", text: error instanceof Error ? error.message : "Erro ao cadastrar prêmio" });
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "Erro ao salvar prêmio" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEdit = (premio: Premio) => {
+    setEditId(premio.id);
+    setCodigo(premio.codigo);
+    setTipo(premio.tipo);
+    setDescricao(premio.descricao);
+    setCustoPontos(String(premio.custoPontos));
+  };
+
+  const handleCancelEdit = () => {
+    setEditId(null);
+    setCodigo("");
+    setTipo("");
+    setDescricao("");
+    setCustoPontos("");
+  };
+
+  const handleDelete = async (premio: Premio) => {
+    if (!confirm(`Excluir prêmio ${premio.codigo}?`)) return;
+
+    try {
+      const response = await fetch(`/api/v1/backoffice/pontos/premios?id=${premio.id}`, {
+        method: "DELETE",
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "Erro ao excluir prêmio");
+      }
+      setMessage({ type: "success", text: "Prêmio excluído com sucesso!" });
+      window.location.reload();
+    } catch (error) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "Erro ao excluir prêmio" });
     }
   };
 
@@ -59,7 +99,7 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
       <h2 className="text-xl font-bold text-gray-900 mb-4">Prêmios</h2>
 
       <form onSubmit={handleSubmit} className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">Cadastrar Prêmio</h3>
+        <h3 className="text-lg font-semibold text-gray-700 mb-4">{editId ? "Editar Prêmio" : "Cadastrar Prêmio"}</h3>
 
         {message && (
           <div className={`mb-4 p-3 rounded ${message.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
@@ -119,13 +159,24 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? "Cadastrando..." : "Cadastrar Prêmio"}
-        </button>
+        <div className="flex gap-3">
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (editId ? "Atualizando..." : "Cadastrando...") : editId ? "Atualizar Prêmio" : "Cadastrar Prêmio"}
+          </button>
+          {editId && (
+            <button
+              type="button"
+              onClick={handleCancelEdit}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+          )}
+        </div>
       </form>
 
       <div className="overflow-x-auto">
@@ -136,12 +187,13 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
               <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">TIPO</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">DESCRIÇÃO</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">PONTOS</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">AÇÕES</th>
             </tr>
           </thead>
           <tbody>
             {!data || data.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-4 px-4 text-center text-gray-500">
+                <td colSpan={5} className="py-4 px-4 text-center text-gray-500">
                   Nenhum prêmio cadastrado
                 </td>
               </tr>
@@ -154,6 +206,22 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
                   </td>
                   <td className="py-3 px-4 text-sm text-gray-700">{premio.descricao}</td>
                   <td className="py-3 px-4 text-sm font-medium text-gray-900">{premio.custoPontos}</td>
+                  <td className="py-3 px-4 text-sm">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(premio)}
+                        className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(premio)}
+                        className="text-red-600 hover:text-red-800 text-xs font-medium"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
@@ -163,4 +231,3 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
     </div>
   );
 }
-

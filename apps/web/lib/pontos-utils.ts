@@ -5,7 +5,7 @@ import { Decimal } from "@prisma/client/runtime/library";
  * Calcula pontos baseado em produção, configuração vigente e tipo de arredondamento
  */
 export async function calcularPontosDeProducao(
-  totalPago: number | Decimal,
+  valorProcedimento: number | Decimal,
   dataReferencia: Date,
   backofficeId: string,
 ): Promise<number> {
@@ -33,9 +33,9 @@ export async function calcularPontosDeProducao(
     );
   }
 
-  const totalPagoNum =
-    typeof totalPago === "number" ? totalPago : totalPago.toNumber();
-  let pontos = totalPagoNum / config.valorPorPonto.toNumber();
+  const valorNum =
+    typeof valorProcedimento === "number" ? valorProcedimento : valorProcedimento.toNumber();
+  let pontos = valorNum / config.valorPorPonto.toNumber();
 
   // Aplicar arredondamento
   if (config.tipoArredondamento === "PISO") {

@@ -141,7 +141,7 @@ describe('Fluxo Completo Upload Planilha - Integração', () => {
         }
 
         // Validar total pago
-        if (row.totalPago === null || row.totalPago === undefined || isNaN(row.totalPago)) {
+        if (row.valorComissao === null || row.valorComissao === undefined || isNaN(row.valorComissao)) {
           erros.push('Total pago inválido');
         }
 
@@ -165,7 +165,7 @@ describe('Fluxo Completo Upload Planilha - Integração', () => {
       const linhaValida = {
         cpf: '123.456.789-01',
         dataReferencia: '2026-07-15',
-        totalPago: 150,
+        valorComissao: 150,
         paciente: 'João Silva',
         procedimento: 'Consulta',
       };
@@ -173,7 +173,7 @@ describe('Fluxo Completo Upload Planilha - Integração', () => {
       const linhaInvalida = {
         cpf: '123',
         dataReferencia: '',
-        totalPago: null,
+        valorComissao: null,
         paciente: '',
         procedimento: '',
       };

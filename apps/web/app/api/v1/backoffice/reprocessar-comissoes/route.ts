@@ -61,8 +61,8 @@ export async function POST(req: NextRequest) {
       },
       select: {
         id: true,
-        totalPago: true,
         dataReferencia: true,
+        valorComissao: true,
       },
     });
 
@@ -75,11 +75,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Calcular total de vendas
+    // Calcular comissão total com base nos procedimentos selecionados
+    const totalProcedimentos = procedimentosDoComercial.length;
     const totalVendas = procedimentosDoComercial.reduce(
-      (sum, p) => sum + Number(p.totalPago),
-      0,
-    );
+      (sum, p) => sum + Number(p.valorComissao || 0), 0);
 
     // Calcular comissão total
     const { valorComissao: comissaoTotal } = await calcularComissaoComercial({
@@ -92,25 +91,21 @@ export async function POST(req: NextRequest) {
     const procedimentoIds = procedimentosDoComercial.map((p) => p.id);
     await prisma.procedimentoPF.updateMany({
       where: { id: { in: procedimentoIds } },
-      data: { 
+      data: {
         comercialId,
-        valorComissao: procedimentosDoComercial.length > 0 
-          ? Number(comissaoTotal) * (Number(procedimentosDoComercial[0].totalPago) / totalVendas)
-          : 0,
-        statusComissao: "CALCULADA",
+        valorComissao: totalProcedimentos > 0 ? Number(comissaoTotal) / totalProcedimentos : 0,
       },
     });
 
     // Calcular comissão proporcional para cada procedimento
     for (const proc of procedimentosDoComercial) {
-      const percentual = Number(proc.totalPago) / totalVendas;
+      const percentual = 1 / totalProcedimentos;
       const comissaoProporcional = Number(comissaoTotal) * percentual;
-      
+
       await prisma.procedimentoPF.update({
         where: { id: proc.id },
         data: {
           valorComissao: comissaoProporcional,
-          statusComissao: "CALCULADA",
         },
       });
     }
@@ -219,7 +214,7 @@ export async function GET(req: NextRequest) {
 
   // Calcular total de vendas sem comercial
   const totalSemComercial = await prisma.procedimentoPF.aggregate({
-    _sum: { totalPago: true },
+    _sum: { valorComissao: true },
     where: {
       comercialId: null,
       dataReferencia: {
@@ -252,7 +247,7 @@ export async function GET(req: NextRequest) {
   return ok({
     mesReferencia,
     procedimentosSemComercial: countSemComercial,
-    totalVendasSemComissional: Number(totalSemComercial._sum.totalPago || 0),
+    totalVendasSemComissional: Number(totalSemComercial._sum.valorComissao || 0),
     comerciaisDisponiveis: comerciais,
   });
 }
