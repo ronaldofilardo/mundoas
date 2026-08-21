@@ -21,6 +21,7 @@ function mapMembro(m: any): EquipeItem {
       nome: cp.nome,
       cpf: cp.cpf,
       email: cp.email,
+      telefone: cp.telefone ?? null,
       status: cp.status,
       setores: cp.setores ?? [],
     })),

@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
               nome: true,
               cpf: true,
               status: true,
-              usuario: { select: { email: true } },
+              usuario: { select: { email: true, telefone: true } },
               setores: {
                 select: {
                   setor: { select: { id: true, nome: true } },
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
           nome: true,
           cpf: true,
           status: true,
-          usuario: { select: { email: true } },
+          usuario: { select: { email: true, telefone: true } },
           setores: {
             select: {
               setor: { select: { id: true, nome: true } },
@@ -91,6 +91,7 @@ export async function GET(req: NextRequest) {
         nome: c.nome,
         cpf: c.cpf,
         email: c.usuario.email,
+        telefone: c.usuario.telefone,
         status: c.status,
         setores: c.setores.map((s) => ({
           id: s.setor.id,
@@ -125,6 +126,7 @@ export async function GET(req: NextRequest) {
         nome: cp.nome,
         cpf: cp.cpf,
         email: cp.usuario.email,
+        telefone: cp.usuario.telefone,
         status: cp.status,
         setores: cp.setores?.map((s: any) => ({
           id: s.setor.id,

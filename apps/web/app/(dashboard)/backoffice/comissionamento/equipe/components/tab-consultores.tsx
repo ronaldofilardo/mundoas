@@ -1,34 +1,41 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { formatCpf } from "../../../usuarios/comerciais/utils";
 import type { EquipeItem } from "../types";
+import { ConsultorPfForm } from "./consultor-pf-form";
 
 interface TabConsultoresProps {
   itens: EquipeItem[];
+}
+
+interface ConsultorCompleto {
+  id: string;
+  nome: string;
+  cpf: string;
+  email: string;
+  telefone: string | null;
+  status: string;
+  liderancaNome: string;
+  liderancaId: string;
+  setores: Array<{ id: string; nome: string }>;
 }
 
 export function TabConsultores({ itens }: TabConsultoresProps) {
   const [filtroStatus, setFiltroStatus] = useState<"todos" | "ATIVO" | "INATIVO">("todos");
   const [filtroLideranca, setFiltroLideranca] = useState<string>("todas");
   const [busca, setBusca] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [consultorEditando, setConsultorEditando] = useState<ConsultorCompleto | null>(null);
 
   const liderancas = useMemo(
     () => itens.filter((i) => i.kind === "lideranca" && i.status === "ATIVO"),
     [itens],
   );
 
-  const todosConsultores = useMemo(() => {
-    const consultores: Array<{
-      id: string;
-      nome: string;
-      cpf: string;
-      email: string;
-      status: string;
-      liderancaNome: string;
-      liderancaId: string;
-      setores: Array<{ id: string; nome: string }>;
-    }> = [];
+  const todosConsultores = useMemo((): ConsultorCompleto[] => {
+    const consultores: ConsultorCompleto[] = [];
 
     itens
       .filter((i) => i.kind === "lideranca")
@@ -39,6 +46,7 @@ export function TabConsultores({ itens }: TabConsultoresProps) {
             nome: cp.nome,
             cpf: cp.cpf,
             email: cp.email,
+            telefone: cp.telefone ?? null,
             status: cp.status,
             liderancaNome: lideranca.nome,
             liderancaId: lideranca.id,
@@ -67,6 +75,86 @@ export function TabConsultores({ itens }: TabConsultoresProps) {
 
   const totalAtivos = todosConsultores.filter((c) => c.status === "ATIVO").length;
   const totalInativos = todosConsultores.filter((c) => c.status === "INATIVO").length;
+
+  async function handleCriarConsultor(data: {
+    nome: string;
+    email: string;
+    cpf: string;
+    telefone: string;
+    liderancaId: string;
+    setores: string[];
+  }) {
+    const res = await fetch("/api/v1/backoffice/consultores-pf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Erro ao criar consultor");
+    }
+  }
+
+  async function handleAtualizarConsultor(id: string, data: {
+    nome: string;
+    email: string;
+    cpf: string;
+    telefone: string;
+    liderancaId: string;
+    setores: string[];
+  }) {
+    const res = await fetch(`/api/v1/backoffice/consultores-pf/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Erro ao atualizar consultor");
+    }
+  }
+
+  async function handleDeletarConsultor(id: string) {
+    if (!confirm("Tem certeza que deseja remover este consultor?")) return;
+
+    const res = await fetch(`/api/v1/backoffice/consultores-pf/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Erro ao remover consultor");
+    }
+  }
+
+  function handleSalvar(data: {
+    nome: string;
+    email: string;
+    cpf: string;
+    telefone: string;
+    liderancaId: string;
+    setores: string[];
+  }): Promise<void> {
+    if (consultorEditando) {
+      return handleAtualizarConsultor(consultorEditando.id, data);
+    } else {
+      return handleCriarConsultor(data);
+    }
+  }
+
+  function handleEditar(cp: ConsultorCompleto) {
+    setConsultorEditando(cp);
+    setShowModal(true);
+  }
+
+  function handleNovo() {
+    setConsultorEditando(null);
+    setShowModal(true);
+  }
+
+  function handleCloseModal() {
+    setShowModal(false);
+    setConsultorEditando(null);
+  }
 
   if (todosConsultores.length === 0) {
     return (
@@ -156,23 +244,31 @@ export function TabConsultores({ itens }: TabConsultoresProps) {
           </span>
           <span className="font-medium">Total: {todosConsultores.length}</span>
         </div>
+
+        <button
+          onClick={handleNovo}
+          className="ml-auto px-3 py-2 bg-primary-600 text-white rounded text-sm font-medium hover:bg-primary-700 transition-colors"
+        >
+          + Novo Consultor
+        </button>
       </div>
 
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm table-auto min-w-[800px]">
+          <table className="w-full text-sm table-auto min-w-[900px]">
             <thead>
               <tr className="border-b bg-gray-50 sticky top-0 z-10">
-                <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[220px]">Liderança</th>
+                <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[200px]">Liderança</th>
                 <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[220px]">Consultor</th>
                 <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50">Setor(es)</th>
                 <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[100px]">Status</th>
+                <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[140px]">Ações</th>
               </tr>
             </thead>
             <tbody>
               {consultoresFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="p-8 text-center text-gray-500">
+                  <td colSpan={5} className="p-8 text-center text-gray-500">
                     Nenhum consultor encontrado com os filtros selecionados.
                   </td>
                 </tr>
@@ -201,6 +297,24 @@ export function TabConsultores({ itens }: TabConsultoresProps) {
                         {cp.status}
                       </span>
                     </td>
+                    <td className="p-3 text-center">
+                      <div className="flex gap-1 justify-center">
+                        <button
+                          onClick={() => handleEditar(cp)}
+                          className="text-blue-600 hover:text-blue-800 text-xs font-medium px-2 py-1 rounded hover:bg-blue-50"
+                          title="Editar"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDeletarConsultor(cp.id)}
+                          className="text-red-600 hover:text-red-800 text-xs font-medium px-2 py-1 rounded hover:bg-red-50"
+                          title="Excluir"
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -208,6 +322,14 @@ export function TabConsultores({ itens }: TabConsultoresProps) {
           </table>
         </div>
       </div>
+
+      {showModal && (
+        <ConsultorPfForm
+          consultor={consultorEditando}
+          onSave={handleSalvar}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 }

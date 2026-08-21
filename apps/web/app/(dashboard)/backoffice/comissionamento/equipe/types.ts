@@ -3,6 +3,7 @@ export interface ConsultorPfResumo {
   nome: string;
   cpf: string;
   email: string;
+  telefone?: string | null;
   status: string;
   setores?: Array<{ id: string; nome: string }>;
 }
