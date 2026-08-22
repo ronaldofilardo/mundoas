@@ -65,7 +65,7 @@ M apps/web/app/api/v1/admin/backoffices/[id]/faturas/route.ts         [PRECISA-F
 M apps/web/app/api/v1/admin/backoffices/route.ts                       [PRECISA-FUNCIONAL]
 M apps/web/app/api/v1/admin/usuarios/[id]/delete-info/route.ts         [PRECISA-FUNCIONAL]
 M apps/web/app/api/v1/admin/usuarios/[id]/route.ts                      [PRECISA-FUNCIONAL]
-M apps/web/app/api/v1/auth/primeiro-acesso/route.ts                   [PRECISA-FUNCIONAL]
+M apps/web/app/api/v1/auth/primeiro-acesso/route.ts                   [TESTE-FUNCIONAL] (cobertura funcional adicionada)
 M apps/web/app/api/v1/backoffice/assinatura/route.ts                  [PRECISA-FUNCIONAL]
 M apps/web/app/api/v1/backoffice/comerciais/[id]/route.ts             [PRECISA-FUNCIONAL]
 M apps/web/app/api/v1/backoffice/comerciais/calcular-comissao/route.ts  [PRECISA-FUNCIONAL]
@@ -131,7 +131,7 @@ M apps/web/lib/auth-config.ts                                     [PRECISA-TESTE
 M apps/web/lib/auth.ts                                           [TESTE-BASICO-OK + TESTE-FUNCIONAL] (teste básico + funcional criados; precisa teste com mock de sessão real)
 M apps/web/lib/db.ts                                             [TESTE-INCREMENTAVEL] (helper de DB — precisa verificação de resolução do Prisma)
 M apps/web/lib/parse-planilha-producao.ts                        [TESTE-BASICO-OK] (teste básico criado; precisa funcional com mock de planilha)
-M apps/web/lib/password-reset.ts                                 [TESTE-BASICO-OK] (teste básico criado; precisa funcional com mock de token)
+M apps/web/lib/password-reset.ts                                 [TESTE-FUNCIONAL] (cobertura funcional adicionada)
 M apps/web/lib/pontos-utils.ts                                   [TESTE-INCREMENTAVEL] (utilitários de pontos — precisa testes com dados de ciclo/configuração)
 M apps/web/lib/processar-upload-pf.ts                            [TESTE-BASICO-OK + TESTE-FUNCIONAL] (teste básico + funcional criados; precisa integração com mock de XLSX)
 M apps/web/middleware.ts                                          [TESTE-BASICO-OK] (teste de middleware corrigido; precisa cobrir todos os casos de auth/admin/gestor)
@@ -148,7 +148,6 @@ M apps/web/middleware.ts                                          [TESTE-BASICO-
 ?? apps/web/app/(dashboard)/admin/usuarios/                      [PRECISA-TESTE] (diretório/página não rastreado — precisa verificação se existe arquivo)
 ?? apps/web/app/(dashboard)/backoffice/pontos/pontos-types.ts    [TESTE-INCREMENTAVEL] (tipos — precisa verificação de types)
 ?? apps/web/app/__tests__/admin-usuarios-reset-password-route.test.ts  [TESTE-BASICO-OK] (teste básico — pode ser melhorado com chamada real à rota)
-?? apps/web/app/__tests__/admin-usuarios-route.test.ts           [TESTE-BASICO-OK]
 ?? apps/web/app/__tests__/backoffice-uploads-service.test.ts     [TESTE-BASICO-OK]
 ?? apps/web/app/__tests__/consultor-pf-contrato-idor.test.ts     [TESTE-INCREMENTAVEL]
 ?? apps/web/app/__tests__/finance-endpoints-contract.test.ts    [TESTE-INCREMENTAVEL]
@@ -163,9 +162,8 @@ M apps/web/middleware.ts                                          [TESTE-BASICO-
 ?? apps/web/app/__tests__/pages-565575375.test.ts               [TESTE-BASICO-OK]
 ?? apps/web/app/__tests__/pages-673290401.test.ts               [TESTE-BASICO-OK]
 ?? apps/web/app/api/v1/admin/usuarios/[id]/reset-password/      [PRECISA-FUNCIONAL] (rota — precisa teste com chamada real)
-?? apps/web/app/api/v1/admin/usuarios/route.ts                  [TESTE-BASICO-OK] (teste básico criado — precisa funcional)
 ?? apps/web/components/__tests__/                                [TESTE-BASICO-OK] (diretório de testes de componentes — todos criados)
-?? apps/web/components/password-reset-modal.tsx                 [PRECISA-TESTE] (componente de modal de reset — precisa renderização)
+?? apps/web/components/password-reset-modal.tsx                 [TESTE-FUNCIONAL] (renderização, API, erro e cópia cobertos)
 ?? apps/web/lib/__tests__/audit-functional.test.ts              [TESTE-FUNCIONAL] (funcional criado — precisa ser aprovado)
 ?? apps/web/lib/__tests__/audit.test.ts                         [TESTE-BASICO-OK]
 ?? apps/web/lib/__tests__/auth-functional.test.ts                 [TESTE-FUNCIONAL]

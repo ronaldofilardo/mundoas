@@ -18,6 +18,8 @@ export default defineConfig({
       'lib/__tests__/**/*.test.ts',
       'lib/__tests__/**/*.test.tsx',
       'lib/__tests__/**/*.test.mjs',
+      'components/__tests__/**/*.test.ts',
+      'components/__tests__/**/*.test.tsx',
     ],
     testTimeout: 30000,
     pool: 'forks',
