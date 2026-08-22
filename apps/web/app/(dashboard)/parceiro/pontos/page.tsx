@@ -8,12 +8,54 @@ import { ResgatesTab } from "./components/resgates-tab";
 
 type TabType = "carteira" | "premios" | "resgates";
 
+interface HistoricoItem {
+  descricao: string;
+  tipo: string;
+  pontos: number;
+}
+
+interface CarteiraResumo {
+  saldoAtual: number;
+  posicaoRanking?: number | null;
+}
+
+interface CarteiraData {
+  carteira?: CarteiraResumo;
+  historico?: HistoricoItem[];
+}
+
+interface CatalogoData {
+  emPeriodoResgate: boolean;
+  saldoAtual: number;
+  premios: Array<{
+    id: string;
+    codigo: string;
+    tipo: string;
+    descricao: string;
+    custoPontos: number;
+    podeSolicitar: boolean;
+  }>;
+}
+
+interface ResgateData {
+  resgates: Array<{
+    id: string;
+    premio: { id: string; codigo: string; descricao: string; custoPontos: number };
+    cicloPontos: { id: string; nome: string };
+    pontosDebitados: number;
+    status: string;
+    solicitadoEm: string;
+    entregueEm?: string;
+    canceladoEm?: string;
+    observacao?: string;
+    podesCancelar: boolean;
+  }>;
+}
+
 interface PontosData {
-  carteira?: any;
-  extrato?: any;
-  premios?: any;
-  ranking?: any;
-  resgates?: any;
+  carteira?: CarteiraData;
+  premios?: { catalogo?: CatalogoData };
+  resgates?: ResgateData;
   periodicidadeCicloEscolhida?: string | null;
   temMovimentacoes?: boolean;
 }
@@ -116,7 +158,7 @@ export default function ParceiroPontosPage() {
 
 // Componentes de cada aba
 
-function CarteiraPontos({ data, periodicidade: periodicidadeProp, temMovimentacoes }: { data?: any; periodicidade?: string | null; temMovimentacoes?: boolean }) {
+function CarteiraPontos({ data, periodicidade: periodicidadeProp, temMovimentacoes }: { data?: CarteiraData; periodicidade?: string | null; temMovimentacoes?: boolean }) {
   const carteira = data?.carteira;
 
   return (
@@ -147,7 +189,7 @@ function CarteiraPontos({ data, periodicidade: periodicidadeProp, temMovimentaco
               <h3 className="font-semibold text-gray-900">
                 Últimas Transações
               </h3>
-              {data.historico.map((item: any, idx: number) => (
+              {data.historico.map((item, idx) => (
                 <div
                   key={idx}
                   className="flex justify-between p-3 bg-gray-50 rounded-lg"

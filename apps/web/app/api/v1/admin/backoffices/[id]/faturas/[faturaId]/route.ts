@@ -64,8 +64,8 @@ export async function PATCH(
     });
 
     return ok(atualizada);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[admin/backoffices/[id]/faturas/[faturaId]] Erro:", err);
-    return badRequest(err?.message || "Erro interno ao atualizar fatura.");
+    return badRequest((err instanceof Error ? err.message : "Erro interno ao atualizar fatura."));
   }
 }

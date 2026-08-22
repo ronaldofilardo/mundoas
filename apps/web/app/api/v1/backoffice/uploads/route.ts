@@ -8,7 +8,7 @@ import {
 import { processarUploadPlanilhaPF } from "@/lib/processar-upload-pf";
 
 export async function POST(req: NextRequest) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
+  const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
   try {
@@ -53,7 +53,8 @@ export async function POST(req: NextRequest) {
         where: { id: upload.id },
         data: { status: "ERRO" },
       });
-      return badRequest("Erro ao processar planilha: " + (processError as Error).message);
+      const message = processError instanceof Error ? processError.message : "Erro desconhecido";
+      return badRequest("Erro ao processar planilha: " + message);
     }
 
     // Buscar upload atualizado com contagens
@@ -72,8 +73,9 @@ export async function POST(req: NextRequest) {
     });
 
     return created(uploadFinal);
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "Erro desconhecido";
     console.error("[upload POST] Erro:", e);
-    return badRequest("Erro ao fazer upload: " + e.message);
+    return badRequest("Erro ao fazer upload: " + message);
   }
 }

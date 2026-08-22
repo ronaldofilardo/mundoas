@@ -3,7 +3,42 @@ import type { EquipeItem } from "../types";
 
 export type { EquipeItem } from "../types";
 
-function mapMembro(m: any): EquipeItem {
+type EquipeApiConsultor = {
+  id: string;
+  nome: string;
+  cpf: string;
+  email: string;
+  telefone?: string | null;
+  status: string;
+  setores?: Array<{ id: string; nome: string }>;
+};
+
+type EquipeApiComercial = {
+  id: string;
+  nome: string;
+  cpf: string;
+  email: string;
+  funcao?: string | null;
+  percentualComissao?: number;
+  status: string;
+};
+
+type EquipeApiMembro = {
+  id: string;
+  nome: string;
+  cpf: string;
+  email: string;
+  status: string;
+  tipo?: string;
+  tipoLideranca?: string | null;
+  funcao?: string | null;
+  percentualComissao?: number;
+  liderancaId?: string | null;
+  consultorPfs?: EquipeApiConsultor[];
+  comerciais?: EquipeApiComercial[];
+};
+
+function mapMembro(m: EquipeApiMembro): EquipeItem {
   return {
     id: m.id,
     nome: m.nome,
@@ -16,7 +51,7 @@ function mapMembro(m: any): EquipeItem {
     percentualComissao: m.percentualComissao ?? 0,
     liderancaId: m.liderancaId ?? null,
     kind: m.tipo === "LIDERANCA" ? "lideranca" : "comercial",
-    consultorPfs: (m.consultorPfs ?? []).map((cp: any) => ({
+    consultorPfs: (m.consultorPfs ?? []).map((cp: EquipeApiConsultor) => ({
       id: cp.id,
       nome: cp.nome,
       cpf: cp.cpf,
@@ -25,7 +60,7 @@ function mapMembro(m: any): EquipeItem {
       status: cp.status,
       setores: cp.setores ?? [],
     })),
-    comerciais: (m.comerciais ?? []).map((c: any) => ({
+    comerciais: (m.comerciais ?? []).map((c: EquipeApiComercial) => ({
       id: c.id,
       nome: c.nome,
       cpf: c.cpf,

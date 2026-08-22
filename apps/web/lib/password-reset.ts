@@ -1,17 +1,15 @@
 import crypto from "crypto";
 
 /**
- * Generate a secure random token.
- * (ainda usado por comercial/parceiros e gestor/parceiros para gerar o
- * token da primeiraAcss — mecanismo legado a ser removido em fase futura)
+ * Generate a secure random token for password reset
  */
 export function generateResetToken(): string {
   return crypto.randomBytes(32).toString("hex");
 }
 
 /**
- * Hash a token using SHA256
- * (usado para armazenar o token de primeiraAcss hasheado no banco)
+ * Hash a reset token using SHA256
+ * (tokens are stored hashed in database for security)
  */
 export function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token).digest("hex");
@@ -20,18 +18,12 @@ export function hashToken(token: string): string {
 /**
  * Validate password strength
  * Requirements: min 8 chars, 1 uppercase, 1 number, 1 special char
- * @param allowCpfAsTemp - if true, allows 11-digit numeric CPF as valid (for partner first access)
  */
-export function validatePasswordStrength(password: string, allowCpfAsTemp = false): {
+export function validatePasswordStrength(password: string): {
   valid: boolean;
   errors: string[];
 } {
   const errors: string[] = [];
-
-  // Allow CPF (11 digits only) as temporary password for partners
-  if (allowCpfAsTemp && /^\d{11}$/.test(password)) {
-    return { valid: true, errors: [] };
-  }
 
   if (password.length < 8) {
     errors.push("Mínimo 8 caracteres");
@@ -53,4 +45,20 @@ export function validatePasswordStrength(password: string, allowCpfAsTemp = fals
     valid: errors.length === 0,
     errors,
   };
+}
+
+/**
+ * Check if a reset token has expired
+ */
+export function isTokenExpired(expiresAt: Date): boolean {
+  return new Date() > expiresAt;
+}
+
+/**
+ * Get token expiration time (24 hours from now)
+ */
+export function getTokenExpirationTime(): Date {
+  const expiresAt = new Date();
+  expiresAt.setHours(expiresAt.getHours() + 24);
+  return expiresAt;
 }

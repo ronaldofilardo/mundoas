@@ -40,8 +40,9 @@ export function FiltrosProducaoRelatorio({
       <h2 className="text-lg font-semibold text-gray-800 mb-4">Filtros</h2>
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Mês Referência</label>
+          <label htmlFor="relatorio-producao-mes" className="block text-xs text-gray-600 mb-1">Mês Referência</label>
           <select
+            id="relatorio-producao-mes"
             value={mesReferencia}
             onChange={(e) => onMesChange(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg text-sm"
@@ -55,8 +56,9 @@ export function FiltrosProducaoRelatorio({
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Parceiro</label>
+          <label htmlFor="relatorio-producao-parceiro" className="block text-xs text-gray-600 mb-1">Parceiro</label>
           <select
+            id="relatorio-producao-parceiro"
             value={parceiroId}
             onChange={(e) => onParceiroChange(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg text-sm"
@@ -70,8 +72,9 @@ export function FiltrosProducaoRelatorio({
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Consultor PF</label>
+          <label htmlFor="relatorio-producao-consultor-pf" className="block text-xs text-gray-600 mb-1">Consultor PF</label>
           <select
+            id="relatorio-producao-consultor-pf"
             value={consultorPfId}
             onChange={(e) => onConsultorPfChange(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg text-sm"
@@ -85,8 +88,9 @@ export function FiltrosProducaoRelatorio({
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Buscar</label>
+          <label htmlFor="relatorio-producao-busca" className="block text-xs text-gray-600 mb-1">Buscar</label>
           <input
+            id="relatorio-producao-busca"
             type="text"
             placeholder="Paciente, procedimento, CPF, unidade..."
             value={search}

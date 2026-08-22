@@ -2,6 +2,23 @@
 
 import { useEffect, useState } from "react";
 
+interface RankingCiclo {
+  id: string;
+  nome: string;
+  status: string;
+}
+
+interface RankingData {
+  ciclo: RankingCiclo;
+  minhaPositionNo?: number | null;
+  meusPontos: number;
+  posicoes: RankingParceiro[];
+}
+
+interface RankingResponse {
+  ranking: RankingData;
+}
+
 interface RankingParceiro {
   posicao: number;
   parceiro: string;
@@ -10,7 +27,7 @@ interface RankingParceiro {
 }
 
 export function MeuRanking() {
-  const [ranking, setRanking] = useState<any>(null);
+  const [ranking, setRanking] = useState<RankingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +36,7 @@ export function MeuRanking() {
       try {
         const response = await fetch("/api/v1/parceiro/pontos/ranking");
         if (!response.ok) throw new Error("Erro ao carregar ranking");
-        const data = await response.json();
+        const data = (await response.json()) as RankingResponse;
         setRanking(data.ranking);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro desconhecido");
@@ -116,7 +133,7 @@ export function MeuRanking() {
         </div>
 
         <div className="divide-y divide-gray-200">
-          {ranking.posicoes.map((item: RankingParceiro) => (
+          {ranking.posicoes.map((item) => (
             <div
               key={`${item.posicao}-${item.parceiro}`}
               className={`px-6 py-4 flex items-center justify-between ${

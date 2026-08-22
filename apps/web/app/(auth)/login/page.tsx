@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+type WindowWithCpfTimeout = Window & { cpfTimeout?: ReturnType<typeof setTimeout> };
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -126,7 +128,7 @@ export default function LoginPage() {
         cpfIndicado: "",
         nomeIndicado: "",
       });
-    } catch (e) {
+    } catch {
       toast.error("Erro ao indicar cliente");
     } finally {
       setIndicarLoading(false);
@@ -161,7 +163,7 @@ export default function LoginPage() {
       if (!data.valid) {
         toast.error(data.message);
       }
-    } catch (e) {
+    } catch {
       setIndicadoCpfValidation("invalid");
     }
   }
@@ -229,10 +231,11 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label htmlFor="login-email" className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Email <span className="text-red-500">*</span>
               </label>
               <input
+                id="login-email"
                 type="email"
                 value={email}
                 onChange={(e) => {
@@ -253,10 +256,11 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label htmlFor="login-senha" className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Senha <span className="text-red-500">*</span>
               </label>
               <input
+                id="login-senha"
                 type="password"
                 value={senha}
                 onChange={(e) => {
@@ -334,10 +338,11 @@ export default function LoginPage() {
 
             <form onSubmit={handleIndicar} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="indicacao-cpf-parceiro" className="block text-sm font-medium text-gray-700 mb-1">
                   CPF do Parceiro (Meu)
                 </label>
                 <input
+                  id="indicacao-cpf-parceiro"
                   type="text"
                   required
                   maxLength={14}
@@ -354,10 +359,11 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="indicacao-nome-cliente" className="block text-sm font-medium text-gray-700 mb-1">
                   Nome do Cliente
                 </label>
                 <input
+                  id="indicacao-nome-cliente"
                   type="text"
                   required
                   value={indicarForm.nomeIndicado}
@@ -373,10 +379,11 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="indicacao-cpf-cliente" className="block text-sm font-medium text-gray-700 mb-1">
                   CPF do Cliente
                 </label>
                 <input
+                  id="indicacao-cpf-cliente"
                   type="text"
                   required
                   maxLength={14}
@@ -390,8 +397,11 @@ export default function LoginPage() {
 
                     // Validate CPF in real-time
                     if (formatted.replace(/\D/g, "").length === 11) {
-                      clearTimeout((window as any).cpfTimeout);
-                      (window as any).cpfTimeout = setTimeout(() => {
+                      const windowWithTimeout = window as WindowWithCpfTimeout;
+                      if (windowWithTimeout.cpfTimeout) {
+                        clearTimeout(windowWithTimeout.cpfTimeout);
+                      }
+                      windowWithTimeout.cpfTimeout = setTimeout(() => {
                         validateIndicadoCpfRealTime(formatted);
                       }, 500);
                     } else {

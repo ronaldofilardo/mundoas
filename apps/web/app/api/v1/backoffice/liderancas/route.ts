@@ -10,8 +10,14 @@
  */
 import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
-import { ok, requireBackofficeWithScope } from "@/lib/api-helpers";
+import { badRequest, ok, requireBackofficeWithScope } from "@/lib/api-helpers";
 import * as equipeRoute from "../equipe/route";
+
+type JsonObject = Record<string, unknown>;
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 
 export async function GET(req: NextRequest) {
   const { backofficeId, error } = await requireBackofficeWithScope();
@@ -53,11 +59,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  let body: any;
+  let body: JsonObject;
   try {
-    body = await req.json();
+    const parsed: unknown = await req.json();
+    if (!isJsonObject(parsed)) return badRequest("Corpo inválido");
+    body = parsed;
   } catch {
-    return equipeRoute.POST(req);
+    return badRequest("Corpo inválido");
   }
 
   const { tipo: tipoLideranca, ...rest } = body;

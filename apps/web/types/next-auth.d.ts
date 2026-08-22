@@ -18,6 +18,7 @@ declare module "next-auth" {
   interface User {
     tipo: TipoAcesso;
     papel: PapelGestor | null;
+    senhaTemporaria: boolean;
     consultorId: string | null;
     estabelecimentoId: string | null;
     backofficeId: string | null;
@@ -25,6 +26,7 @@ declare module "next-auth" {
     comercialId: string | null;
     equipeId: string | null;
   }
+
   interface Session {
     user: {
       id: string;
@@ -32,6 +34,7 @@ declare module "next-auth" {
       email: string;
       tipo: TipoAcesso;
       papel: PapelGestor | null;
+      senhaTemporaria: boolean;
       consultorId: string | null;
       estabelecimentoId: string | null;
       backofficeId: string | null;
@@ -47,6 +50,7 @@ declare module "next-auth/jwt" {
     id: string;
     tipo: TipoAcesso;
     papel: PapelGestor | null;
+    senhaTemporaria: boolean;
     consultorId: string | null;
     estabelecimentoId: string | null;
     backofficeId: string | null;
@@ -55,3 +59,6 @@ declare module "next-auth/jwt" {
     equipeId: string | null;
   }
 }
+
+export {};
+

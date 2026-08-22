@@ -15,7 +15,7 @@ export async function criarAuditLog(params: {
   };
   
   if (params.detalhes !== undefined) {
-    data.detalhes = params.detalhes as any;
+    data.detalhes = params.detalhes as Prisma.InputJsonValue;
   }
   
   await prisma.auditLog.create({ data });

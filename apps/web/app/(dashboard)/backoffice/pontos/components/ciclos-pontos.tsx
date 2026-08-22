@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { CriarCicloForm } from "./criar-ciclo-form";
+import type { CicloPontosItem } from "../pontos-types";
 
-export function CiclosPontos({ data }: { data?: any }) {
+export function CiclosPontos({ data }: { data?: CicloPontosItem[] }) {
   const [transitioningId, setTransitioningId] = useState<string | null>(null);
 
   const handleTransition = async (cicloId: string, novoStatus: string) => {
@@ -40,7 +41,7 @@ export function CiclosPontos({ data }: { data?: any }) {
         <div className="text-center py-8 text-gray-500">Nenhum ciclo criado</div>
       ) : (
         <div className="space-y-4">
-          {data.map((ciclo: any) => (
+          {data.map((ciclo) => (
             <div key={ciclo.id} className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
@@ -50,7 +51,7 @@ export function CiclosPontos({ data }: { data?: any }) {
                     {" a "}
                     {new Date(ciclo.fimAcumuloEm).toLocaleDateString("pt-BR")}
                   </p>
-                  {ciclo.inicioResgateEm && (
+                  {ciclo.inicioResgateEm && ciclo.fimResgateEm && (
                     <p className="text-sm text-gray-600 mt-1">
                       Resgate: {new Date(ciclo.inicioResgateEm).toLocaleDateString("pt-BR")}
                       {" a "}

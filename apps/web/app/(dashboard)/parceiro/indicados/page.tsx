@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 
@@ -29,6 +29,7 @@ export default function ParceiroIndicados() {
   const [cpfValidation, setCpfValidation] = useState<"valid" | "invalid" | "">(
     "",
   );
+  const cpfTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetchIndicados();
@@ -193,10 +194,10 @@ export default function ParceiroIndicados() {
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nome">
                   Nome Completo
                 </label>
-                <input
+                <input id="nome"
                   type="text"
                   required
                   value={form.nome}
@@ -206,10 +207,10 @@ export default function ParceiroIndicados() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="cpf">
                   CPF
                 </label>
-                <input
+                <input id="cpf"
                   type="text"
                   required
                   maxLength={14}
@@ -228,8 +229,10 @@ export default function ParceiroIndicados() {
 
                     // Validate CPF in real-time
                     if (v.length === 11) {
-                      clearTimeout((window as any).cpfTimeout);
-                      (window as any).cpfTimeout = setTimeout(() => {
+                      if (cpfTimeoutRef.current) {
+                        clearTimeout(cpfTimeoutRef.current);
+                      }
+                      cpfTimeoutRef.current = setTimeout(() => {
                         validateCpfRealTime(masked);
                       }, 500);
                     } else {
@@ -257,10 +260,10 @@ export default function ParceiroIndicados() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="telefone">
                   Telefone (opcional)
                 </label>
-                <input
+                <input id="telefone"
                   type="text"
                   value={form.telefone}
                   onChange={(e) =>

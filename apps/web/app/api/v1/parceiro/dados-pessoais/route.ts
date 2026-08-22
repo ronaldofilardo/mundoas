@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@asa/database";
+import { prisma, Prisma } from "@asa/database";
 import { ok, notFound, requireParceiroWithScope, badRequest } from "@/lib/api-helpers";
 import { atualizarConsultorSelfSchema } from "@asa/shared";
 import { criarAuditLog } from "@/lib/audit";
@@ -60,9 +60,9 @@ export async function PUT(req: NextRequest) {
     return notFound("Parceiro não encontrado");
   }
 
-  const dataToUpdate: any = {};
+  const dataToUpdate: Prisma.ParceiroUpdateInput = {};
   if (nome !== undefined) dataToUpdate.nome = nome;
-  if (telefone !== undefined) dataToUpdate.usuario = { telefone };
+  if (telefone !== undefined) dataToUpdate.usuario = { update: { telefone } };
   if (pixChave !== undefined) dataToUpdate.pixChave = pixChave;
 
   await prisma.$transaction(async (tx) => {

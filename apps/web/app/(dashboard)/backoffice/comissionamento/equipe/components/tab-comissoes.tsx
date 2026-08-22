@@ -35,7 +35,6 @@ export function TabComissoes({ itens, mesReferencia, onMesChange }: TabComissoes
   const { 
     membrosComComissoes, 
     loading, 
-    refetch, 
     atualizarFalta,
     validacao,
     validacaoLoading,
@@ -175,6 +174,8 @@ export function TabComissoes({ itens, mesReferencia, onMesChange }: TabComissoes
                     const membroComComissao = membrosComComissoes.find(m => m.id === item.liderancaId || (item.tipo === "COMERCIAL" && m.nome === item.empresaSetor));
                     const comissaoMes = membroComComissao?.comissoes.find(c => c.mesReferencia === mesAtual);
                     const temFalta = comissaoMes?.temFalta ?? false;
+                    const itemInputId = `falta-${item.tipo.toLowerCase()}-${(item.liderancaId ?? item.empresaSetor).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+                    const itemLabel = item.liderancaNome ?? item.empresaSetor;
 
                     return (
                       <tbody key={item.empresaSetor}>
@@ -205,9 +206,11 @@ export function TabComissoes({ itens, mesReferencia, onMesChange }: TabComissoes
                             {formatBRL(item.comissaoCalculada)}
                           </td>
                           <td className="p-3 text-center">
-                            <label className="flex items-center justify-center cursor-pointer">
+                            <label htmlFor={itemInputId} className="flex items-center justify-center cursor-pointer">
                               <input
+                                id={itemInputId}
                                 type="checkbox"
+                                aria-label={`Falta de ${itemLabel}`}
                                 checked={temFalta}
                                 onChange={(e) => {
                                   const targetId = item.liderancaId || membroComComissao?.id;
@@ -270,9 +273,11 @@ export function TabComissoes({ itens, mesReferencia, onMesChange }: TabComissoes
                                           <td className="p-2 text-right text-gray-600">{s.percentualComissao.toFixed(2)}%</td>
                                           <td className="p-2 text-right font-medium text-gray-900">{formatBRL(s.comissao)}</td>
                                           <td className="p-2 text-center">
-                                            <label className="flex items-center justify-center cursor-pointer">
+                                            <label htmlFor={`falta-${s.id}`} className="flex items-center justify-center cursor-pointer">
                                               <input
+                                                id={`falta-${s.id}`}
                                                 type="checkbox"
+                                                aria-label={`Falta de ${s.nome}`}
                                                 checked={subTemFalta}
                                                 onChange={(e) => atualizarFalta(s.id, mesAtual, e.target.checked)}
                                                 className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 hover:bg-primary-50 transition-colors"
@@ -430,9 +435,11 @@ export function TabComissoes({ itens, mesReferencia, onMesChange }: TabComissoes
 
                         return (
                           <td key={mLabel.value} className="p-2 text-center">
-                            <label className="flex items-center justify-center cursor-pointer">
+                              <label htmlFor={`falta-${membro.id}-${mLabel.value}`} className="flex items-center justify-center cursor-pointer">
                               <input
+                                id={`falta-${membro.id}-${mLabel.value}`}
                                 type="checkbox"
+                                aria-label={`Falta de ${nomeExibicao} em ${mLabel.label}`}
                                 checked={temFalta}
                                 onChange={(e) => atualizarFalta(membro.id, mesRef, e.target.checked)}
                                 className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 hover:bg-primary-50 transition-colors"

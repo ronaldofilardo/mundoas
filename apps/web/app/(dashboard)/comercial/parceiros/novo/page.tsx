@@ -44,6 +44,7 @@ export default function NovoParceiroComercialPage() {
               href={json.link}
               className="text-blue-600 underline"
               target="_blank"
+              rel="noreferrer"
             >
               {json.link}
             </a>
@@ -52,8 +53,8 @@ export default function NovoParceiroComercialPage() {
       );
 
       router.push("/comercial/parceiros");
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao criar parceiro");
+    } catch (error: unknown) {
+      toast.error((error instanceof Error ? error.message : "Erro inesperado") || "Erro ao criar parceiro");
     } finally {
       setLoading(false);
     }
@@ -88,10 +89,9 @@ export default function NovoParceiroComercialPage() {
       <div className="card max-w-2xl">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nome">
               Nome Completo
-            </label>
-            <input
+            </label> <input
               type="text"
               name="nome"
               value={formData.nome}
@@ -104,10 +104,9 @@ export default function NovoParceiroComercialPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">
               Email
-            </label>
-            <input
+            </label> <input
               type="email"
               name="email"
               value={formData.email}
@@ -119,10 +118,9 @@ export default function NovoParceiroComercialPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="cpf">
               CPF
-            </label>
-            <input
+            </label> <input
               type="text"
               name="cpf"
               value={formData.cpf}
@@ -136,10 +134,9 @@ export default function NovoParceiroComercialPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="telefone">
               Telefone (opcional)
-            </label>
-            <input
+            </label> <input
               type="tel"
               name="telefone"
               value={formData.telefone}
@@ -150,10 +147,9 @@ export default function NovoParceiroComercialPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="pixChave">
               Chave PIX (opcional)
-            </label>
-            <input
+            </label> <input
               type="text"
               name="pixChave"
               value={formData.pixChave}

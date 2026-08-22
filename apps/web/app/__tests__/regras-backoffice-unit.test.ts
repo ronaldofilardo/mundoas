@@ -78,6 +78,40 @@ describe('Regras Comerciais - Validação Prisma', () => {
 });
 
 describe('Regras Gestores - Validação Prisma', () => {
+  let backofficeId: string;
+
+  beforeAll(async () => {
+    const { prisma } = await import('@asa/database');
+    const backoffice = await prisma.backoffice.create({
+      data: {
+        nome: 'Backoffice Teste Regras',
+        cpf: `0000000000${Math.floor(Math.random() * 100)}`,
+        usuario: {
+          create: {
+            nome: 'Teste',
+            email: `teste-regras-${Date.now()}@asa.test`,
+            senhaHash: 'hash',
+            tipo: 'BACKOFFICE',
+            papel: 'BACKOFFICE',
+          },
+        },
+      },
+    });
+    backofficeId = backoffice.id;
+    await prisma.regraGestor.create({
+      data: {
+        backofficeId,
+        gerenteCire: 10,
+        supervisorAtivo: 15,
+        supervisorReceptivo: 12,
+        supervisorFranquia: 8,
+        supervisorAtendimento: 5,
+        gerenteAtendimento: 20,
+        supervisorComercial: 18,
+      },
+    });
+  });
+
   it('deve usar backoffice_id no where clause', async () => {
     const { prisma } = await import('@asa/database');
     

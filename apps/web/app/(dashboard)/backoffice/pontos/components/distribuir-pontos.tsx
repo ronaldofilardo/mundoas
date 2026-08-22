@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { TabelaDistribuicao } from "./tabela-distribuicao";
+import type { CicloPontosItem, DistribuicaoPontosItem } from "../pontos-types";
 
 interface DistribuirPontosProps {
-  data?: any[];
-  ciclo?: any;
+  data?: DistribuicaoPontosItem[];
+  ciclo?: CicloPontosItem;
 }
 
 export function DistribuirPontos({ data, ciclo }: DistribuirPontosProps) {
-  const [producoes, setProducoes] = useState<any[]>([]);
+  const [producoes, setProducoes] = useState<DistribuicaoPontosItem[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -21,8 +22,8 @@ export function DistribuirPontos({ data, ciclo }: DistribuirPontosProps) {
   const handleRefresh = async () => {
     const resAtualizada = await fetch("/api/v1/backoffice/pontos/distribuir");
     if (resAtualizada.ok) {
-      const dados = await resAtualizada.json();
-      setProducoes(dados.producoes || []);
+      const dados = (await resAtualizada.json()) as { producoes?: DistribuicaoPontosItem[] };
+      setProducoes(dados.producoes ?? []);
     }
   };
 

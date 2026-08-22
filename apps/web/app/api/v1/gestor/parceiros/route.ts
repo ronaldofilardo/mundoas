@@ -4,7 +4,7 @@ import { hash } from "bcryptjs";
 import {
   badRequest,
   created,
-  forbidden,
+  
   ok,
   requireGestorNivelInferiorWithScope,
 } from "@/lib/api-helpers";
@@ -22,8 +22,8 @@ const criarParceiroSchema = z.object({
   telefone: z.string().optional(),
 });
 
-export async function GET(req: NextRequest) {
-  const { session, gestorId, error } = await requireGestorNivelInferiorWithScope();
+export async function GET(_req: NextRequest) {
+  const { gestorId, error } = await requireGestorNivelInferiorWithScope();
   if (error) return error;
 
   const parceiros = await prisma.parceiro.findMany({
@@ -77,10 +77,10 @@ export async function POST(req: NextRequest) {
       return badRequest("Gestor não está vinculado a uma liderança");
     }
 
-    let body: any;
+    let body: unknown;
     try {
       body = await req.json();
-    } catch (parseErr) {
+    } catch {
       return badRequest("Corpo da requisição inválido. Envie JSON válido.");
     }
 
@@ -175,8 +175,9 @@ export async function POST(req: NextRequest) {
       cpf: cpfClean,
       link: `${baseUrl}/acesso/${result.token}`,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[gestor/parceiros] Erro ao criar parceiro:", err);
-    return badRequest(err?.message || "Erro interno ao criar parceiro");
+    const mensagem = err instanceof Error ? err.message : "Erro interno ao criar parceiro";
+    return badRequest(mensagem);
   }
 }

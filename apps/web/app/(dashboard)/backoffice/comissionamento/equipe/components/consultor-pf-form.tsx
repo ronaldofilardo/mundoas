@@ -205,10 +205,11 @@ export function ConsultorPfForm({
         <form onSubmit={handleSubmit} className="p-4 overflow-y-auto max-h-[calc(90vh-60px)]">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="consultor-pf-nome" className="block text-sm font-medium text-gray-700 mb-1">
                 Nome completo <span className="text-red-500">*</span>
               </label>
               <input
+                id="consultor-pf-nome"
                 type="text"
                 value={formData.nome}
                 onChange={(e) => handleChange("nome", e.target.value)}
@@ -221,10 +222,11 @@ export function ConsultorPfForm({
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="consultor-pf-email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email <span className="text-red-500">*</span>
               </label>
               <input
+                id="consultor-pf-email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange("email", e.target.value)}
@@ -241,10 +243,11 @@ export function ConsultorPfForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="consultor-pf-cpf" className="block text-sm font-medium text-gray-700 mb-1">
                 CPF <span className="text-red-500">*</span>
               </label>
               <input
+                id="consultor-pf-cpf"
                 type="text"
                 value={formData.cpf}
                 onChange={(e) => handleChange("cpf", e.target.value)}
@@ -262,8 +265,9 @@ export function ConsultorPfForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+              <label htmlFor="consultor-pf-telefone" className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
               <input
+                id="consultor-pf-telefone"
                 type="tel"
                 value={formData.telefone}
                 onChange={(e) => handleChange("telefone", e.target.value)}
@@ -273,10 +277,11 @@ export function ConsultorPfForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="consultor-pf-lideranca" className="block text-sm font-medium text-gray-700 mb-1">
                 Liderança <span className="text-red-500">*</span>
               </label>
               <select
+                id="consultor-pf-lideranca"
                 value={formData.liderancaId}
                 onChange={(e) => handleChange("liderancaId", e.target.value)}
                 className={`w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-500 text-sm ${
@@ -297,10 +302,10 @@ export function ConsultorPfForm({
               )}
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <fieldset className="md:col-span-2">
+              <legend className="block text-sm font-medium text-gray-700 mb-1">
                 Setores <span className="text-red-500">*</span>
-              </label>
+              </legend>
               <div className="flex flex-wrap gap-2 p-2 border rounded bg-gray-50">
                 {setores.map((s) => (
                   <label key={s.id} className="flex items-center gap-1.5 cursor-pointer">
@@ -318,7 +323,7 @@ export function ConsultorPfForm({
               <p className="mt-1 text-xs text-gray-500">
                 Selecione ao menos um setor. Máximo de 20 setores.
               </p>
-            </div>
+            </fieldset>
           </div>
 
           <div className="mt-6 flex justify-end gap-3">

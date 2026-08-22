@@ -15,6 +15,20 @@ const SISTEMA_FIELDS = [
   "gerenteComercialComFalta",
   "gerenteComercialSemFalta",
 ] as const;
+type SistemaField = (typeof SISTEMA_FIELDS)[number];
+type JsonObject = Record<string, unknown>;
+
+function isSistemaField(value: string): value is SistemaField {
+  return SISTEMA_FIELDS.includes(value as SistemaField);
+}
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function valorSistema(regra: Record<SistemaField, unknown>, nome: string): number {
+  return isSistemaField(nome) ? Number(regra[nome] ?? 0) : 0;
+}
 
 async function getOrCreateRegra(backofficeId: string) {
   let regra = await prisma.regraFalta.findUnique({
@@ -45,10 +59,11 @@ async function getOrCreateRegra(backofficeId: string) {
   );
 
   if (missingFields.length > 0) {
+    const regraFaltaId = regra.id;
     await prisma.$transaction(async (tx) => {
       await tx.regraFaltaItem.createMany({
-        data: missingFields.map((nome, index) => ({
-          regraFaltaId: regra.id,
+        data: missingFields.map((nome) => ({
+          regraFaltaId,
           nome,
           percentual: 0,
           tipo: "SISTEMA",
@@ -76,7 +91,7 @@ export async function GET() {
 
   for (const item of regra.itens) {
     const valor = item.tipo === "SISTEMA"
-      ? Number((regra as any)[item.nome])
+      ? valorSistema(regra, item.nome)
       : Number(item.percentual);
 
     if (item.tipo === "SISTEMA") {
@@ -97,17 +112,19 @@ export async function PUT(req: NextRequest) {
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  let body: any;
+  let body: unknown;
   try {
     body = await req.json();
   } catch {
     return badRequest("Corpo inválido");
   }
+  if (!isJsonObject(body)) return badRequest("Corpo inválido");
 
   const sistemaData: Record<string, number> = {};
   for (const field of SISTEMA_FIELDS) {
     if (body[field] !== undefined) {
-      sistemaData[field] = body[field] || 0;
+      const value = body[field];
+      sistemaData[field] = typeof value === "number" && Number.isFinite(value) ? value : 0;
     }
   }
 
@@ -143,12 +160,14 @@ export async function PUT(req: NextRequest) {
     include: { itens: { orderBy: { ordem: "asc" } } },
   });
 
+  if (!updatedRegra) return badRequest("Regra de faltas não encontrada");
+
   const sistemaFields: Record<string, number> = {};
   const itensCustom: Array<{ id: string; nome: string; percentual: number; ordem: number }> = [];
 
-  for (const item of updatedRegra!.itens) {
+  for (const item of updatedRegra.itens) {
     const valor = item.tipo === "SISTEMA"
-      ? Number((updatedRegra as any)[item.nome])
+      ? valorSistema(updatedRegra, item.nome)
       : Number(item.percentual);
 
     if (item.tipo === "SISTEMA") {
@@ -159,7 +178,7 @@ export async function PUT(req: NextRequest) {
   }
 
   return ok({
-    id: updatedRegra!.id,
+    id: updatedRegra.id,
     ...sistemaFields,
     itens: itensCustom,
   });
@@ -169,15 +188,17 @@ export async function POST(req: NextRequest) {
   const { session, backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  let body: any;
+  let body: unknown;
   try {
     body = await req.json();
   } catch {
     return badRequest("Corpo inválido");
   }
 
-  const { nome, percentual } = body;
-  if (!nome || typeof percentual !== "number") {
+  if (!isJsonObject(body)) return badRequest("Corpo inválido");
+  const nome = body.nome;
+  const percentual = body.percentual;
+  if (typeof nome !== "string" || nome.trim() === "" || typeof percentual !== "number" || !Number.isFinite(percentual)) {
     return badRequest("Nome e percentual são obrigatórios");
   }
 
@@ -191,7 +212,7 @@ export async function POST(req: NextRequest) {
   const novoItem = await prisma.regraFaltaItem.create({
     data: {
       regraFaltaId: regra.id,
-      nome,
+      nome: nome.trim(),
       percentual,
       tipo: "CUSTOM",
       ordem: (maxOrdem._max.ordem ?? -1) + 1,
@@ -203,7 +224,7 @@ export async function POST(req: NextRequest) {
     acao: "CRIAR_REGRA_FALTA_ITEM",
     entidade: "regra_falta_item",
     entidadeId: novoItem.id,
-    detalhes: { nome, percentual },
+      detalhes: { nome: nome.trim(), percentual },
   });
 
   return ok({ id: novoItem.id, nome: novoItem.nome, percentual: Number(novoItem.percentual), ordem: novoItem.ordem });

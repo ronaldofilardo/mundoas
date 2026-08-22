@@ -2,8 +2,14 @@ import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
 import { badRequest, ok, requireBackofficeWithScope } from "@/lib/api-helpers";
 
+type JsonObject = Record<string, unknown>;
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export async function GET(req: NextRequest) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
+  const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
   const { searchParams } = new URL(req.url);
@@ -64,19 +70,26 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
+  const { error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  let body: any;
+  let body: unknown;
   try {
     body = await req.json();
   } catch {
     return badRequest("Corpo inválido");
   }
+  if (!isJsonObject(body)) return badRequest("Corpo inválido");
 
-  const { consultorPfId, valorProcedimento, dataReferencia } = body;
+  const consultorPfId = typeof body.consultorPfId === "string" ? body.consultorPfId : "";
+  const valorProcedimento = body.valorProcedimento;
+  const dataReferencia = typeof body.dataReferencia === "string" ? body.dataReferencia : "";
+  const tipoProcedimento = typeof body.tipoProcedimento === "string" ? body.tipoProcedimento : undefined;
+  const valorNumerico = typeof valorProcedimento === "number"
+    ? valorProcedimento
+    : typeof valorProcedimento === "string" ? Number(valorProcedimento) : NaN;
 
-  if (!consultorPfId || !valorProcedimento || !dataReferencia) {
+  if (!consultorPfId || !Number.isFinite(valorNumerico) || !dataReferencia) {
     return badRequest(
       "Campos obrigatórios: consultorPfId, valorProcedimento, dataReferencia",
     );
@@ -88,17 +101,19 @@ export async function POST(req: NextRequest) {
     );
     const resultado = await calcularComissaoConsultorPf({
       consultorPfId,
-      valorProcedimento: Number(valorProcedimento),
+      valorProcedimento: valorNumerico,
       dataReferencia: new Date(dataReferencia),
+      tipoProcedimento,
     });
 
     return ok({
       ...resultado,
-      valorProcedimento: Number(valorProcedimento),
+      valorProcedimento: valorNumerico,
       dataReferencia,
     });
-  } catch (err: any) {
-    return badRequest(err?.message || "Erro ao calcular comissão");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erro ao calcular comissão";
+    return badRequest(message);
   }
 }
 

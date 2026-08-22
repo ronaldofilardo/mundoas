@@ -4,20 +4,29 @@ import { hash } from "bcryptjs";
 import { badRequest, ok, requireLiderancaWithScope } from "@/lib/api-helpers";
 import { gerarSenhaProvisoria } from "@/lib/utils";
 
+type JsonObject = Record<string, unknown>;
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export async function POST(req: NextRequest) {
-  const { session, lideranca, error } = await requireLiderancaWithScope();
+  const { lideranca, error } = await requireLiderancaWithScope();
   if (error) return error;
 
-  let body: any;
+  let body: JsonObject;
   try {
-    body = await req.json();
+    const parsed: unknown = await req.json();
+    if (!isJsonObject(parsed)) return badRequest("Corpo da requisição inválido.");
+    body = parsed;
   } catch {
     return badRequest("Corpo da requisição inválido.");
   }
 
-  const { dados, modo = "criar" } = body;
+  const dados = typeof body.dados === "string" ? body.dados : "";
+  const modo = body.modo === "atualizar" ? "atualizar" : "criar";
 
-  if (!dados || typeof dados !== "string") {
+  if (!dados) {
     return badRequest("O campo 'dados' é obrigatório e deve ser uma string.");
   }
 
@@ -200,7 +209,7 @@ export async function POST(req: NextRequest) {
       const senhaTemporaria = gerarSenhaProvisoria(cpf);
       const senhaHash = await hash(senhaTemporaria, 12);
 
-      const result = await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx) => {
         const usuario = await tx.usuario.create({
           data: {
             nome,

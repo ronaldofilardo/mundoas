@@ -75,7 +75,7 @@ export function GerenciadorCiclosPontos() {
       });
       setShowForm(false);
       fetchCiclos();
-    } catch (err) {
+    } catch {
       alert("Erro ao criar ciclo");
     }
   };
@@ -100,7 +100,7 @@ export function GerenciadorCiclosPontos() {
 
       alert(`Ciclo transicionado para ${novoStatus}`);
       fetchCiclos();
-    } catch (err) {
+    } catch {
       alert("Erro ao atualizar ciclo");
     } finally {
       setAtualizandoStatus(null);
@@ -153,10 +153,11 @@ export function GerenciadorCiclosPontos() {
           className="bg-white border border-gray-200 rounded-lg p-6 space-y-4"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="ciclo-nome" className="block text-sm font-medium text-gray-700 mb-2">
               Nome do Ciclo
             </label>
             <input
+              id="ciclo-nome"
               type="text"
               value={formData.nome}
               onChange={(e) =>
@@ -170,10 +171,11 @@ export function GerenciadorCiclosPontos() {
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="ciclo-inicio-acumulo" className="block text-sm font-medium text-gray-700 mb-2">
                 Início Acúmulo
               </label>
               <input
+                id="ciclo-inicio-acumulo"
                 type="datetime-local"
                 value={formData.inicioAcumuloEm}
                 onChange={(e) =>
@@ -184,10 +186,11 @@ export function GerenciadorCiclosPontos() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="ciclo-fim-acumulo" className="block text-sm font-medium text-gray-700 mb-2">
                 Fim Acúmulo / Início Resgate
               </label>
               <input
+                id="ciclo-fim-acumulo"
                 type="datetime-local"
                 value={formData.fimAcumuloEm}
                 onChange={(e) =>
@@ -198,10 +201,11 @@ export function GerenciadorCiclosPontos() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="ciclo-fim-resgate" className="block text-sm font-medium text-gray-700 mb-2">
                 Fim Resgate
               </label>
               <input
+                id="ciclo-fim-resgate"
                 type="datetime-local"
                 value={formData.fimResgateEm}
                 onChange={(e) =>

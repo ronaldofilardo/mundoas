@@ -22,7 +22,7 @@ function composeMesReferencia(ano: number, mes: string): string {
 }
 
 export async function GET() {
-  const { session, lideranca, error } = await requireLiderancaWithScope();
+  const { lideranca, error } = await requireLiderancaWithScope();
   if (error) return error;
 
   const ano = getAnoAtual();
@@ -123,10 +123,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const { session, lideranca, error } = await requireLiderancaWithScope();
+  const { lideranca, error } = await requireLiderancaWithScope();
   if (error) return error;
 
-  let body: any;
+  let body: unknown;
   try {
     body = await req.json();
   } catch {

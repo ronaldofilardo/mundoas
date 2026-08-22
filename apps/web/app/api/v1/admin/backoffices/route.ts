@@ -91,9 +91,9 @@ export async function POST(req: NextRequest) {
       statusAssinatura: result.assinatura.statusAssinatura,
       senhaTemporaria,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[admin/backoffices] Erro ao criar unidade:", err);
-    return badRequest(err?.message || "Erro interno ao criar unidade.");
+    return badRequest((err instanceof Error ? err.message : "Erro interno ao criar unidade."));
   }
 }
 

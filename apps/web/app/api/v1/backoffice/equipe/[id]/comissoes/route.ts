@@ -8,6 +8,11 @@ import {
   requireBackofficeWithScope,
 } from "@/lib/api-helpers";
 
+type ComissaoPatchBody = {
+  mesReferencia?: unknown;
+  temFalta?: unknown;
+};
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } },
@@ -46,14 +51,19 @@ export async function PATCH(
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  let body: any;
+  let body: ComissaoPatchBody;
   try {
-    body = await req.json();
+    const parsed: unknown = await req.json();
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      return badRequest("Corpo da requisição inválido. Envie JSON válido.");
+    }
+    body = parsed as ComissaoPatchBody;
   } catch {
     return badRequest("Corpo da requisição inválido. Envie JSON válido.");
   }
 
-  const { mesReferencia, temFalta } = body;
+  const mesReferencia = typeof body.mesReferencia === "string" ? body.mesReferencia : "";
+  const temFalta = body.temFalta;
 
   if (!mesReferencia || typeof temFalta !== "boolean") {
     return badRequest("Parâmetros obrigatórios: mesReferencia (string) e temFalta (boolean)");

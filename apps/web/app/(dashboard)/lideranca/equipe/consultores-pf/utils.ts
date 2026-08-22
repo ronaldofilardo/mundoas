@@ -140,16 +140,25 @@ export function formatarData(dateStr: string): string {
  * Normaliza o payload retornado por GET /api/v1/lideranca/consultores-pf/[id]/metas.
  * O endpoint pode retornar `{ metas: [...] }` ou um array direto.
  */
-export function normalizarRespostaMetas(data: unknown): Array<{
+export interface MetaResposta {
   id: string;
   consultorPfId: string;
   mesReferencia: string;
   valorMeta: string | number;
-}> {
-  if (Array.isArray(data)) return data as any;
-  if (data && typeof data === "object" && "metas" in (data as any)) {
-    const metas = (data as any).metas;
-    return Array.isArray(metas) ? metas : [];
-  }
-  return [];
+}
+
+function isMetaResposta(value: unknown): value is MetaResposta {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return typeof item.id === "string"
+    && typeof item.consultorPfId === "string"
+    && typeof item.mesReferencia === "string"
+    && (typeof item.valorMeta === "string" || typeof item.valorMeta === "number");
+}
+
+export function normalizarRespostaMetas(data: unknown): MetaResposta[] {
+  if (Array.isArray(data)) return data.filter(isMetaResposta);
+  if (!data || typeof data !== "object") return [];
+  const metas = (data as Record<string, unknown>).metas;
+  return Array.isArray(metas) ? metas.filter(isMetaResposta) : [];
 }

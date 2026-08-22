@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const cicloPontosId = searchParams.get("cicloPontosId") ?? undefined;
 
-    const where: any = {
+    const where: { parceiroId: string; cicloPontosId?: string } = {
       parceiroId,
     };
 

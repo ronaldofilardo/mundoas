@@ -1,6 +1,18 @@
 import { prisma } from "@asa/database";
 import { read, utils } from "xlsx";
 
+type PlanilhaCell = string | number | Date | null;
+type LiderancaRef = { id: string };
+type PessoaRef = { id: string; nome: string };
+type ParceiroRef = {
+  id: string;
+  nome: string;
+  cpf: string;
+  comercialId: string | null;
+  gestorId: string | null;
+  indicacoes: Array<{ id: string; cpf: string }>;
+};
+
 interface PreviewRow {
   rowNumber: number;
   dataReferencia: string;
@@ -61,7 +73,7 @@ export async function parsePlanilhaProducao(
   const worksheet = workbook.Sheets[sheetName];
 
   // Converter planilha para array de arrays
-  const jsonData: any[][] = utils.sheet_to_json(worksheet, {
+  const jsonData = utils.sheet_to_json<PlanilhaCell[]>(worksheet, {
     header: 1,
     defval: "",
     raw: false,
@@ -122,7 +134,6 @@ export async function parsePlanilhaProducao(
   const idxUsuarioConta = getColIndex("Usuário da conta");
   const idxUnidade = getColIndex("Unidade");
   const idxTipoProcedimento = getColIndex("Tipo Procedimento");
-  const idxFormaPagamento = getColIndex("Forma Pagamento");
   const idxValorTotal = getColIndexFlexible([
     "Total Pago",
     "Total Pagto",
@@ -132,15 +143,15 @@ export async function parsePlanilhaProducao(
   ]);
 
   // Buscar parceiros do backoffice
-  let liderancas: any[] = [];
+  let liderancas: LiderancaRef[] = [];
   let liderancaIds: string[] = [];
-  let comerciais: any[] = [];
-  let consultoresPf: any[] = [];
-  let gestores: any[] = [];
-  let parceiros: any[] = [];
-  let consultorPorNome = new Map<string, any>();
+  let comerciais: PessoaRef[] = [];
+  let consultoresPf: PessoaRef[] = [];
+  let gestores: PessoaRef[] = [];
+  let parceiros: ParceiroRef[] = [];
+  let consultorPorNome = new Map<string, PessoaRef>();
   let comercialPorId = new Map<string, string>();
-  let gestorPorNome = new Map<string, any>();
+  let gestorPorNome = new Map<string, PessoaRef>();
 
   try {
     liderancas = await prisma.equipe.findMany({
@@ -191,8 +202,10 @@ const [comerciaisResult, consultoresPfResult, gestoresResult] = await Promise.al
         },
       },
     });
-  } catch (dbError: any) {
-    console.error("[parsePlanilhaProducao] ERRO DE BANCO DE DADOS:", dbError?.message, dbError?.stack);
+  } catch (dbError: unknown) {
+    const message = dbError instanceof Error ? dbError.message : "Erro desconhecido";
+    const stack = dbError instanceof Error ? dbError.stack : undefined;
+    console.error("[parsePlanilhaProducao] ERRO DE BANCO DE DADOS:", message, stack);
     // Se falhar busca de parceiros, continua sem eles (todas as linhas virarão órfãs)
     console.warn("[parsePlanilhaProducao] Continuando sem dados de parceiros/comerciais - preview limitado");
   }
@@ -219,10 +232,6 @@ const [comerciaisResult, consultoresPfResult, gestoresResult] = await Promise.al
     const tipoProcedimento =
       idxTipoProcedimento >= 0
         ? String(row[idxTipoProcedimento] || "").trim()
-        : "PARTICULAR";
-    const formaPagamento =
-      idxFormaPagamento >= 0
-        ? String(row[idxFormaPagamento] || "").trim()
         : "PARTICULAR";
 const valorTotalRaw =
       idxValorTotal >= 0 ? String(row[idxValorTotal] || "").trim() : "";
@@ -275,10 +284,10 @@ const valorTotalRaw =
     }
 
     // Verificar se é órfão (não tem parceiro/indicado)
-    let parceiroEncontrado: any | undefined;
-    let indicadoEncontrado: any | undefined;
-    let consultorPf: any = null;
-    let gestorEncontrado: any = null;
+    let parceiroEncontrado: ParceiroRef | undefined;
+    let indicadoEncontrado: { id: string; cpf: string } | undefined;
+    let consultorPf: PessoaRef | null = null;
+    let gestorEncontrado: PessoaRef | null = null;
 
     if (status === "VALIDO") {
       if (!cpfValido) {
@@ -295,7 +304,7 @@ const valorTotalRaw =
         if (!parceiroEncontrado) {
           for (const parceiro of parceiros) {
             indicadoEncontrado = parceiro.indicacoes.find(
-              (ind: any) => normalizarCpf(ind.cpf) === cpf,
+              (ind) => normalizarCpf(ind.cpf) === cpf,
             );
             if (indicadoEncontrado) {
               parceiroEncontrado = parceiro;
@@ -374,7 +383,7 @@ if (status === "VALIDO" && usuarioDaConta) {
   };
 }
 
-function parseData(dataRaw: any): string | null {
+function parseData(dataRaw: PlanilhaCell | undefined): string | null {
   if (!dataRaw) return null;
 
   if (typeof dataRaw === "number") {

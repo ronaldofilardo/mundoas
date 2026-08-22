@@ -3,9 +3,15 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+type PeriodicidadeCiclo = "SEMESTRAL" | "ANUAL";
+
+function isPeriodicidadeCiclo(value: string): value is PeriodicidadeCiclo {
+  return value === "SEMESTRAL" || value === "ANUAL";
+}
+
 export function CriarCicloForm() {
   const [nome, setNome] = useState("");
-  const [periodicidade, setPeriodicidade] = useState<"SEMESTRAL" | "ANUAL">("ANUAL");
+  const [periodicidade, setPeriodicidade] = useState<PeriodicidadeCiclo>("ANUAL");
   const [inicio, setInicio] = useState("");
   const [fimAcumulo, setFimAcumulo] = useState("");
   const [inicioResgate, setInicioResgate] = useState("");
@@ -58,7 +64,10 @@ export function CriarCicloForm() {
         </div>
         <div>
           <label className="block text-xs text-gray-600 mb-1" htmlFor="periodicidade">Periodicidade</label>
-          <select id="periodicidade" value={periodicidade} onChange={(e) => setPeriodicidade(e.target.value as any)} className="w-full px-3 py-2 border rounded-lg text-sm">
+          <select id="periodicidade" value={periodicidade} onChange={(e) => {
+            const value = e.target.value;
+            if (isPeriodicidadeCiclo(value)) setPeriodicidade(value);
+          }} className="w-full px-3 py-2 border rounded-lg text-sm">
             <option value="ANUAL">Anual</option>
             <option value="SEMESTRAL">Semestral</option>
           </select>

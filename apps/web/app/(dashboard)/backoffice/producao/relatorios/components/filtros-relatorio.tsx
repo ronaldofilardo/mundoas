@@ -42,8 +42,8 @@ export function FiltrosRelatorio({
       <h2 className="text-lg font-semibold text-gray-800 mb-4">Filtros</h2>
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Mês Inicial</label>
-          <select
+          <label className="block text-xs text-gray-600 mb-1" htmlFor="inicio">Mês Inicial</label>
+          <select id="inicio"
             value={inicio}
             onChange={(e) => onInicioChange(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg text-sm"
@@ -57,8 +57,8 @@ export function FiltrosRelatorio({
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Mês Final</label>
-          <select
+          <label className="block text-xs text-gray-600 mb-1" htmlFor="fim">Mês Final</label>
+          <select id="fim"
             value={fim}
             onChange={(e) => onFimChange(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg text-sm"
@@ -73,8 +73,8 @@ export function FiltrosRelatorio({
         </div>
         {showFuncao && (
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Função</label>
-            <select
+            <label className="block text-xs text-gray-600 mb-1" htmlFor="funcao">Função</label>
+            <select id="funcao"
               value={funcao}
               onChange={(e) => onFuncaoChange(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg text-sm"
@@ -89,8 +89,8 @@ export function FiltrosRelatorio({
           </div>
         )}
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Comercial</label>
-          <select
+          <label className="block text-xs text-gray-600 mb-1" htmlFor="comercialId">Comercial</label>
+          <select id="comercialId"
             value={comercialId}
             onChange={(e) => onComercialIdChange(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg text-sm"

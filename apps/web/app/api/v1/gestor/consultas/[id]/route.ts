@@ -51,7 +51,7 @@ export async function PATCH(
 
   const { status, valorPago } = parsed.data;
 
-  await prisma.$transaction(async (tx: any) => {
+  await prisma.$transaction(async (tx) => {
     await tx.consulta.update({
       where: { id },
       data: {

@@ -3,6 +3,21 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
+interface ParceiroComissao {
+  status: string;
+  valorTotal: number | string;
+}
+
+interface ParceiroResumo {
+  id: string;
+  nome: string;
+  cpf: string;
+  status: string;
+  totalIndicados: number;
+  totalPendente: number;
+  comissoes?: ParceiroComissao[];
+}
+
 interface DashboardData {
   totalParceiros: number;
   parceirosAtivos: number;
@@ -29,23 +44,24 @@ export default function BackofficeDashboard() {
       .then((res) => {
         if (res && Array.isArray(res)) {
           const totalParceiros = res.length;
-          const parceirosAtivos = res.filter(
-            (p: any) => p.status === "ATIVO"
+          const parceiros = res as ParceiroResumo[];
+          const parceirosAtivos = parceiros.filter(
+            (p) => p.status === "ATIVO"
           ).length;
-          const totalIndicados = res.reduce(
-            (sum: number, p: any) => sum + (p.totalIndicados || 0),
+          const totalIndicados = parceiros.reduce(
+            (sum, p) => sum + (p.totalIndicados || 0),
             0
           );
-          const totalComissaoPendente = res.reduce(
-            (sum: number, p: any) => sum + (p.totalPendente || 0),
+          const totalComissaoPendente = parceiros.reduce(
+            (sum, p) => sum + (p.totalPendente || 0),
             0
           );
-          const totalComissaoPaga = res.reduce((sum: number, p: any) => {
+          const totalComissaoPaga = parceiros.reduce((sum, p) => {
             return (
               sum +
               (p.comissoes || [])
-                .filter((c: any) => c.status === "PAGA")
-                .reduce((s: number, c: any) => s + Number(c.valorTotal), 0)
+                .filter((c) => c.status === "PAGA")
+                .reduce((s, c) => s + Number(c.valorTotal), 0)
             );
           }, 0);
 
@@ -55,7 +71,7 @@ export default function BackofficeDashboard() {
             totalIndicados,
             totalComissaoPendente,
             totalComissaoPaga,
-            recentes: res.slice(0, 5).map((p: any) => ({
+            recentes: parceiros.slice(0, 5).map((p) => ({
               id: p.id,
               nome: p.nome,
               cpf: p.cpf,

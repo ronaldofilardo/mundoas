@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     ? mesReferencia
     : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
-  const where: any = { equipeId: comercialId };
+  const where: { equipeId: string; mesReferencia?: string } = { equipeId: comercialId };
   if (mesReferencia) where.mesReferencia = mesReferencia;
 
   const comissoes = await prisma.comissaoEquipe.findMany({

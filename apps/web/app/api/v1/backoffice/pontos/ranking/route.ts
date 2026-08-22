@@ -1,13 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@asa/database';
 import { ok, badRequest, requireBackofficeWithScope } from '@/lib/api-helpers';
 import { LRUCache } from 'lru-cache';
+
+type RankingPosicao = {
+  posicao: number;
+  parceiro: { id: string; nome: string; cpf: string; email?: string | null };
+  pontosAcumulados: number;
+  totalProducao: number;
+};
+
+type RankingResultado = {
+  ranking: {
+    ciclo: { id: string; nome: string; status: string };
+    posicoes: RankingPosicao[];
+  };
+};
 
 /**
  * Cache para ranking de pontos
  * Armazena ranking calculado por 5 minutos para evitar queries pesadas
  */
-const rankingCache = new LRUCache<string, any>({
+const rankingCache = new LRUCache<string, RankingResultado>({
   max: 100,
   ttl: 5 * 60 * 1000, // 5 minutos
   updateAgeOnGet: false,
@@ -27,7 +41,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(req: NextRequest) {
   try {
-    const { session, backofficeId, error } = await requireBackofficeWithScope();
+    const { backofficeId, error } = await requireBackofficeWithScope();
     if (error) return error;
 
     const { searchParams } = new URL(req.url);

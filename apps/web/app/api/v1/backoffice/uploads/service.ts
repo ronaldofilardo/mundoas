@@ -1,11 +1,17 @@
-import { prisma } from "@asa/database";
 import * as XLSX from "xlsx";
 import { calcularPontosDeProducao, obterCicloVigente, calcularComissaoComercial } from "@/lib/pontos-utils";
 import { parseDate, parseNumber } from "./parser";
 import { criarAuditLog } from "@/lib/audit";
+import { prisma, Prisma } from "@asa/database";
+
+type PlanilhaCell = string | number | boolean | Date | null;
+type PlanilhaRow = PlanilhaCell[];
+type PlanilhaObject = Record<string, PlanilhaCell>;
+type ParserValue = string | number | Date | undefined;
+type UploadRecord = Awaited<ReturnType<typeof prisma.uploadPlanilhaBackoffice.create>>;
 
 interface ProcessUploadResult {
-  upload: any;
+  upload: UploadRecord;
   summary: {
     totalRows: number;
     processedRows: number;
@@ -18,8 +24,8 @@ interface ProcessUploadResult {
 
 interface RowData {
   cpf: string;
-  dataRef: Date | null;
-  dataPag: Date | null;
+  dataRef: Date;
+  dataPag: Date;
   formaPag: string;
   valorComissao: number | null;
   paciente: string;
@@ -31,35 +37,20 @@ interface RowData {
   uniqueKey: string;
 }
 
-interface ProcessedRow {
-  isOrfao: boolean;
-  comercialId: string | null;
-  gestorId: string | null;
-  consultorPfId: string | null;
-  dataRef: Date;
-  valorComissao: number;
-  procedimento: {
-    dataReferencia: Date;
-    dataPagamento: Date;
-    formaPagamento: string;
-    valorComissao: number;
-    paciente: string;
-    procedimento: string;
-    cpf: string;
-    tipoProcedimento: string;
-    unidade: string;
-    parceiroId: string | null;
-    indicadoId: string | null;
-    comercialId: string | null;
-    gestorId: string | null;
-    consultorPfId: string | null;
-    uploadId: string;
-  };
+function toParserValue(value: PlanilhaCell): ParserValue {
+  return typeof value === "string" || typeof value === "number" || value instanceof Date
+    ? value
+    : undefined;
 }
+
+function toNumberParserValue(value: PlanilhaCell): string | number | undefined {
+  return typeof value === "string" || typeof value === "number" ? value : undefined;
+}
+
 
 export async function processUploadPlanilha(
   backofficeId: string,
-  worksheet: any,
+  worksheet: XLSX.WorkSheet,
   fileName: string
 ): Promise<ProcessUploadResult> {
   const COLUNAS_PLANILHA = [
@@ -83,12 +74,12 @@ export async function processUploadPlanilha(
     "TotalPago",
   ];
 
-  const allRows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", range: 0 });
+  const allRows = XLSX.utils.sheet_to_json<PlanilhaRow>(worksheet, { header: 1, defval: "", range: 0 });
 
   // Cabeçalhos estão sempre na linha 2 (índice 1), pois a linha 1 contém "REceita bruta analitica"
   const startRow = 1;
 
-  const headerRow = allRows[startRow];
+  const headerRow = allRows[startRow] ?? [];
   const dataRows = allRows.slice(startRow + 1);
 
   // Encontrar qual nome de coluna "Total Pago" está presente na planilha
@@ -107,16 +98,19 @@ export async function processUploadPlanilha(
   }
 
   // Parse all rows first
-  const rawData = dataRows.map((row: any[]) => {
-    const obj: any = {};
-    headerRow.forEach((col: string, i: number) => {
-      obj[col] = row[i];
+  const rawData: PlanilhaObject[] = dataRows.map((row) => {
+    const obj: PlanilhaObject = {};
+    headerRow.forEach((col, i) => {
+      const nomeColuna = String(col);
+      obj[nomeColuna] = row[i] ?? null;
     });
     return obj;
   });
 
   // Extrair mês de referência
-  const primeiraDataRef = rawData.length > 0 ? parseDate(rawData[0]["Data de Referência"]) : new Date();
+  const primeiraDataRef = rawData.length > 0
+    ? parseDate(toParserValue(rawData[0]["Data de Referência"]))
+    : new Date();
   const mesReferencia = primeiraDataRef 
     ? `${primeiraDataRef.getFullYear()}-${String(primeiraDataRef.getMonth() + 1).padStart(2, "0")}`
     : new Date().toISOString().slice(0, 7);
@@ -139,10 +133,10 @@ export async function processUploadPlanilha(
     const row = rawData[i];
     const rowIndex = i + startRow + 2; // Excel row (1-indexed, accounting for header)
 
-    const dataRef = parseDate(row["Data de Referência"]);
-    const dataPag = parseDate(row["Data do Pagamento"]);
+    const dataRef = parseDate(toParserValue(row["Data de Referência"]));
+    const dataPag = parseDate(toParserValue(row["Data do Pagamento"]));
     const formaPag = String(row["Forma de Pagamento"] || "").trim();
-    const valorComissao = parseNumber(row[totalPagoCol]);
+    const valorComissao = parseNumber(toNumberParserValue(row[totalPagoCol]));
     const paciente = String(row["Paciente"] || "").trim();
     const procedimento = String(row["Procedimento"] || "").trim();
     
@@ -167,6 +161,14 @@ export async function processUploadPlanilha(
       continue;
     }
 
+    const dataRefValida = dataRef;
+    const dataPagValida = dataPag;
+    const valorComissaoValido = valorComissao;
+    if (!dataRefValida || !dataPagValida || valorComissaoValido === null) {
+      rejectedRows.push(rowIndex);
+      continue;
+    }
+
     const tipoLower = tipoProc.toLowerCase();
     if (tipoLower.includes("cancelamento") || tipoLower.includes("devolução") || tipoLower.includes("estorno")) {
       rejectedRows.push(rowIndex);
@@ -178,7 +180,7 @@ export async function processUploadPlanilha(
       continue;
     }
 
-    const dataRefStr = dataRef.toISOString().split("T")[0];
+    const dataRefStr = dataRefValida.toISOString().split("T")[0];
     const uniqueKey = `${dataRefStr}|${cpf}|${procedimento}`;
 
     if (cpfsProcessados.has(uniqueKey)) {
@@ -189,10 +191,10 @@ export async function processUploadPlanilha(
 
     validRows.push({
       cpf,
-      dataRef,
-      dataPag,
+      dataRef: dataRefValida,
+      dataPag: dataPagValida,
       formaPag,
-      valorComissao,
+      valorComissao: valorComissaoValido,
       paciente,
       procedimento,
       tipoProc,
@@ -257,7 +259,7 @@ export async function processUploadPlanilha(
   let orphanedRows = 0;
   let linhasComComercial = 0;
   let linhasSemComercial = 0;
-  const procedimentos: any[] = [];
+  const procedimentos: Prisma.ProcedimentoPFCreateManyInput[] = [];
   const vendasPorComercialMes: Record<string, Record<string, number>> = {};
 
   for (const row of validRows) {
@@ -373,7 +375,10 @@ export async function processUploadPlanilha(
   };
 }
 
-async function processarPontosBatch(procedimentos: any[], backofficeId: string) {
+async function processarPontosBatch(
+  procedimentos: Prisma.ProcedimentoPFCreateManyInput[],
+  backofficeId: string,
+) {
   // Collect unique parceiroIds
   const parceiroIds = [...new Set(procedimentos.filter(p => p.parceiroId).map(p => p.parceiroId!))];
   
@@ -403,7 +408,7 @@ async function processarPontosBatch(procedimentos: any[], backofficeId: string) 
   
   // Batch fetch configurações for each ciclo
   const configs = await Promise.all(
-    cicloIds.map(cicloId => 
+    cicloIds.map(_cicloId => 
       prisma.configuracaoPontos.findFirst({
         where: { backofficeId },
         orderBy: { vigenteDesde: "desc" },
@@ -417,7 +422,7 @@ async function processarPontosBatch(procedimentos: any[], backofficeId: string) 
   });
 
   // Build movimentações
-  const movimentacoes: any[] = [];
+  const movimentacoes: Prisma.MovimentacaoPontosCreateManyInput[] = [];
 
   for (const p of procedimentos) {
     if (!p.parceiroId) continue;
@@ -429,10 +434,13 @@ async function processarPontosBatch(procedimentos: any[], backofficeId: string) 
     const configId = configMap.get(cicloId);
     if (!configId) continue;
 
+    const dataReferencia = p.dataReferencia instanceof Date
+      ? p.dataReferencia
+      : new Date(p.dataReferencia);
     const pontos = await calcularPontosDeProducao(
-      p.valorComissao,
-      p.tipoProcedimento,
-      p.procedimento,
+      Number(p.valorComissao ?? 0),
+      dataReferencia,
+      backofficeId,
     );
 
     if (pontos > 0) {
@@ -459,7 +467,7 @@ async function processarPontosBatch(procedimentos: any[], backofficeId: string) 
 async function processarComissoesBatch(
   vendasPorComercialMes: Record<string, Record<string, number>>
 ) {
-  const promises: Promise<any>[] = [];
+  const promises: Promise<unknown>[] = [];
 
   for (const [comercialId, vendasPorMes] of Object.entries(vendasPorComercialMes)) {
     for (const [mesRef, totalVendas] of Object.entries(vendasPorMes)) {

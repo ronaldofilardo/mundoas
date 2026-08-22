@@ -83,13 +83,17 @@ function DialogHeader({ className, children, ...props }: DialogHeaderProps) {
   );
 }
 
-interface DialogTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
+type DialogTitleProps = React.HTMLAttributes<HTMLHeadingElement>;
 
-function DialogTitle({ className, ...props }: DialogTitleProps) {
-  return <h2 className={cn("text-lg font-semibold", className)} {...props} />;
+function DialogTitle({ className, children, ...props }: DialogTitleProps) {
+  return (
+    <h2 className={cn("text-lg font-semibold", className)} {...props}>
+      {children}
+    </h2>
+  );
 }
 
-interface DialogDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {}
+type DialogDescriptionProps = React.HTMLAttributes<HTMLParagraphElement>;
 
 function DialogDescription({ className, ...props }: DialogDescriptionProps) {
   return (
@@ -97,7 +101,7 @@ function DialogDescription({ className, ...props }: DialogDescriptionProps) {
   );
 }
 
-interface DialogFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
+type DialogFooterProps = React.HTMLAttributes<HTMLDivElement>;
 
 function DialogFooter({ className, ...props }: DialogFooterProps) {
   return (

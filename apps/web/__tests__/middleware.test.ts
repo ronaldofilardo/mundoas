@@ -69,7 +69,7 @@ describe('Middleware de Autenticação e Papéis', () => {
 
   it('deve redirecionar GESTOR_PJ para dashboard de gestor', async () => {
     (getToken as any).mockResolvedValue({
-      tipo: 'GERENCIA',
+      tipo: 'GESTOR',
       papel: 'GESTOR_PJ',
     });
     const req = createRequest('/gestor/dashboard');

@@ -26,7 +26,7 @@ export async function GET(
   _req: NextRequest,
   { searchParams }: { searchParams: { get: (key: string) => string | null } },
 ) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
+  const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
   const liderancaId = searchParams.get("liderancaId");
@@ -72,17 +72,17 @@ export async function GET(
 }
 
 export async function POST(req: NextRequest) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
+  const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) {
     console.error("[POST /backoffice/consultores-pf] Erro na autenticação:", error);
     return error;
   }
 
-  let body: any;
+  let body: unknown;
   try {
     body = await req.json();
     console.log("[POST /backoffice/consultores-pf] Body recebido:", body);
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("[POST /backoffice/consultores-pf] Erro ao parsear JSON:", err);
     return badRequest("Corpo da requisição inválido.");
   }

@@ -87,7 +87,7 @@ export default function PrimeiroAcessoPage() {
       }
 
       setShowSuccessModal(true);
-    } catch (e) {
+    } catch {
       toast.error("Erro de conexão. Tente novamente.");
     } finally {
       setLoading(false);
@@ -153,11 +153,12 @@ export default function PrimeiroAcessoPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label htmlFor="primeiro-acesso-senha-atual" className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Senha Atual (CPF completo) <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
+                  id="primeiro-acesso-senha-atual"
                   type={showSenhaAtual ? "text" : "password"}
                   value={senhaAtual}
                   onChange={(e) => {
@@ -196,11 +197,12 @@ export default function PrimeiroAcessoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label htmlFor="primeiro-acesso-nova-senha" className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Nova Senha <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
+                  id="primeiro-acesso-nova-senha"
                   type={showNovaSenha ? "text" : "password"}
                   value={novaSenha}
                   onChange={(e) => {
@@ -261,11 +263,12 @@ export default function PrimeiroAcessoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label htmlFor="primeiro-acesso-confirmar-senha" className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Confirmar Nova Senha <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
+                  id="primeiro-acesso-confirmar-senha"
                   type={showConfirmarSenha ? "text" : "password"}
                   value={confirmarSenha}
                   onChange={(e) => {

@@ -2,6 +2,18 @@ import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
 import { requireGestorWithScope, ok } from "@/lib/api-helpers";
 
+type ComissaoGestorRow = {
+  consultorId: string;
+  consultorNome: string;
+  consultorEmail: string;
+  estabelecimentoId: string;
+  estabelecimentoNome: string;
+  consultasRealizadas: number;
+  comissaoConsultor: number;
+  comissaoEstabelecimento: number;
+  subtotal: number;
+};
+
 export async function GET(req: NextRequest) {
   const { error, consultorIds } = await requireGestorWithScope();
   if (error) return error;
@@ -30,7 +42,7 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  const comissoes: any[] = [];
+  const comissoes: ComissaoGestorRow[] = [];
   let totalMes = 0;
 
   for (const estab of estabelecimentos) {

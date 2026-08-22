@@ -79,7 +79,11 @@ interface PreviewData {
 
 interface UploadResult {
   mensagem?: string;
-  upload?: any;
+  error?: string;
+  upload?: {
+    id?: string;
+    status?: string;
+  };
   id?: string;
   status?: "PROCESSANDO" | "CONCLUIDO" | "ERRO";
   summary?: {
@@ -150,7 +154,7 @@ export function UploadPlanilhaPreview({
         // (prioriza VALIDO, mas aceita ORFAO/REJEITADO como fallback para
         // que o usuário sempre consiga enviar o arquivo)
         const linhaComData = data.previewRows.find(
-          (r: any) => r.dataReferencia && /^\d{4}-\d{2}/.test(r.dataReferencia),
+          (r: PreviewRow) => r.dataReferencia && /^\d{4}-\d{2}/.test(r.dataReferencia),
         );
         if (linhaComData && linhaComData.dataReferencia) {
           const [ano, mes] = linhaComData.dataReferencia.split("-");
@@ -160,8 +164,8 @@ export function UploadPlanilhaPreview({
         toast.success(
           `Planilha processada: ${data.summary.total} linhas encontradas`,
         );
-      } catch (error: any) {
-        toast.error(error.message || "Erro ao processar arquivo");
+      } catch (error: unknown) {
+        toast.error(error instanceof Error ? error.message : "Erro ao processar arquivo");
         setFile(null);
       } finally {
         setLoading(false);
@@ -240,7 +244,7 @@ export function UploadPlanilhaPreview({
 
       if (!res.ok) {
         const errorMsg =
-          (responseData as any).error || `Erro ${res.status} ao fazer upload`;
+          responseData.error || `Erro ${res.status} ao fazer upload`;
         toast.error(errorMsg);
         return;
       }
@@ -317,10 +321,12 @@ export function UploadPlanilhaPreview({
       if (onUploadSuccess) {
         onUploadSuccess();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("[Upload] Erro:", error);
       toast.error(
-        error?.message || "Erro ao fazer upload. Verifique a conexão.",
+        error instanceof Error
+          ? error.message
+          : "Erro ao fazer upload. Verifique a conexão.",
         {
           duration: 8000,
         },

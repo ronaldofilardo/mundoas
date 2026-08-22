@@ -15,7 +15,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
+  const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
   const consultorPf = await prisma.consultorPf.findUnique({
@@ -54,7 +54,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
+  const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
   const consultorPf = await prisma.consultorPf.findUnique({
@@ -70,7 +70,7 @@ export async function PATCH(
     return notFound("Consultor PF não encontrado");
   }
 
-  let body: any;
+  let body: unknown;
   try {
     body = await req.json();
   } catch {
@@ -172,7 +172,7 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
+  const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
   const consultorPf = await prisma.consultorPf.findUnique({

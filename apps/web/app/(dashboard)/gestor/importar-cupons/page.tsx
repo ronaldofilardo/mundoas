@@ -68,10 +68,10 @@ export default function ImportarCuponsPage() {
       <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="mes">
               Arquivo (.txt ou .csv)
             </label>
-            <input
+            <input id="mes"
               type="file"
               accept=".txt,.csv"
               onChange={handleFileChange}
@@ -79,10 +79,10 @@ export default function ImportarCuponsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="mes">
               Mês Referência
             </label>
-            <select
+            <select id="mes"
               value={mes}
               onChange={(e) => setMes(Number(e.target.value))}
               className="w-full px-3 py-2 border rounded-lg text-sm"
@@ -95,10 +95,10 @@ export default function ImportarCuponsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="ano">
               Ano Referência
             </label>
-            <input
+            <input id="ano"
               type="number"
               value={ano}
               onChange={(e) => setAno(Number(e.target.value))}

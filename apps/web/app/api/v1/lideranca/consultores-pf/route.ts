@@ -22,7 +22,7 @@ const criarConsultorPfSchema = z.object({
 });
 
 export async function GET() {
-  const { session, lideranca, error } = await requireLiderancaWithScope();
+  const { lideranca, error } = await requireLiderancaWithScope();
   if (error) return error;
 
   const consultores = await prisma.consultorPf.findMany({
@@ -54,7 +54,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const { session, lideranca, error } = await requireLiderancaWithScope();
+  const { lideranca, error } = await requireLiderancaWithScope();
   if (error) {
     console.error("[POST /consultores-pf] Erro na autenticação:", error);
     return error;
@@ -62,11 +62,11 @@ export async function POST(req: NextRequest) {
 
   console.log("[POST /consultores-pf] Lideranca:", lideranca.id, lideranca);
 
-  let body: any;
+  let body: unknown;
   try {
     body = await req.json();
     console.log("[POST /consultores-pf] Body recebido:", body);
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("[POST /consultores-pf] Erro ao parsear JSON:", err);
     return badRequest("Corpo da requisição inválido.");
   }

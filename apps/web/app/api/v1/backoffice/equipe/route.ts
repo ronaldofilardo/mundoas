@@ -13,7 +13,7 @@ import { criarAuditLog } from "@/lib/audit";
 import { criarEquipeSchema } from "@asa/shared";
 
 export async function GET(req: NextRequest) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
+  const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
   const { searchParams } = new URL(req.url);
@@ -121,14 +121,14 @@ export async function GET(req: NextRequest) {
       status: c.status,
       liderancaId: c.liderancaId,
       tipoLideranca: c.tipoLideranca,
-      consultorPfs: (c.lideranca?.consultorPfs ?? []).map((cp: any) => ({
+      consultorPfs: (c.lideranca?.consultorPfs ?? []).map((cp) => ({
         id: cp.id,
         nome: cp.nome,
         cpf: cp.cpf,
         email: cp.usuario.email,
         telefone: cp.usuario.telefone,
         status: cp.status,
-        setores: cp.setores?.map((s: any) => ({
+        setores: cp.setores?.map((s) => ({
           id: s.setor.id,
           nome: s.setor.nome,
         })) ?? [],
@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
     const { session, backofficeId, error } = await requireBackofficeWithScope();
     if (error) return error;
 
-    let body: any;
+    let body: unknown;
     try {
       body = await req.json();
     } catch {
@@ -253,8 +253,9 @@ export async function POST(req: NextRequest) {
       status: result.membro.status,
       senhaTemporaria,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erro interno ao criar membro da equipe";
     console.error("[equipe] Erro ao criar membro:", err);
-    return badRequest(err?.message || "Erro interno ao criar membro da equipe");
+    return badRequest(message);
   }
 }

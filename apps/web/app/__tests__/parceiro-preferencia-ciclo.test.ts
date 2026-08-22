@@ -188,11 +188,11 @@ describe("Parceiro - Coexistência de ciclo SEMESTRAL e ANUAL", () => {
 
     const anual = await prisma.cicloPontos.create({
       data: {
-        backofficeId, nome: "2026",
+        backofficeId, nome: "2027",
         periodicidade: "ANUAL",
-        inicioAcumuloEm: new Date("2026-01-01"),
-        fimAcumuloEm: new Date("2026-12-31"),
-        fimResgateEm: new Date("2027-02-28"),
+        inicioAcumuloEm: new Date("2027-01-01"),
+        fimAcumuloEm: new Date("2027-12-31"),
+        fimResgateEm: new Date("2028-02-28"),
         status: "EM_ANDAMENTO",
       },
     });

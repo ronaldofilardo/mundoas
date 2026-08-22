@@ -4,6 +4,7 @@ import { hash } from "bcryptjs";
 import { read, utils } from "xlsx";
 import {
   badRequest,
+  forbidden,
   ok,
   requireLiderancaWithScope,
 } from "@/lib/api-helpers";
@@ -159,8 +160,9 @@ async function extrairLinhasDoArquivo(
 }
 
 export async function POST(req: NextRequest) {
-  const { lideranca, error } = await requireLiderancaWithScope();
+  const { lideranca, backofficeId, error } = await requireLiderancaWithScope();
   if (error) return error;
+  if (!backofficeId) return forbidden();
 
   let formData: FormData;
   try {
@@ -210,7 +212,7 @@ export async function POST(req: NextRequest) {
   }
 
   const setoresAtivos = await prisma.setor.findMany({
-    where: { ativo: true },
+    where: { backofficeId, ativo: true },
     select: { id: true, nome: true },
   });
   const setoresPorNome = new Map(
@@ -227,7 +229,6 @@ export async function POST(req: NextRequest) {
       nome?: string;
       status: "sucesso" | "erro";
       mensagem: string;
-      senhaTemporaria?: string;
     }>,
   };
 
@@ -358,7 +359,6 @@ export async function POST(req: NextRequest) {
         nome,
         status: "sucesso",
         mensagem: "Consultor PF criado com sucesso.",
-        senhaTemporaria,
       });
     } catch (err) {
       console.error(

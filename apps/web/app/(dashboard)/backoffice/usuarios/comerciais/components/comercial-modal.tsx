@@ -44,10 +44,10 @@ const funcoes = [
         <h2 className="text-xl font-bold mb-4">Editar Comercial</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nome">
               Nome
             </label>
-            <input
+            <input id="nome"
               type="text"
               value={formData.nome}
               onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
@@ -56,10 +56,10 @@ const funcoes = [
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">
               Email
             </label>
-            <input
+            <input id="email"
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -68,10 +68,10 @@ const funcoes = [
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="cpf">
               CPF
             </label>
-            <input
+            <input id="cpf"
               type="text"
               value={formData.cpf}
               onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
@@ -82,10 +82,10 @@ const funcoes = [
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="lideranca-2">
               Telefone
             </label>
-            <input
+            <input id="lideranca-2"
               type="tel"
               value={formData.telefone || ""}
               onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
@@ -118,10 +118,10 @@ const funcoes = [
 
           {isLideranca && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="lideranca-3">
                 Tipo de Liderança
               </label>
-              <select
+              <select id="lideranca"
                 value={tipoLideranca}
                 onChange={(e) => {
                   setTipoLideranca(e.target.value);
@@ -142,10 +142,10 @@ const funcoes = [
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="tipo">
               Tipo
             </label>
-            <select
+            <select id="tipo"
               value={tipo}
               onChange={(e) => {
                 setTipo(e.target.value);
@@ -160,10 +160,10 @@ const funcoes = [
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="f">
               Função
             </label>
-            <select
+            <select id="f"
               value={formData.funcao || ""}
               onChange={(e) => setFormData({ ...formData, funcao: e.target.value })}
               className="w-full px-3 py-2 border rounded"
@@ -175,10 +175,10 @@ const funcoes = [
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="status">
               Status
             </label>
-            <select
+            <select id="status"
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
               className="w-full px-3 py-2 border rounded"

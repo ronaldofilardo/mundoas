@@ -18,18 +18,23 @@
  *   import { prisma } from "@/lib/db";
  */
 import { createRequire } from "node:module";
-import { resolve } from "node:path";
+import { isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+console.log("[db.ts] import.meta.url:", import.meta.url);
+console.log("[db.ts] import.meta.url type:", typeof import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = resolve(__filename, "..");
 
 const EXPECTED_PRISMA_VERSION = "6.19.2";
-const MONOREPO_ROOT = resolve(__dirname, "../..");
+const MONOREPO_ROOT = resolve(__dirname, "../../..");
 
-const requireFromMonorepo = createRequire(
+console.log("[db.ts] MONOREPO_ROOT:", MONOREPO_ROOT);
+console.log(
+  "[db.ts] pkgPath:",
   resolve(MONOREPO_ROOT, "apps/web/package.json"),
 );
+const requireFromMonorepo = createRequire(import.meta.url);
 
 type PrismaModule = typeof import("@prisma/client");
 
@@ -43,11 +48,13 @@ function loadPrisma(): PrismaModule {
   try {
     mod = requireFromMonorepo("@prisma/client") as PrismaModule;
     resolvedPath = requireFromMonorepo.resolve("@prisma/client");
-  } catch (e) {
-    throw new Error(
-      `[lib/db] Não foi possível resolver @prisma/client a partir de ${MONOREPO_ROOT}. ` +
-        `Rode 'pnpm install' antes de iniciar o dev server.`,
+  } catch (e: any) {
+    console.error(
+      "[db.ts] Erro real ao resolver @prisma/client:",
+      e.message || e,
     );
+    console.error("[db.ts] Erro stack:", e.stack);
+    throw e; // Lançar o erro original para ver o que é
   }
 
   // 1) Versão
@@ -64,7 +71,11 @@ function loadPrisma(): PrismaModule {
   }
 
   // 2) Caminho dentro do monorepo
-  if (!resolvedPath.includes(".pnpm") && !resolvedPath.includes("node_modules")) {
+  if (
+    isAbsolute(resolvedPath) &&
+    !resolvedPath.includes(".pnpm") &&
+    !resolvedPath.includes("node_modules")
+  ) {
     throw new Error(
       `[lib/db] @prisma/client resolvido em caminho inesperado: ${resolvedPath}`,
     );
@@ -83,9 +94,6 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 export const prisma: PrismaClientInstance =
-  globalForPrisma.prisma ||
-  new PrismaClient({ log: ["error", "warn"] });
+  globalForPrisma.prisma || new PrismaClient({ log: ["error", "warn"] });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-
-

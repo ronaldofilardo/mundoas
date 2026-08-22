@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@asa/database";
+import { prisma, type Prisma } from "@asa/database";
 import { ok, badRequest, requireBackofficeWithScope } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const where: any = {
+    const where: Prisma.ComissaoConsultorPfWhereInput = {
       consultorPfId: { in: consultorIds },
       mesReferencia: { gte: inicio, lte: fim },
     };
@@ -165,7 +165,7 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const where: any = {
+  const where: Prisma.ComissaoEquipeWhereInput = {
     equipeId: { in: comercialIds },
     mesReferencia: { gte: inicio, lte: fim },
   };

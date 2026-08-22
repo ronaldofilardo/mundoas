@@ -29,8 +29,9 @@ vi.mock('@asa/database', () => ({
 }));
 
 const mockBackofficeId = 'backoffice-teste-123';
+type MockExcelCell = string | number | boolean | Date | null;
 
-const createMockExcel = (data: any[][], fileName = 'test.xlsx'): File => {
+const createMockExcel = (data: MockExcelCell[][], fileName = 'test.xlsx'): File => {
   const { utils, write } = require('xlsx');
   const ws = utils.aoa_to_sheet(data);
   const wb = utils.book_new();
@@ -109,7 +110,7 @@ describe('Regressão: cabeçalho sempre na linha 2', () => {
   });
 
   it('deve rejeitar planilha sem a segunda linha (cabeçalho)', async () => {
-    const planilha: any[][] = [['REceita bruta analitica']];
+    const planilha: MockExcelCell[][] = [['REceita bruta analitica']];
     const file = createMockExcel(planilha);
 
     await expect(parsePlanilhaProducao(file, mockBackofficeId))

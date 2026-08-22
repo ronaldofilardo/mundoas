@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
-import { prisma } from "@asa/database";
+import { prisma } from "@/lib/db";
 import { TipoAcesso } from "@/types/next-auth";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -35,10 +35,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               equipe: true,
             },
           });
+          let usuarioEncontrado = false;
 
           if (user) {
+            usuarioEncontrado = true;
             console.log(
-              `[auth] Found usuario: ${email}, status: ${user.status}, tipo: ${user.tipo}, papel: ${user.papel}, senhaTemporaria: ${user.senhaTemporaria}`
+              `[auth] Found usuario: ${email}, status: ${user.status}, tipo: ${user.tipo}, papel: ${user.papel}, senhaTemporaria: ${user.senhaTemporaria}`,
             );
 
             if (user.status !== "ATIVO" && user.status !== undefined) {
@@ -48,12 +50,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
             const senhaValida = await compare(
               credentials.senha as string,
-              user.senhaHash
+              user.senhaHash,
             );
 
             if (senhaValida) {
               console.log(`[auth] ✓ Senha válida para ${email}`);
-              
+
               return {
                 id: user.id,
                 name: user.nome,
@@ -65,7 +67,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 estabelecimentoId: null,
                 backofficeId: user.backoffice?.id ?? null,
                 parceiroId: user.parceiro?.id ?? null,
-                comercialId: user.equipe?.tipo === "COMERCIAL" ? user.equipe.id : null,
+                comercialId:
+                  user.equipe?.tipo === "COMERCIAL" ? user.equipe.id : null,
                 equipeId: user.equipe?.id ?? null,
               };
             } else {
@@ -81,8 +84,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
 
           if (usuarioEstab) {
+            usuarioEncontrado = true;
             console.log(
-              `[auth] Found usuarioEstab: ${email}, ativo: ${usuarioEstab.ativo}`
+              `[auth] Found usuarioEstab: ${email}, ativo: ${usuarioEstab.ativo}`,
             );
 
             if (usuarioEstab.ativo === false) {
@@ -92,12 +96,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
             const senhaValida = await compare(
               credentials.senha as string,
-              usuarioEstab.senhaHash
+              usuarioEstab.senhaHash,
             );
 
             if (senhaValida) {
               console.log(
-                `[auth] ✓ Senha válida para estabelecimento ${email}`
+                `[auth] ✓ Senha válida para estabelecimento ${email}`,
               );
               return {
                 id: usuarioEstab.id,
@@ -114,11 +118,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 equipeId: null,
               };
             } else {
-              console.log(`[auth] ✗ Senha inválida para estabelecimento ${email}`);
+              console.log(
+                `[auth] ✗ Senha inválida para estabelecimento ${email}`,
+              );
             }
           }
 
-          console.log(`[auth] Usuario não encontrado: ${email}`);
+          console.log(
+            usuarioEncontrado
+              ? `[auth] Credenciais inválidas: ${email}`
+              : `[auth] Usuário não encontrado: ${email}`,
+          );
           return null;
         } catch (error) {
           console.error("[auth] Error in authorize:", error);
@@ -131,28 +141,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         if (user.id) token.id = user.id;
-        token.tipo = (user as any).tipo;
-        token.papel = (user as any).papel;
-        token.senhaTemporaria = (user as any).senhaTemporaria;
-        token.consultorId = (user as any).consultorId;
-        token.estabelecimentoId = (user as any).estabelecimentoId;
-        token.backofficeId = (user as any).backofficeId;
-        token.parceiroId = (user as any).parceiroId;
-        token.comercialId = (user as any).comercialId;
+        token.tipo = user.tipo;
+        token.papel = user.papel;
+        token.senhaTemporaria = user.senhaTemporaria;
+        token.consultorId = user.consultorId;
+        token.estabelecimentoId = user.estabelecimentoId;
+        token.backofficeId = user.backofficeId;
+        token.parceiroId = user.parceiroId;
+        token.comercialId = user.comercialId;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).tipo = token.tipo;
-        (session.user as any).papel = token.papel;
-        (session.user as any).senhaTemporaria = token.senhaTemporaria;
-        (session.user as any).consultorId = token.consultorId;
-        (session.user as any).estabelecimentoId = token.estabelecimentoId;
-        (session.user as any).backofficeId = token.backofficeId;
-        (session.user as any).parceiroId = token.parceiroId;
-        (session.user as any).comercialId = token.comercialId;
+        session.user.id = token.id;
+        session.user.tipo = token.tipo;
+        session.user.papel = token.papel;
+        session.user.senhaTemporaria = token.senhaTemporaria;
+        session.user.consultorId = token.consultorId;
+        session.user.estabelecimentoId = token.estabelecimentoId;
+        session.user.backofficeId = token.backofficeId;
+        session.user.parceiroId = token.parceiroId;
+        session.user.comercialId = token.comercialId;
       }
       return session;
     },

@@ -102,7 +102,7 @@ const ROUTE_RULES: Array<{
     { prefix: "/admin", allowedTipos: ["ADMIN"] },
     { prefix: "/backoffice", allowedTipos: ["BACKOFFICE", "GESTOR"], allowedPapeis: ["BACKOFFICE"] },
     { prefix: "/gestor-pf", allowedTipos: ["BACKOFFICE", "GESTOR"], allowedPapeis: ["BACKOFFICE"] },
-    { prefix: "/gestor", allowedTipos: ["GERENCIA"], allowedPapeis: ["GESTOR_PJ"] },
+    { prefix: "/gestor", allowedTipos: ["GESTOR"], allowedPapeis: ["GESTOR_PJ"] },
     { prefix: "/parceiro", allowedTipos: ["PARCEIRO"] },
     { prefix: "/comercial", allowedTipos: ["COMERCIAL"] },
     { prefix: "/consultor", allowedTipos: ["CONSULTOR"] },
@@ -118,7 +118,7 @@ function dashboardForPapel(user: SessionUser): string {
   if (user.tipo === "GESTOR" && user.papel === "BACKOFFICE") {
     return "/backoffice/dashboard";
   }
-  if (user.tipo === "GERENCIA") return "/gestor/dashboard";
+  if (user.tipo === "GESTOR" && user.papel === "GESTOR_PJ") return "/gestor/dashboard";
   if (user.tipo === "PARCEIRO") return "/parceiro/indicados";
   if (user.tipo === "COMERCIAL") return "/comercial/minha-comissao";
   if (user.tipo === "ESTABELECIMENTO") return "/estabelecimento/dashboard";

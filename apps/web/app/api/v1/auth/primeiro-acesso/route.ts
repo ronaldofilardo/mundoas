@@ -7,16 +7,21 @@ import { criarAuditLog } from "@/lib/audit";
 
 export async function POST(req: NextRequest) {
   try {
-    let body: any;
+    let body: { senhaAtual?: unknown; novaSenha?: unknown };
     try {
-      body = await req.json();
+      body = (await req.json()) as { senhaAtual?: unknown; novaSenha?: unknown };
     } catch {
       return badRequest("Corpo da requisição inválido. Envie JSON válido.");
     }
 
     const { senhaAtual, novaSenha } = body;
 
-    if (!senhaAtual || !novaSenha) {
+    if (
+      typeof senhaAtual !== "string" ||
+      typeof novaSenha !== "string" ||
+      !senhaAtual ||
+      !novaSenha
+    ) {
       return badRequest("Senha atual e nova senha são obrigatórias");
     }
 
@@ -84,10 +89,10 @@ export async function POST(req: NextRequest) {
     });
 
     return ok({ message: "Senha alterada com sucesso" });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[primeiro-acesso] Erro ao alterar senha:", err);
     return NextResponse.json(
-      { error: err?.message || "Erro interno ao alterar senha" },
+      { error: err instanceof Error ? err.message : "Erro interno ao alterar senha" },
       { status: 500 }
     );
   }

@@ -105,9 +105,9 @@ export async function PATCH(
     });
 
     return ok(atualizada);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[admin/backoffices/[id]/assinatura] Erro:", err);
-    return badRequest(err?.message || "Erro interno ao atualizar assinatura.");
+    return badRequest((err instanceof Error ? err.message : "Erro interno ao atualizar assinatura."));
   }
 }
 

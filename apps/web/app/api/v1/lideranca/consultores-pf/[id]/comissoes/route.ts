@@ -1,12 +1,17 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
-import { forbidden, notFound, ok } from "@/lib/api-helpers";
+import { notFound, ok } from "@/lib/api-helpers";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const liderancaId = (global as any).__TEST_LIDERANCA_ID__ as string | undefined;
+  const testContext = globalThis as typeof globalThis & {
+    __TEST_LIDERANCA_ID__?: unknown;
+  };
+  const liderancaId = typeof testContext.__TEST_LIDERANCA_ID__ === "string"
+    ? testContext.__TEST_LIDERANCA_ID__
+    : undefined;
   if (!liderancaId) {
     return notFound("Liderança não encontrada");
   }

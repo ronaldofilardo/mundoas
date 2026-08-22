@@ -1,0 +1,209 @@
+"use client";
+
+import { useState } from "react";
+import type { Comercial } from "../types";
+
+interface ComercialModalProps {
+  comercial: Comercial;
+  onSave: (data: Comercial) => void;
+  onClose: () => void;
+}
+
+export function ComercialModal({ comercial, onSave, onClose }: ComercialModalProps) {
+  const [formData, setFormData] = useState<Comercial>({
+    ...comercial,
+    telefone: comercial.telefone || "",
+    funcao: comercial.funcao || "",
+    lideranca: comercial.lideranca || comercial.tipoLideranca,
+    tipo: comercial.tipo,
+  });
+
+  const liderancaInicial = comercial.lideranca || comercial.tipoLideranca || "";
+  const [isLideranca, setIsLideranca] = useState<boolean>(!!liderancaInicial);
+  const [tipoLideranca, setTipoLideranca] = useState<string>(liderancaInicial);
+  const [tipo, setTipo] = useState<string>(comercial.tipo || "");
+
+const funcoes = [
+  "GERENTE_CIRE",
+  "SUPERVISOR_ATIVO",
+  "SUPERVISOR_RECEPTIVO",
+  "SUPERVISOR_FRANQUIA",
+  "SUPERVISOR_ATENDIMENTO",
+  "GERENTE_ATENDIMENTO",
+  "SUPERVISOR_COMERCIAL",
+];
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    onSave(formData);
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <h2 className="text-xl font-bold mb-4">Editar Comercial</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nome
+            </label>
+            <input
+              type="text"
+              value={formData.nome}
+              onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+              className="w-full px-3 py-2 border rounded"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="w-full px-3 py-2 border rounded"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              CPF
+            </label>
+            <input
+              type="text"
+              value={formData.cpf}
+              onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+              className="w-full px-3 py-2 border rounded"
+              required
+              placeholder="000.000.000-00"
+              maxLength={14}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Telefone
+            </label>
+            <input
+              type="tel"
+              value={formData.telefone || ""}
+              onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+              className="w-full px-3 py-2 border rounded"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="lideranca"
+              checked={isLideranca}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setIsLideranca(checked);
+                if (!checked) {
+                  setFormData({ 
+                    ...formData, 
+                    lideranca: undefined, 
+                    funcao: "" 
+                  });
+                  setTipoLideranca("");
+                }
+              }}
+              className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            />
+            <label htmlFor="lideranca" className="text-sm font-medium text-gray-700">
+              Liderança (opcional)
+            </label>
+          </div>
+
+          {isLideranca && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tipo de Liderança
+              </label>
+              <select
+                value={tipoLideranca}
+                onChange={(e) => {
+                  setTipoLideranca(e.target.value);
+                  setFormData({ 
+                    ...formData, 
+                    lideranca: e.target.value as "COMERCIAL" | "GESTOR",
+                    funcao: "",
+                    tipo: undefined
+                  });
+                }}
+                className="w-full px-3 py-2 border rounded"
+                required={isLideranca}
+              >
+                <option value="">Selecione</option>
+                <option value="COMERCIAL">Comercial</option>
+                <option value="GESTOR">Gestor</option>
+              </select>
+            </div>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tipo
+            </label>
+            <select
+              value={tipo}
+              onChange={(e) => {
+                setTipo(e.target.value);
+                setFormData({ ...formData, tipo: e.target.value as "GERENTE" | "SUPERVISOR" | "LIDER" | undefined });
+              }}
+              className="w-full px-3 py-2 border rounded"
+            >
+              <option value="">Selecione</option>
+              <option value="GERENTE">Gerente</option>
+              <option value="SUPERVISOR">Supervisor</option>
+              <option value="LIDER">Lider</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Função
+            </label>
+            <select
+              value={formData.funcao || ""}
+              onChange={(e) => setFormData({ ...formData, funcao: e.target.value })}
+              className="w-full px-3 py-2 border rounded"
+            >
+              <option value="">Selecione</option>
+              {funcoes.map((f) => (
+                <option key={f} value={f}>{f.replace(/_/g, " ")}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Status
+            </label>
+            <select
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              className="w-full px-3 py-2 border rounded"
+            >
+              <option value="ATIVO">Ativo</option>
+              <option value="INATIVO">Inativo</option>
+            </select>
+          </div>
+          <div className="flex gap-2 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border rounded hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"
+            >
+              Salvar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

@@ -46,9 +46,9 @@ export async function POST(
     });
 
     return created(fatura);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[admin/backoffices/[id]/faturas] Erro ao criar fatura:", err);
-    return badRequest(err?.message || "Erro interno ao criar fatura.");
+    return badRequest((err instanceof Error ? err.message : "Erro interno ao criar fatura."));
   }
 }
 

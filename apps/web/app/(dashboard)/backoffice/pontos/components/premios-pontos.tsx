@@ -109,8 +109,9 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Código</label>
+            <label htmlFor="premio-codigo" className="block text-sm font-medium text-gray-700 mb-1">Código</label>
             <input
+              id="premio-codigo"
               type="text"
               value={codigo}
               onChange={(e) => setCodigo(e.target.value)}
@@ -120,8 +121,9 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+            <label htmlFor="premio-tipo" className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
             <select
+              id="premio-tipo"
               value={tipo}
               onChange={(e) => setTipo(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -137,8 +139,9 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+          <label htmlFor="premio-descricao" className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
           <textarea
+            id="premio-descricao"
             value={descricao}
             onChange={(e) => setDescricao(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -148,8 +151,9 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Custo em Pontos</label>
+          <label htmlFor="premio-custo-pontos" className="block text-sm font-medium text-gray-700 mb-1">Custo em Pontos</label>
           <input
+            id="premio-custo-pontos"
             type="number"
             value={custoPontos}
             onChange={(e) => setCustoPontos(e.target.value)}

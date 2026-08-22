@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       return badRequest("Comercial não está vinculado a uma liderança");
     }
 
-    let body: any;
+    let body: unknown;
     try {
       body = await req.json();
     } catch (parseErr) {
@@ -167,8 +167,8 @@ export async function POST(req: NextRequest) {
       cpf: cpfClean,
       link: `${baseUrl}/acesso/${result.token}`,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[comercial/parceiros] Erro ao criar parceiro:", err);
-    return badRequest(err?.message || "Erro interno ao criar parceiro");
+    return badRequest((err instanceof Error ? err.message : "Erro interno ao criar parceiro"));
   }
 }

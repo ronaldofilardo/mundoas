@@ -5,7 +5,7 @@ export async function GET() {
   const { session, error } = await requireBackoffice();
   if (error) return error;
 
-  const backofficeId = (session!.user as any).backofficeId as string | null;
+  const backofficeId = session!.user.backofficeId ?? null;
   if (!backofficeId) {
     return notFound("Unidade não encontrada para este usuário.");
   }

@@ -1,0 +1,42 @@
+# Environment files
+
+.env.local
+.env.test
+.env.\*.local
+
+# Development files
+
+.turbo
+.next
+dist
+node_modules
+
+# Git files
+
+.git
+.gitignore
+
+# IDE files
+
+.vscode
+.idea
+_.swp
+_.swo
+
+# Documentation
+
+README.md
+docs
+
+# Testing
+
+cypress
+vitest.config.ts
+.test
+
+# Build artifacts
+
+.turbo
+apps/_/.next
+packages/_/dist
+

@@ -8,8 +8,17 @@ import {
 import { rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@asa/database";
 import { calcularPontosDeProducao, obterCicloVigente } from "@/lib/pontos-utils";
-import { Decimal } from "@prisma/client/runtime/library";
 import { obterValorBasePontos, validarValorBasePontos, serializarValorMonetario } from "@/lib/parceiros-pontos-regras";
+
+type JsonObject = Record<string, unknown>;
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
 
 export async function POST(req: NextRequest) {
   // Rate limiting: 10 requisições por minuto
@@ -17,17 +26,21 @@ export async function POST(req: NextRequest) {
   if (rateLimitResponse) return rateLimitResponse;
 
   try {
-    const { session, backofficeId, error } = await requireBackofficeWithScope();
+    const { backofficeId, error } = await requireBackofficeWithScope();
     if (error) return error;
 
-    const body = await req.json();
-    const { producaoId } = body;
+    const body: unknown = await req.json();
+    if (!isJsonObject(body)) return badRequest("Corpo inválido");
+    const producaoId = typeof body.producaoId === "string" ? body.producaoId : "";
 
     if (!producaoId) {
       return badRequest("producaoId é obrigatório");
     }
+    if (!isUuid(producaoId)) {
+      return badRequest("producaoId inválido");
+    }
 
-// Buscar produção
+    // Buscar produção
     const producao = await prisma.procedimentoPF.findUnique({
       where: { id: producaoId },
       include: {
@@ -161,7 +174,7 @@ parceiro: {
 
 export async function GET(req: NextRequest) {
   try {
-    const { session, backofficeId, error } = await requireBackofficeWithScope();
+    const { backofficeId, error } = await requireBackofficeWithScope();
     if (error) return error;
 
     const { searchParams } = new URL(req.url);
@@ -245,8 +258,8 @@ export async function GET(req: NextRequest) {
           producao.dataReferencia,
           backofficeId,
         );
-      } catch (err: any) {
-        erroCalculo = err.message;
+      } catch (err: unknown) {
+        erroCalculo = err instanceof Error ? err.message : "Erro ao calcular pontos";
       }
       
       return {

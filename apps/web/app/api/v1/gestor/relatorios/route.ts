@@ -70,13 +70,13 @@ export async function GET(req: NextRequest) {
       return result;
     };
 
-    const flatRows = rows.map((r: any) => flattenObj(r));
+    const flatRows = rows.map((r) => flattenObj(r));
     const headers = Object.keys(flatRows[0]);
     const csvLines = [
       headers.join(";"),
-      ...flatRows.map((r: any) =>
+      ...flatRows.map((r) =>
         headers
-          .map((h: any) => `"${(r[h] || "").replace(/"/g, '""')}"`)
+          .map((h) => `"${(r[h] || "").replace(/"/g, '""')}"`)
           .join(";"),
       ),
     ];

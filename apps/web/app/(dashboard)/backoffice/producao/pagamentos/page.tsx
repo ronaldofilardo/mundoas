@@ -203,8 +203,9 @@ Acesso Saúde - Gestão de Comissões
         <div className="flex flex-wrap gap-4 items-center justify-between">
           <div className="flex gap-4">
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Status</label>
+              <label htmlFor="filtro-status-pagamentos-producao" className="block text-xs text-gray-600 mb-1">Status</label>
               <select
+                id="filtro-status-pagamentos-producao"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
                 className="px-3 py-2 border rounded-lg text-sm"
@@ -215,8 +216,9 @@ Acesso Saúde - Gestão de Comissões
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Mês</label>
+              <label htmlFor="filtro-mes-pagamentos-producao" className="block text-xs text-gray-600 mb-1">Mês</label>
               <input
+                id="filtro-mes-pagamentos-producao"
                 type="month"
                 value={filterMes}
                 onChange={(e) => setFilterMes(e.target.value)}

@@ -13,8 +13,13 @@ import {
   ok,
   requireBackofficeWithScope,
 } from "@/lib/api-helpers";
-import { criarAuditLog } from "@/lib/audit";
 import * as equipeIdRoute from "../../equipe/[id]/route";
+
+type JsonObject = Record<string, unknown>;
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 
 export const GET = async (
   req: NextRequest,
@@ -60,9 +65,11 @@ export async function PATCH(
   req: NextRequest,
   ctx: { params: { id: string } },
 ): Promise<Response> {
-  let body: any;
+  let body: JsonObject;
   try {
-    body = await req.json();
+    const parsed: unknown = await req.json();
+    if (!isJsonObject(parsed)) return badRequest("Corpo inválido");
+    body = parsed;
   } catch {
     return badRequest("Corpo inválido");
   }

@@ -2,10 +2,11 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import type { CicloPontosItem, DistribuicaoPontosItem } from "../pontos-types";
 
 interface TabelaDistribuicaoProps {
-  data?: any[];
-  ciclo?: any;
+  data?: DistribuicaoPontosItem[];
+  ciclo?: CicloPontosItem;
   onDistribuir?: () => void;
   onAtualizar?: () => void;
 }
@@ -21,8 +22,8 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
     if (!data) return [];
     const unique = new Map(
       data
-        .filter((p: any) => p.parceiro?.nome)
-        .map((p: any) => [p.parceiro.nome, p.parceiro])
+        .filter((p: DistribuicaoPontosItem) => p.parceiro?.nome)
+        .map((p: DistribuicaoPontosItem) => [p.parceiro!.nome!, p.parceiro!])
     );
     return Array.from(unique.values());
   }, [data]);
@@ -30,12 +31,14 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
   const producoesFiltradas = useMemo(() => {
     if (!data) return [];
 
-    return data.filter((producao: any) => {
+    return data.filter((producao: DistribuicaoPontosItem) => {
       const parceiroMatch = !filtroParceiro || producao.parceiro?.nome === filtroParceiro;
       const indicadoMatch = !filtroIndicado || 
         producao.paciente?.toLowerCase().includes(filtroIndicado.toLowerCase());
       
-      const dataProc = new Date(producao.dataReferencia || producao.dataProcedimento);
+      const dataTexto = producao.dataReferencia || producao.dataProcedimento;
+      if (!dataTexto) return false;
+      const dataProc = new Date(dataTexto);
       const dataInicioMatch = !filtroDataInicio || dataProc >= new Date(filtroDataInicio);
       const dataFimMatch = !filtroDataFim || dataProc <= new Date(filtroDataFim + "T23:59:59");
 
@@ -125,10 +128,11 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label htmlFor="filtro-indicado" className="block text-xs font-medium text-gray-700 mb-1">
               Indicado
             </label>
             <input
+              id="filtro-indicado"
               type="text"
               value={filtroIndicado}
               onChange={(e) => setFiltroIndicado(e.target.value)}
@@ -138,17 +142,18 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label htmlFor="filtro-parceiro" className="block text-xs font-medium text-gray-700 mb-1">
               Parceiro
             </label>
             <select
+              id="filtro-parceiro"
               value={filtroParceiro}
               onChange={(e) => setFiltroParceiro(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
             >
               <option value="">Todos</option>
-              {parceiros.map((parceiro: any) => (
-                <option key={parceiro.nome} value={parceiro.nome}>
+              {parceiros.map((parceiro) => (
+                <option key={parceiro.nome ?? ""} value={parceiro.nome ?? ""}>
                   {parceiro.nome}
                 </option>
               ))}
@@ -156,10 +161,11 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label htmlFor="filtro-data-inicio" className="block text-xs font-medium text-gray-700 mb-1">
               Data Início
             </label>
             <input
+              id="filtro-data-inicio"
               type="date"
               value={filtroDataInicio}
               onChange={(e) => setFiltroDataInicio(e.target.value)}
@@ -168,10 +174,11 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label htmlFor="filtro-data-fim" className="block text-xs font-medium text-gray-700 mb-1">
               Data Fim
             </label>
             <input
+              id="filtro-data-fim"
               type="date"
               value={filtroDataFim}
               onChange={(e) => setFiltroDataFim(e.target.value)}
@@ -228,7 +235,7 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {producoesFiltradas.map((producao: any) => (
+              {producoesFiltradas.map((producao: DistribuicaoPontosItem) => (
                 <tr key={producao.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-sm font-semibold text-gray-900">
                     {producao.paciente}
@@ -243,7 +250,7 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
                     R$ {Number(producao.valorTotal ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600 text-center">
-                    {new Date(producao.dataReferencia || producao.dataProcedimento).toLocaleDateString(
+                    {new Date(producao.dataReferencia || producao.dataProcedimento || "").toLocaleDateString(
                       "pt-BR",
                     )}
                   </td>

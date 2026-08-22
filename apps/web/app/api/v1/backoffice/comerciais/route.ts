@@ -12,6 +12,12 @@ import { prisma } from "@asa/database";
 import { ok, requireBackofficeWithScope } from "@/lib/api-helpers";
 import * as equipeRoute from "../equipe/route";
 
+type JsonObject = Record<string, unknown>;
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export const GET = async () => {
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
@@ -79,16 +85,18 @@ export const GET = async () => {
 };
 
 export async function POST(req: NextRequest) {
-  let body: any;
+  let body: JsonObject;
   try {
-    body = await req.json();
+    const parsed: unknown = await req.json();
+    if (!isJsonObject(parsed)) return equipeRoute.POST(req);
+    body = parsed;
   } catch {
     return equipeRoute.POST(req);
   }
 
-  const { lideranca, tipo: _tipoLegacy, ...rest } = body;
-  const tipo = lideranca ? "LIDERANCA" : rest.tipo ?? "COMERCIAL";
-  const tipoLideranca = lideranca ?? rest.tipoLideranca;
+  const { lideranca, tipo: _tipoLegacy, tipoLideranca: bodyTipoLideranca, ...rest } = body;
+  const tipo = lideranca ? "LIDERANCA" : typeof rest.tipo === "string" ? rest.tipo : "COMERCIAL";
+  const tipoLideranca = lideranca ?? bodyTipoLideranca;
 
   const adaptedReq: NextRequest = new NextRequest(
     "http://localhost/api/v1/backoffice/equipe",

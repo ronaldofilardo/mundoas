@@ -1,10 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PremioInfo } from "@asa/shared";
+interface CatalogoPremio {
+  id: string;
+  imagemUrl?: string | null;
+  nome: string;
+  descricao: string;
+  custoPontos: number;
+}
+
+interface CatalogoData {
+  emPeriodoResgate: boolean;
+  saldoAtual: number;
+  premios: CatalogoPremio[];
+}
+
+interface CatalogoResponse {
+  catalogo: CatalogoData;
+}
 
 export function CatalogoPremios() {
-  const [catalogo, setCatalogo] = useState<any>(null);
+  const [catalogo, setCatalogo] = useState<CatalogoData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [solicitando, setSolicitando] = useState<string | null>(null);
@@ -14,7 +30,7 @@ export function CatalogoPremios() {
       try {
         const response = await fetch("/api/v1/parceiro/pontos/premios");
         if (!response.ok) throw new Error("Erro ao carregar catálogo");
-        const data = await response.json();
+        const data = (await response.json()) as CatalogoResponse;
         setCatalogo(data.catalogo);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro desconhecido");
@@ -42,7 +58,7 @@ export function CatalogoPremios() {
         alert("Resgate solicitado com sucesso!");
         // Recarregar catálogo
         const response = await fetch("/api/v1/parceiro/pontos/premios");
-        const data = await response.json();
+        const data = (await response.json()) as CatalogoResponse;
         setCatalogo(data.catalogo);
       }
     } catch (err) {
@@ -98,7 +114,7 @@ export function CatalogoPremios() {
 
       {/* Grade de Prêmios */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {catalogo.premios.map((premio: any) => (
+        {catalogo.premios.map((premio) => (
           <div
             key={premio.id}
             className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"

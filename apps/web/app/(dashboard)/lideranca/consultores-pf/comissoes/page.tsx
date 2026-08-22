@@ -29,8 +29,8 @@ export default function ConsultorPfComissoesPage({
         if (!res.ok) throw new Error("Erro ao carregar comissões");
         const data = await res.json();
         setComissoes(data || []);
-      } catch (err: any) {
-        setError(err.message || "Erro ao carregar comissões");
+      } catch (err: unknown) {
+        setError((err instanceof Error ? err.message : "Erro inesperado") || "Erro ao carregar comissões");
       } finally {
         setLoading(false);
       }

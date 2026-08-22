@@ -174,7 +174,7 @@ export default function ValidarCupomPage({
             {cupom.status === "DISPONIVEL" && (
               <form onSubmit={handleAgendar} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nomePaciente">
                     Nome do Paciente
                   </label>
                   <input
@@ -186,7 +186,7 @@ export default function ValidarCupomPage({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="dataConsulta">
                     Data da Consulta
                   </label>
                   <input

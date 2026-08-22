@@ -1,5 +1,9 @@
 import { prisma } from "@asa/database";
 import { Decimal } from "@prisma/client/runtime/library";
+import {
+  buscarVersaoComercial,
+  buscarVersaoGestor,
+} from "./regras-versoes";
 
 /**
  * Calcula pontos baseado em produção, configuração vigente e tipo de arredondamento
@@ -206,6 +210,10 @@ function getCampoRegraComercial(tipoProcedimento?: string): string {
   return "unidade";
 }
 
+function competenciaDaData(dataReferencia: Date): string {
+  return `${dataReferencia.getUTCFullYear()}-${String(dataReferencia.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
 /**
  * Calcula comissão de um comercial baseado nas regras:
  * - RegrasComerciais (percentual por tipo de procedimento)
@@ -256,8 +264,17 @@ export async function calcularComissaoComercial(params: {
   const regraGestor = await prisma.regraGestor.findUnique({
     where: { backofficeId },
   });
+  const competencia = competenciaDaData(dataReferencia);
+  const regraComercialVersao = regraComercial
+    ? await buscarVersaoComercial(regraComercial.id, competencia)
+    : null;
+  const regraGestorVersao = regraGestor
+    ? await buscarVersaoGestor(regraGestor.id, competencia)
+    : null;
+  const regraComercialVigente = regraComercialVersao ?? regraComercial;
+  const regraGestorVigente = regraGestorVersao ?? regraGestor;
 
-  if (!regraComercial || !regraGestor) {
+  if (!regraComercialVigente || !regraGestorVigente) {
     return {
       valorComissao: 0,
       percentualAplicado: 0,
@@ -271,7 +288,8 @@ export async function calcularComissaoComercial(params: {
 
   const campoRegraComercial = getCampoRegraComercial(tipoProcedimento);
   const percentualComercial = Number(
-    regraComercial[campoRegraComercial as keyof typeof regraComercial] || 0,
+            regraComercialVigente[campoRegraComercial as keyof typeof regraComercialVigente] || 0,
+
   );
 
   let percentualGestor = 0;
@@ -279,7 +297,7 @@ export async function calcularComissaoComercial(params: {
     const campoRegraGestor = getCampoRegraGestor(funcao);
     if (campoRegraGestor) {
       percentualGestor = Number(
-        regraGestor[campoRegraGestor as keyof typeof regraGestor] || 0,
+        regraGestorVigente[campoRegraGestor as keyof typeof regraGestorVigente] || 0,
       );
     }
   }
@@ -312,6 +330,7 @@ export async function calcularComissaoConsultorPf(params: {
   consultorPfId: string;
   valorProcedimento: number;
   dataReferencia: Date;
+  tipoProcedimento?: string;
 }): Promise<{
   valorComissao: number;
   percentualAplicado: number;
@@ -319,7 +338,7 @@ export async function calcularComissaoConsultorPf(params: {
     regraComercialUnidade: number;
   };
 }> {
-  const { consultorPfId, valorProcedimento } = params;
+  const { consultorPfId, valorProcedimento, tipoProcedimento } = params;
 
   const consultorPf = await prisma.consultorPf.findUnique({
     where: { id: consultorPfId },
@@ -342,7 +361,15 @@ export async function calcularComissaoConsultorPf(params: {
     where: { backofficeId },
   });
 
-  if (!regraComercial) {
+  const regraComercialVersao = regraComercial
+    ? await buscarVersaoComercial(
+        regraComercial.id,
+        competenciaDaData(params.dataReferencia),
+      )
+    : null;
+  const regraComercialVigente = regraComercialVersao ?? regraComercial;
+
+  if (!regraComercialVigente) {
     return {
       valorComissao: 0,
       percentualAplicado: 0,
@@ -352,16 +379,56 @@ export async function calcularComissaoConsultorPf(params: {
     };
   }
 
-  const percentualUnidade = Number(regraComercial.unidade || 0);
-  const valorComissao = Number(
-    (valorProcedimento * (percentualUnidade / 100)).toFixed(2),
-  );
+  const valorComissao = calcularValorComissaoPf({
+    valorProcedimento,
+    tipoProcedimento,
+    regraComercial: {
+      cartaoAcessoSaude: regraComercialVigente.cartaoAcessoSaude,
+      cireAtivo: regraComercialVigente.cireAtivo,
+      cireReceptivo: regraComercialVigente.cireReceptivo,
+      franchisingAcesso: regraComercialVigente.franchisingAcesso,
+      franchisingCartao: regraComercialVigente.franchisingCartao,
+      unidade: regraComercialVigente.unidade,
+    },
+  });
+  const percentualAplicado = valorProcedimento
+    ? Number(((valorComissao / valorProcedimento) * 100).toFixed(2))
+    : 0;
 
   return {
     valorComissao,
-    percentualAplicado: Number((percentualUnidade).toFixed(2)),
+    percentualAplicado,
     detalhamento: {
-      regraComercialUnidade: percentualUnidade,
+      regraComercialUnidade: percentualAplicado,
     },
   };
+}
+
+const CAMPOS_COMISSAO_PF: Record<string, "cartaoAcessoSaude" | "cireAtivo" | "cireReceptivo" | "franchisingAcesso" | "franchisingCartao" | "unidade"> = {
+  "CARTAO ACESSO SAUDE": "cartaoAcessoSaude",
+  "CIRE ATIVO": "cireAtivo",
+  "CIRE RECEPTIVO": "cireReceptivo",
+  "FRANCHISING ACESSO": "franchisingAcesso",
+  "FRANCHISING CARTAO": "franchisingCartao",
+  UNIDADE: "unidade",
+};
+
+function normalizarTipoProcedimento(tipo?: string): string {
+  return (tipo ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/_/g, " ")
+    .trim();
+}
+
+export function calcularValorComissaoPf(params: {
+  valorProcedimento: number;
+  tipoProcedimento?: string;
+  regraComercial?: Record<string, number | string | Decimal> | null;
+}): number {
+  if (!params.regraComercial || !params.valorProcedimento) return 0;
+  const campo = CAMPOS_COMISSAO_PF[normalizarTipoProcedimento(params.tipoProcedimento)] ?? "unidade";
+  const percentual = Number(params.regraComercial[campo] ?? 0);
+  return Number((params.valorProcedimento * (percentual / 100)).toFixed(2));
 }

@@ -6,6 +6,19 @@ import {
   requireBackofficeWithScope,
 } from "@/lib/api-helpers";
 import { criarAuditLog } from "@/lib/audit";
+import { validarMesReferencia } from "@/lib/competencia";
+import { buscarVersaoGestor, salvarVersaoGestor } from "@/lib/regras-versoes";
+
+type JsonObject = Record<string, unknown>;
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function getSistemaFieldValue(regra: unknown, field: string): number {
+  if (!isJsonObject(regra)) return 0;
+  return Number(regra[field] ?? 0);
+}
 
 const SISTEMA_FIELDS = [
   "gerenteCire",
@@ -46,10 +59,11 @@ async function getOrCreateRegra(backofficeId: string) {
   );
 
   if (missingFields.length > 0) {
+    const regraGestorId = regra.id;
     await prisma.$transaction(async (tx) => {
       await tx.regraGestorItem.createMany({
-        data: missingFields.map((nome, index) => ({
-          regraGestorId: regra.id,
+        data: missingFields.map((nome, _index) => ({
+          regraGestorId,
           nome,
           percentual: 0,
           tipo: "SISTEMA",
@@ -66,18 +80,25 @@ async function getOrCreateRegra(backofficeId: string) {
   return regra!;
 }
 
-export async function GET() {
+async function getRegrasGestores(req: NextRequest = new NextRequest("http://localhost")) {
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
   const regra = await getOrCreateRegra(backofficeId!);
+  const competencia = new URL(req.url || "/", "http://localhost")
+    .searchParams.get("competencia");
+  if (competencia && !validarMesReferencia(competencia)) {
+    return badRequest("competencia deve estar no formato YYYY-MM");
+  }
+  const versao = competencia ? await buscarVersaoGestor(regra.id, competencia) : null;
+  const regraVigente = versao ?? regra;
 
   const sistemaFields: Record<string, number> = {};
   const itensCustom: Array<{ id: string; nome: string; percentual: number; ordem: number }> = [];
 
   for (const item of regra.itens) {
     const valor = item.tipo === "SISTEMA"
-      ? Number((regra as any)[item.nome])
+      ? getSistemaFieldValue(regraVigente, item.nome)
       : Number(item.percentual);
 
     if (item.tipo === "SISTEMA") {
@@ -89,18 +110,23 @@ export async function GET() {
 
   return ok({
     id: regra.id,
+    ...(competencia ? { competencia } : {}),
     ...sistemaFields,
     itens: itensCustom,
   });
 }
 
+export const GET = (req: NextRequest) => getRegrasGestores(req);
+
 export async function PUT(req: NextRequest) {
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  let body: any;
+  let body: JsonObject;
   try {
-    body = await req.json();
+    const parsed: unknown = await req.json();
+    if (!isJsonObject(parsed)) return badRequest("Corpo inválido");
+    body = parsed;
   } catch {
     return badRequest("Corpo inválido");
   }
@@ -108,8 +134,13 @@ export async function PUT(req: NextRequest) {
   const sistemaData: Record<string, number> = {};
   for (const field of SISTEMA_FIELDS) {
     if (body[field] !== undefined) {
-      sistemaData[field] = body[field] || 0;
+      sistemaData[field] = Number(body[field] ?? 0);
     }
+  }
+
+  const competencia = typeof body.competencia === "string" ? body.competencia : undefined;
+  if (competencia !== undefined && !validarMesReferencia(competencia)) {
+    return badRequest("competencia deve estar no formato YYYY-MM");
   }
 
   const regra = await prisma.regraGestor.upsert({
@@ -123,6 +154,16 @@ export async function PUT(req: NextRequest) {
     },
     include: { itens: { orderBy: { ordem: "asc" } } },
   });
+
+  if (competencia) {
+    await salvarVersaoGestor({
+      regraGestorId: regra.id,
+      competencia,
+      valores: Object.fromEntries(
+        SISTEMA_FIELDS.map((field) => [field, getSistemaFieldValue(regra, field)]),
+      ),
+    });
+  }
 
   await prisma.$transaction(async (tx) => {
     await tx.regraGestorItem.deleteMany({
@@ -149,7 +190,7 @@ export async function PUT(req: NextRequest) {
 
   for (const item of updatedRegra!.itens) {
     const valor = item.tipo === "SISTEMA"
-      ? Number((updatedRegra as any)[item.nome])
+      ? getSistemaFieldValue(updatedRegra, item.nome)
       : Number(item.percentual);
 
     if (item.tipo === "SISTEMA") {
@@ -170,14 +211,17 @@ export async function POST(req: NextRequest) {
   const { session, backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  let body: any;
+  let body: JsonObject;
   try {
-    body = await req.json();
+    const parsed: unknown = await req.json();
+    if (!isJsonObject(parsed)) return badRequest("Corpo inválido");
+    body = parsed;
   } catch {
     return badRequest("Corpo inválido");
   }
 
-  const { nome, percentual } = body;
+  const nome = typeof body.nome === "string" ? body.nome : "";
+  const percentual = body.percentual;
   if (!nome || typeof percentual !== "number") {
     return badRequest("Nome e percentual são obrigatórios");
   }

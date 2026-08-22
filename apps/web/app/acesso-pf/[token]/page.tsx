@@ -128,7 +128,7 @@ export default function AcessoPFTokenPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="senha">
               Nova Senha
             </label>
             <input
@@ -142,16 +142,16 @@ export default function AcessoPFTokenPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="confirmarSenha">
               Confirmar Senha
             </label>
             <input
               type="password"
               required
               value={form.confirmarSenha}
-              onChange={(e) =>
-                setForm({ ...form, confirmarSenha: e.target.value })
-              }
+              onChange={(e) => {
+                setForm({ ...form, confirmarSenha: e.target.value });
+              }}
               className="w-full px-3 py-2 border rounded-lg text-sm focus-ring"
               placeholder="Repita a senha"
             />

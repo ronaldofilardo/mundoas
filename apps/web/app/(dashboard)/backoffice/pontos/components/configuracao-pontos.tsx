@@ -3,10 +3,16 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+type TipoArredondamento = "PISO" | "TETO" | "PADRAO";
+
+function isTipoArredondamento(value: string): value is TipoArredondamento {
+  return value === "PISO" || value === "TETO" || value === "PADRAO";
+}
+
 interface Configuracao {
   id: string;
   valorPorPonto: string;
-  tipoArredondamento: "PISO" | "TETO" | "PADRAO";
+  tipoArredondamento: TipoArredondamento;
   vigenteDesde: string;
   vigenteAte?: string;
   vigente: boolean;
@@ -45,8 +51,9 @@ export function ConfiguracaoPontos({ data }: { data?: Configuracao[] }) {
       toast.success(configVigente ? "Configuração atualizada!" : "Configuração criada!");
       setValorPorPonto("");
       window.location.reload();
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao salvar configuração");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erro ao salvar configuração";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -61,10 +68,11 @@ export function ConfiguracaoPontos({ data }: { data?: Configuracao[] }) {
 
         <div className="grid grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="valorPorPonto" className="block text-sm font-medium text-gray-700 mb-2">
               Valor em Reais (R$) por ponto
             </label>
             <input
+              id="valorPorPonto"
               type="number"
               step="0.01"
               min="0.01"
@@ -80,12 +88,16 @@ export function ConfiguracaoPontos({ data }: { data?: Configuracao[] }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="tipoArredondamento" className="block text-sm font-medium text-gray-700 mb-2">
               Tipo de arredondamento
             </label>
             <select
+              id="tipoArredondamento"
               value={tipoArredondamento}
-              onChange={(e) => setTipoArredondamento(e.target.value as any)}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (isTipoArredondamento(value)) setTipoArredondamento(value);
+              }}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="PADRAO">Padrão (arredonda normal)</option>

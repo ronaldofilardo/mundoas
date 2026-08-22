@@ -107,10 +107,10 @@ export default function DadosPessoaisPage() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nome">
                 Nome Completo
               </label>
-              <input
+              <input id="nome"
                 type="text"
                 value={form.nome}
                 onChange={(e) => setForm({ ...form, nome: e.target.value })}
@@ -124,10 +124,10 @@ export default function DadosPessoaisPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">
                 Email
               </label>
-              <input
+              <input id="email"
                 type="email"
                 disabled
                 value={form.email}
@@ -139,10 +139,10 @@ export default function DadosPessoaisPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="telefone">
                 Telefone
               </label>
-              <input
+              <input id="telefone"
                 type="text"
                 value={form.telefone}
                 onChange={(e) =>
@@ -168,15 +168,15 @@ export default function DadosPessoaisPage() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="pixTipo">
                 Tipo de PIX
               </label>
-              <select
+              <select id="pixTipo"
                 value={form.pixTipo}
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    pixTipo: (e.target.value as any) || "",
+                    pixTipo: e.target.value as typeof form.pixTipo,
                   })
                 }
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none ${
@@ -195,10 +195,10 @@ export default function DadosPessoaisPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="pixChave">
                 Chave PIX
               </label>
-              <input
+              <input id="pixChave"
                 type="text"
                 value={form.pixChave}
                 onChange={(e) => setForm({ ...form, pixChave: e.target.value })}
@@ -213,10 +213,10 @@ export default function DadosPessoaisPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="bancoNome">
                 Banco
               </label>
-              <input
+              <input id="bancoNome"
                 type="text"
                 value={form.bancoNome}
                 onChange={(e) =>
@@ -234,10 +234,10 @@ export default function DadosPessoaisPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="agencia">
                   Agência
                 </label>
-                <input
+                <input id="agencia"
                   type="text"
                   value={form.agencia}
                   onChange={(e) =>
@@ -254,10 +254,10 @@ export default function DadosPessoaisPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="conta">
                   Conta
                 </label>
-                <input
+                <input id="conta"
                   type="text"
                   value={form.conta}
                   onChange={(e) => setForm({ ...form, conta: e.target.value })}

@@ -158,7 +158,7 @@ export async function PUT(req: NextRequest) {
 
   const { id, nome, email, cpf } = validation.data;
 
-  const parceiro = await prisma.parceiro.findUnique({
+  const parceiro = await prisma.parceiro.findFirst({
     where: { id, ...criarEscopoParceiro(backofficeId) },
     include: { usuario: true },
   });
@@ -228,7 +228,7 @@ export async function DELETE(req: NextRequest) {
     return badRequest("ID do parceiro não informado");
   }
 
-  const parceiro = await prisma.parceiro.findUnique({
+  const parceiro = await prisma.parceiro.findFirst({
     where: { id, ...criarEscopoParceiro(backofficeId) },
   });
 

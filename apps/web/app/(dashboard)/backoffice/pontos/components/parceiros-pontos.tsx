@@ -12,6 +12,15 @@ interface Indicado {
   createdAt: string;
 }
 
+interface ParceiroPayload {
+  nome: string;
+  email: string;
+  cpf: string;
+  id?: string;
+}
+
+type WindowWithCpfTimeout = Window & { cpfTimeout?: ReturnType<typeof setTimeout> };
+
 interface Parceiro {
   id: string;
   nome: string;
@@ -53,7 +62,7 @@ export function ParceirosPontos() {
       if (Array.isArray(data)) {
         setParceiros(data);
       }
-    } catch (e) {
+    } catch {
       toast.error("Erro ao carregar parceiros");
     } finally {
       setLoading(false);
@@ -85,7 +94,7 @@ export function ParceirosPontos() {
       if (!data.valid) {
         toast.error(data.message);
       }
-    } catch (e) {
+    } catch {
       setCpfValidation("invalid");
     }
   }
@@ -111,10 +120,9 @@ export function ParceirosPontos() {
         : "/api/v1/backoffice/parceiros";
       const method = editParceiro ? "PUT" : "POST";
 
-      const payload: any = { ...form };
-      if (editParceiro) {
-        payload.id = editParceiro.id;
-      }
+      const payload: ParceiroPayload = editParceiro
+        ? { ...form, id: editParceiro.id }
+        : { ...form };
 
       console.log("[Parceiros] Enviando payload:", payload);
 
@@ -143,8 +151,8 @@ export function ParceirosPontos() {
 
       setShowModal(false);
       fetchParceiros();
-    } catch (e) {
-      console.error("[Parceiros] Erro:", e);
+    } catch {
+      console.error("[Parceiros] Erro ao salvar parceiro");
       toast.error("Erro ao salvar parceiro");
     } finally {
       setSaving(false);
@@ -171,7 +179,7 @@ export function ParceirosPontos() {
 
       toast.success("Parceiro reativado com sucesso");
       fetchParceiros();
-    } catch (e) {
+    } catch {
       toast.error("Erro ao reativar parceiro");
     }
   }
@@ -198,7 +206,7 @@ export function ParceirosPontos() {
 
       toast.success("Parceiro desligado com sucesso");
       fetchParceiros();
-    } catch (e) {
+    } catch {
       toast.error("Erro ao desligar parceiro");
     }
   }
@@ -435,10 +443,11 @@ export function ParceirosPontos() {
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="parceiro-nome" className="block text-sm font-medium text-gray-700 mb-1">
                   Nome
                 </label>
                 <input
+                  id="parceiro-nome"
                   type="text"
                   required
                   value={form.nome}
@@ -447,10 +456,11 @@ export function ParceirosPontos() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="parceiro-email" className="block text-sm font-medium text-gray-700 mb-1">
                   Email
                 </label>
                 <input
+                  id="parceiro-email"
                   type="email"
                   required
                   value={form.email}
@@ -459,10 +469,11 @@ export function ParceirosPontos() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="parceiro-cpf" className="block text-sm font-medium text-gray-700 mb-1">
                   CPF
                 </label>
                 <input
+                  id="parceiro-cpf"
                   type="text"
                   required
                   maxLength={14}
@@ -481,8 +492,11 @@ export function ParceirosPontos() {
                     setForm({ ...form, cpf: f });
 
                     if (!editParceiro && masked.length === 11) {
-                      clearTimeout((window as any).cpfTimeout);
-                      (window as any).cpfTimeout = setTimeout(() => {
+                      const windowWithTimeout = window as WindowWithCpfTimeout;
+                      if (windowWithTimeout.cpfTimeout) {
+                        clearTimeout(windowWithTimeout.cpfTimeout);
+                      }
+                      windowWithTimeout.cpfTimeout = setTimeout(() => {
                         validateCpfRealTime(f);
                       }, 500);
                     } else if (!editParceiro) {

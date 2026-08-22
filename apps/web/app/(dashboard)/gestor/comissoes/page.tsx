@@ -74,10 +74,10 @@ export default function ComissoesPage() {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-end gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="mes">
                 Mês
               </label>
-              <select
+              <select id="mes"
                 value={mes}
                 onChange={(e) => setMes(parseInt(e.target.value))}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -91,10 +91,10 @@ export default function ComissoesPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="ano">
                 Ano
               </label>
-              <select
+              <select id="ano"
                 value={ano}
                 onChange={(e) => setAno(parseInt(e.target.value))}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"

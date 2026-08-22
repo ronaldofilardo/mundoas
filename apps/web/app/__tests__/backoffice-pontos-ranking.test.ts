@@ -80,12 +80,13 @@ describe('API - Backoffice Pontos Ranking', () => {
   });
 
   afterEach(async () => {
-    for (const id of cicloIdsToClean) {
-      await prisma.cicloPontos.delete({ where: { id } }).catch(() => {});
+    if (cicloIdsToClean.length > 0) {
+      await prisma.movimentacaoPontos.deleteMany({
+        where: { cicloPontosId: { in: cicloIdsToClean } },
+      });
     }
-    for (const id of parceiroIdsToClean) {
-      await prisma.parceiro.delete({ where: { id } }).catch(() => {});
-    }
+    await prisma.cicloPontos.deleteMany({ where: { id: { in: cicloIdsToClean } } });
+    await prisma.parceiro.deleteMany({ where: { id: { in: parceiroIdsToClean } } });
     for (const id of usuarioIdsToClean) {
       await prisma.usuario.update({ where: { id }, data: { status: 'INATIVO' } }).catch(() => {});
     }

@@ -1,6 +1,8 @@
 "use client";
 
-export function RankingPontos({ data }: { data?: any[] }) {
+import type { RankingPontosItem } from "../pontos-types";
+
+export function RankingPontos({ data }: { data?: RankingPontosItem[] }) {
   return (
     <div>
       <h2 className="text-xl font-bold text-gray-900 mb-4">Ranking</h2>
@@ -17,7 +19,7 @@ export function RankingPontos({ data }: { data?: any[] }) {
             </tr>
           </thead>
           <tbody>
-            {data.map((pos: any, i: number) => (
+            {data.map((pos: RankingPontosItem, i: number) => (
               <tr key={pos.id || i} className="border-b">
                 <td className="p-2">{pos.posicao ?? i + 1}</td>
                 <td className="p-2">{pos.parceiro?.nome}</td>

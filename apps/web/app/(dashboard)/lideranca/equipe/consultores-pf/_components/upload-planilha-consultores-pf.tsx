@@ -35,7 +35,6 @@ interface ResultadoImportacao {
     nome?: string;
     status: "sucesso" | "erro";
     mensagem: string;
-    senhaTemporaria?: string;
   }>;
 }
 
@@ -593,9 +592,6 @@ export function UploadPlanilhaConsultoresPf() {
                       <th className="text-left p-2 font-medium text-gray-600">
                         Mensagem
                       </th>
-                      <th className="text-left p-2 font-medium text-gray-600">
-                        Senha provisória
-                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -622,15 +618,6 @@ export function UploadPlanilhaConsultoresPf() {
                           )}
                         </td>
                         <td className="p-2 text-gray-700">{d.mensagem}</td>
-                        <td className="p-2">
-                          {d.senhaTemporaria ? (
-                            <code className="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono">
-                              {d.senhaTemporaria}
-                            </code>
-                          ) : (
-                            "—"
-                          )}
-                        </td>
                       </tr>
                     ))}
                   </tbody>

@@ -63,8 +63,9 @@ export function PainelMetasVendasClient() {
       if (!res.ok) throw new Error("Falha ao carregar painel");
       const json: PainelResponse = await res.json();
       setData(json);
-    } catch (err: any) {
-      toast.error(err?.message ?? "Erro ao carregar painel");
+    } catch (err: unknown) {
+      const mensagem = err instanceof Error ? err.message : "Erro ao carregar painel";
+      toast.error(mensagem);
     } finally {
       setLoading(false);
     }

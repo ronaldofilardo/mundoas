@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@asa/database";
 import {
   badRequest,
   created,
@@ -8,7 +7,7 @@ import {
 import { parsePlanilhaProducao } from "@/lib/parse-planilha-producao";
 
 export async function POST(req: NextRequest) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
+  const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
   try {
@@ -39,8 +38,10 @@ export async function POST(req: NextRequest) {
     const resultado = await parsePlanilhaProducao(file, backofficeId);
 
     return created(resultado);
-  } catch (e: any) {
-    console.error("[preview POST] Erro:", e?.message, e?.stack);
-    return badRequest("Erro ao processar planilha: " + (e?.message || "Erro desconhecido"));
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "Erro desconhecido";
+    const stack = e instanceof Error ? e.stack : undefined;
+    console.error("[preview POST] Erro:", message, stack);
+    return badRequest("Erro ao processar planilha: " + message);
   }
 }

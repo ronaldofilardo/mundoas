@@ -161,10 +161,10 @@ export function GerenciadorPremios() {
           className="bg-white border border-gray-200 rounded-lg p-6 space-y-4"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="nome">
               Nome
             </label>
-            <input
+            <input id="nome"
               type="text"
               value={formData.nome}
               onChange={(e) =>
@@ -177,10 +177,10 @@ export function GerenciadorPremios() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="descricao">
               Descrição
             </label>
-            <textarea
+            <textarea id="descricao"
               value={formData.descricao}
               onChange={(e) =>
                 setFormData({ ...formData, descricao: e.target.value })
@@ -194,10 +194,10 @@ export function GerenciadorPremios() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="custo-em-pontos">
                 Custo em Pontos
               </label>
-              <input
+              <input id="custo-em-pontos"
                 type="number"
                 value={formData.custoPontos}
                 onChange={(e) =>
@@ -210,10 +210,10 @@ export function GerenciadorPremios() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="url-da-imagem">
                 URL da Imagem
               </label>
-              <input
+              <input id="url-da-imagem"
                 type="url"
                 value={formData.imagemUrl}
                 onChange={(e) =>

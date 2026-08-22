@@ -7,6 +7,21 @@ import type { RegrasComerciais, RegrasGestores, RegrasFaltas, RegraItem } from "
 type RegrasComerciaisKeys = Exclude<keyof RegrasComerciais, "id" | "itens">;
 type RegrasGestoresKeys = Exclude<keyof RegrasGestores, "id" | "itens">;
 type RegrasFaltasKeys = Exclude<keyof RegrasFaltas, "id" | "itens">;
+type RegraState = RegrasComerciais | RegrasGestores | RegrasFaltas;
+type RegraUpdater = (prev: RegraState | null) => RegraState | null;
+type RegraSetter = (updater: RegraUpdater) => void;
+
+function adaptRegraSetter<T extends RegraState>(
+  setter: React.Dispatch<React.SetStateAction<T | null>>,
+): RegraSetter {
+  return (updater) => setter((prev) => updater(prev as RegraState) as T | null);
+}
+
+function valorRegra(regras: RegraState | null, key: string): number {
+  if (!regras) return 0;
+  const valor = (regras as unknown as Record<string, unknown>)[key];
+  return typeof valor === "number" ? valor : Number(valor ?? 0);
+}
 
 const SISTEMA_COMERCIAL_LABELS: Record<RegrasComerciaisKeys, string> = {
   cartaoAcessoSaude: "Cartão Acesso Saúde",
@@ -184,8 +199,8 @@ export function TabRegras() {
   const renderSistemaFields = (
     labels: Record<string, string>,
     keys: Array<RegrasComerciaisKeys | RegrasGestoresKeys | RegrasFaltasKeys>,
-    regras: any,
-    setRegras: (prev: any) => any,
+    regras: RegraState | null,
+    setRegras: RegraSetter,
     type: "comerciais" | "gestores" | "faltas"
   ) => (
     <div className="space-y-3 border-t border-gray-200 pt-3">
@@ -193,10 +208,10 @@ export function TabRegras() {
         <RegraCard
           key={key}
           label={labels[key]}
-          value={regras?.[key] ?? 0}
+          value={valorRegra(regras, key)}
           onChange={(val) => {
             const num = parseFloat(val) || 0;
-            setRegras((prev: any) => (prev ? { ...prev, [key]: num } : prev));
+            setRegras((prev) => (prev ? { ...prev, [key]: num } : prev));
           }}
           onDelete={() => openDeleteItemConfirm(type, `sistema-${key}`, labels[key])}
         />
@@ -207,9 +222,7 @@ export function TabRegras() {
   const renderCustomItems = (
     itens: RegraItem[] | undefined,
     type: "comerciais" | "gestores" | "faltas",
-    setRegras: (prev: any) => any,
-    handleSalvar: (data: any) => void,
-    regras: any
+    setRegras: RegraSetter,
   ) => {
     const items = itens || [];
     if (items.length === 0) return null;
@@ -232,7 +245,7 @@ export function TabRegras() {
               value={item.percentual}
               onChange={(e) => {
                 const num = parseFloat(e.target.value) || 0;
-                setRegras((prev: any) => {
+                setRegras((prev) => {
                   if (!prev) return prev;
                   const updatedItens = prev.itens?.map((i: RegraItem) =>
                     i.id === item.id ? { ...i, percentual: num } : i
@@ -263,9 +276,9 @@ export function TabRegras() {
     icon: string,
     sistemaLabels: Record<string, string>,
     sistemaKeys: Array<RegrasComerciaisKeys | RegrasGestoresKeys | RegrasFaltasKeys>,
-    regras: any,
-    setRegras: (prev: any) => any,
-    handleSalvar: (data: any) => void,
+    regras: RegraState | null,
+    setRegras: RegraSetter,
+    handleSalvar: (data: RegraState) => void,
     type: "comerciais" | "gestores" | "faltas"
   ) => (
     <div className="card">
@@ -289,7 +302,7 @@ export function TabRegras() {
       ) : (
         <div className="space-y-3">
           {renderSistemaFields(sistemaLabels, sistemaKeys, regras, setRegras, type)}
-          {renderCustomItems(regras?.itens, type, setRegras, handleSalvar, regras)}
+          {renderCustomItems(regras?.itens, type, setRegras)}
           {showNewRule === type && (
             <div className="rounded border border-primary-200 bg-primary-50 p-3 space-y-3">
               <p className="text-sm font-medium text-primary-800">Nova Regra Personalizada</p>
@@ -300,7 +313,6 @@ export function TabRegras() {
                   value={newRuleName}
                   onChange={(e) => setNewRuleName(e.target.value)}
                   className="px-3 py-2 border rounded text-sm"
-                  autoFocus
                 />
                 <input
                   type="number"
@@ -352,8 +364,8 @@ export function TabRegras() {
           SISTEMA_COMERCIAL_LABELS,
           SISTEMA_COMERCIAL_KEYS,
           regrasComerciais,
-          setRegrasComerciais,
-          handleSalvarComerciais,
+          adaptRegraSetter(setRegrasComerciais),
+          (data) => handleSalvarComerciais(data as RegrasComerciais),
           "comerciais"
         )}
         {renderSection(
@@ -362,8 +374,8 @@ export function TabRegras() {
           SISTEMA_GESTORES_LABELS,
           SISTEMA_GESTORES_KEYS,
           regrasGestores,
-          setRegrasGestores,
-          handleSalvarGestores,
+          adaptRegraSetter(setRegrasGestores),
+          (data) => handleSalvarGestores(data as RegrasGestores),
           "gestores"
         )}
         {renderSection(
@@ -372,8 +384,8 @@ export function TabRegras() {
           SISTEMA_FALTAS_LABELS,
           SISTEMA_FALTAS_KEYS,
           regrasFaltas,
-          setRegrasFaltas,
-          handleSalvarFaltas,
+          adaptRegraSetter(setRegrasFaltas),
+          (data) => handleSalvarFaltas(data as RegrasFaltas),
           "faltas"
         )}
       </div>

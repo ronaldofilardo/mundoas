@@ -139,8 +139,9 @@ export default function RelatorioComissoesPage() {
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Filtros</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Período Inicial</label>
+            <label htmlFor="comissoes-periodo-inicial" className="block text-xs text-gray-600 mb-1">Período Inicial</label>
             <input
+              id="comissoes-periodo-inicial"
               type="month"
               value={inicio}
               onChange={(e) => setInicio(e.target.value)}
@@ -148,8 +149,9 @@ export default function RelatorioComissoesPage() {
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Período Final</label>
+            <label htmlFor="comissoes-periodo-final" className="block text-xs text-gray-600 mb-1">Período Final</label>
             <input
+              id="comissoes-periodo-final"
               type="month"
               value={fim}
               onChange={(e) => setFim(e.target.value)}
@@ -157,8 +159,9 @@ export default function RelatorioComissoesPage() {
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Comercial (opcional)</label>
+            <label htmlFor="comissoes-comercial" className="block text-xs text-gray-600 mb-1">Comercial (opcional)</label>
             <select
+              id="comissoes-comercial"
               value={comercialId}
               onChange={(e) => setComercialId(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg text-sm"

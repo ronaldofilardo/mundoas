@@ -2,6 +2,25 @@
 
 import { useEffect, useState } from "react";
 
+interface CicloPontos {
+  id: string;
+  nome: string;
+  status: string;
+}
+
+interface RankingData {
+  ciclo: CicloPontos;
+  posicoes: RankingItem[];
+}
+
+interface CiclosResponse {
+  ciclos: CicloPontos[];
+}
+
+interface RankingResponse {
+  ranking: RankingData;
+}
+
 interface RankingItem {
   posicao: number;
   parceiro: { id: string; nome: string; cpf: string };
@@ -9,11 +28,11 @@ interface RankingItem {
 }
 
 export function RankingGestor() {
-  const [ranking, setRanking] = useState<any>(null);
+  const [ranking, setRanking] = useState<RankingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cicloPontosId, setCicloPontosId] = useState<string | null>(null);
-  const [ciclos, setCiclos] = useState<any[]>([]);
+  const [ciclos, setCiclos] = useState<CicloPontos[]>([]);
 
   useEffect(() => {
     fetchCiclos();
@@ -29,7 +48,7 @@ export function RankingGestor() {
     try {
       const response = await fetch("/api/v1/backoffice/pontos/ciclos");
       if (!response.ok) throw new Error("Erro ao carregar ciclos");
-      const data = await response.json();
+      const data = (await response.json()) as CiclosResponse;
       setCiclos(data.ciclos);
       if (data.ciclos.length > 0) {
         setCicloPontosId(data.ciclos[0].id);
@@ -49,7 +68,7 @@ export function RankingGestor() {
       url.searchParams.append("cicloPontosId", cicloId);
       const response = await fetch(url.toString());
       if (!response.ok) throw new Error("Erro ao carregar ranking");
-      const data = await response.json();
+      const data = (await response.json()) as RankingResponse;
       setRanking(data.ranking);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro desconhecido");
@@ -100,10 +119,10 @@ export function RankingGestor() {
 
       {/* Seletor de Ciclo */}
       <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="selecione-o-ciclo">
           Selecione o Ciclo
         </label>
-        <select
+        <select id="selecione-o-ciclo"
           value={cicloPontosId || ""}
           onChange={(e) => setCicloPontosId(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -133,7 +152,7 @@ export function RankingGestor() {
           </div>
 
           <div className="divide-y divide-gray-200">
-            {ranking.posicoes.map((item: RankingItem) => (
+            {ranking.posicoes.map((item) => (
               <div
                 key={`${item.posicao}-${item.parceiro.id}`}
                 className={`px-6 py-4 flex items-center justify-between border-l-4 ${

@@ -97,8 +97,8 @@ export default function DetalheBackofficePage() {
       setNovoValor("");
       setNovoVencimento("");
       fetchFaturas();
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao criar fatura");
+    } catch (e: unknown) {
+      toast.error((e instanceof Error ? e.message : "Erro inesperado") || "Erro ao criar fatura");
     } finally {
       setAcaoEmAndamento(false);
     }
@@ -120,8 +120,8 @@ export default function DetalheBackofficePage() {
       toast.success(pago ? "Fatura marcada como paga" : "Fatura marcada como não paga");
       fetchFaturas();
       fetchAssinatura();
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao atualizar fatura");
+    } catch (e: unknown) {
+      toast.error((e instanceof Error ? e.message : "Erro inesperado") || "Erro ao atualizar fatura");
     } finally {
       setAcaoEmAndamento(false);
     }
@@ -138,8 +138,8 @@ export default function DetalheBackofficePage() {
       if (!res.ok) throw new Error("Assinatura não encontrada");
       const json = await res.json();
       setAssinatura(json);
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao carregar assinatura");
+    } catch (e: unknown) {
+      toast.error((e instanceof Error ? e.message : "Erro inesperado") || "Erro ao carregar assinatura");
     } finally {
       setLoading(false);
     }
@@ -165,8 +165,8 @@ export default function DetalheBackofficePage() {
       setMotivo("");
       setExpiraEm("");
       fetchAssinatura();
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao executar ação");
+    } catch (e: unknown) {
+      toast.error((e instanceof Error ? e.message : "Erro inesperado") || "Erro ao executar ação");
     } finally {
       setAcaoEmAndamento(false);
     }
@@ -349,8 +349,8 @@ export default function DetalheBackofficePage() {
           <div className="bg-white rounded-lg p-6 w-full max-w-md space-y-4">
             <h2 className="text-lg font-semibold">Nova fatura manual</h2>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Valor (R$)</label>
-              <input
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="novoValor">Valor (R$)</label>
+              <input id="novoValor"
                 type="number"
                 step="0.01"
                 className="w-full border rounded px-3 py-2 text-sm"
@@ -359,8 +359,8 @@ export default function DetalheBackofficePage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Vencimento</label>
-              <input
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="novoVencimento">Vencimento</label>
+              <input id="novoVencimento"
                 type="date"
                 className="w-full border rounded px-3 py-2 text-sm"
                 value={novoVencimento}
@@ -430,10 +430,10 @@ export default function DetalheBackofficePage() {
               onChange={(e) => setMotivo(e.target.value)}
             />
             <div>
-              <label className="block text-xs text-gray-500 mb-1">
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="expiraEm">
                 Expira em (opcional)
               </label>
-              <input
+              <input id="expiraEm"
                 type="date"
                 className="w-full border rounded px-3 py-2 text-sm"
                 value={expiraEm}

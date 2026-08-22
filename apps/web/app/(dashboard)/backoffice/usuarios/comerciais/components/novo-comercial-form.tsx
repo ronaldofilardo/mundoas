@@ -103,10 +103,11 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="novo-comercial-nome" className="block text-sm font-medium text-gray-700 mb-1">
             Nome
           </label>
           <input
+            id="novo-comercial-nome"
             type="text"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
@@ -115,10 +116,11 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="novo-comercial-cpf" className="block text-sm font-medium text-gray-700 mb-1">
             CPF
           </label>
           <input
+            id="novo-comercial-cpf"
             type="text"
             value={cpf}
             onChange={(e) => setCpf(e.target.value)}
@@ -129,10 +131,11 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="novo-comercial-email" className="block text-sm font-medium text-gray-700 mb-1">
             Email
           </label>
           <input
+            id="novo-comercial-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -141,10 +144,11 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="novo-comercial-telefone" className="block text-sm font-medium text-gray-700 mb-1">
             Telefone
           </label>
           <input
+            id="novo-comercial-telefone"
             type="tel"
             value={telefone}
             onChange={(e) => setTelefone(e.target.value)}
@@ -153,10 +157,11 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="novo-comercial-lideranca" className="block text-sm font-medium text-gray-700 mb-1">
             Liderança
           </label>
           <select
+            id="novo-comercial-lideranca"
             value={lideranca}
             onChange={(e) => {
               setLideranca(e.target.value);
@@ -170,10 +175,11 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="novo-comercial-funcao" className="block text-sm font-medium text-gray-700 mb-1">
             Função
           </label>
           <select
+            id="novo-comercial-funcao"
             value={funcao}
             onChange={(e) => setFuncao(e.target.value)}
             className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-500"

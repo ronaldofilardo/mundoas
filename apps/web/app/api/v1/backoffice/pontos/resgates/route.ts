@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { requireBackofficeWithScope, badRequest, ok } from "@/lib/api-helpers";
 import { rateLimit } from "@/lib/rate-limit";
-import { prisma } from "@asa/database";
+import { prisma, type Prisma } from "@asa/database";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   if (rateLimitResponse) return rateLimitResponse;
 
   try {
-    const { session, backofficeId, error } = await requireBackofficeWithScope();
+    const { backofficeId, error } = await requireBackofficeWithScope();
     if (error) return error;
 
     const { searchParams } = new URL(req.url);
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
 
     const cicloIds = ciclos.map((c) => c.id);
 
-    const where: any = {
+    const where: Prisma.SolicitacaoResgateWhereInput = {
       cicloPontosId: { in: cicloIds },
     };
 

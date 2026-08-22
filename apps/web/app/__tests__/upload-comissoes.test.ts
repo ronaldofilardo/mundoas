@@ -116,15 +116,70 @@ describe("Upload de Planilha e Comissões", () => {
   });
 
   afterAll(async () => {
-    await prisma.comissaoEquipe.deleteMany({ where: { equipe: { usuario: { email: { endsWith: "@asa.test" } } } } }).catch(() => {});
-    await prisma.metaEquipe.deleteMany({ where: { equipe: { usuario: { email: { endsWith: "@asa.test" } } } } }).catch(() => {});
-    await prisma.equipe.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
-    await prisma.indicado.deleteMany({ where: { parceiro: { usuario: { email: { endsWith: "@asa.test" } } } } }).catch(() => {});
-    await prisma.parceiro.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
-    await prisma.regraComercial.deleteMany({ where: { backofficeId } }).catch(() => {});
-    await prisma.regraGestor.deleteMany({ where: { backofficeId } }).catch(() => {});
-    await prisma.backoffice.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } }).catch(() => {});
-    await prisma.usuario.deleteMany({ where: { email: { endsWith: "@asa.test" } } }).catch(() => {});
+    await prisma.comissaoEquipe.deleteMany({ where: { equipe: { usuario: { email: { endsWith: "@asa.test" } } } } });
+    await prisma.metaEquipe.deleteMany({ where: { equipe: { usuario: { email: { endsWith: "@asa.test" } } } } });
+    await prisma.procedimentoPF.deleteMany({
+      where: {
+        OR: [
+          { comercial: { usuario: { email: { endsWith: "@asa.test" } } } },
+          { parceiro: { usuario: { email: { endsWith: "@asa.test" } } } },
+          { indicado: { parceiro: { usuario: { email: { endsWith: "@asa.test" } } } } },
+        ],
+      },
+    });
+    await prisma.gestor.deleteMany({
+      where: { lideranca: { usuario: { email: { endsWith: "@asa.test" } } } },
+    });
+    await prisma.consultorPf.deleteMany({
+      where: { lideranca: { usuario: { email: { endsWith: "@asa.test" } } } },
+    });
+    await prisma.equipe.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } });
+    await prisma.solicitacaoResgate.deleteMany({
+      where: { parceiro: { usuario: { email: { endsWith: "@asa.test" } } } },
+    });
+    await prisma.movimentacaoPontos.deleteMany({
+      where: { parceiro: { usuario: { email: { endsWith: "@asa.test" } } } },
+    });
+    await prisma.rankingPosicao.deleteMany({
+      where: { parceiro: { usuario: { email: { endsWith: "@asa.test" } } } },
+    });
+    await prisma.primeiraAcss.deleteMany({
+      where: { parceiro: { usuario: { email: { endsWith: "@asa.test" } } } },
+    });
+    await prisma.indicado.deleteMany({ where: { parceiro: { usuario: { email: { endsWith: "@asa.test" } } } } });
+    await prisma.parceiro.deleteMany({ where: { usuario: { email: { endsWith: "@asa.test" } } } });
+    await prisma.procedimentoPF.deleteMany({
+      where: {
+        OR: [
+          { parceiro: { backofficeId } },
+          { indicado: { parceiro: { backofficeId } } },
+        ],
+      },
+    });
+    await prisma.solicitacaoResgate.deleteMany({ where: { parceiro: { backofficeId } } });
+    await prisma.movimentacaoPontos.deleteMany({ where: { parceiro: { backofficeId } } });
+    await prisma.rankingPosicao.deleteMany({ where: { parceiro: { backofficeId } } });
+    await prisma.primeiraAcss.deleteMany({ where: { parceiro: { backofficeId } } });
+    await prisma.indicado.deleteMany({ where: { parceiro: { backofficeId } } });
+    await prisma.parceiro.deleteMany({ where: { backofficeId } });
+    await prisma.metaConsultorPf.deleteMany({ where: { setor: { backofficeId } } });
+    await prisma.consultorPfSetor.deleteMany({ where: { setor: { backofficeId } } });
+    await prisma.setor.deleteMany({ where: { backofficeId } });
+    await prisma.solicitacaoResgate.deleteMany({ where: { cicloPontos: { backofficeId } } });
+    await prisma.movimentacaoPontos.deleteMany({ where: { cicloPontos: { backofficeId } } });
+    await prisma.rankingPosicao.deleteMany({ where: { rankingSnapshot: { cicloPontos: { backofficeId } } } });
+    await prisma.rankingSnapshot.deleteMany({ where: { cicloPontos: { backofficeId } } });
+    await prisma.cicloPontos.deleteMany({ where: { backofficeId } });
+    await prisma.premio.deleteMany({ where: { backofficeId } });
+    await prisma.configuracaoPontos.deleteMany({ where: { backofficeId } });
+    await prisma.uploadPlanilhaBackoffice.deleteMany({ where: { backofficeId } });
+    await prisma.faturaAsaas.deleteMany({ where: { assinatura: { backofficeId } } });
+    await prisma.assinatura.deleteMany({ where: { backofficeId } });
+    await prisma.regraComercial.deleteMany({ where: { backofficeId } });
+    await prisma.regraGestor.deleteMany({ where: { backofficeId } });
+    await prisma.equipe.deleteMany({ where: { backofficeId } });
+    await prisma.backoffice.deleteMany({ where: { id: backofficeId } });
+    await prisma.usuario.deleteMany({ where: { id: backofficeUsuarioId } });
   });
 
   describe("Regras de Comissão", () => {

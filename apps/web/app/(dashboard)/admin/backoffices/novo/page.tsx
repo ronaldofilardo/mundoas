@@ -48,8 +48,8 @@ export default function NovoBackofficePage() {
       );
 
       router.push(`/admin/backoffices/${json.id}`);
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao criar unidade");
+    } catch (error: unknown) {
+      toast.error((error instanceof Error ? error.message : "Erro inesperado") || "Erro ao criar unidade");
     } finally {
       setLoading(false);
     }
@@ -71,10 +71,10 @@ export default function NovoBackofficePage() {
 
       <form onSubmit={handleSubmit} className="card space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nome">
             Nome da unidade
           </label>
-          <input
+          <input id="nome"
             name="nome"
             required
             value={formData.nome}
@@ -85,10 +85,10 @@ export default function NovoBackofficePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">
             Email de acesso
           </label>
-          <input
+          <input id="email"
             name="email"
             type="email"
             required
@@ -100,10 +100,10 @@ export default function NovoBackofficePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="cpf">
             CPF do responsável
           </label>
-          <input
+          <input id="cpf"
             name="cpf"
             required
             value={formData.cpf}

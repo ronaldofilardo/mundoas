@@ -87,19 +87,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Verifica se já existe ciclo ATIVO desta MESMA periodicidade.
-  // Ciclos SEMESTRAL e ANUAL podem coexistir.
-  const cicloAtivo = await prisma.cicloPontos.findFirst({
+  // Ciclos da mesma periodicidade não podem ocupar intervalos sobrepostos.
+  // Ciclos SEMESTRAL e ANUAL podem coexistir quando seus intervalos não se cruzam.
+  const cicloSobreposto = await prisma.cicloPontos.findFirst({
     where: {
       backofficeId,
       periodicidade,
-      OR: [{ status: "EM_ANDAMENTO" }, { status: "RESGATE_ABERTO" }],
+      inicioAcumuloEm: { lte: fimResgate },
+      fimResgateEm: { gte: inicio },
     },
+    select: { id: true },
   });
 
-  if (cicloAtivo) {
+  if (cicloSobreposto) {
     return badRequest(
-      `Já existe um ciclo ${periodicidade} ativo. Encerre-o antes de criar um novo da mesma periodicidade.`,
+      `Já existe um ciclo ${periodicidade} com intervalo sobreposto. Ajuste as datas antes de criar um novo.`,
     );
   }
 

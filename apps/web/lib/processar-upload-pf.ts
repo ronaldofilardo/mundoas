@@ -1,9 +1,11 @@
-import { prisma } from "@asa/database";
+import { prisma, Prisma } from "@asa/database";
 import { validarCPF } from "@/lib/pontos-utils";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 import { read, utils } from "xlsx";
+
+type PlanilhaCell = string | number | boolean | Date | null;
 
 const UPLOAD_DIR = join(process.cwd(), "uploads", "backoffice");
 
@@ -58,7 +60,7 @@ export async function processarUploadPlanilhaPF(
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
 
-    const jsonData: any[][] = utils.sheet_to_json(worksheet, {
+    const jsonData = utils.sheet_to_json<PlanilhaCell[]>(worksheet, {
       header: 1,
       defval: "",
       raw: false,
@@ -201,8 +203,8 @@ const [comerciais, consultoresPf, gestores] = await Promise.all([
     let rejectedRows = 0;
     let orphanedRows = 0;
 
-    const procedimentosToCreate: any[] = [];
-    const linhasRawToCreate: any[] = [];
+    const procedimentosToCreate: Prisma.ProcedimentoPFCreateManyInput[] = [];
+    const linhasRawToCreate: Prisma.ProcedimentoPFRawCreateManyInput[] = [];
 
     for (let i = 2; i < jsonData.length; i++) {
       const row = jsonData[i];
@@ -342,10 +344,6 @@ if (usuarioDaConta) {
         }
 
       const valorComissao = 0;
-      const mesReferencia = dataReferencia
-        ? `${dataReferencia.getFullYear()}-${String(dataReferencia.getMonth() + 1).padStart(2, "0")}`
-        : "";
-
       // Linha válida (passou nas validações) — sempre grava em raw para auditoria
       linhasRawToCreate.push({
         uploadId,
@@ -358,6 +356,11 @@ if (usuarioDaConta) {
       });
 
       if (orfao || !parceiroEncontrado) {
+        orphanedRows++;
+        continue;
+      }
+
+      if (!dataReferencia) {
         orphanedRows++;
         continue;
       }
@@ -425,8 +428,8 @@ if (usuarioDaConta) {
   }
 }
 
-function parseDate(dateRaw: any): Date | null {
-  if (!dateRaw) return null;
+function parseDate(dateRaw: PlanilhaCell): Date | null {
+  if (dateRaw === null || dateRaw === "") return null;
 
   if (typeof dateRaw === "number") {
     const excelEpoch = new Date(1899, 11, 30);

@@ -100,7 +100,7 @@ export async function PATCH(
   const { session, backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  let body: any;
+  let body: unknown;
   try {
     body = await req.json();
   } catch {
