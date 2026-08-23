@@ -7,7 +7,8 @@ export async function GET(
   { params }: { params: { id: string } },
 ) {
   try {
-    await requireAdmin();
+    const { error } = await requireAdmin();
+    if (error) return error;
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");

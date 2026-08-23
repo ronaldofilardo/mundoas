@@ -55,9 +55,7 @@ export async function POST(req: NextRequest) {
       return badRequest("Senha já foi alterada anteriormente");
     }
 
-    // Allow CPF as temporary password for partners
-    const isParceiroPrimeiroAcesso = usuario.tipo === "PARCEIRO";
-    const passwordValidation = validatePasswordStrength(novaSenha, isParceiroPrimeiroAcesso);
+    const passwordValidation = validatePasswordStrength(novaSenha);
     if (!passwordValidation.valid) {
       return badRequest(passwordValidation.errors.join(", "));
     }

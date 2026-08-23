@@ -72,6 +72,7 @@ function loadPrisma(): PrismaModule {
 
   // 2) Caminho dentro do monorepo
   if (
+    typeof resolvedPath === "string" &&
     isAbsolute(resolvedPath) &&
     !resolvedPath.includes(".pnpm") &&
     !resolvedPath.includes("node_modules")
