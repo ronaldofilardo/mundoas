@@ -1,1 +1,0 @@
-ALTER TABLE "premios" ADD COLUMN "codigo" VARCHAR(50) NOT NULL DEFAULT '';
