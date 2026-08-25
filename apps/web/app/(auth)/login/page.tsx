@@ -74,9 +74,16 @@ export default function LoginPage() {
     const session = await res.json();
     const tipo = session?.user?.tipo;
     const papel = session?.user?.papel;
+    const senhaTemporaria = session?.user?.senhaTemporaria;
 
     console.log("[Login] Session:", session);
-    console.log("[Login] Tipo:", tipo, "Papel:", papel);
+    console.log("[Login] Tipo:", tipo, "Papel:", papel, "SenhaTemporaria:", senhaTemporaria);
+
+    // Primeiro acesso: senha temporária (CPF) - redireciona para trocar senha
+    if (senhaTemporaria === true) {
+      router.push("/primeiro-acesso");
+      return;
+    }
 
     if (tipo === "ADMIN") {
       router.push("/admin/usuarios");
@@ -89,11 +96,8 @@ export default function LoginPage() {
     } else if (tipo === "GESTOR_PJ") {
       router.push("/gestor/dashboard");
     } else if (tipo === "PARCEIRO") {
-      router.push("/parceiro/indicados");
-    } else if (tipo === "ESTABELECIMENTO") {
-      router.push("/estabelecimento/dashboard");
-    } else if (tipo === "CONSULTOR") {
-      router.push("/consultor/estabelecimentos");
+      router.push("/parceiro/indicados");} else if (tipo === "CONSULTOR" || tipo === "CONSULTOR_PF") {
+      router.push("/consultor/comissoes");
     } else if (tipo === "LIDERANCA") {
       router.push("/lideranca");
     } else {

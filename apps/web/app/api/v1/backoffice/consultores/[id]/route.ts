@@ -25,10 +25,7 @@ export async function GET(
           status: true,
         },
       },
-      estabelecimentos: {
-        select: { id: true, nomeFantasia: true },
-      },
-    },
+},
   });
 
   if (!consultor) return notFound("Consultor não encontrado");

@@ -76,7 +76,6 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
         title: "Equipe",
         links: [
           { label: "Consultores", href: "/gestor/consultores", icon: "users" },
-          { label: "Importar cupons", href: "/gestor/importar-cupons", icon: "coupons" },
           { label: "Usuários", href: "/gestor/usuarios", icon: "users" },
         ],
       },
@@ -123,13 +122,12 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
   consultor: {
     id: "consultor",
     label: "Consultor",
-    description: "Estabelecimentos · Acesso Saúde",
-    home: "/consultor/estabelecimentos",
+    description: "Acesso Saúde",
+    home: "/consultor/comissoes",
     groups: [
       {
         title: "Operação",
         links: [
-          { label: "Estabelecimentos", href: "/consultor/estabelecimentos", icon: "establishment" },
           { label: "Comissões", href: "/consultor/comissoes", icon: "commissions" },
           { label: "Produtividade", href: "/consultor/produtividade", icon: "productivity" },
         ],
@@ -182,22 +180,7 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
     ],
   },
 
-  estabelecimento: {
-    id: "estabelecimento",
-    label: "Estabelecimento",
-    description: "Operação · Acesso Saúde",
-    home: "/estabelecimento/dashboard",
-    groups: [
-      {
-        title: "Operação",
-        links: [
-          { label: "Dashboard", href: "/estabelecimento/dashboard", icon: "dashboard" },
-          { label: "Produtividade", href: "/estabelecimento/produtividade", icon: "productivity" },
-          { label: "Comissões", href: "/estabelecimento/comissoes", icon: "commissions" },
-        ],
-      },
-    ],
-  },
+  
 
   admin: {
     id: "admin",

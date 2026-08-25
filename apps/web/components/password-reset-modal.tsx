@@ -18,7 +18,7 @@ interface PasswordResetModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   usuarioId: string;
-  userType: "USUARIO" | "USUARIO_ESTABELECIMENTO";
+  userType: "USUARIO";
   userName: string;
   apiPath?: string;
 }

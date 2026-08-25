@@ -1,0 +1,26 @@
+# PATCH_DELETE_ESTABELECIMENTO_COMPLETO — legado removido
+# Execute somente a partir de C:\apps\mundoas
+# Não executar em C:\apps\hm\omni
+apps/web/app/(dashboard)/gestor/importar-cupons/page.tsx
+apps/web/app/(dashboard)/gestor/producao/page.tsx
+apps/web/app/acesso/[token]/page.tsx
+apps/web/app/cupom/[codigo]/page.tsx
+apps/web/app/api/v1/estabelecimento/produtividade/route.ts
+apps/web/app/api/v1/gestor/dashboard/route.ts
+apps/web/app/api/v1/gestor/estabelecimentos/route.ts
+apps/web/app/api/v1/gestor/importar-cupons/route.ts
+apps/web/app/api/v1/gestor/consultas/[id]/route.ts
+apps/web/app/api/v1/gestor/producao/route.ts
+apps/web/app/api/v1/gestor/relatorios/route.ts
+apps/web/app/api/v1/public/agendar/route.ts
+apps/web/app/api/v1/public/convite/[token]/route.ts
+apps/web/app/api/v1/public/validar-cupom/[codigo]/route.ts
+apps/web/lib/invite-token.ts
+apps/web/app/__tests__/invite-token.test.ts
+apps/web/app/__tests__/app/api/v1/gestor/consultas/id/route.test.ts
+apps/web/app/__tests__/app/api/v1/gestor/estabelecimentos/route.test.ts
+apps/web/app/__tests__/app/api/v1/public/convite/token/route.test.ts
+apps/web/app/__tests__/app/api/v1/public/validar-cupom/codigo/route.test.ts
+apps/web/app/__tests__/admin-delete-info-functional.test.ts
+apps/web/app/__tests__/cobertura-restante.test.ts
+packages/database/prisma/__tests__/seed.test.ts

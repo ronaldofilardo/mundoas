@@ -17,10 +17,7 @@ export async function POST(
 
     const { userType } = await request.json();
 
-    if (
-      !userType ||
-      !["USUARIO", "USUARIO_ESTABELECIMENTO"].includes(userType)
-    ) {
+    if (!userType || userType !== "USUARIO") {
       return NextResponse.json(
         { error: "Tipo de usuário inválido" },
         { status: 400 },
@@ -34,7 +31,7 @@ export async function POST(
     if (userType === "USUARIO") {
       usuario = await prisma.usuario.findUnique({
         where: { id: userId },
-        select: { id: true, email: true, nome: true },
+        select: { id: true, email: true, nome: true, tipo: true },
       });
 
       if (!usuario) {
@@ -51,18 +48,6 @@ export async function POST(
           { status: 403 },
         );
       }
-    } else if (userType === "USUARIO_ESTABELECIMENTO") {
-      usuario = await prisma.usuarioEstabelecimento.findUnique({
-        where: { id: userId },
-        select: { id: true, email: true, nome: true },
-      });
-
-      if (!usuario) {
-        return NextResponse.json(
-          { error: "Usuário estabelecimento não encontrado" },
-          { status: 404 },
-        );
-      }
     }
 
     // Generate reset token
@@ -71,23 +56,13 @@ export async function POST(
     const expiresAt = getTokenExpirationTime();
 
     // Create password reset token in database
-    if (userType === "USUARIO") {
-      await prisma.passwordResetToken.create({
-        data: {
-          usuarioId: userId,
-          token: hashedToken,
-          expiresAt,
-        },
-      });
-    } else {
-      await prisma.passwordResetToken.create({
-        data: {
-          usuarioEstabelecimentoId: userId,
-          token: hashedToken,
-          expiresAt,
-        },
-      });
-    }
+    await prisma.passwordResetToken.create({
+      data: {
+        usuarioId: userId,
+        token: hashedToken,
+        expiresAt,
+      },
+    });
 
     // Generate reset link
     const resetLink = `/reset-senha?token=${token}&type=${userType}`;

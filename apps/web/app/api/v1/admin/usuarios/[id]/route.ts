@@ -13,7 +13,7 @@ export async function DELETE(
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");
     const body = await request.json();
-    const { payAllCommissions, deleteEstabelecimentos } = body;
+    const { payAllCommissions } = body;
 
     if (type === "CONSULTOR") {
       // Find the usuario associated with this consultor
@@ -35,13 +35,6 @@ export async function DELETE(
         // For now, we'll just delete the commissions
       }
 
-      // Delete estabelecimentos if requested
-      if (deleteEstabelecimentos) {
-        await prisma.estabelecimento.deleteMany({
-          where: { consultorId: params.id },
-        });
-      }
-
       // Delete consultor and associated usuario
       await prisma.consultor.delete({
         where: { id: params.id },
@@ -54,54 +47,6 @@ export async function DELETE(
       return NextResponse.json({
         success: true,
         message: "Consultor deletado com sucesso",
-      });
-    } else if (type === "ESTABELECIMENTO") {
-      // Delete usuarioEstabelecimento
-      const usuario = await prisma.usuarioEstabelecimento.findUnique({
-        where: { id: params.id },
-        select: { id: true },
-      });
-
-      if (!usuario) {
-        return NextResponse.json(
-          { error: "Usuário estabelecimento não encontrado" },
-          { status: 404 },
-        );
-      }
-
-      await prisma.usuarioEstabelecimento.delete({
-        where: { id: params.id },
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: "Usuário deletado com sucesso",
-      });
-    } else if (type === "BACKOFFICE") {
-      const backoffice = await prisma.backoffice.findUnique({
-        where: { id: params.id },
-        include: { usuario: true },
-      });
-
-      if (!backoffice) {
-        return NextResponse.json(
-          { error: "Backoffice não encontrado" },
-          { status: 404 },
-        );
-      }
-
-      // Delete backoffice and associated usuario (cascade will handle relations)
-      await prisma.backoffice.delete({
-        where: { id: params.id },
-      });
-
-      await prisma.usuario.delete({
-        where: { id: backoffice.usuarioId },
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: "Backoffice deletado com sucesso",
       });
     }
 

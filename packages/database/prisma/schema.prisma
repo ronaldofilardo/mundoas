@@ -23,7 +23,6 @@ model Usuario {
   backoffice          Backoffice?
   consultor           Consultor?
   consultorPf         ConsultorPf?
-  cupomConfig         CupomConfig[]
   equipe              Equipe?
   gestor              Gestor?
   gestoresConsultores GestorConsultor[] @relation("gestor_atribuicoes")
@@ -40,107 +39,12 @@ model Consultor {
   bancoNome           String?           @map("banco_nome") @db.VarChar(100)
   agencia             String?           @db.VarChar(10)
   conta               String?           @db.VarChar(20)
-  totalConsultas      Int               @default(0) @map("total_consultas")
   criadoEm            DateTime          @default(now()) @map("criado_em")
   cpf                 String?           @unique @db.VarChar(14)
   usuario             Usuario           @relation(fields: [usuarioId], references: [id])
-  estabelecimentos    Estabelecimento[]
   gestoresAtribuicoes GestorConsultor[] @relation("consultores_atribuidos")
 
   @@map("consultores")
-}
-
-model Estabelecimento {
-  id              String                   @id @default(uuid()) @db.Uuid
-  consultorId     String                   @map("consultor_id") @db.Uuid
-  nomeFantasia    String                   @map("nome_fantasia") @db.VarChar(255)
-  razaoSocial     String?                  @map("razao_social") @db.VarChar(255)
-  cnpj            String?                  @db.VarChar(20)
-  endereco        String?
-  cidade          String?                  @db.VarChar(100)
-  estado          String?                  @db.VarChar(2)
-  telefone        String?                  @db.VarChar(20)
-  email           String?                  @db.VarChar(255)
-  responsavelNome String?                  @map("responsavel_nome") @db.VarChar(255)
-  responsavelCpf  String?                  @map("responsavel_cpf") @db.VarChar(14)
-  status          StatusUsuario            @default(ATIVO)
-  criadoEm        DateTime                 @default(now()) @map("criado_em")
-  pixChave        String?                  @map("pix_chave") @db.VarChar(100)
-  bancoNome       String?                  @map("banco_nome") @db.VarChar(100)
-  agencia         String?                  @db.VarChar(10)
-  conta           String?                  @db.VarChar(20)
-  pixTipo         TipoPix?                 @map("pix_tipo")
-  cupomConfig     CupomConfig?
-  documentos      Documento[]
-  consultor       Consultor                @relation(fields: [consultorId], references: [id])
-  usuarios        UsuarioEstabelecimento[]
-
-  @@map("estabelecimentos")
-}
-
-model Documento {
-  id                String          @id @default(uuid()) @db.Uuid
-  estabelecimentoId String          @map("estabelecimento_id") @db.Uuid
-  tipo              TipoDocumento
-  urlArquivo        String          @map("url_arquivo")
-  nomeOriginal      String?         @map("nome_original") @db.VarChar(255)
-  tamanhoBytes      Int?            @map("tamanho_bytes")
-  mimetype          String?         @db.VarChar(100)
-  criadoEm          DateTime        @default(now()) @map("criado_em")
-  estabelecimento   Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
-
-  @@map("documentos")
-}
-
-model CupomConfig {
-  id                String           @id @default(uuid()) @db.Uuid
-  estabelecimentoId String           @unique @map("estabelecimento_id") @db.Uuid
-  codigoCupom       String           @unique @map("codigo_cupom") @db.VarChar(50)
-  descricao         String?          @db.VarChar(255)
-  status            StatusCupom      @default(ATIVO)
-  criadoEm          DateTime         @default(now()) @map("criado_em")
-  criadoPor         String           @map("criado_por") @db.Uuid
-  criadoPorUsuario  Usuario          @relation(fields: [criadoPor], references: [id])
-  estabelecimento   Estabelecimento  @relation(fields: [estabelecimentoId], references: [id])
-  cuponsImportados  CupomImportado[]
-
-  @@map("cupons_config")
-}
-
-model CupomImportado {
-  id                 String               @id @default(uuid()) @db.Uuid
-  cupomConfigId      String               @map("cupom_config_id") @db.Uuid
-  pacienteNome       String               @map("paciente_nome") @db.VarChar(255)
-  pacienteCpf        String?              @map("paciente_cpf") @db.VarChar(14)
-  campanha           String               @default("Acesso Saude Aqui") @db.VarChar(100)
-  servico            String               @default("Cupom") @db.VarChar(50)
-  precoOriginal      Decimal              @map("preco_original") @db.Decimal(10, 2)
-  descontoPercentual Decimal              @default(10.00) @map("desconto_percentual") @db.Decimal(5, 2)
-  precoFinal         Decimal              @map("preco_final") @db.Decimal(10, 2)
-  status             StatusCupomImportado @default(DISPONIVEL)
-  consultaId         String?              @map("consulta_id") @db.Uuid
-  usadoEm            DateTime?            @map("usado_em")
-  mesReferencia      Int                  @map("mes_referencia")
-  anoReferencia      Int                  @map("ano_referencia")
-  criadoEm           DateTime             @default(now()) @map("criado_em")
-  consulta           Consulta?
-  cupomConfig        CupomConfig          @relation(fields: [cupomConfigId], references: [id])
-
-  @@index([status])
-  @@map("cupons_importados")
-}
-
-model Consulta {
-  id               String         @id @default(uuid()) @db.Uuid
-  cupomImportadoId String         @unique @map("cupom_importado_id") @db.Uuid
-  dataAgendamento  DateTime?      @map("data_agendamento")
-  dataRealizacao   DateTime?      @map("data_realizacao")
-  status           StatusConsulta
-  valorPago        Decimal?       @map("valor_pago") @db.Decimal(10, 2)
-  criadoEm         DateTime       @default(now()) @map("criado_em")
-  cupomImportado   CupomImportado @relation(fields: [cupomImportadoId], references: [id])
-
-  @@map("consultas")
 }
 
 model AuditLog {
@@ -154,23 +58,6 @@ model AuditLog {
   usuario    Usuario? @relation(fields: [usuarioId], references: [id])
 
   @@map("audit_logs")
-}
-
-model UsuarioEstabelecimento {
-  id                String                    @id @default(uuid()) @db.Uuid
-  estabelecimentoId String                    @map("estabelecimento_id") @db.Uuid
-  nome              String                    @db.VarChar(255)
-  email             String                    @unique @db.VarChar(255)
-  senhaHash         String                    @map("senha_hash") @db.VarChar(255)
-  tipo              TipoAcessoEstabelecimento @default(PROPRIETARIO)
-  ativo             Boolean                   @default(true)
-  criadoEm          DateTime                  @default(now()) @map("criado_em")
-  atualizadoEm      DateTime                  @default(now()) @updatedAt @map("atualizado_em")
-  senhaTemporaria   Boolean                   @default(true) @map("senha_temporaria")
-  estabelecimento   Estabelecimento           @relation(fields: [estabelecimentoId], references: [id])
-
-  @@index([estabelecimentoId])
-  @@map("usuarios_estabelecimentos")
 }
 
 model GestorConsultor {
@@ -277,7 +164,7 @@ model Equipe {
   backofficeId       String?          @map("backoffice_id") @db.Uuid
   tipo               TipoEquipe
   tipoLideranca      TipoLideranca?   @map("tipo_lideranca")
-  funcao             FuncaoComercial?
+  funcao             String?
   percentualComissao Decimal          @default(0) @map("percentual_comissao") @db.Decimal(5, 2)
   status             StatusUsuario    @default(ATIVO)
   liderancaId        String?          @map("lideranca_id") @db.Uuid
@@ -916,15 +803,6 @@ enum PeriodicidadeCiclo {
   ANUAL
 }
 
-enum FuncaoComercial {
-  GERENTE_CIRE
-  SUPERVISOR_ATIVO
-  SUPERVISOR_RECEPTIVO
-  SUPERVISOR_FRANQUIA
-  SUPERVISOR_ATENDIMENTO
-  GERENTE_ATENDIMENTO
-  SUPERVISOR_COMERCIAL
-}
 
 enum TipoLideranca {
   COMERCIAL
@@ -934,11 +812,6 @@ enum TipoLideranca {
 enum PapelGestor {
   GESTOR_PJ
   BACKOFFICE
-}
-
-enum TipoAcessoEstabelecimento {
-  PROPRIETARIO
-  VISUALIZADOR
 }
 
 enum StatusUsuario {
@@ -951,30 +824,6 @@ enum TipoPix {
   CNPJ
   EMAIL
   TELEFONE
-}
-
-enum TipoDocumento {
-  CNPJ
-  CPF_RESPONSAVEL
-}
-
-enum StatusCupom {
-  ATIVO
-  INATIVO
-}
-
-enum StatusCupomImportado {
-  DISPONIVEL
-  USADO
-  CANCELADO
-  EXPIRADO
-}
-
-enum StatusConsulta {
-  AGENDADA
-  REALIZADA
-  CANCELADA
-  NAO_COMPARECEU
 }
 
 enum StatusParceiro {
@@ -1020,17 +869,15 @@ enum StatusCicloPontos {
 }
 
 model PasswordResetToken {
-  id                          String               @id @default(uuid()) @db.Uuid
-  usuarioId                   String?              @map("usuario_id") @db.Uuid
-  usuarioEstabelecimentoId     String?              @map("usuario_estabelecimento_id") @db.Uuid
-  token                        String               @unique @db.VarChar(255)
-  expiresAt                    DateTime             @map("expires_at")
-  criadoEm                     DateTime             @default(now()) @map("criado_em")
+  id              String   @id @default(uuid()) @db.Uuid
+  usuarioId       String?  @map("usuario_id") @db.Uuid
+  token           String   @unique @db.VarChar(255)
+  expiresAt       DateTime @map("expires_at")
+  criadoEm        DateTime @default(now()) @map("criado_em")
 
   @@map("password_reset_tokens")
   @@index([token])
   @@index([usuarioId])
-  @@index([usuarioEstabelecimentoId])
   @@index([expiresAt])
 }
 

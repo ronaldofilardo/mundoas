@@ -76,7 +76,6 @@ export interface MockSessionUser {
   tipo: string;
   papel: string | null;
   consultorId: string | null;
-  estabelecimentoId: string | null;
   backofficeId: string | null;
   parceiroId: string | null;
   comercialId: string | null;
@@ -89,7 +88,6 @@ function makeUser(backofficeId: string | null = null): MockSessionUser {
     tipo: 'BACKOFFICE',
     papel: 'BACKOFFICE',
     consultorId: null,
-    estabelecimentoId: null,
     backofficeId,
     parceiroId: null,
     comercialId: null,

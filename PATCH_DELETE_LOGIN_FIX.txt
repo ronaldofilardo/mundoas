@@ -1,0 +1,3 @@
+# PATCH_DELETE_LOGIN_FIX — remoção residual do MundoAS
+# Execute o conteúdo a partir de C:\apps\mundoas
+apps/web/app/api/v1/estabelecimento/dashboard/route.ts

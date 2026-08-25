@@ -1,82 +1,45 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
-import { requireGestorWithScope, ok } from "@/lib/api-helpers";
-
-type ComissaoGestorRow = {
-  consultorId: string;
-  consultorNome: string;
-  consultorEmail: string;
-  estabelecimentoId: string;
-  estabelecimentoNome: string;
-  consultasRealizadas: number;
-  comissaoConsultor: number;
-  comissaoEstabelecimento: number;
-  subtotal: number;
-};
+import { requireGestorWithUserScope, ok, badRequest } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
-  const { error, consultorIds } = await requireGestorWithScope();
+  const { error, usuarioIds } = await requireGestorWithUserScope();
   if (error) return error;
 
-  const { searchParams } = req.nextUrl;
-  const mes = parseInt(
-    searchParams.get("mes") || (new Date().getMonth() + 1).toString()
-  );
-  const ano = parseInt(
-    searchParams.get("ano") || new Date().getFullYear().toString()
-  );
-
-  // Buscar todos os estabelecimentos do gestor
-  const estabelecimentos = await prisma.estabelecimento.findMany({
-    where: { consultorId: { in: consultorIds } },
-    select: {
-      id: true,
-      nomeFantasia: true,
-      consultor: {
-        select: {
-          id: true,
-          usuario: { select: { id: true, nome: true, email: true } },
-        },
-      },
-      cupomConfig: { select: { id: true } },
-    },
-  });
-
-  const comissoes: ComissaoGestorRow[] = [];
-  let totalMes = 0;
-
-  for (const estab of estabelecimentos) {
-    if (!estab.cupomConfig?.id) continue;
-
-    // Contar consultas REALIZADA neste mês/ano
-    const cuponsUsados = await prisma.cupomImportado.count({
-      where: {
-        cupomConfigId: estab.cupomConfig.id,
-        mesReferencia: mes,
-        anoReferencia: ano,
-        consulta: { status: "REALIZADA" },
-      },
-    });
-
-    if (cuponsUsados > 0) {
-      const comissaoConsultor = cuponsUsados * 2000; // R$20.00 em centavos
-      const comissaoEstabelecimento = cuponsUsados * 1000; // R$10.00 em centavos
-      const subtotal = comissaoConsultor + comissaoEstabelecimento;
-      totalMes += subtotal;
-
-      comissoes.push({
-        consultorId: estab.consultor.id,
-        consultorNome: estab.consultor.usuario.nome,
-        consultorEmail: estab.consultor.usuario.email,
-        estabelecimentoId: estab.id,
-        estabelecimentoNome: estab.nomeFantasia,
-        consultasRealizadas: cuponsUsados,
-        comissaoConsultor,
-        comissaoEstabelecimento,
-        subtotal,
-      });
-    }
+  const url = new URL(req.url);
+  const mes = Number(url.searchParams.get("mes") ?? new Date().getMonth() + 1);
+  const ano = Number(url.searchParams.get("ano") ?? new Date().getFullYear());
+  if (!Number.isInteger(mes) || mes < 1 || mes > 12 || !Number.isInteger(ano)) {
+    return badRequest("Mês ou ano inválido");
   }
 
-  return ok({ comissoes, totalMes, mes, ano });
+  const mesReferencia = `${ano}-${String(mes).padStart(2, "0")}`;
+  const consultores = await prisma.consultorPf.findMany({
+    where: { usuarioId: { in: usuarioIds } },
+    select: {
+      id: true,
+      nome: true,
+      usuario: { select: { email: true } },
+      comissoes: {
+        where: { mesReferencia },
+        select: { mesReferencia: true, valorProducao: true, valorComissao: true, status: true },
+      },
+    },
+    orderBy: { nome: "asc" },
+  });
+
+  const comissoes = consultores.flatMap((consultor) => consultor.comissoes.map((comissao) => ({
+    consultorId: consultor.id,
+    consultorNome: consultor.nome,
+    consultorEmail: consultor.usuario.email,
+    mesReferencia: comissao.mesReferencia,
+    valorProducao: Number(comissao.valorProducao),
+    valorComissao: Number(comissao.valorComissao),
+    status: comissao.status,
+  })));
+  const totalComissao = comissoes.reduce((sum, row) => sum + row.valorComissao, 0);
+
+  return ok({ comissoes, totalComissao, mes, ano, mesReferencia });
 }
+
+export const dynamic = "force-dynamic";

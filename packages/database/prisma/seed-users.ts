@@ -50,7 +50,7 @@ async function main() {
   });
   console.log("OK Backoffice:", backofficeUsuario.email, "papel=BACKOFFICE");
 
-  // 3. Gestor PJ (Pessoa Juridica) - arquitetura independente: Consultor -> Estabelecimentos
+  // 3. Gestor PJ (Pessoa Juridica)
   const gestorPjUsuario = await prisma.usuario.upsert({
     where: { email: "gestor-pj@asa.com" },
     update: {
@@ -97,7 +97,7 @@ async function main() {
   console.log("   Admin       -> /admin/usuarios");
   console.log("   Backoffice  -> /backoffice/dashboard  (papel=BACKOFFICE)");
   console.log("   Gestor PJ   -> /gestor/dashboard      (papel=GESTOR_PJ)");
-  console.log("   Consultor   -> /consultor/estabelecimentos");
+  console.log("   Consultor PF -> /consultor/comissoes");
 }
 
 main()

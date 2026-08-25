@@ -14,8 +14,7 @@ const PATH_PREFIX_TO_PROFILE: Array<{ prefix: string; id: string }> = [
   { prefix: "/parceiro", id: "parceiro" },
   { prefix: "/comercial", id: "comercial" },
   { prefix: "/consultor", id: "consultor" },
-  { prefix: "/estabelecimento", id: "estabelecimento" },
-];
+  ];
 
 function profileByPath(pathname: string | null | undefined): NavProfile | null {
   if (!pathname) return null;

@@ -118,13 +118,6 @@ export async function requireAuth() {
   return { session, error: null };
 }
 
-export async function requireEstabelecimento() {
-  const session = await getSession();
-  if (!session?.user) return { session: null, error: unauthorized() };
-  if (session.user.tipo !== "ESTABELECIMENTO")
-    return { session: null, error: forbidden() };
-  return { session, error: null };
-}
 
 export async function requireBackoffice() {
   const session = await getSession();

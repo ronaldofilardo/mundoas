@@ -24,7 +24,6 @@ export const { handlers: middlewareHandlers, auth } = NextAuth({
         session.user.id = token.id;
         session.user.tipo = token.tipo;
         session.user.consultorId = token.consultorId;
-        session.user.estabelecimentoId = token.estabelecimentoId;
       }
       return session;
     },
