@@ -28,11 +28,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           const user = await prisma.usuario.findUnique({
             where: { email },
-            include: {
-              consultor: true,
-              backoffice: true,
-              parceiro: true,
-              equipe: true,
+            select: {
+              id: true,
+              nome: true,
+              email: true,
+              senhaHash: true,
+              status: true,
+              tipo: true,
+              papel: true,
+              senhaTemporaria: true,
+              consultor: { select: { id: true } },
+              backoffice: { select: { id: true } },
+              parceiro: { select: { id: true } },
+              equipe: { select: { id: true, tipo: true } },
             },
           });
           let usuarioEncontrado = false;
@@ -64,7 +72,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 papel: user.papel,
                 senhaTemporaria: user.senhaTemporaria,
                 consultorId: user.consultor?.id ?? null,
-                estabelecimentoId: null,
                 backofficeId: user.backoffice?.id ?? null,
                 parceiroId: user.parceiro?.id ?? null,
                 comercialId:
@@ -73,54 +80,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               };
             } else {
               console.log(`[auth] ✗ Senha inválida para ${email}`);
-            }
-          }
-
-          const usuarioEstab = await prisma.usuarioEstabelecimento.findUnique({
-            where: { email },
-            include: {
-              estabelecimento: { select: { id: true, nomeFantasia: true } },
-            },
-          });
-
-          if (usuarioEstab) {
-            usuarioEncontrado = true;
-            console.log(
-              `[auth] Found usuarioEstab: ${email}, ativo: ${usuarioEstab.ativo}`,
-            );
-
-            if (usuarioEstab.ativo === false) {
-              console.log(`[auth] UsuarioEstab inactive`);
-              return null;
-            }
-
-            const senhaValida = await compare(
-              credentials.senha as string,
-              usuarioEstab.senhaHash,
-            );
-
-            if (senhaValida) {
-              console.log(
-                `[auth] ✓ Senha válida para estabelecimento ${email}`,
-              );
-              return {
-                id: usuarioEstab.id,
-                name: usuarioEstab.nome,
-                email: usuarioEstab.email,
-                tipo: "ESTABELECIMENTO" as TipoAcesso,
-                papel: null,
-                senhaTemporaria: usuarioEstab.senhaTemporaria,
-                consultorId: null,
-                estabelecimentoId: usuarioEstab.estabelecimentoId,
-                backofficeId: null,
-                parceiroId: null,
-                comercialId: null,
-                equipeId: null,
-              };
-            } else {
-              console.log(
-                `[auth] ✗ Senha inválida para estabelecimento ${email}`,
-              );
             }
           }
 
@@ -145,10 +104,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.papel = user.papel;
         token.senhaTemporaria = user.senhaTemporaria;
         token.consultorId = user.consultorId;
-        token.estabelecimentoId = user.estabelecimentoId;
         token.backofficeId = user.backofficeId;
         token.parceiroId = user.parceiroId;
         token.comercialId = user.comercialId;
+        token.equipeId = user.equipeId;
       }
       return token;
     },
@@ -159,10 +118,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.papel = token.papel;
         session.user.senhaTemporaria = token.senhaTemporaria;
         session.user.consultorId = token.consultorId;
-        session.user.estabelecimentoId = token.estabelecimentoId;
         session.user.backofficeId = token.backofficeId;
         session.user.parceiroId = token.parceiroId;
         session.user.comercialId = token.comercialId;
+        session.user.equipeId = token.equipeId;
       }
       return session;
     },
