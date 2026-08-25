@@ -11,8 +11,7 @@ export type TipoAcesso =
   | "CONSULTOR"
   | "PARCEIRO"
   | "COMERCIAL"
-  | "LIDERANCA"
-  | "ESTABELECIMENTO";
+  | "LIDERANCA";
 
 declare module "next-auth" {
   interface User {
@@ -20,7 +19,6 @@ declare module "next-auth" {
     papel: PapelGestor | null;
     senhaTemporaria: boolean;
     consultorId: string | null;
-    estabelecimentoId: string | null;
     backofficeId: string | null;
     parceiroId: string | null;
     comercialId: string | null;
@@ -36,11 +34,11 @@ declare module "next-auth" {
       papel: PapelGestor | null;
       senhaTemporaria: boolean;
       consultorId: string | null;
-      estabelecimentoId: string | null;
       backofficeId: string | null;
       parceiroId: string | null;
       comercialId: string | null;
       equipeId: string | null;
+
     };
   }
 }
@@ -52,7 +50,6 @@ declare module "next-auth/jwt" {
     papel: PapelGestor | null;
     senhaTemporaria: boolean;
     consultorId: string | null;
-    estabelecimentoId: string | null;
     backofficeId: string | null;
     parceiroId: string | null;
     comercialId: string | null;
@@ -61,4 +58,3 @@ declare module "next-auth/jwt" {
 }
 
 export {};
-
