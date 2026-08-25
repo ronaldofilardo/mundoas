@@ -61,7 +61,7 @@ function TableRow({ className, ...props }: TableRowProps) {
   );
 }
 
-type TableHeadProps = React.HTMLAttributes<HTMLTableCellElement>;
+type TableHeadProps = React.ThHTMLAttributes<HTMLTableCellElement>;
 
 function TableHead({ className, ...props }: TableHeadProps) {
   return (
@@ -75,7 +75,7 @@ function TableHead({ className, ...props }: TableHeadProps) {
   );
 }
 
-type TableCellProps = React.HTMLAttributes<HTMLTableCellElement>;
+type TableCellProps = React.TdHTMLAttributes<HTMLTableCellElement>;
 
 function TableCell({ className, ...props }: TableCellProps) {
   return (
