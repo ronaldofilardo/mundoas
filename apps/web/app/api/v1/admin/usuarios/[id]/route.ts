@@ -77,6 +77,32 @@ export async function DELETE(
         success: true,
         message: "Usuário deletado com sucesso",
       });
+    } else if (type === "BACKOFFICE") {
+      const backoffice = await prisma.backoffice.findUnique({
+        where: { id: params.id },
+        include: { usuario: true },
+      });
+
+      if (!backoffice) {
+        return NextResponse.json(
+          { error: "Backoffice não encontrado" },
+          { status: 404 },
+        );
+      }
+
+      // Delete backoffice and associated usuario (cascade will handle relations)
+      await prisma.backoffice.delete({
+        where: { id: params.id },
+      });
+
+      await prisma.usuario.delete({
+        where: { id: backoffice.usuarioId },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Backoffice deletado com sucesso",
+      });
     }
 
     return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });

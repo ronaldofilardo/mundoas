@@ -14,6 +14,7 @@ vi.mock("@asa/database", () => ({
     consultor: { findMany: vi.fn() },
     usuarioEstabelecimento: { findMany: vi.fn() },
     usuario: { findMany: vi.fn() },
+    backoffice: { findMany: vi.fn() },
   },
 }));
 
@@ -52,7 +53,7 @@ describe("API admin/usuarios — contrato funcional", () => {
     expect(prismaMock.usuario.findMany).not.toHaveBeenCalled();
   });
 
-  it("combina usuários, remove o gestor atual e ordena por nome", async () => {
+  it("combina usuários (gestores, consultores, backoffices), remove o gestor atual e ordena por nome", async () => {
     authenticateAdmin();
     prismaMock.consultor.findMany.mockResolvedValue([
       {
@@ -64,47 +65,80 @@ describe("API admin/usuarios — contrato funcional", () => {
           email: "zeta@teste.com",
           nome: "Zeta Consultor",
           status: "ATIVO",
+          telefone: "11999999999",
+          tipo: "CONSULTOR",
+          papel: "CONSULTOR",
+          criadoEm: new Date("2024-01-15"),
         },
       },
     ] as Awaited<ReturnType<typeof prisma.consultor.findMany>>);
-    prismaMock.usuarioEstabelecimento.findMany.mockResolvedValue([
-      {
-        id: "estab-usuario-1",
-        nome: "Alpha Estabelecimento",
-        email: "alpha@teste.com",
-        tipo: "PROPRIETARIO",
-        ativo: true,
-        estabelecimento: { nomeFantasia: "Alpha" },
-      },
-    ] as Awaited<ReturnType<typeof prisma.usuarioEstabelecimento.findMany>>);
     prismaMock.usuario.findMany.mockResolvedValue([
       {
         id: "gestor-2",
         nome: "Beta Gestor",
         email: "beta@teste.com",
         status: "ATIVO",
+        telefone: "11888888888",
+        tipo: "GESTOR",
+        papel: "GESTOR_PJ",
+        criadoEm: new Date("2024-01-10"),
       },
     ] as Awaited<ReturnType<typeof prisma.usuario.findMany>>);
+    prismaMock.backoffice.findMany.mockResolvedValue([
+      {
+        id: "backoffice-1",
+        usuarioId: "usuario-backoffice-1",
+        cpf: "98765432100",
+        percentualComissaoDefault: 5.00,
+        percentualComissaoMax: 100.00,
+        usuario: {
+          id: "usuario-backoffice-1",
+          email: "alpha@teste.com",
+          nome: "Alpha Backoffice",
+          status: "ATIVO",
+          telefone: "11777777777",
+          tipo: "BACKOFFICE",
+          papel: "BACKOFFICE",
+          criadoEm: new Date("2024-01-05"),
+        },
+      },
+    ] as Awaited<ReturnType<typeof prisma.backoffice.findMany>>);
 
     const response = await GET();
     const body = (await response.json()) as {
       success: boolean;
       total: number;
-      usuarios: Array<{ nome: string; hierarquia: string }>;
+      usuarios: Array<{ 
+        nome: string; 
+        hierarquia: string; 
+        telefone: string | null;
+        papel: string | null;
+        percentualComissaoDefault?: number;
+        percentualComissaoMax?: number;
+      }>;
     };
 
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
     expect(body.total).toBe(3);
+    // Ordered by nome: Alpha Backoffice, Beta Gestor, Zeta Consultor
     expect(body.usuarios.map((usuario) => usuario.nome)).toEqual([
-      "Alpha Estabelecimento",
+      "Alpha Backoffice",
       "Beta Gestor",
       "Zeta Consultor",
     ]);
+    // Backoffice has extra fields
+    const bo = body.usuarios.find(u => u.nome === "Alpha Backoffice");
+    expect(bo?.tipo).toBe("BACKOFFICE");
+    expect(bo?.percentualComissaoDefault).toBe(5);
+    expect(bo?.percentualComissaoMax).toBe(100);
+    expect(bo?.telefone).toBe("11777777777");
+    expect(bo?.papel).toBe("BACKOFFICE");
     expect(prismaMock.usuario.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { tipo: "GESTOR", id: { not: "admin-1" } },
       }),
     );
+    expect(prismaMock.backoffice.findMany).toHaveBeenCalled();
   });
 });

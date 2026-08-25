@@ -11,6 +11,7 @@ vi.mock("@asa/database", () => ({
     consultor: { findUnique: vi.fn() },
     estabelecimento: { findMany: vi.fn() },
     usuarioEstabelecimento: { findMany: vi.fn() },
+    backoffice: { findUnique: vi.fn() },
   },
 }));
 
@@ -92,6 +93,88 @@ describe("API admin/usuarios/:id/delete-info — contrato funcional", () => {
       usuariosEstabelecimentoCount: 1,
       comissoesCount: 0,
       estabelecimentosCount: 0,
+    });
+  });
+
+  it("retorna contagens de dados vinculados do backoffice", async () => {
+    authenticate();
+    prismaMock.backoffice.findUnique.mockResolvedValue({
+      _count: {
+        assinatura: 2,
+        ciclosPontos: 1,
+        configuracoesPontos: 1,
+        equipe: 5,
+        parceiros: 10,
+        premios: 3,
+        regrasComerciais: 1,
+        regrasFaltas: 1,
+        regrasGestores: 1,
+        setores: 4,
+      },
+    } as Awaited<ReturnType<typeof prisma.backoffice.findUnique>>);
+
+    const response = await GET(
+      new NextRequest("http://localhost/api/v1/admin/usuarios/backoffice-1?type=BACKOFFICE"),
+      { params: { id: "backoffice-1" } },
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      comissoesCount: 0,
+      info: {
+        assinaturasCount: 2,
+        ciclosPontosCount: 1,
+        configuracoesPontosCount: 1,
+        equipeCount: 5,
+        parceirosCount: 10,
+        premiosCount: 3,
+        regrasComerciaisCount: 1,
+        regrasFaltasCount: 1,
+        regrasGestoresCount: 1,
+        setoresCount: 4,
+        totalVinculos: 29,
+      },
+    });
+  });
+
+  it("retorna zeros para backoffice sem dados vinculados", async () => {
+    authenticate();
+    prismaMock.backoffice.findUnique.mockResolvedValue({
+      _count: {
+        assinatura: 0,
+        ciclosPontos: 0,
+        configuracoesPontos: 0,
+        equipe: 0,
+        parceiros: 0,
+        premios: 0,
+        regrasComerciais: 0,
+        regrasFaltas: 0,
+        regrasGestores: 0,
+        setores: 0,
+      },
+    } as Awaited<ReturnType<typeof prisma.backoffice.findUnique>>);
+
+    const response = await GET(
+      new NextRequest("http://localhost/api/v1/admin/usuarios/backoffice-empty?type=BACKOFFICE"),
+      { params: { id: "backoffice-empty" } },
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      comissoesCount: 0,
+      info: {
+        assinaturasCount: 0,
+        ciclosPontosCount: 0,
+        configuracoesPontosCount: 0,
+        equipeCount: 0,
+        parceirosCount: 0,
+        premiosCount: 0,
+        regrasComerciaisCount: 0,
+        regrasFaltasCount: 0,
+        regrasGestoresCount: 0,
+        setoresCount: 0,
+        totalVinculos: 0,
+      },
     });
   });
 });

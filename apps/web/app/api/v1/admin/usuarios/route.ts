@@ -19,24 +19,16 @@ export async function GET() {
             email: true,
             nome: true,
             status: true,
+            telefone: true,
+            tipo: true,
+            papel: true,
+            criadoEm: true,
           },
         },
       },
     });
 
-    // Fetch all usuarioEstabelecimentos with their estabelecimentos
-    const usuariosEstabelecimento =
-      await prisma.usuarioEstabelecimento.findMany({
-        include: {
-          estabelecimento: {
-            select: {
-              nomeFantasia: true,
-            },
-          },
-        },
-      });
-
-    // Format gestores (exclude self)
+    // Fetch gestores with full data
     const gestores = await prisma.usuario.findMany({
       where: { 
         tipo: "GESTOR",
@@ -47,18 +39,44 @@ export async function GET() {
         email: true,
         nome: true,
         status: true,
+        telefone: true,
+        tipo: true,
+        papel: true,
+        criadoEm: true,
       },
     });
 
+    // Fetch backoffices with full data
+    const backoffices = await prisma.backoffice.findMany({
+      include: {
+        usuario: {
+          select: {
+            id: true,
+            email: true,
+            nome: true,
+            status: true,
+            telefone: true,
+            tipo: true,
+            papel: true,
+            criadoEm: true,
+          },
+        },
+      },
+    });
+
+    // Format gestores (exclude self)
     const gestoresFormatted = gestores.map((gestor) => ({
       id: gestor.id,
       usuarioId: gestor.id,
       nome: gestor.nome,
       email: gestor.email,
+      telefone: gestor.telefone,
       cpf: null,
       tipo: "GESTOR" as const,
       status: gestor.status,
+      papel: gestor.papel,
       hierarquia: "GESTOR" as const,
+      criadoEm: gestor.criadoEm?.toISOString(),
     }));
 
     // Format consultores
@@ -67,33 +85,38 @@ export async function GET() {
       usuarioId: consultor.usuarioId,
       nome: consultor.usuario.nome,
       email: consultor.usuario.email,
+      telefone: consultor.usuario.telefone,
       cpf: consultor.cpf,
       tipo: "CONSULTOR" as const,
       status: consultor.usuario.status,
+      papel: consultor.usuario.papel,
       hierarquia: "CONSULTOR" as const,
+      criadoEm: consultor.usuario.criadoEm?.toISOString(),
     }));
 
-    // Format usuarioEstabelecimento
-    const usuariosEstabelecimentoFormatted = usuariosEstabelecimento.map(
-      (usuario) => ({
-        id: usuario.id,
-        usuarioEstabelecimentoId: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email,
-        cpf: null,
-        tipo: "ESTABELECIMENTO" as const,
-        tipoAcesso: usuario.tipo,
-        status: usuario.ativo ? ("ATIVO" as const) : ("INATIVO" as const),
-        hierarquia: "ESTABELECIMENTO" as const,
-        estabelecimento: usuario.estabelecimento.nomeFantasia,
-      }),
-    );
+    // Format backoffices
+    const backofficesFormatted = backoffices.map((bo) => ({
+      id: bo.id,
+      usuarioId: bo.usuarioId,
+      nome: bo.usuario.nome,
+      email: bo.usuario.email,
+      telefone: bo.usuario.telefone,
+      cpf: bo.cpf,
+      tipo: "BACKOFFICE" as const,
+      status: bo.usuario.status,
+      papel: bo.usuario.papel,
+      hierarquia: "BACKOFFICE" as const,
+      criadoEm: bo.usuario.criadoEm?.toISOString(),
+      // Backoffice-specific fields
+      percentualComissaoDefault: Number(bo.percentualComissaoDefault),
+      percentualComissaoMax: Number(bo.percentualComissaoMax),
+    }));
 
     // Combine and sort by nome
     const usuarios = [
       ...gestoresFormatted,
       ...consultoresFormatted,
-      ...usuariosEstabelecimentoFormatted,
+      ...backofficesFormatted,
     ].sort((a, b) => a.nome.localeCompare(b.nome));
 
     return NextResponse.json({

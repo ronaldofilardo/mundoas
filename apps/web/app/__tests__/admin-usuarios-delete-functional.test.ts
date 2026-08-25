@@ -13,6 +13,7 @@ vi.mock("@asa/database", () => ({
     estabelecimento: { deleteMany: vi.fn() },
     usuario: { delete: vi.fn() },
     usuarioEstabelecimento: { findUnique: vi.fn(), delete: vi.fn() },
+    backoffice: { findUnique: vi.fn(), delete: vi.fn() },
   },
 }));
 
@@ -114,6 +115,34 @@ describe("API admin/usuarios/:id DELETE — contrato funcional", () => {
     expect(response.status).toBe(200);
     expect(prismaMock.usuarioEstabelecimento.delete).toHaveBeenCalledWith({
       where: { id: "estab-usuario-1" },
+    });
+  });
+
+  it("retorna 404 para backoffice inexistente", async () => {
+    authenticate();
+    prismaMock.backoffice.findUnique.mockResolvedValue(null);
+
+    const response = await DELETE(request("BACKOFFICE"), { params: { id: "bo-1" } });
+
+    expect(response.status).toBe(404);
+  });
+
+  it("remove backoffice e usuário associado", async () => {
+    authenticate();
+    prismaMock.backoffice.findUnique.mockResolvedValue({
+      id: "backoffice-1",
+      usuarioId: "usuario-bo-1",
+      usuario: { id: "usuario-bo-1" },
+    } as Awaited<ReturnType<typeof prisma.backoffice.findUnique>>);
+
+    const response = await DELETE(request("BACKOFFICE"), { params: { id: "backoffice-1" } });
+
+    expect(response.status).toBe(200);
+    expect(prismaMock.backoffice.delete).toHaveBeenCalledWith({
+      where: { id: "backoffice-1" },
+    });
+    expect(prismaMock.usuario.delete).toHaveBeenCalledWith({
+      where: { id: "usuario-bo-1" },
     });
   });
 });
