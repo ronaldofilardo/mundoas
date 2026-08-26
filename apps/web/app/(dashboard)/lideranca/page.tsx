@@ -160,7 +160,7 @@ export default function LiderancaDashboardPage() {
           <div className="space-y-2">
             {resumo && resumo.totalConsultoresPf > 0 ? (
               <Link
-                href="/lideranca/consultores-pf/novo"
+                href="/lideranca/equipe/consultores-pf/novo"
                 className="block p-3 border rounded-lg hover:bg-gray-50"
               >
                 <p className="font-medium text-sm">Novo Consultor PF</p>
@@ -170,7 +170,7 @@ export default function LiderancaDashboardPage() {
               </Link>
             ) : (
               <Link
-                href="/lideranca/consultores-pf/novo"
+                href="/lideranca/equipe/consultores-pf/novo"
                 className="block p-3 border rounded-lg hover:bg-gray-50"
               >
                 <p className="font-medium text-sm">

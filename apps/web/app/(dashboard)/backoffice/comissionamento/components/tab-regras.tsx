@@ -61,9 +61,19 @@ export function TabRegras() {
   const [regrasFaltas, setRegrasFaltas] = useState<RegrasFaltas | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: string; itemId?: string; itemName?: string; title: string } | null>(null);
-  const [showNewRule, setShowNewRule] = useState<"comerciais" | "gestores" | "faltas" | null>(null);
-  const [newRuleName, setNewRuleName] = useState("");
-  const [newRulePercentual, setNewRulePercentual] = useState("");
+  const [newRule, setNewRule] = useState<Record<string, { nome: string; percentual: string }>>({});
+  const [showOnlyCustom, setShowOnlyCustom] = useState(true);
+
+  function updateNewRule(type: string, patch: Partial<{ nome: string; percentual: string }>) {
+    setNewRule((prev) => {
+      const current = prev[type] ?? { nome: "", percentual: "" };
+      return { ...prev, [type]: { ...current, ...patch } };
+    });
+  }
+
+  function clearNewRule(type: string) {
+    setNewRule((prev) => ({ ...prev, [type]: { nome: "", percentual: "" } }));
+  }
 
   async function fetchRegras() {
     setLoading(true);
@@ -73,15 +83,9 @@ export function TabRegras() {
         fetch("/api/v1/backoffice/regras-gestores"),
         fetch("/api/v1/backoffice/regras-faltas"),
       ]);
-      const regrasComData: RegrasComerciais = regrasComRes.ok
-        ? await regrasComRes.json()
-        : { cartaoAcessoSaude: 0, cireAtivo: 0, cireReceptivo: 0, franchisingAcesso: 0, franchisingCartao: 0, unidade: 0 };
-      const regrasGesData: RegrasGestores = regrasGesRes.ok
-        ? await regrasGesRes.json()
-        : { gerenteCire: 0, supervisorAtivo: 0, supervisorReceptivo: 0, supervisorFranquia: 0, supervisorAtendimento: 0, gerenteAtendimento: 0, supervisorComercial: 0 };
-      const regrasFaltasData: RegrasFaltas = regrasFaltasRes.ok
-        ? await regrasFaltasRes.json()
-        : { consultorUnidadeComFalta: 0, consultorUnidadeSemFalta: 0, supervisorAtendimentoComFalta: 0, supervisorAtendimentoSemFalta: 0, gerenteComercialComFalta: 0, gerenteComercialSemFalta: 0 };
+      const regrasComData: RegrasComerciais | null = regrasComRes.ok ? await regrasComRes.json() : null;
+      const regrasGesData: RegrasGestores | null = regrasGesRes.ok ? await regrasGesRes.json() : null;
+      const regrasFaltasData: RegrasFaltas | null = regrasFaltasRes.ok ? await regrasFaltasRes.json() : null;
       setRegrasComerciais(regrasComData);
       setRegrasGestores(regrasGesData);
       setRegrasFaltas(regrasFaltasData);
@@ -89,10 +93,10 @@ export function TabRegras() {
         toast.error("Erro ao carregar regras");
       }
     } catch {
-      setRegrasComerciais({ cartaoAcessoSaude: 0, cireAtivo: 0, cireReceptivo: 0, franchisingAcesso: 0, franchisingCartao: 0, unidade: 0 });
-      setRegrasGestores({ gerenteCire: 0, supervisorAtivo: 0, supervisorReceptivo: 0, supervisorFranquia: 0, supervisorAtendimento: 0, gerenteAtendimento: 0, supervisorComercial: 0 });
-      setRegrasFaltas({ consultorUnidadeComFalta: 0, consultorUnidadeSemFalta: 0, supervisorAtendimentoComFalta: 0, supervisorAtendimentoSemFalta: 0, gerenteComercialComFalta: 0, gerenteComercialSemFalta: 0 });
-      toast.error("Erro ao carregar regras");
+      setRegrasComerciais(null);
+      setRegrasGestores(null);
+      setRegrasFaltas(null);
+      toast.error("Não foi possível carregar as regras do Backoffice atual");
     } finally {
       setLoading(false);
     }
@@ -165,8 +169,9 @@ export function TabRegras() {
   }
 
   async function handleNovaRegra(type: "comerciais" | "gestores" | "faltas") {
-    if (!newRuleName.trim()) { toast.error("Nome é obrigatório"); return; }
-    const percentual = parseFloat(newRulePercentual) || 0;
+    const draft = newRule[type] || { nome: "", percentual: "" };
+    if (!draft.nome.trim()) { toast.error("Nome é obrigatório"); return; }
+    const percentual = parseFloat(draft.percentual) || 0;
 
     const endpoint = type === "comerciais" ? "/api/v1/backoffice/regras-comerciais"
       : type === "gestores" ? "/api/v1/backoffice/regras-gestores"
@@ -176,15 +181,13 @@ export function TabRegras() {
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: newRuleName.trim(), percentual }),
+        body: JSON.stringify({ nome: draft.nome.trim(), percentual }),
       });
       let errData: { error?: string } = {};
       try { errData = await res.json(); } catch {}
       if (!res.ok) { toast.error(errData.error || `Erro ${res.status}: ${res.statusText}`); return; }
       toast.success("Nova regra adicionada com sucesso");
-      setShowNewRule(null);
-      setNewRuleName("");
-      setNewRulePercentual("");
+      clearNewRule(type);
       fetchRegras();
     } catch (err) { toast.error(err instanceof Error ? err.message : "Erro ao adicionar regra"); }
   }
@@ -196,80 +199,37 @@ export function TabRegras() {
 
   useEffect(() => { fetchRegras(); }, []);
 
-  const renderSistemaFields = (
-    labels: Record<string, string>,
-    keys: Array<RegrasComerciaisKeys | RegrasGestoresKeys | RegrasFaltasKeys>,
+  const renderCustomRules = (
     regras: RegraState | null,
     setRegras: RegraSetter,
     type: "comerciais" | "gestores" | "faltas"
   ) => (
-    <div className="space-y-3 border-t border-gray-200 pt-3">
-      {keys.map((key) => (
+    <div className="space-y-3">
+      {(regras?.itens || []).map((item) => (
         <RegraCard
-          key={key}
-          label={labels[key]}
-          value={valorRegra(regras, key)}
+          key={item.id}
+          label={item.nome}
+          value={item.percentual}
           onChange={(val) => {
             const num = parseFloat(val) || 0;
-            setRegras((prev) => (prev ? { ...prev, [key]: num } : prev));
+            setRegras((prev) => {
+              if (!prev) return prev;
+              const updatedItens = prev.itens?.map((i: RegraItem) =>
+                i.id === item.id ? { ...i, percentual: num } : i
+              );
+              return { ...prev, itens: updatedItens };
+            });
           }}
-          onDelete={() => openDeleteItemConfirm(type, `sistema-${key}`, labels[key])}
+          onDelete={() => openDeleteItemConfirm(type, item.id, item.nome)}
         />
       ))}
+      {(regras?.itens || []).length === 0 && (
+        <p className="text-sm text-gray-500 text-center py-4">
+          Nenhuma regra personalizada criada. Use o formulário abaixo para adicionar.
+        </p>
+      )}
     </div>
   );
-
-  const renderCustomItems = (
-    itens: RegraItem[] | undefined,
-    type: "comerciais" | "gestores" | "faltas",
-    setRegras: RegraSetter,
-  ) => {
-    const items = itens || [];
-    if (items.length === 0) return null;
-
-    return (
-      <div className="space-y-3 border-t border-gray-200 pt-3">
-        <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Regras Personalizadas</p>
-        {items.map((item) => (
-          <div key={item.id} className="rounded border border-gray-200 bg-gray-50 p-3 flex items-center gap-3">
-            <input
-              type="text"
-              value={item.nome}
-              readOnly
-              className="w-40 px-3 py-2 border rounded text-sm bg-white text-gray-700"
-            />
-            <p className="text-xs text-gray-500 w-24">Taxa:</p>
-            <input
-              type="number"
-              step="0.0001"
-              value={item.percentual}
-              onChange={(e) => {
-                const num = parseFloat(e.target.value) || 0;
-                setRegras((prev) => {
-                  if (!prev) return prev;
-                  const updatedItens = prev.itens?.map((i: RegraItem) =>
-                    i.id === item.id ? { ...i, percentual: num } : i
-                  );
-                  return { ...prev, itens: updatedItens };
-                });
-              }}
-              className="flex-1 px-3 py-2 border rounded text-sm"
-            />
-            <button
-              type="button"
-              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-              onClick={() => openDeleteItemConfirm(type, item.id, item.nome)}
-              title="Excluir regra"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          </div>
-        ))}
-      </div>
-    );
-  };
 
   const renderSection = (
     title: string,
@@ -287,60 +247,78 @@ export function TabRegras() {
           <span className="text-xl">{icon}</span>
           <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="px-3 py-1.5 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
-            onClick={() => { setShowNewRule(type); setNewRuleName(""); setNewRulePercentual(""); }}
-          >
-            + Nova Regra
-          </button>
-        </div>
+        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showOnlyCustom}
+            onChange={(e) => setShowOnlyCustom(e.target.checked)}
+            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+          />
+          Mostrar apenas regras personalizadas
+        </label>
       </div>
       {loading ? (
         <p className="text-sm text-gray-500">Carregando...</p>
       ) : (
         <div className="space-y-3">
-          {renderSistemaFields(sistemaLabels, sistemaKeys, regras, setRegras, type)}
-          {renderCustomItems(regras?.itens, type, setRegras)}
-          {showNewRule === type && (
-            <div className="rounded border border-primary-200 bg-primary-50 p-3 space-y-3">
-              <p className="text-sm font-medium text-primary-800">Nova Regra Personalizada</p>
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  placeholder="Nome da regra (ex: Venda Direta)"
-                  value={newRuleName}
-                  onChange={(e) => setNewRuleName(e.target.value)}
-                  className="px-3 py-2 border rounded text-sm"
-                />
-                <input
-                  type="number"
-                  step="0.0001"
-                  placeholder="Percentual (%)"
-                  value={newRulePercentual}
-                  onChange={(e) => setNewRulePercentual(e.target.value)}
-                  className="px-3 py-2 border rounded text-sm"
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
-                  onClick={() => { setShowNewRule(null); setNewRuleName(""); setNewRulePercentual(""); }}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"
-                  onClick={() => handleNovaRegra(type)}
-                >
-                  Adicionar
-                </button>
-              </div>
+          {!showOnlyCustom && (
+            <div className="space-y-3 border-t border-gray-200 pt-3">
+              {sistemaKeys
+                .filter((key) => Boolean(regras && Object.prototype.hasOwnProperty.call(regras, key)))
+                .map((key) => (
+                  <RegraCard
+                    key={key}
+                    label={sistemaLabels[key]}
+                    value={valorRegra(regras, key)}
+                    onChange={(val) => {
+                      const num = parseFloat(val) || 0;
+                      setRegras((prev) => (prev ? { ...prev, [key]: num } : prev));
+                    }}
+                    onDelete={() => openDeleteItemConfirm(type, `sistema-${key}`, sistemaLabels[key])}
+                  />
+                ))}
+              {(!regras || sistemaKeys.every((key) => !Object.prototype.hasOwnProperty.call(regras, key))) && (
+                <p className="text-sm text-gray-500 text-center py-4">Nenhuma regra de sistema cadastrada para este Backoffice.</p>
+              )}
             </div>
           )}
+          {renderCustomRules(regras, setRegras, type)}
+          <div className="rounded border border-primary-200 bg-primary-50 p-3 space-y-3">
+            <p className="text-sm font-medium text-primary-800">Nova Regra Personalizada</p>
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="Nome da regra (ex: Venda Direta)"
+                 value={newRule[type]?.nome ?? ""}
+                 onChange={(e) => updateNewRule(type, { nome: e.target.value })}
+                className="px-3 py-2 border rounded text-sm"
+              />
+              <input
+                type="number"
+                step="0.0001"
+                placeholder="Percentual (%)"
+                 value={newRule[type]?.percentual ?? ""}
+                 onChange={(e) => updateNewRule(type, { percentual: e.target.value })}
+                className="px-3 py-2 border rounded text-sm"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                 onClick={() => clearNewRule(type)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"
+                onClick={() => handleNovaRegra(type)}
+              >
+                Adicionar
+              </button>
+            </div>
+          </div>
           {regras?.id && (
             <button
               type="button"

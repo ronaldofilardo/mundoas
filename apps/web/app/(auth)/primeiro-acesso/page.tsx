@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { signOut } from "next-auth/react";
 
 export default function PrimeiroAcessoPage() {
   const [senhaAtual, setSenhaAtual] = useState("");
@@ -14,6 +15,7 @@ export default function PrimeiroAcessoPage() {
   const [showNovaSenha, setShowNovaSenha] = useState(false);
   const [showConfirmarSenha, setShowConfirmarSenha] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState<string | null>(null);
   const router = useRouter();
 
   const validateForm = (): boolean => {
@@ -67,35 +69,38 @@ export default function PrimeiroAcessoPage() {
     }
 
     setLoading(true);
+    setErrorModal(null);
 
     try {
       const res = await fetch("/api/v1/auth/primeiro-acesso", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ senhaAtual, novaSenha }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        if (data.field) {
-          setErrors({ [data.field]: data.error });
-        } else {
-          toast.error(data.error || "Erro ao alterar senha");
+        const mensagem = typeof data.error === "string" ? data.error : `Não foi possível alterar a senha (código ${res.status}).`;
+        if (mensagem.toLowerCase().includes("senha atual") || data.field === "senhaAtual") {
+          setErrors((prev) => ({ ...prev, senhaAtual: mensagem }));
         }
+        setErrorModal(mensagem);
         return;
       }
 
       setShowSuccessModal(true);
     } catch {
-      toast.error("Erro de conexão. Tente novamente.");
+      setErrorModal("Não foi possível conectar ao servidor. Tente novamente.");
     } finally {
       setLoading(false);
     }
   }
 
-  function handleSuccessConfirm() {
-    router.push("/login");
+  async function handleSuccessConfirm() {
+    await signOut({ redirect: false });
+    router.replace("/login");
     router.refresh();
   }
 
@@ -147,14 +152,14 @@ export default function PrimeiroAcessoPage() {
 
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Primeiro Acesso</h1>
           <p className="text-gray-500 mb-8">
-            Sua senha atual é o <strong>CPF completo (somente números)</strong>.
-            Crie uma nova senha segura.
+            No primeiro acesso, sua senha temporária é formada pelos <strong>5 primeiros dígitos do CPF, somente números</strong>.
+            Depois da troca, use a nova senha criada para entrar.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="primeiro-acesso-senha-atual" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Senha Atual (CPF completo) <span className="text-red-500">*</span>
+                Senha temporária (5 primeiros dígitos do CPF) <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
@@ -171,7 +176,7 @@ export default function PrimeiroAcessoPage() {
                       ? "border-red-400 focus:ring-red-200"
                       : "border-gray-300 focus:ring-primary-200"
                   } disabled:bg-gray-50 disabled:text-gray-500`}
-                  placeholder="00000000000"
+                  placeholder="00000"
                   autoComplete="current-password"
                 />
                 <button
@@ -192,8 +197,9 @@ export default function PrimeiroAcessoPage() {
                 </button>
               </div>
               {errors.senhaAtual && (
-                <p className="text-red-600 text-xs mt-1.5">{errors.senhaAtual}</p>
+                <p className="text-red-600 text-xs mt-1.5" role="alert">{errors.senhaAtual}</p>
               )}
+              <p className="mt-1.5 text-xs text-gray-500">Digite apenas os 5 primeiros números do seu CPF. Exemplo: CPF 123.456.789-00 → senha temporária <strong>12345</strong>.</p>
             </div>
 
             <div>
@@ -328,6 +334,28 @@ export default function PrimeiroAcessoPage() {
         </div>
       </div>
     </div>
+
+    {errorModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="alertdialog" aria-modal="true" aria-labelledby="error-modal-title">
+        <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-xl">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+            <svg className="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h2 id="error-modal-title" className="mb-2 text-xl font-bold text-gray-900">Não foi possível alterar a senha</h2>
+          <p className="mb-6 text-gray-600" role="alert">{errorModal}</p>
+          <button
+            type="button"
+            autoFocus
+            onClick={() => setErrorModal(null)}
+            className="w-full rounded-xl bg-primary-600 py-3 text-sm font-bold text-white shadow-sm transition-smooth hover:bg-primary-700 focus-ring"
+          >
+            Entendi
+          </button>
+        </div>
+      </div>
+    )}
 
     {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="success-modal-title">

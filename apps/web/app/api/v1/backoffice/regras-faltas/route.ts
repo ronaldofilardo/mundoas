@@ -84,22 +84,23 @@ export async function GET() {
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  const regra = await getOrCreateRegra(backofficeId);
+  const regra = await prisma.regraFalta.findUnique({
+    where: { backofficeId },
+    include: { itens: { orderBy: { ordem: "asc" } } },
+  });
+  if (!regra) return ok({ itens: [] });
 
-  const sistemaFields: Record<string, number> = {};
-  const itensCustom: Array<{ id: string; nome: string; percentual: number; ordem: number }> = [];
-
-  for (const item of regra.itens) {
-    const valor = item.tipo === "SISTEMA"
-      ? valorSistema(regra, item.nome)
-      : Number(item.percentual);
-
-    if (item.tipo === "SISTEMA") {
-      sistemaFields[item.nome] = valor;
-    } else {
-      itensCustom.push({ id: item.id, nome: item.nome, percentual: valor, ordem: item.ordem });
-    }
-  }
+  const sistemaFields: Record<string, number> = Object.fromEntries(
+    SISTEMA_FIELDS.map((field) => [field, valorSistema(regra, field)]),
+  );
+  const itensCustom = regra.itens
+    .filter((item) => item.tipo !== "SISTEMA")
+    .map((item) => ({
+      id: item.id,
+      nome: item.nome,
+      percentual: Number(item.percentual),
+      ordem: item.ordem,
+    }));
 
   return ok({
     id: regra.id,
@@ -153,6 +154,19 @@ export async function PUT(req: NextRequest) {
         ordem: index,
       })),
     });
+
+    // Persist custom item percentuais if provided
+    const itensBody = Array.isArray(body.itens) ? body.itens : [];
+    const itensCustom = itensBody.filter(
+      (i): i is { id: string; percentual: number } =>
+        isJsonObject(i) && typeof i.id === "string" && i.percentual !== undefined,
+    );
+    for (const item of itensCustom) {
+      await tx.regraFaltaItem.updateMany({
+        where: { id: item.id, regraFaltaId: regra.id, tipo: "CUSTOM" },
+        data: { percentual: Number(item.percentual) || 0 },
+      });
+    }
   });
 
   const updatedRegra = await prisma.regraFalta.findUnique({

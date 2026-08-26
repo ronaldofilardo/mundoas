@@ -85,7 +85,12 @@ async function getRegrasComerciais(req: NextRequest = new NextRequest("http://lo
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  const regra = await getOrCreateRegra(backofficeId);
+  const regra = await prisma.regraComercial.findUnique({
+    where: { backofficeId },
+    include: { itens: { orderBy: { ordem: "asc" } } },
+  });
+  if (!regra) return ok({ itens: [] });
+
   const competencia = new URL(req.url || "/", "http://localhost")
     .searchParams.get("competencia");
   if (competencia && !validarMesReferencia(competencia)) {
@@ -96,20 +101,17 @@ async function getRegrasComerciais(req: NextRequest = new NextRequest("http://lo
     : null;
   const regraVigente = versao ?? regra;
 
-  const sistemaFields: Record<string, number> = {};
-  const itensCustom: Array<{ id: string; nome: string; percentual: number; ordem: number }> = [];
-
-  for (const item of regra.itens) {
-    const valor = item.tipo === "SISTEMA"
-      ? getSistemaFieldValue(regraVigente, item.nome)
-      : Number(item.percentual);
-
-    if (item.tipo === "SISTEMA") {
-      sistemaFields[item.nome] = valor;
-    } else {
-      itensCustom.push({ id: item.id, nome: item.nome, percentual: valor, ordem: item.ordem });
-    }
-  }
+  const sistemaFields: Record<string, number> = Object.fromEntries(
+    SISTEMA_FIELDS.map((field) => [field, getSistemaFieldValue(regraVigente, field)]),
+  );
+  const itensCustom = regra.itens
+    .filter((item) => item.tipo !== "SISTEMA")
+    .map((item) => ({
+      id: item.id,
+      nome: item.nome,
+      percentual: Number(item.percentual),
+      ordem: item.ordem,
+    }));
 
   return ok({
     id: regra.id,
@@ -184,6 +186,19 @@ export async function PUT(req: NextRequest) {
         ordem: index,
       })),
     });
+
+    // Persist custom item percentuais if provided
+    const itensBody = Array.isArray(body.itens) ? body.itens : [];
+    const itensCustom = itensBody.filter(
+      (i): i is { id: string; percentual: number } =>
+        isJsonObject(i) && typeof i.id === "string" && i.percentual !== undefined,
+    );
+    for (const item of itensCustom) {
+      await tx.regraComercialItem.updateMany({
+        where: { id: item.id, regraComercialId: regra.id, tipo: "CUSTOM" },
+        data: { percentual: Number(item.percentual) || 0 },
+      });
+    }
   });
 
   // Refetch with updated items
@@ -250,6 +265,13 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  // Incorpora a regra personalizada como setor selecionável (consultores PF etc.)
+  await prisma.setor.upsert({
+    where: { backofficeId_nome: { backofficeId, nome } },
+    create: { backofficeId, nome, ativo: true },
+    update: { ativo: true },
+  });
+
   await criarAuditLog({
     usuarioId: session!.user.id,
     acao: "CRIAR_REGRA_COMERCIAL_ITEM",
@@ -284,6 +306,10 @@ export async function DELETE(req: NextRequest) {
 
     await prisma.$transaction(async (tx) => {
       await tx.regraComercialItem.delete({ where: { id: itemId } });
+      await tx.setor.updateMany({
+        where: { backofficeId, nome: item.nome },
+        data: { ativo: false },
+      });
       await criarAuditLog({
         usuarioId: session!.user.id,
         acao: "EXCLUIR_REGRA_COMERCIAL_ITEM",

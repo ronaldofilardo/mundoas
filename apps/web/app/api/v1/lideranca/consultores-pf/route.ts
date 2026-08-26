@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
     where: {
       nome: { in: setoresUnicos },
       ativo: true,
+      backofficeId: lideranca.backofficeId,
     },
     select: { id: true, nome: true },
   });

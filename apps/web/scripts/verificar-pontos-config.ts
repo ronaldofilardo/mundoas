@@ -16,7 +16,6 @@ async function main() {
       console.log(`  - ${ciclo.nome}`);
       console.log(`    Status: ${ciclo.status}`);
       console.log(`    Período: ${ciclo.inicioAcumuloEm.toLocaleDateString("pt-BR")} a ${ciclo.fimAcumuloEm.toLocaleDateString("pt-BR")}`);
-      console.log(`    Periodicidade: ${ciclo.periodicidade}`);
       console.log("");
     }
   }
@@ -44,7 +43,8 @@ async function main() {
   const movimentacoes = await prisma.movimentacaoPontos.findMany({
     include: {
       parceiro: { select: { nome: true } },
-      cicloPontos: { select: { nome: true } },
+      consultorPf: { select: { nome: true } },
+      cicloPontos: { select: { nome: true, publico: true } },
     },
     orderBy: { criadoEm: "desc" },
     take: 10,
@@ -54,8 +54,9 @@ async function main() {
     console.log("  ⚠️  Nenhuma movimentação encontrada!");
   } else {
     for (const mov of movimentacoes) {
-      console.log(`  - ${mov.parceiro.nome}: ${mov.quantidade} pontos (${mov.tipo})`);
-      console.log(`    Ciclo: ${mov.cicloPontos.nome}`);
+      const titular = mov.parceiro ? mov.parceiro.nome : mov.consultorPf ? mov.consultorPf.nome : "Titular não identificado";
+      console.log(`  - ${titular}: ${mov.quantidade} pontos (${mov.tipo})`);
+      console.log(`    Ciclo: ${mov.cicloPontos.nome} [${mov.cicloPontos.publico}]`);
       console.log(`    Origem: ${mov.origem}`);
       console.log(`    Descrição: ${mov.descricao || "N/A"}`);
       console.log("");

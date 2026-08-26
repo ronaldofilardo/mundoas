@@ -13,6 +13,10 @@ const consultorUpload = readFileSync(
   ),
   "utf8",
 );
+const consultorPfCreateRoute = readFileSync(
+  join(__dirname, "../api/v1/lideranca/consultores-pf/route.ts"),
+  "utf8",
+);
 
 describe("contratos críticos da auditoria", () => {
   it("usa o schema financeiro compartilhado no processador PF", () => {
@@ -25,6 +29,10 @@ describe("contratos críticos da auditoria", () => {
     expect(consultorUpload).not.toContain("SETORES_PADRAO");
     expect(consultorUpload).toContain("/api/v1/setores?origem=regras-consultores");
     expect(consultorUpload).toContain("setSetoresValidos([])");
+  });
+
+  it("restringe a criação de setores ao Backoffice da liderança autenticada", () => {
+    expect(consultorPfCreateRoute).toContain("backofficeId: lideranca.backofficeId");
   });
 
   it("usa placeholders neutros no modelo de planilha", () => {

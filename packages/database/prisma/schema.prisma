@@ -221,7 +221,9 @@ model ConsultorPf {
   usuario       Usuario               @relation(fields: [usuarioId], references: [id])
   metas         MetaConsultorPf[]
   procedimentos ProcedimentoPF[]
-
+  movimentacoesPontos MovimentacaoPontos[]
+  solicitacoesResgate SolicitacaoResgate[]
+  rankingPosicoesPf RankingPosicaoConsultorPf[]
   @@index([liderancaId])
   @@map("consultores_pf")
 }
@@ -575,6 +577,7 @@ model ProcedimentoPF {
   uploadId         String                   @map("upload_id") @db.Uuid
   valorComissao    Decimal                  @default(0) @map("valor_comissao") @db.Decimal(10, 2)
   valorTotal       Decimal?                 @default(0) @map("valor_total") @db.Decimal(10, 2)
+  modalidadeContemplacao ModalidadeContemplacao @default(COMISSAO) @map("modalidade_contemplacao")
   createdAt        DateTime                 @default(now()) @map("created_at")
   updatedAt        DateTime                 @updatedAt @map("updated_at")
   comercialId      String?                  @map("comercial_id") @db.Uuid
@@ -646,11 +649,13 @@ model CicloPontos {
   criadoEm              DateTime             @default(now()) @map("criado_em")
   atualizadoEm          DateTime             @updatedAt @map("atualizado_em")
   periodicidade         PeriodicidadeCiclo   @default(ANUAL) @map("periodicidade")
+  publico               PublicoCicloPontos   @default(PARCEIRO) @map("publico")
   backofficeId          String               @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @map("backoffice_id") @db.Uuid
   inicioResgateEm       DateTime?            @map("inicio_resgate_em")
   backoffice            Backoffice           @relation(fields: [backofficeId], references: [id])
   movimentacoes         MovimentacaoPontos[]
   rankingSnapshots      RankingSnapshot[]
+  rankingSnapshotsPf    RankingSnapshotConsultorPf[]
   solicitacoesResgate   SolicitacaoResgate[]
 
   @@index([backofficeId, status])
@@ -661,7 +666,8 @@ model CicloPontos {
 
 model MovimentacaoPontos {
   id                             String                   @id @default(uuid()) @db.Uuid
-  parceiroId                     String                   @map("parceiro_id") @db.Uuid
+  parceiroId                     String?                  @map("parceiro_id") @db.Uuid
+  consultorPfId                  String?                  @map("consultor_pf_id") @db.Uuid
   cicloPontosId                  String                   @map("ciclo_pontos_id") @db.Uuid
   tipo                           TipoMovimentacaoPontos
   origem                         OrigemMovimentacaoPontos
@@ -674,9 +680,11 @@ model MovimentacaoPontos {
   criadoEm                       DateTime                 @default(now()) @map("criado_em")
   descricao                      String?
   cicloPontos                    CicloPontos              @relation(fields: [cicloPontosId], references: [id])
-  parceiro                       Parceiro                 @relation(fields: [parceiroId], references: [id])
+  parceiro                       Parceiro?                @relation(fields: [parceiroId], references: [id])
+  consultorPf                    ConsultorPf?             @relation(fields: [consultorPfId], references: [id])
 
   @@index([parceiroId])
+  @@index([consultorPfId])
   @@index([cicloPontosId])
   @@index([origem])
   @@index([referenciaProcedimentoId])
@@ -698,6 +706,30 @@ model RankingSnapshot {
   @@map("ranking_snapshots")
 }
 
+model RankingSnapshotConsultorPf {
+  id            String                       @id @default(uuid()) @db.Uuid
+  cicloPontosId String                       @map("ciclo_pontos_id") @db.Uuid
+  referenciaMes String                       @map("referencia_mes") @db.VarChar(7)
+  geradoEm      DateTime                     @default(now()) @map("gerado_em")
+  posicoes      RankingPosicaoConsultorPf[]
+  cicloPontos   CicloPontos                  @relation(fields: [cicloPontosId], references: [id])
+  @@unique([cicloPontosId, referenciaMes])
+  @@index([cicloPontosId])
+  @@map("ranking_snapshots_consultores_pf")
+}
+model RankingPosicaoConsultorPf {
+  id                String                       @id @default(uuid()) @db.Uuid
+  rankingSnapshotId String                       @map("ranking_snapshot_id") @db.Uuid
+  consultorPfId     String                       @map("consultor_pf_id") @db.Uuid
+  posicao           Int
+  pontosAcumulados  Int                          @map("pontos_acumulados")
+  consultorPf       ConsultorPf                  @relation(fields: [consultorPfId], references: [id], onDelete: Cascade)
+  rankingSnapshot   RankingSnapshotConsultorPf   @relation(fields: [rankingSnapshotId], references: [id], onDelete: Cascade)
+  @@unique([rankingSnapshotId, consultorPfId])
+  @@index([rankingSnapshotId])
+  @@index([consultorPfId])
+  @@map("ranking_posicoes_consultores_pf")
+}
 model RankingPosicao {
   id                String          @id @default(uuid()) @db.Uuid
   rankingSnapshotId String          @map("ranking_snapshot_id") @db.Uuid
@@ -735,7 +767,8 @@ model Premio {
 
 model SolicitacaoResgate {
   id              String                   @id @default(uuid()) @db.Uuid
-  parceiroId      String                   @map("parceiro_id") @db.Uuid
+  parceiroId      String?                  @map("parceiro_id") @db.Uuid
+  consultorPfId   String?                  @map("consultor_pf_id") @db.Uuid
   premioId        String                   @map("premio_id") @db.Uuid
   cicloPontosId   String                   @map("ciclo_pontos_id") @db.Uuid
   pontosDebitados Int                      @map("pontos_debitados")
@@ -747,10 +780,12 @@ model SolicitacaoResgate {
   canceladoEm     DateTime?                @map("cancelado_em")
   observacao      String?
   cicloPontos     CicloPontos              @relation(fields: [cicloPontosId], references: [id])
-  parceiro        Parceiro                 @relation(fields: [parceiroId], references: [id])
+  parceiro        Parceiro?                @relation(fields: [parceiroId], references: [id])
+  consultorPf     ConsultorPf?             @relation(fields: [consultorPfId], references: [id])
   premio          Premio                   @relation(fields: [premioId], references: [id])
 
   @@index([parceiroId])
+  @@index([consultorPfId])
   @@index([premioId])
   @@index([cicloPontosId])
   @@index([status])
@@ -848,6 +883,14 @@ enum StatusComissao {
   PAGA
 }
 
+enum PublicoCicloPontos {
+  PARCEIRO
+  CONSULTOR_PF
+}
+enum ModalidadeContemplacao {
+  COMISSAO
+  BONUS_PONTOS
+}
 enum TipoMovimentacaoPontos {
   CREDITO
   DEBITO
@@ -860,6 +903,7 @@ enum OrigemMovimentacaoPontos {
   ESTORNO_RESGATE
   EXPIRACAO
   AJUSTE_MANUAL
+  RESET_ADMINISTRATIVO
 }
 
 enum StatusCicloPontos {

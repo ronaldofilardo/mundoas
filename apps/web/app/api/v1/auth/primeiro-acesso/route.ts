@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@asa/database";
 import { compare, hash } from "bcryptjs";
 import { validatePasswordStrength } from "@/lib/password-reset";
-import { badRequest, ok, unauthorized } from "@/lib/api-helpers";
+import { badRequest, getSession, ok, unauthorized } from "@/lib/api-helpers";
 import { criarAuditLog } from "@/lib/audit";
 
 export async function POST(req: NextRequest) {
@@ -16,6 +16,8 @@ export async function POST(req: NextRequest) {
 
     const { senhaAtual, novaSenha } = body;
 
+    console.log("[primeiro-acesso] Body recebido:", { senhaAtual: senhaAtual ? "***" : undefined, novaSenha: novaSenha ? "***" : undefined });
+
     if (
       typeof senhaAtual !== "string" ||
       typeof novaSenha !== "string" ||
@@ -25,17 +27,8 @@ export async function POST(req: NextRequest) {
       return badRequest("Senha atual e nova senha são obrigatórias");
     }
 
-    const sessionRes = await fetch(`${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/auth/session`, {
-      headers: {
-        cookie: req.headers.get("cookie") || "",
-      },
-    });
-
-    if (!sessionRes.ok) {
-      return unauthorized();
-    }
-
-    const session = await sessionRes.json();
+    const session = await getSession();
+    console.log("[primeiro-acesso] Sessão encontrada:", Boolean(session?.user));
     const userId = session?.user?.id;
 
     if (!userId) {
@@ -47,6 +40,8 @@ export async function POST(req: NextRequest) {
       select: { id: true, senhaHash: true, senhaTemporaria: true, email: true, nome: true, tipo: true },
     });
 
+    console.log("[primeiro-acesso] Usuario encontrado:", { id: usuario?.id, senhaTemporaria: usuario?.senhaTemporaria, tipo: usuario?.tipo });
+
     if (!usuario) {
       return unauthorized();
     }
@@ -56,11 +51,14 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordValidation = validatePasswordStrength(novaSenha);
+    console.log("[primeiro-acesso] Password validation:", passwordValidation);
     if (!passwordValidation.valid) {
       return badRequest(passwordValidation.errors.join(", "));
     }
 
+    console.log("[primeiro-acesso] Comparando senhas - senhaAtual length:", senhaAtual.length, "senhaHash:", usuario.senhaHash?.substring(0, 20));
     const senhaValida = await compare(senhaAtual, usuario.senhaHash);
+    console.log("[primeiro-acesso] Senha válida:", senhaValida);
     if (!senhaValida) {
       return badRequest("Senha atual incorreta");
     }

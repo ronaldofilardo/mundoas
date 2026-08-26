@@ -95,13 +95,14 @@ describe('API - Backoffice Regras Comerciais', () => {
       expect(Number(data.cireAtivo)).toBe(0);
     });
 
-    it('deve criar regras automaticamente se não existirem', async () => {
+    it('não cria regras automaticamente quando o Backoffice ainda não possui cadastro', async () => {
       mockAuthAsBackoffice(backofficeId);
       await prisma.regraComercial.deleteMany({ where: { backofficeId } });
       const response = await regrasHandlers.GET();
       expect(response.status).toBe(200);
       const data = await response.json();
-      expect(data).toBeDefined();
+      expect(data).toEqual({ itens: [] });
+      expect(await prisma.regraComercial.findUnique({ where: { backofficeId } })).toBeNull();
     });
   });
 

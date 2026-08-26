@@ -100,7 +100,7 @@ export default function EquipePage() {
         <h3 className="text-sm font-bold text-gray-900 mb-4">Ações</h3>
         <div className="space-y-2">
           <Link
-            href="/lideranca/consultores-pf/novo"
+            href="/lideranca/equipe/consultores-pf/novo"
             className="block p-3 border rounded-lg hover:bg-gray-50"
           >
             <p className="font-medium text-sm">Novo Consultor PF</p>

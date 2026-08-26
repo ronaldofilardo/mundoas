@@ -84,7 +84,12 @@ async function getRegrasGestores(req: NextRequest = new NextRequest("http://loca
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  const regra = await getOrCreateRegra(backofficeId!);
+  const regra = await prisma.regraGestor.findUnique({
+    where: { backofficeId: backofficeId! },
+    include: { itens: { orderBy: { ordem: "asc" } } },
+  });
+  if (!regra) return ok({ itens: [] });
+
   const competencia = new URL(req.url || "/", "http://localhost")
     .searchParams.get("competencia");
   if (competencia && !validarMesReferencia(competencia)) {
@@ -93,20 +98,17 @@ async function getRegrasGestores(req: NextRequest = new NextRequest("http://loca
   const versao = competencia ? await buscarVersaoGestor(regra.id, competencia) : null;
   const regraVigente = versao ?? regra;
 
-  const sistemaFields: Record<string, number> = {};
-  const itensCustom: Array<{ id: string; nome: string; percentual: number; ordem: number }> = [];
-
-  for (const item of regra.itens) {
-    const valor = item.tipo === "SISTEMA"
-      ? getSistemaFieldValue(regraVigente, item.nome)
-      : Number(item.percentual);
-
-    if (item.tipo === "SISTEMA") {
-      sistemaFields[item.nome] = valor;
-    } else {
-      itensCustom.push({ id: item.id, nome: item.nome, percentual: valor, ordem: item.ordem });
-    }
-  }
+  const sistemaFields: Record<string, number> = Object.fromEntries(
+    SISTEMA_FIELDS.map((field) => [field, getSistemaFieldValue(regraVigente, field)]),
+  );
+  const itensCustom = regra.itens
+    .filter((item) => item.tipo !== "SISTEMA")
+    .map((item) => ({
+      id: item.id,
+      nome: item.nome,
+      percentual: Number(item.percentual),
+      ordem: item.ordem,
+    }));
 
   return ok({
     id: regra.id,
@@ -178,6 +180,19 @@ export async function PUT(req: NextRequest) {
         ordem: index,
       })),
     });
+
+    // Persist custom item percentuais if provided
+    const itensBody = Array.isArray(body.itens) ? body.itens : [];
+    const itensCustom = itensBody.filter(
+      (i): i is { id: string; percentual: number } =>
+        isJsonObject(i) && typeof i.id === "string" && i.percentual !== undefined,
+    );
+    for (const item of itensCustom) {
+      await tx.regraGestorItem.updateMany({
+        where: { id: item.id, regraGestorId: regra.id, tipo: "CUSTOM" },
+        data: { percentual: Number(item.percentual) || 0 },
+      });
+    }
   });
 
   const updatedRegra = await prisma.regraGestor.findUnique({

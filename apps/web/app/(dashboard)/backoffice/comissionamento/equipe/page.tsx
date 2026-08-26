@@ -8,12 +8,14 @@ import { TabComissoes } from "./components/tab-comissoes";
 import { TabConsultores } from "./components/tab-consultores";
 import { TabRegras } from "../components/tab-regras";
 import { useEquipe } from "./hooks/use-equipe";
+import { BonusConsultorPf } from "../../metas-vendas/components/bonus-consultor-pf";
 
-type TabType = "equipe" | "metas" | "comissoes" | "consultores" | "regras";
+type TabType = "equipe" | "metas" | "bonus" | "comissoes" | "consultores" | "regras";
 
 const TABS: { id: TabType; label: string; icon: string }[] = [
   { id: "equipe", label: "Equipe", icon: "👥" },
   { id: "metas", label: "Metas", icon: "🎯" },
+  { id: "bonus", label: "Bônus", icon: "⭐" },
   { id: "comissoes", label: "Comissões", icon: "💰" },
   { id: "consultores", label: "Consultores", icon: "👤" },
   { id: "regras", label: "Regras", icon: "📋" },
@@ -106,6 +108,7 @@ function ComissionamentoEquipeContent() {
                 <TabEquipe itens={itens} refetch={refetch} />
               )}
               {activeTab === "metas" && <TabMetas itens={itens} mesReferencia={mesReferencia} onMesChange={handleMesChange} />}
+              {activeTab === "bonus" && <BonusConsultorPf />}
               {activeTab === "comissoes" && <TabComissoes itens={itens} mesReferencia={mesReferencia} onMesChange={handleMesChange} />}
               {activeTab === "consultores" && <TabConsultores itens={itens} />}
               {activeTab === "regras" && <TabRegras />}

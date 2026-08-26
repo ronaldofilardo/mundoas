@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { toast } from "sonner";
 import Link from "next/link";
 import {
@@ -13,6 +14,7 @@ import {
   validarValorMeta,
 } from "./utils";
 import { UploadPlanilhaConsultoresPf } from "./_components/upload-planilha-consultores-pf";
+import { NovoConsultorPfModal } from "./_components/novo-consultor-pf-modal";
 
 interface ConsultorPf {
   id: string;
@@ -49,6 +51,7 @@ export default function ConsultoresPfPage() {
   const [setoresOpcoes, setSetoresOpcoes] = useState<string[]>([]);
   const [salvandoEdicao, setSalvandoEdicao] = useState(false);
   const [alternandoId, setAlternandoId] = useState<string | null>(null);
+  const [novoConsultorAberto, setNovoConsultorAberto] = useState(false);
 
   useEffect(() => {
     fetchConsultores();
@@ -229,12 +232,14 @@ export default function ConsultoresPfPage() {
         </div>
         <div className="flex gap-2">
           <UploadPlanilhaConsultoresPf />
-          <Link
-            href="/lideranca/consultores-pf/novo"
+          <button
+            type="button"
+            aria-label="Abrir cadastro de novo Consultor PF"
             className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
+            onClick={() => setNovoConsultorAberto(true)}
           >
             Novo Consultor PF
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -362,6 +367,13 @@ export default function ConsultoresPfPage() {
           <p className="text-xs text-gray-400 p-2">Carregando metas...</p>
         )}
       </div>
+
+      <NovoConsultorPfModal
+        open={novoConsultorAberto}
+        setoresOpcoes={setoresOpcoes}
+        onClose={() => setNovoConsultorAberto(false)}
+        onCreated={fetchConsultores}
+      />
 
       {editando && (
         <div

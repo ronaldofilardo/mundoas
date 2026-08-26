@@ -3,6 +3,7 @@ import { POST } from "@/app/api/v1/auth/primeiro-acesso/route";
 import { prisma } from "@asa/database";
 import { compare, hash } from "bcryptjs";
 import { criarAuditLog } from "@/lib/audit";
+import { getSession } from "@/lib/api-helpers";
 
 type RequestBody = { senhaAtual?: unknown; novaSenha?: unknown };
 
@@ -26,6 +27,7 @@ vi.mock("@/lib/api-helpers", () => ({
   badRequest: (message: string) => Response.json({ error: message }, { status: 400 }),
   ok: (data: unknown) => Response.json(data, { status: 200 }),
   unauthorized: () => Response.json({ error: "Não autorizado" }, { status: 401 }),
+  getSession: vi.fn(),
 }));
 
 vi.mock("next/server", () => ({
@@ -41,6 +43,7 @@ const compareMock = vi.mocked(compare);
 const hashMock = vi.mocked(hash);
 const auditMock = vi.mocked(criarAuditLog);
 const fetchMock = vi.fn();
+const getSessionMock = vi.mocked(getSession);
 
 function request(body: RequestBody, cookie = "next-auth.session-token=session") {
   return {
@@ -57,9 +60,7 @@ describe("POST /api/v1/auth/primeiro-acesso", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubGlobal("fetch", fetchMock);
-    fetchMock.mockResolvedValue(
-      Response.json({ user: { id: "usuario-1" } }, { status: 200 }),
-    );
+    getSessionMock.mockResolvedValue({ user: { id: "usuario-1" } } as never);
     prismaMock.usuario.findUnique.mockResolvedValue({
       id: "usuario-1",
       senhaHash: "hash-atual",
@@ -85,11 +86,11 @@ describe("POST /api/v1/auth/primeiro-acesso", () => {
     expect(await bodyOf(response)).toEqual({
       error: "Senha atual e nova senha são obrigatórias",
     });
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(getSessionMock).not.toHaveBeenCalled();
   });
 
   it("retorna 401 quando a sessão não está disponível", async () => {
-    fetchMock.mockResolvedValue(Response.json({}, { status: 401 }));
+    getSessionMock.mockResolvedValue(null);
 
     const response = await POST(
       request({ senhaAtual: "Antiga1!", novaSenha: "NovaSenha1!" }),

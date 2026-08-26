@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
 
     const where: Prisma.SolicitacaoResgateWhereInput = {
       cicloPontosId: { in: cicloIds },
+      parceiroId: { not: null },
     };
 
     if (validation.data.status) {
@@ -98,7 +99,9 @@ export async function GET(req: NextRequest) {
     });
 
     return ok({
-      resgates: resgates.map((r) => ({
+      resgates: resgates
+        .filter((r): r is typeof r & { parceiro: NonNullable<typeof r.parceiro> } => r.parceiro !== null)
+        .map((r) => ({
         id: r.id,
         parceiro: {
           id: r.parceiro.id,
