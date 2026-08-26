@@ -1,88 +1,81 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { randomBytes } from "crypto";
+import { hash } from "bcryptjs";
 import { requireAdmin } from "@/lib/api-helpers";
 import { prisma } from "@asa/database";
-import {
-  generateResetToken,
-  hashToken,
-  getTokenExpirationTime,
-} from "@/lib/password-reset";
+import { criarAuditLog } from "@/lib/audit";
+
+function gerarSenhaTemporaria(): string {
+  return `Temp-${randomBytes(9).toString("base64url").slice(0, 12)}`;
+}
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } },
 ) {
   try {
-    // Validate admin access
     await requireAdmin();
 
-    const { userType } = await request.json();
-
-    if (!userType || userType !== "USUARIO") {
+    const body = (await request.json()) as { userType?: unknown };
+    if (body.userType !== "USUARIO") {
       return NextResponse.json(
         { error: "Tipo de usuário inválido" },
         { status: 400 },
       );
     }
 
-    const userId = params.id;
-    let usuario: any;
-
-    // Validate user exists and belongs to correct type
-    if (userType === "USUARIO") {
-      usuario = await prisma.usuario.findUnique({
-        where: { id: userId },
-        select: { id: true, email: true, nome: true, tipo: true },
-      });
-
-      if (!usuario) {
-        return NextResponse.json(
-          { error: "Usuário não encontrado" },
-          { status: 404 },
-        );
-      }
-
-      // Only admins can reset other users' passwords
-      if (usuario.tipo !== "CONSULTOR") {
-        return NextResponse.json(
-          { error: "Permissão negada" },
-          { status: 403 },
-        );
-      }
-    }
-
-    // Generate reset token
-    const token = generateResetToken();
-    const hashedToken = hashToken(token);
-    const expiresAt = getTokenExpirationTime();
-
-    // Create password reset token in database
-    await prisma.passwordResetToken.create({
-      data: {
-        usuarioId: userId,
-        token: hashedToken,
-        expiresAt,
-      },
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: params.id },
+      select: { id: true, email: true, nome: true, tipo: true },
     });
 
-    // Generate reset link
-    const resetLink = `/reset-senha?token=${token}&type=${userType}`;
+    if (!usuario) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado" },
+        { status: 404 },
+      );
+    }
+
+    if (usuario.tipo !== "CONSULTOR") {
+      return NextResponse.json(
+        { error: "Permissão negada" },
+        { status: 403 },
+      );
+    }
+
+    const senhaTemporaria = gerarSenhaTemporaria();
+    const senhaHash = await hash(senhaTemporaria, 12);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.usuario.update({
+        where: { id: usuario.id },
+        data: {
+          senhaHash,
+          senhaTemporaria: true,
+          atualizadoEm: new Date(),
+        },
+      });
+
+      await criarAuditLog({
+        usuarioId: usuario.id,
+        acao: "RESETAR_SENHA_ADMIN",
+        entidade: "usuario",
+        entidadeId: usuario.id,
+        detalhes: { email: usuario.email, senhaTemporaria: true },
+      });
+    });
 
     return NextResponse.json({
       success: true,
-      resetLink,
+      temporaryPassword: senhaTemporaria,
       email: usuario.email,
       nome: usuario.nome,
-      expiresIn: "24 horas",
+      message: "Senha temporária gerada. O usuário deverá trocá-la no Primeiro Acesso.",
     });
   } catch (error) {
-    console.error("Error generating reset token:", error);
+    console.error("[admin-reset-password] Erro ao redefinir senha:", error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Erro ao gerar link de reset",
-      },
+      { error: error instanceof Error ? error.message : "Erro ao redefinir senha" },
       { status: 500 },
     );
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface Indicado {
@@ -301,7 +301,7 @@ export function ParceirosPontos() {
             </thead>
             <tbody>
               {parceiros.map((p) => (
-                <>
+                <Fragment key={p.id}>
                   <tr key={p.id} className="border-b hover:bg-gray-50">
                     <td className="p-3">
                       <button
@@ -369,9 +369,6 @@ export function ParceirosPontos() {
                                   CPF
                                 </th>
                                 <th className="text-left p-2 font-medium text-gray-600">
-                                  Telefone
-                                </th>
-                                <th className="text-left p-2 font-medium text-gray-600">
                                   Status
                                 </th>
                                 <th className="text-left p-2 font-medium text-gray-600">
@@ -390,9 +387,6 @@ export function ParceirosPontos() {
                                   </td>
                                   <td className="p-2 text-gray-600">
                                     {formatCpf(i.cpf)}
-                                  </td>
-                                  <td className="p-2 text-gray-600">
-                                    {i.telefone || "-"}
                                   </td>
                                   <td className="p-2">
                                     <span
@@ -428,7 +422,7 @@ export function ParceirosPontos() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>

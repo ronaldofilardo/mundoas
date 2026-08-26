@@ -1,0 +1,12 @@
+PATCH — falhas comprovadas, higienização de legado e correção React
+Aplicar somente em C:\apps\mundoas; não aplicar no Omni.
+Validação isolada: backoffice-pontos-parceiros-indicados.test.tsx — 1 arquivo, 2 testes aprovados; warning de key eliminado.
+MANIFESTO_PATCH.txt
+PATCH_DELETE_AUDITORIA_FINAL.txt
+apps/web/app/(dashboard)/backoffice/comissionamento/equipe/components/tab-comissoes.tsx
+apps/web/app/(dashboard)/backoffice/pontos/components/parceiros-pontos.tsx
+apps/web/app/api/v1/admin/usuarios/[id]/route.ts
+apps/web/app/api/v1/backoffice/lembrete-financeiro/route.ts
+apps/web/scripts/pretest-db.cjs
+apps/web/vitest.config.ts
+apps/web/vitest.setup.ts

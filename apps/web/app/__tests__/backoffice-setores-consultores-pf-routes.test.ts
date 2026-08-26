@@ -84,13 +84,13 @@ describe("GET /api/v1/backoffice/setores", () => {
     );
   });
 
-  it("filtra por backofficeId ou globais (null)", async () => {
+  it("filtra exclusivamente pelo backoffice autenticado", async () => {
     const req = new NextRequest("http://localhost/api/v1/backoffice/setores");
     await getSetores(req as never);
     expect(prismaMock.setor.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          OR: [{ backofficeId: "backoffice-1" }, { backofficeId: null }],
+          backofficeId: "backoffice-1",
         }),
       }),
     );

@@ -4,8 +4,9 @@ const path = require('node:path');
 
 const envFile = path.resolve(__dirname, '..', '.env.test');
 if (!fs.existsSync(envFile)) {
-  console.error(`[pretest] .env.test não encontrado em ${envFile}`);
-  process.exit(1);
+  const databaseUrl = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL || 'postgresql://postgres:123456@localhost:5432/asa_db_test';
+  fs.writeFileSync(envFile, `DATABASE_URL=${databaseUrl}\n`, 'utf8');
+  console.log(`[pretest] .env.test criado para asa_db_test em ${envFile}`);
 }
 
 const envContent = fs.readFileSync(envFile, 'utf8');
@@ -28,7 +29,20 @@ if (!env.DATABASE_URL) {
   process.exit(1);
 }
 
-console.log(`[pretest] Aplicando migrations em ${new URL(env.DATABASE_URL).pathname.slice(1)}`);
+const databaseName = new URL(env.DATABASE_URL).pathname.replace(/^\//, '');
+if (databaseName !== 'asa_db_test') {
+  console.error(`[pretest] Abortado: o banco de testes deve ser asa_db_test, recebido ${databaseName || '(vazio)'}`);
+  process.exit(1);
+}
+
+console.log(`[pretest] Reset controlado somente em ${databaseName}`);
+execSync('pnpm exec prisma migrate reset --force --skip-seed', {
+  cwd: path.resolve(__dirname, '..', '..', '..', 'packages', 'database'),
+  env: { ...process.env, ...env },
+  stdio: 'inherit',
+});
+
+console.log(`[pretest] Aplicando migrations em ${databaseName}`);
 execSync('pnpm exec prisma migrate deploy', {
   cwd: path.resolve(__dirname, '..', '..', '..', 'packages', 'database'),
   env: { ...process.env, ...env },

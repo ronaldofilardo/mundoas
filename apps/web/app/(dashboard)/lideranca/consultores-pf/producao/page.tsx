@@ -26,6 +26,7 @@ interface Procedimento {
   tipoProcedimento: string;
   unidade: string;
   valorComissao: string;
+  valorTotal: string | null;
   parceiro: { id: string; nome: string; cpf: string } | null;
   indicado: { id: string; nome: string; cpf: string } | null;
   comercial: { id: string; nome: string; funcao?: string } | null;
@@ -97,15 +98,12 @@ export default function LiderancaProducaoPage() {
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
   }
 
-  function formatFuncao(funcao?: string) {
-    if (!funcao) return "";
-    return funcao
-      .replace(/_/g, " ")
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
+  function formatUnidade(unidade: string) {
+    if (!unidade) return "-";
+    return unidade
+      .replace(/acesso\s*sa[uú]de[\s\-–—]*/gi, "")
+      .trim() || unidade;
   }
-
 
   function formatMes(mes: string) {
     if (!mes) return "-";
@@ -225,14 +223,11 @@ export default function LiderancaProducaoPage() {
                 <th className="text-left p-2 font-medium text-gray-600">Paciente</th>
                 <th className="text-left p-2 font-medium text-gray-600">CPF</th>
                 <th className="text-left p-2 font-medium text-gray-600">Procedimento</th>
-                <th className="text-left p-2 font-medium text-gray-600">Tipo</th>
+                <th className="text-left p-2 font-medium text-gray-600">Total Pago</th>
                 <th className="text-left p-2 font-medium text-gray-600">Unidade</th>
-                <th className="text-left p-2 font-medium text-gray-600">Forma Pgto</th>
                 <th className="text-left p-2 font-medium text-gray-600">Parceiro</th>
-                <th className="text-left p-2 font-medium text-gray-600">Comercial</th>
                 <th className="text-left p-2 font-medium text-gray-600">Consultor PF</th>
                 <th className="text-left p-2 font-medium text-gray-600">Mês Ref.</th>
-                <th className="text-right p-2 font-medium text-gray-600">Comissão</th>
               </tr>
             </thead>
             <tbody>
@@ -241,29 +236,18 @@ export default function LiderancaProducaoPage() {
                   <td className="p-2 text-gray-600">{formatDate(p.dataReferencia)}</td>
                   <td className="p-2 text-gray-900 font-medium">{p.paciente}</td>
                   <td className="p-2 text-gray-600">{formatCpf(p.cpf)}</td>
-                  <td className="p-2 text-gray-600">{p.procedimento}</td>
-                  <td className="p-2 text-gray-600">{p.tipoProcedimento}</td>
-                  <td className="p-2 text-gray-600">{p.unidade}</td>
-                  <td className="p-2 text-gray-600">{p.formaPagamento || "-"}</td>
+                  <td className="p-2 text-gray-600" title={p.procedimento}>
+                    {p.procedimento.length > 20 ? `${p.procedimento.slice(0, 20)}…` : p.procedimento}
+                  </td>
+                  <td className="p-2 text-gray-600">
+                    {Number(p.valorTotal || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="p-2 text-gray-600">{formatUnidade(p.unidade)}</td>
                   <td className="p-2">
                     {p.parceiro ? (
                       <span className="text-blue-600">{p.parceiro.nome}</span>
                     ) : (
                       <span className="text-orange-500 text-xs">Sem vínculo</span>
-                    )}
-                  </td>
-                  <td className="p-2">
-                    {p.comercial ? (
-                      <div>
-                        <p className="text-xs font-medium text-gray-900">{p.comercial.nome}</p>
-                        {p.comercial.funcao && (
-                          <p className="text-xs text-gray-500">
-                            {formatFuncao(p.comercial.funcao)}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400 text-xs">-</span>
                     )}
                   </td>
                   <td className="p-2 text-gray-600">
@@ -272,15 +256,12 @@ export default function LiderancaProducaoPage() {
                   <td className="p-2 text-gray-600">
                     {formatMesReferencia(p.dataReferencia)}
                   </td>
-                  <td className="p-2 text-right text-green-600 font-medium">
-                    R$ {Number(p.valorComissao).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </td>
                 </tr>
               ))}
 
               {filteredProcedimentos?.length === 0 && (
                 <tr>
-                  <td colSpan={12} className="p-8 text-center text-gray-500">
+                  <td colSpan={9} className="p-8 text-center text-gray-500">
                     Nenhum procedimento encontrado
                   </td>
                 </tr>

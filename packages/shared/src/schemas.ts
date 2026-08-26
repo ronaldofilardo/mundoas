@@ -126,137 +126,18 @@ export const atualizarConsultorSelfSchema = atualizarConsultorBaseSchema
     path: ["pixChave"],
   });
 
-export const criarEstabelecimentoSchema = z
-  .object({
-    nomeFantasia: z.string().min(2, "Nome fantasia é obrigatório"),
-    razaoSocial: z.string().optional(),
-    cnpj: z
-      .string()
-      .optional()
-      .refine(
-        (val) =>
-          !val || val.replace(/\D/g, "").length === 0 || validarCNPJ(val),
-        { message: "CNPJ inválido" },
-      ),
-    endereco: z.string().optional(),
-    cidade: z.string().optional(),
-    estado: z.string().length(2).optional(),
-    telefone: z.string().optional(),
-    email: z.string().email().optional().or(z.literal("")),
-    responsavelNome: z.string().optional(),
-    responsavelCpf: z.string().optional(),
-    pixChave: z.string().min(1).optional(),
-    pixTipo: z.enum(["CPF", "CNPJ", "EMAIL", "TELEFONE"]).optional(),
-    bancoNome: z.string().optional(),
-    agencia: z.string().optional(),
-    conta: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      if (!data.pixChave || !data.pixTipo) return true;
-      if (data.pixTipo === "CPF") return validarCPF(data.pixChave);
-      if (data.pixTipo === "CNPJ") return validarCNPJ(data.pixChave);
-      if (data.pixTipo === "EMAIL")
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.pixChave);
-      if (data.pixTipo === "TELEFONE")
-        return data.pixChave.replace(/\D/g, "").length >= 10;
-      return true;
-    },
-    {
-      message: "Chave PIX inválida para o tipo selecionado",
-      path: ["pixChave"],
-    },
-  );
-
-export const atualizarEstabelecimentoSchema = z
-  .object({
-    nomeFantasia: z.string().min(2).optional(),
-    razaoSocial: z.string().optional(),
-    cnpj: z
-      .string()
-      .optional()
-      .refine(
-        (val) =>
-          !val || val.replace(/\D/g, "").length === 0 || validarCNPJ(val),
-        { message: "CNPJ inválido" },
-      ),
-    endereco: z.string().optional(),
-    cidade: z.string().optional(),
-    estado: z.string().length(2).optional(),
-    telefone: z.string().optional(),
-    email: z.string().email().optional().or(z.literal("")),
-    responsavelNome: z.string().optional(),
-    responsavelCpf: z.string().optional(),
-    pixChave: z.string().min(1).optional(),
-    pixTipo: z.enum(["CPF", "CNPJ", "EMAIL", "TELEFONE"]).optional(),
-    bancoNome: z.string().optional(),
-    agencia: z.string().optional(),
-    conta: z.string().optional(),
-    status: z.enum(["ATIVO", "INATIVO"]).optional(),
-  })
-  .refine(
-    (data) => {
-      if (!data.pixChave || !data.pixTipo) return true;
-      if (data.pixTipo === "CPF") return validarCPF(data.pixChave);
-      if (data.pixTipo === "CNPJ") return validarCNPJ(data.pixChave);
-      if (data.pixTipo === "EMAIL")
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.pixChave);
-      if (data.pixTipo === "TELEFONE")
-        return data.pixChave.replace(/\D/g, "").length >= 10;
-      return true;
-    },
-    {
-      message: "Chave PIX inválida para o tipo selecionado",
-      path: ["pixChave"],
-    },
-  );
-
-export const criarCupomConfigSchema = z.object({
-  estabelecimentoId: z.string().uuid("ID do estabelecimento inválido"),
-  codigoCupom: z.string().min(1, "Código do cupom é obrigatório").max(50),
-  descricao: z.string().optional(),
-});
-
-export const importarCuponsSchema = z.object({
-  mesReferencia: z.number().int().min(1).max(12),
-  anoReferencia: z.number().int().min(2024).max(2100),
-});
-
-export const agendarConsultaSchema = z.object({
-  codigoCupom: z.string().min(1, "Código do cupom é obrigatório"),
-  cupomImportadoId: z.string().uuid("ID do cupom importado inválido"),
-  dataAgendamento: z.string().datetime().optional(),
-});
-
-export const atualizarConsultaSchema = z.object({
-  status: z.enum(["AGENDADA", "REALIZADA", "CANCELADA", "NAO_COMPARECEU"]),
-  valorPago: z.number().positive().optional(),
-});
-
-export const processarPagamentosSchema = z.object({
-  mesReferencia: z.number().int().min(1).max(12),
-  anoReferencia: z.number().int().min(2024).max(2100),
-});
-
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CriarConsultorInput = z.infer<typeof criarConsultorSchema>;
 export type AtualizarConsultorInput = z.infer<typeof atualizarConsultorSchema>;
 export type AtualizarConsultorSelfInput = z.infer<
   typeof atualizarConsultorSelfSchema
 >;
-export type CriarEstabelecimentoInput = z.infer<
-  typeof criarEstabelecimentoSchema
->;
-export type AtualizarEstabelecimentoInput = z.infer<
-  typeof atualizarEstabelecimentoSchema
->;
-export type CriarCupomConfigInput = z.infer<typeof criarCupomConfigSchema>;
-export type ImportarCuponsInput = z.infer<typeof importarCuponsSchema>;
-export type AgendarConsultaInput = z.infer<typeof agendarConsultaSchema>;
-export type AtualizarConsultaInput = z.infer<typeof atualizarConsultaSchema>;
-export type ProcessarPagamentosInput = z.infer<
-  typeof processarPagamentosSchema
->;
+
+
+export const processarPagamentosSchema = z.object({
+  mesReferencia: z.number().int().min(1).max(12),
+  anoReferencia: z.number().int().min(2024).max(2100),
+});
 
 export const indicarClienteSchema = z.object({
   cpfParceiro: z
@@ -328,15 +209,10 @@ export const criarEquipeSchema = z.object({
     .enum(["COMERCIAL", "GESTOR"])
     .optional(),
   funcao: z
-    .enum([
-      "GERENTE_CIRE",
-      "SUPERVISOR_ATIVO",
-      "SUPERVISOR_RECEPTIVO",
-      "SUPERVISOR_FRANQUIA",
-      "SUPERVISOR_ATENDIMENTO",
-      "GERENTE_ATENDIMENTO",
-      "SUPERVISOR_COMERCIAL",
-    ])
+    .string()
+    .trim()
+    .min(1, "Função inválida")
+    .max(100, "Função deve ter no máximo 100 caracteres")
     .optional(),
   percentualComissao: z
     .union([z.string(), z.number()])
@@ -361,15 +237,10 @@ export const atualizarEquipeSchema = z.object({
   tipo: z.enum(["COMERCIAL", "LIDERANCA"]).optional(),
   tipoLideranca: z.enum(["COMERCIAL", "GESTOR"]).optional(),
   funcao: z
-    .enum([
-      "GERENTE_CIRE",
-      "SUPERVISOR_ATIVO",
-      "SUPERVISOR_RECEPTIVO",
-      "SUPERVISOR_FRANQUIA",
-      "SUPERVISOR_ATENDIMENTO",
-      "GERENTE_ATENDIMENTO",
-      "SUPERVISOR_COMERCIAL",
-    ])
+    .string()
+    .trim()
+    .min(1, "Função inválida")
+    .max(100, "Função deve ter no máximo 100 caracteres")
     .optional(),
   percentualComissao: z
     .union([z.string(), z.number()])
@@ -454,4 +325,29 @@ export type AtualizarEquipeInput = z.infer<typeof atualizarEquipeSchema>;
 export type UpsertMetaComercialInput = z.infer<typeof upsertMetaComercialSchema>;
 export type PreferenciaCicloParceiroInput = z.infer<
   typeof preferenciaCicloParceiroSchema
+>;
+
+/** Contrato financeiro compartilhado: zero é válido somente quando informado. */
+export const valorTotalFinanceiroSchema = z
+  .union([z.string(), z.number()])
+  .transform((value) => {
+    if (typeof value === "number") return value;
+    const normalized = value.trim().replace(/[^\d,.-]/g, "");
+    if (!normalized) return Number.NaN;
+    const parsed = normalized.includes(",")
+      ? Number(normalized.replace(/\./g, "").replace(",", "."))
+      : Number(normalized);
+    return parsed;
+  })
+  .refine((value) => Number.isFinite(value) && value >= 0, {
+    message: "valorTotal deve ser um número válido maior ou igual a zero",
+  });
+
+export const reprocessarComissoesSchema = z.object({
+  comercialId: z.string().trim().min(1, "comercialId inválido"),
+  mesReferencia: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Formato: YYYY-MM"),
+});
+
+export type ReprocessarComissoesInput = z.infer<
+  typeof reprocessarComissoesSchema
 >;

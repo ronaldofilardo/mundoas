@@ -16,8 +16,8 @@ vi.mock("@/lib/api-helpers", () => ({
 vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
 vi.mock("@/lib/pontos-utils", () => ({ calcularComissaoComercial: vi.fn() }));
 vi.mock("@/lib/audit", () => ({ criarAuditLog: vi.fn() }));
-vi.mock("@asa/database", () => ({
-  prisma: {
+vi.mock("@asa/database", () => {
+  const client = {
     procedimentoPF: {
       findMany: vi.fn(),
       count: vi.fn(),
@@ -28,8 +28,14 @@ vi.mock("@asa/database", () => ({
     equipe: { findUnique: vi.fn(), findMany: vi.fn() },
     comissaoEquipe: { upsert: vi.fn() },
     metaEquipe: { upsert: vi.fn() },
-  },
-}));
+  };
+  return {
+    prisma: {
+      ...client,
+      $transaction: vi.fn(async (callback: (tx: typeof client) => unknown) => callback(client)),
+    },
+  };
+});
 
 const scopeMock = vi.mocked(requireBackofficeWithScope);
 const rateLimitMock = vi.mocked(rateLimit);
@@ -118,6 +124,51 @@ describe("API backoffice/reprocessar-comissoes — contrato funcional", () => {
     expect(response.status).toBe(200);
     expect(body).toMatchObject({ procedimentosVinculados: 0, totalVendas: 0, valorComissao: 0 });
     expect(calcMock).not.toHaveBeenCalled();
+  });
+
+  it("não duplica comissão nem meta quando o reprocessamento é repetido", async () => {
+    authenticate();
+    prismaMock.equipe.findUnique.mockResolvedValue({
+      id: "c-1",
+      tipo: "COMERCIAL",
+      nome: "Comercial",
+      lideranca: { backofficeId: "backoffice-1" },
+    } as Awaited<ReturnType<typeof prisma.equipe.findUnique>>);
+    prismaMock.procedimentoPF.findMany
+      .mockResolvedValueOnce([
+        { id: "proc-1", valorTotal: 100, valorComissao: 0, dataReferencia: new Date("2026-08-10") },
+      ] as Awaited<ReturnType<typeof prisma.procedimentoPF.findMany>>)
+      .mockResolvedValueOnce([]);
+    calcMock.mockResolvedValue({ valorComissao: 30 } as Awaited<ReturnType<typeof calcularComissaoComercial>>);
+
+    const first = await POST(postRequest({ comercialId: "c-1", mesReferencia: "2026-08" }));
+    const second = await POST(postRequest({ comercialId: "c-1", mesReferencia: "2026-08" }));
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
+    expect(prismaMock.comissaoEquipe.upsert).toHaveBeenCalledTimes(1);
+    expect(prismaMock.metaEquipe.upsert).toHaveBeenCalledTimes(1);
+  });
+
+  it("retorna erro e não registra auditoria quando a transação falha", async () => {
+    authenticate();
+    prismaMock.equipe.findUnique.mockResolvedValue({
+      id: "c-1",
+      tipo: "COMERCIAL",
+      nome: "Comercial",
+      lideranca: { backofficeId: "backoffice-1" },
+    } as Awaited<ReturnType<typeof prisma.equipe.findUnique>>);
+    prismaMock.procedimentoPF.findMany.mockResolvedValue([
+      { id: "proc-1", valorTotal: 100, valorComissao: 0, dataReferencia: new Date("2026-08-10") },
+    ] as Awaited<ReturnType<typeof prisma.procedimentoPF.findMany>>);
+    calcMock.mockResolvedValue({ valorComissao: 30 } as Awaited<ReturnType<typeof calcularComissaoComercial>>);
+    prismaMock.$transaction.mockRejectedValueOnce(new Error("falha intermediária"));
+
+    const response = await POST(postRequest({ comercialId: "c-1", mesReferencia: "2026-08" }));
+
+    expect(response.status).toBe(400);
+    expect(auditMock).not.toHaveBeenCalled();
   });
 
   it("reprocessa procedimentos e registra auditoria", async () => {

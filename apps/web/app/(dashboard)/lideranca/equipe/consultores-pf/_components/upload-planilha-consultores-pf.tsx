@@ -1,18 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
+import { normalizarSetorNome } from "@asa/shared";
 
-const SETORES_VALIDOS = [
-  "Cartão Acesso Saúde",
-  "CIRE Ativo",
-  "CIRE Receptivo",
-  "Franchising Acesso",
-  "Franchising Cartão",
-  "Unidade",
-];
+
 
 interface LinhaPlanilha {
   linhaOriginal: number;
@@ -79,7 +73,7 @@ function parseSetores(valor: unknown): string[] {
   return [];
 }
 
-function validarLinha(linha: LinhaPlanilha): string[] {
+function validarLinha(linha: LinhaPlanilha, setoresValidos: string[]): string[] {
   const erros: string[] = [];
 
   if (!linha.nome || linha.nome.length < 3) {
@@ -104,9 +98,11 @@ function validarLinha(linha: LinhaPlanilha): string[] {
   if (linha.setoresParsed.length === 0) {
     erros.push("Selecione ao menos um setor");
   } else {
+        const setoresPermitidos = new Set(setoresValidos.map(normalizarSetorNome));
     const invalidos = linha.setoresParsed.filter(
-      (s) => !SETORES_VALIDOS.includes(s),
+      (s) => !setoresPermitidos.has(normalizarSetorNome(s)),
     );
+
     if (invalidos.length > 0) {
       erros.push(`Setor(es) inválido(s): ${invalidos.join(", ")}`);
     }
@@ -214,6 +210,27 @@ export function UploadPlanilhaConsultoresPf() {
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [linhas, setLinhas] = useState<LinhaPlanilha[]>([]);
   const [resultado, setResultado] = useState<ResultadoImportacao | null>(null);
+  const [setoresValidos, setSetoresValidos] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch("/api/v1/setores?origem=regras-consultores")
+      .then((res) => (res.ok ? res.json() : null))
+            .then((data: Array<{ id: string; nome: string }> | null) => {
+        const setores = data?.map((s) => s.nome) ?? [];
+        setSetoresValidos(setores);
+        setLinhas((atuais) =>
+          atuais.map((linha) => ({
+            ...linha,
+            erros: validarLinha(linha, setores),
+          })),
+        );
+      })
+
+      .catch(() => {
+        setSetoresValidos([]);
+        toast.error("Não foi possível carregar os setores de Regras: Consultores");
+      });
+  }, []);
 
   function resetar() {
     setArquivo(null);
@@ -258,7 +275,7 @@ export function UploadPlanilhaConsultoresPf() {
           ...mapeado,
           erros: [],
         };
-        linha.erros = validarLinha(linha);
+        linha.erros = validarLinha(linha, setoresValidos);
         return linha;
       });
 
@@ -276,14 +293,14 @@ export function UploadPlanilhaConsultoresPf() {
         Email: "joao@empresa.com",
         CPF: "12345678900",
         Telefone: "11999999999",
-        Setores: "Cartão Acesso Saúde; CIRE Ativo",
+        Setores: "<nome do setor 1>; <nome do setor 2>",
       },
       {
         Nome: "Maria Souza",
         Email: "maria@empresa.com",
         CPF: "98765432100",
         Telefone: "11988888888",
-        Setores: "Unidade",
+        Setores: "<nome do setor>",
       },
     ];
 
@@ -415,7 +432,7 @@ export function UploadPlanilhaConsultoresPf() {
             <p className="mt-1">
               <strong>Setores:</strong> separe múltiplos valores por{" "}
               <code>;</code>, <code>,</code> ou <code>|</code>. Valores
-              permitidos: {SETORES_VALIDOS.join(", ")}.
+              permitidos: {setoresValidos.join(", ")}.
             </p>
             <p className="mt-1">
               Formatos aceitos: <strong>.xlsx, .xls, .csv</strong>.
@@ -516,7 +533,7 @@ export function UploadPlanilhaConsultoresPf() {
                           <div className="flex flex-wrap gap-1">
                             {l.setoresParsed.length > 0 ? (
                               l.setoresParsed.map((s, idx) => {
-                                const invalido = !SETORES_VALIDOS.includes(s);
+                                const invalido = !setoresValidos.includes(s);
                                 return (
                                   <span
                                     key={`${l.linhaOriginal}-${idx}`}

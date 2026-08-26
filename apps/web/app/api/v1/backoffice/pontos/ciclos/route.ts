@@ -10,7 +10,7 @@ import { z } from "zod";
 
 const CreateCicloSchema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),
-  periodicidade: z.enum(["SEMESTRAL", "ANUAL"]),
+  periodicidade: z.enum(["SEMESTRAL", "ANUAL"]).optional(),
   inicioAcumuloEm: z.string().datetime("Data inválida"),
   fimAcumuloEm: z.string().datetime("Data inválida"),
   inicioResgateEm: z.string().datetime("Data inválida").optional(),
@@ -58,13 +58,15 @@ export async function POST(req: NextRequest) {
       return badRequest(validation.error.message);
     }
 
-  const { nome, periodicidade, inicioAcumuloEm, fimAcumuloEm, inicioResgateEm, fimResgateEm } =
+  const { nome, periodicidade: periodicidadeInformada, inicioAcumuloEm, fimAcumuloEm, inicioResgateEm, fimResgateEm } =
     validation.data;
 
   const inicio = new Date(inicioAcumuloEm);
   const fimAcumulo = new Date(fimAcumuloEm);
   const inicioResgate = inicioResgateEm ? new Date(inicioResgateEm) : null;
   const fimResgate = new Date(fimResgateEm);
+  const duracaoEmDias = Math.ceil((fimAcumulo.getTime() - inicio.getTime()) / 86400000);
+  const periodicidade = periodicidadeInformada ?? (duracaoEmDias <= 184 ? "SEMESTRAL" : "ANUAL");
 
   if (inicio >= fimAcumulo) {
     return badRequest(

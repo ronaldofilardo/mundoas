@@ -9,19 +9,12 @@ import {
   requireLiderancaWithScope,
 } from "@/lib/api-helpers";
 import { gerarSenhaProvisoria } from "@/lib/utils";
+import { buscarSetoresDaRegraConsultores } from "@/lib/setores-regras";
 import { z } from "zod";
+import { normalizarSetorNome } from "@asa/shared";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_ROWS = 500;
-const SETORES_VALIDOS = [
-  "Cartão Acesso Saúde",
-  "CIRE Ativo",
-  "CIRE Receptivo",
-  "Franchising Acesso",
-  "Franchising Cartão",
-  "Unidade",
-];
-
 const camposSetorSchema = z
   .union([z.string(), z.array(z.string())])
   .optional();
@@ -211,12 +204,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const setoresAtivos = await prisma.setor.findMany({
-    where: { backofficeId, ativo: true },
-    select: { id: true, nome: true },
-  });
+  const setoresPermitidos = await buscarSetoresDaRegraConsultores(backofficeId);
   const setoresPorNome = new Map(
-    setoresAtivos.map((s) => [normalizarChave(s.nome), s]),
+      setoresPermitidos.map((s) => [normalizarSetorNome(s.nome), s]),
   );
 
   const resultados = {
@@ -269,11 +259,11 @@ export async function POST(req: NextRequest) {
     );
 
     const setoresInvalidos = setoresUnicos.filter(
-      (s) => !setoresPorNome.has(normalizarChave(s)),
+      (s) => !setoresPorNome.has(normalizarSetorNome(s)),
     );
 
     if (setoresInvalidos.length > 0) {
-      const setoresPermitidos = SETORES_VALIDOS.join(", ");
+      const setoresPermitidosTexto = setoresPermitidos.map((setor) => setor.nome).join(", ");
       resultados.erros++;
       resultados.detalhes.push({
         linha: linhaNumero,
@@ -281,7 +271,7 @@ export async function POST(req: NextRequest) {
         status: "erro",
         mensagem: `Setor(es) inválido(s): ${setoresInvalidos.join(
           ", ",
-        )}. Permitidos: ${setoresPermitidos}.`,
+        )}. Permitidos: ${setoresPermitidosTexto || "nenhum setor configurado na regra"}.`,
       });
       continue;
     }
@@ -319,7 +309,7 @@ export async function POST(req: NextRequest) {
       const senhaHash = await hash(senhaTemporaria, 12);
 
       const setoresIds = setoresUnicos
-        .map((s) => setoresPorNome.get(normalizarChave(s))?.id)
+        .map((s) => setoresPorNome.get(normalizarSetorNome(s))?.id)
         .filter((id): id is string => Boolean(id));
 
       await prisma.$transaction(async (tx) => {

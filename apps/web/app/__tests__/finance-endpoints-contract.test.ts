@@ -10,9 +10,7 @@ const endpoints = [
   ["backoffice/comissionamento/validacao/[mesReferencia]/route.ts", ["GET"]],
   ["lideranca/consultores-pf/producao/route.ts", ["GET"]],
   ["lideranca/consultores-pf/producao/procedimentos/route.ts", ["GET"]],
-  ["gestor/producao/route.ts", ["GET"]],
   ["gestor/comissoes/route.ts", ["GET"]],
-  ["gestor/relatorios/route.ts", ["GET"]],
 ] as const;
 
 const routePath = (relativePath: string) =>

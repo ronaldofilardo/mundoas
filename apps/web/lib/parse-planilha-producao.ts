@@ -142,6 +142,10 @@ export async function parsePlanilhaProducao(
     "TotalPago",
   ]);
 
+  if (idxValorTotal < 0) {
+    throw new Error("Coluna financeira obrigatória faltando: Total Pago, Valor Total ou equivalente");
+  }
+
   // Buscar parceiros do backoffice
   let liderancas: LiderancaRef[] = [];
   let liderancaIds: string[] = [];
@@ -235,12 +239,12 @@ const [comerciaisResult, consultoresPfResult, gestoresResult] = await Promise.al
         : "PARTICULAR";
 const valorTotalRaw =
       idxValorTotal >= 0 ? String(row[idxValorTotal] || "").trim() : "";
-    let valorTotal = 0;
+    let valorTotal: number | null = null;
     if (valorTotalRaw) {
       const limpo = valorTotalRaw.replace(/[^\d.,-]/g, "");
       if (limpo.includes(",")) {
         valorTotal = parseFloat(limpo.replace(/\./g, "").replace(",", "."));
-      } else if (/^\d+\.\d{1,2}$/.test(limpo)) {
+      } else if (/^-?\d+\.\d{1,2}$/.test(limpo)) {
         valorTotal = parseFloat(limpo);
       } else {
         valorTotal = parseFloat(limpo.replace(/\./g, ""));
@@ -250,6 +254,11 @@ const valorTotalRaw =
     // Validar dados
     let status: "VALIDO" | "ORFAO" | "REJEITADO" = "VALIDO";
     let motivo: string | undefined;
+
+    if (valorTotal === null || !Number.isFinite(valorTotal)) {
+      status = "REJEITADO";
+      motivo = "Valor total ausente ou inválido";
+    }
 
     // Validar CPF — linhas sem CPF (ou com CPF inválido) caem para a lógica
     // de "não encontrado" e são marcadas como órfãs, em vez de rejeitadas.
@@ -357,7 +366,7 @@ if (status === "VALIDO" && usuarioDaConta) {
         gestorNome: gestorEncontrado?.nome,
         consultorPfNome: consultorPf?.nome,
         valorComissao: 0,
-        valorTotal,
+        valorTotal: valorTotal ?? undefined,
       });
     }
   }

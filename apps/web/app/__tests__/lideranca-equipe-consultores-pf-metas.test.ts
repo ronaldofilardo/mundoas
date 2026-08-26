@@ -277,7 +277,7 @@ describe('ConsultoresPfPage - invariantes estruturais', () => {
   });
 
   it('o colspan do estado vazio deve incluir as 12 colunas de mês', () => {
-    expect(source).toContain('colSpan={7 + MESES_ANO.length}');
+    expect(source).toContain('colSpan={4 + MESES_ANO.length}');
   });
 
   it('cada input deve ter aria-label identificando consultor e mês (acessibilidade)', () => {

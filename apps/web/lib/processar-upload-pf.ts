@@ -1,5 +1,6 @@
 import { prisma, Prisma } from "@asa/database";
 import { validarCPF } from "@/lib/pontos-utils";
+import { valorTotalFinanceiroSchema } from "@asa/shared";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
@@ -147,6 +148,10 @@ export async function processarUploadPlanilhaPF(
       "TotalPago",
     ]);
 
+    if (idxValorTotal < 0) {
+      throw new Error("Coluna financeira obrigatória faltando: Total Pago, Valor Total ou equivalente");
+    }
+
     // Buscar parceiros do backoffice
     const liderancas = await prisma.equipe.findMany({
       where: { backofficeId, tipo: "LIDERANCA" },
@@ -231,17 +236,10 @@ const [comerciais, consultoresPf, gestores] = await Promise.all([
           : "PARTICULAR";
       const valorTotalRaw =
         idxValorTotal >= 0 ? String(row[idxValorTotal] || "").trim() : "";
-      let valorTotal = 0;
-      if (valorTotalRaw) {
-        const limpo = valorTotalRaw.replace(/[^\d.,-]/g, "");
-        if (limpo.includes(",")) {
-          valorTotal = parseFloat(limpo.replace(/\./g, "").replace(",", "."));
-        } else if (/^\d+\.\d{1,2}$/.test(limpo)) {
-          valorTotal = parseFloat(limpo);
-        } else {
-          valorTotal = parseFloat(limpo.replace(/\./g, ""));
-        }
-      }
+      const valorTotalResult = valorTotalFinanceiroSchema.safeParse(valorTotalRaw);
+      const valorTotal: number | null = valorTotalResult.success
+        ? valorTotalResult.data
+        : null;
 
       const dadosOriginais = {
         linha: i + 1,
@@ -261,6 +259,11 @@ const [comerciais, consultoresPf, gestores] = await Promise.all([
 
       let rejected = false;
       const motivosRejeicao: string[] = [];
+
+      if (valorTotal === null || !Number.isFinite(valorTotal)) {
+        rejected = true;
+        motivosRejeicao.push("valor_total_ausente_ou_invalido");
+      }
 
       let dataReferencia: Date | null = null;
       if (!dataReferenciaRaw) {

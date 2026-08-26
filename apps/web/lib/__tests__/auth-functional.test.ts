@@ -1,4 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('next-auth', () => ({
+  default: () => ({
+    handlers: {},
+    auth: vi.fn(),
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+  }),
+}));
+
+vi.mock('next-auth/providers/credentials', () => ({
+  default: () => ({}),
+}));
 
 describe('auth - funcional', () => {
   it('deve importar sem quebrar e exportar handlers', async () => {

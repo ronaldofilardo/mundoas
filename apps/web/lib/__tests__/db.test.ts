@@ -28,17 +28,15 @@ const requireFromMonorepo = createRequire(
 let resolvedPath: string;
 let resolvedPkg: { version: string };
 
-// Banco de DEV: queries reais precisam de migrations aplicadas.
-// Usamos asa_db (não asa_db_test) porque o histórico mostra drift entre
-// os dois bancos. O script check-prisma-resolution.mjs confirma que
-// DATABASE_URL aponta para um banco válido.
-const DEV_DB_URL =
-  "postgresql://postgres:123456@localhost:5432/asa_db";
+// Testes reais devem usar exclusivamente o banco isolado asa_db_test.
+const TEST_DB_URL =
+  process.env.TEST_DATABASE_URL ||
+  "postgresql://postgres:123456@localhost:5432/asa_db_test";
 
 let prismaModule: typeof import("../db");
 
 beforeAll(async () => {
-  process.env.DATABASE_URL = DEV_DB_URL;
+  process.env.DATABASE_URL = TEST_DB_URL;
   resolvedPath = requireFromMonorepo.resolve("@prisma/client");
   resolvedPkg = JSON.parse(
     readFileSync(resolve(resolvedPath, "../package.json"), "utf8"),
@@ -67,7 +65,7 @@ describe("lib/db.ts — resolução de @prisma/client", () => {
   });
 });
 
-describe("lib/db.ts — queries reais sem P2022 (banco DEV)", () => {
+describe("lib/db.ts — queries reais sem P2022 (asa_db_test)", () => {
   it("Equipe.findMany não falha com column not found", async () => {
     await expect(
       prismaModule.prisma.equipe.findMany({ take: 1 }),

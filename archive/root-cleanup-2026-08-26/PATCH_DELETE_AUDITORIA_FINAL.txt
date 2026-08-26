@@ -1,0 +1,33 @@
+# Remoção segura concluída na auditoria final
+# Diretório runtime vazio, sem arquivos e sem callers atuais.
+apps/web/app/api/v1/estabelecimento/
+
+# Testes históricos comprovadamente órfãos — preservar em apps/web/legacy-tests/orphaned-components/
+apps/web/components/__tests__/tab-comissoes.test.ts
+apps/web/components/__tests__/tab-regras-functional.test.ts
+apps/web/components/__tests__/tab-regras.test.ts
+apps/web/components/__tests__/upload-planilha-preview-functional.test.ts
+apps/web/components/__tests__/upload-planilha-preview.test.ts
+apps/web/components/__tests__/backoffice-gerenciador-ciclos-pontos-functional.test.ts
+apps/web/components/__tests__/backoffice-gerenciador-premios-functional.test.ts
+apps/web/components/__tests__/backoffice-ranking-gestor-functional.test.ts
+apps/web/components/__tests__/backoffice-upload-planilha-preview-functional.test.ts
+apps/web/components/__tests__/catalogo-premios-functional.test.ts
+apps/web/components/__tests__/catalogo-premios.test.ts
+apps/web/components/__tests__/comercial-modal-functional.test.ts
+apps/web/components/__tests__/comercial-modal.test.ts
+apps/web/components/__tests__/consultor-pf-form-functional.test.ts
+apps/web/components/__tests__/consultor-pf-form.test.ts
+apps/web/components/__tests__/gerenciador-ciclos-pontos-functional.test.ts
+apps/web/components/__tests__/gerenciador-ciclos-pontos.test.ts
+apps/web/components/__tests__/gerenciador-premios-functional.test.ts
+apps/web/components/__tests__/gerenciador-premios.test.ts
+apps/web/components/__tests__/parceiro-catalogo-premios-functional.test.ts
+apps/web/components/__tests__/parceiro-meu-ranking-functional.test.ts
+apps/web/components/__tests__/ranking-gestor-functional.test.ts
+apps/web/components/__tests__/ranking-gestor.test.ts
+apps/web/components/__tests__/ranking-pontos-functional.test.ts
+apps/web/components/__tests__/ranking-pontos.test.ts
+apps/web/app/__tests__/api-gestor-functional.test.ts
+apps/web/app/__tests__/pages-functional.test.ts
+apps/web/app/__tests__/admin-usuarios-delete-functional.test.ts

@@ -135,205 +135,178 @@ export function TabComissoes({ itens, mesReferencia, onMesChange }: TabComissoes
             <p className="text-sm text-gray-400 mt-2">Verifique se as metas foram cadastradas na aba "Metas".</p>
           </div>
         ) : (
-          <div className="card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm table-auto min-w-[1600px]">
-                <thead>
-                  <tr className="border-b bg-gray-50 sticky top-0 z-10">
-                    <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[280px]">
-                      Empresa/Setor
-                    </th>
-                    <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[90px]">
-                      Tipo
-                    </th>
-                    <th className="text-right p-3 font-semibold text-gray-700 bg-gray-50 w-[120px]">
-                      Meta
-                    </th>
-                    <th className="text-right p-3 font-semibold text-gray-700 bg-gray-50 w-[120px]">
-                      Produção
-                    </th>
-                    <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[90px]">
-                      Meta Batida
-                    </th>
-                    <th className="text-right p-3 font-semibold text-gray-700 bg-gray-50 w-[140px]">
-                      Comissão Líder
-                    </th>
-                    <th className="text-right p-3 font-semibold text-gray-700 bg-gray-50 w-[140px]">
-                      Projeção Comissão
-                    </th>
-                    <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[80px]">
+          <div className="flex flex-col gap-4">
+            {validacao.map((item: ValidacaoItem) => {
+              const membroComComissao = membrosComComissoes.find(m => m.id === item.liderancaId || (item.tipo === "COMERCIAL" && m.nome === item.empresaSetor));
+              const comissaoMes = membroComComissao?.comissoes.find(c => c.mesReferencia === mesAtual);
+              const temFalta = comissaoMes?.temFalta ?? false;
+              const itemInputId = `falta-${item.tipo.toLowerCase()}-${(item.liderancaId ?? item.empresaSetor).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+              const itemLabel = item.liderancaNome ?? item.empresaSetor;
+
+              return (
+                <div key={item.empresaSetor} className="card overflow-hidden">
+                  {/* Cabeçalho da liderança/comercial */}
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-3 p-4">
+                    <div className="min-w-[180px]">
+                      <p className="font-semibold text-gray-900 leading-tight">{item.empresaSetor}</p>
+                      <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium ${
+                        item.tipo === "LIDERANCA"
+                          ? "bg-purple-100 text-purple-800"
+                          : "bg-blue-100 text-blue-800"
+                      }`}>
+                        {item.tipo === "LIDERANCA" ? "Liderança" : "Comercial"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-6 flex-1 flex-wrap">
+                      <div>
+                        <p className="text-xs text-gray-500">Meta</p>
+                        <p className="text-sm font-medium text-gray-800">{formatBRL(item.meta)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Produção</p>
+                        <p className="text-sm font-medium text-gray-800">{formatBRL(item.producao)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Meta Batida</p>
+                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                          item.metaBatida ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                        }`}>
+                          {item.metaBatida ? "✓ Sim" : "✗ Não"}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Comissão Líder</p>
+                        <p className="text-sm font-medium text-purple-700">
+                          {item.comissaoLideranca > 0 ? formatBRL(item.comissaoLideranca) : "-"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Projeção Comissão</p>
+                        <p className="text-sm font-semibold text-gray-900">{formatBRL(item.comissaoCalculada)}</p>
+                      </div>
+                    </div>
+
+                    <label htmlFor={itemInputId} className="flex items-center gap-2 cursor-pointer text-sm text-gray-600 select-none">
+                      <input
+                        id={itemInputId}
+                        type="checkbox"
+                        aria-label={`Falta de ${itemLabel}`}
+                        checked={temFalta}
+                        onChange={(e) => {
+                          const targetId = item.liderancaId || membroComComissao?.id;
+                          if (targetId) {
+                            atualizarFalta(targetId, mesAtual, e.target.checked);
+                          }
+                        }}
+                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 hover:bg-primary-50 transition-colors"
+                        title={temFalta ? "Teve faltas (clique para remover)" : "Sem faltas (clique para adicionar)"}
+                      />
                       Falta
-                    </th>
-                    <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[300px]">
-                      Subordinados / Consultores
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {validacao.map((item: ValidacaoItem) => {
-                    const membroComComissao = membrosComComissoes.find(m => m.id === item.liderancaId || (item.tipo === "COMERCIAL" && m.nome === item.empresaSetor));
-                    const comissaoMes = membroComComissao?.comissoes.find(c => c.mesReferencia === mesAtual);
-                    const temFalta = comissaoMes?.temFalta ?? false;
-                    const itemInputId = `falta-${item.tipo.toLowerCase()}-${(item.liderancaId ?? item.empresaSetor).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
-                    const itemLabel = item.liderancaNome ?? item.empresaSetor;
+                    </label>
+                  </div>
 
-                    return (
-                      <tbody key={item.empresaSetor}>
-                        <tr className="border-b hover:bg-gray-50 font-medium">
-                          <td className="p-3 text-gray-900">{item.empresaSetor}</td>
-                          <td className="p-3 text-center">
-                            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                              item.tipo === "LIDERANCA" 
-                                ? "bg-purple-100 text-purple-800" 
-                                : "bg-blue-100 text-blue-800"
-                            }`}>
-                              {item.tipo === "LIDERANCA" ? "Liderança" : "Comercial"}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right text-gray-700">{formatBRL(item.meta)}</td>
-                          <td className="p-3 text-right text-gray-700">{formatBRL(item.producao)}</td>
-                          <td className="p-3 text-center">
-                            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                              item.metaBatida ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                            }`}>
-                              {item.metaBatida ? "✓ Sim" : "✗ Não"}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right font-medium text-purple-700">
-                            {item.comissaoLideranca > 0 ? formatBRL(item.comissaoLideranca) : "-"}
-                          </td>
-                          <td className="p-3 text-right font-medium text-gray-900">
-                            {formatBRL(item.comissaoCalculada)}
-                          </td>
-                          <td className="p-3 text-center">
-                            <label htmlFor={itemInputId} className="flex items-center justify-center cursor-pointer">
-                              <input
-                                id={itemInputId}
-                                type="checkbox"
-                                aria-label={`Falta de ${itemLabel}`}
-                                checked={temFalta}
-                                onChange={(e) => {
-                                  const targetId = item.liderancaId || membroComComissao?.id;
-                                  if (targetId) {
-                                    atualizarFalta(targetId, mesAtual, e.target.checked);
-                                  }
-                                }}
-                                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 hover:bg-primary-50 transition-colors"
-                                title={temFalta ? "Teve faltas (clique para remover)" : "Sem faltas (clique para adicionar)"}
-                              />
-                            </label>
-                          </td>
-                          <td className="p-3 text-gray-500">
-                            {item.subordinados.length > 0 && (
-                              <span className="text-xs font-medium">Comerciais: {item.subordinados.length}</span>
-                            )}
-                            {item.consultoresPf.length > 0 && (
-                              <span className="text-xs font-medium ml-2">Consultores PF: {item.consultoresPf.length}</span>
-                            )}
-                            {item.subordinados.length === 0 && item.consultoresPf.length === 0 && (
-                              <span className="text-xs text-gray-400">-</span>
-                            )}
-                          </td>
-                        </tr>
-                        {item.subordinados.length > 0 && (
-                          <tr className="bg-gray-50">
-                            <td colSpan={9} className="p-0">
-                              <div className="pl-10 pr-3 py-3 border-t border-gray-200">
-                                <table className="w-full text-xs">
-                                  <thead>
-                                    <tr className="border-b border-gray-200">
-                                      <th className="text-left p-2 font-medium text-gray-500 w-[200px]">Nome</th>
-                                      <th className="text-left p-2 font-medium text-gray-500 w-[150px]">Função</th>
-                                      <th className="text-right p-2 font-medium text-gray-500 w-[100px]">Meta</th>
-                                      <th className="text-right p-2 font-medium text-gray-500 w-[100px]">Produção</th>
-                                      <th className="text-center p-2 font-medium text-gray-500 w-[80px]">Meta Batida</th>
-                                      <th className="text-right p-2 font-medium text-gray-500 w-[100px]">% Comissão</th>
-                                      <th className="text-right p-2 font-medium text-gray-500 w-[120px]">Comissão</th>
-                                      <th className="text-center p-2 font-medium text-gray-500 w-[60px]">Falta</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {item.subordinados.map((s) => {
-                                      const subComissao = membrosComComissoes.find(m => m.id === s.id)?.comissoes.find(c => c.mesReferencia === mesAtual);
-                                      const subTemFalta = subComissao?.temFalta ?? false;
+                  {/* Subordinados */}
+                  {item.subordinados.length > 0 && (
+                    <div className="border-t border-gray-200 bg-gray-50 px-4 py-3">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                        Comerciais ({item.subordinados.length})
+                      </p>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b border-gray-200">
+                              <th className="text-left p-2 font-medium text-gray-500">Nome</th>
+                              <th className="text-left p-2 font-medium text-gray-500">Função</th>
+                              <th className="text-right p-2 font-medium text-gray-500">Meta</th>
+                              <th className="text-right p-2 font-medium text-gray-500">Produção</th>
+                              <th className="text-center p-2 font-medium text-gray-500">Meta Batida</th>
+                              <th className="text-right p-2 font-medium text-gray-500">% Comissão</th>
+                              <th className="text-right p-2 font-medium text-gray-500">Comissão</th>
+                              <th className="text-center p-2 font-medium text-gray-500">Falta</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {item.subordinados.map((s) => {
+                              const subComissao = membrosComComissoes.find(m => m.id === s.id)?.comissoes.find(c => c.mesReferencia === mesAtual);
+                              const subTemFalta = subComissao?.temFalta ?? false;
 
-                                      return (
-                                        <tr key={s.id} className="border-b border-gray-100 last:border-b-0 hover:bg-white">
-                                          <td className="p-2 font-medium text-gray-800">{s.nome}</td>
-                                          <td className="p-2 text-gray-600">{s.funcao.replace(/_/g, " ")}</td>
-                                          <td className="p-2 text-right text-gray-700">{formatBRL(s.meta)}</td>
-                                          <td className="p-2 text-right text-gray-700">{formatBRL(s.producao)}</td>
-                                          <td className="p-2 text-center">
-                                            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                                              s.metaBatida ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                                            }`}>
-                                              {s.metaBatida ? "✓" : "✗"}
-                                            </span>
-                                          </td>
-                                          <td className="p-2 text-right text-gray-600">{s.percentualComissao.toFixed(2)}%</td>
-                                          <td className="p-2 text-right font-medium text-gray-900">{formatBRL(s.comissao)}</td>
-                                          <td className="p-2 text-center">
-                                            <label htmlFor={`falta-${s.id}`} className="flex items-center justify-center cursor-pointer">
-                                              <input
-                                                id={`falta-${s.id}`}
-                                                type="checkbox"
-                                                aria-label={`Falta de ${s.nome}`}
-                                                checked={subTemFalta}
-                                                onChange={(e) => atualizarFalta(s.id, mesAtual, e.target.checked)}
-                                                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 hover:bg-primary-50 transition-colors"
-                                                title={subTemFalta ? "Teve faltas (clique para remover)" : "Sem faltas (clique para adicionar)"}
-                                              />
-                                            </label>
-                                          </td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                        {item.consultoresPf.length > 0 && (
-                          <tr className="bg-gray-50">
-                            <td colSpan={9} className="p-0">
-                              <div className="pl-10 pr-3 py-3 border-t border-gray-200">
-                                <table className="w-full text-xs">
-                                  <thead>
-                                    <tr className="border-b border-gray-200">
-                                      <th className="text-left p-2 font-medium text-gray-500 w-[200px]">Nome</th>
-                                      <th className="text-right p-2 font-medium text-gray-500 w-[100px]">Meta</th>
-                                      <th className="text-right p-2 font-medium text-gray-500 w-[100px]">Produção</th>
-                                      <th className="text-center p-2 font-medium text-gray-500 w-[80px]">Meta Batida</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {item.consultoresPf.map((cp) => (
-                                      <tr key={cp.id} className="border-b border-gray-100 last:border-b-0 hover:bg-white">
-                                        <td className="p-2 font-medium text-gray-800">{cp.nome}</td>
-                                        <td className="p-2 text-right text-gray-700">{formatBRL(cp.meta)}</td>
-                                        <td className="p-2 text-right text-gray-700">{formatBRL(cp.producao)}</td>
-                                        <td className="p-2 text-center">
-                                          <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                                            cp.metaBatida ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                                          }`}>
-                                            {cp.metaBatida ? "✓" : "✗"}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                              return (
+                                <tr key={s.id} className="border-b border-gray-100 last:border-b-0 hover:bg-white">
+                                  <td className="p-2 font-medium text-gray-800 whitespace-nowrap">{s.nome}</td>
+                                  <td className="p-2 text-gray-600 whitespace-nowrap">{s.funcao.replace(/_/g, " ")}</td>
+                                  <td className="p-2 text-right text-gray-700 whitespace-nowrap">{formatBRL(s.meta)}</td>
+                                  <td className="p-2 text-right text-gray-700 whitespace-nowrap">{formatBRL(s.producao)}</td>
+                                  <td className="p-2 text-center">
+                                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                                      s.metaBatida ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                    }`}>
+                                      {s.metaBatida ? "✓" : "✗"}
+                                    </span>
+                                  </td>
+                                  <td className="p-2 text-right text-gray-600">{s.percentualComissao.toFixed(2)}%</td>
+                                  <td className="p-2 text-right font-medium text-gray-900 whitespace-nowrap">{formatBRL(s.comissao)}</td>
+                                  <td className="p-2 text-center">
+                                    <label htmlFor={`falta-${s.id}`} className="flex items-center justify-center cursor-pointer">
+                                      <input
+                                        id={`falta-${s.id}`}
+                                        type="checkbox"
+                                        aria-label={`Falta de ${s.nome}`}
+                                        checked={subTemFalta}
+                                        onChange={(e) => atualizarFalta(s.id, mesAtual, e.target.checked)}
+                                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 hover:bg-primary-50 transition-colors"
+                                        title={subTemFalta ? "Teve faltas (clique para remover)" : "Sem faltas (clique para adicionar)"}
+                                      />
+                                    </label>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Consultores PF */}
+                  {item.consultoresPf.length > 0 && (
+                    <div className="border-t border-gray-200 bg-gray-50 px-4 py-3">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                        Consultores PF ({item.consultoresPf.length})
+                      </p>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b border-gray-200">
+                              <th className="text-left p-2 font-medium text-gray-500">Nome</th>
+                              <th className="text-right p-2 font-medium text-gray-500">Meta</th>
+                              <th className="text-right p-2 font-medium text-gray-500">Produção</th>
+                              <th className="text-center p-2 font-medium text-gray-500">Meta Batida</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {item.consultoresPf.map((cp) => (
+                              <tr key={cp.id} className="border-b border-gray-100 last:border-b-0 hover:bg-white">
+                                <td className="p-2 font-medium text-gray-800 whitespace-nowrap">{cp.nome}</td>
+                                <td className="p-2 text-right text-gray-700 whitespace-nowrap">{formatBRL(cp.meta)}</td>
+                                <td className="p-2 text-right text-gray-700 whitespace-nowrap">{formatBRL(cp.producao)}</td>
+                                <td className="p-2 text-center">
+                                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                                    cp.metaBatida ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                  }`}>
+                                    {cp.metaBatida ? "✓" : "✗"}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

@@ -22,14 +22,11 @@ const criarConsultorPfSchema = z.object({
     .max(20, "Limite máximo de setores excedido"),
 });
 
-export async function GET(
-  _req: NextRequest,
-  { searchParams }: { searchParams: { get: (key: string) => string | null } },
-) {
+export async function GET(req: NextRequest) {
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  const liderancaId = searchParams.get("liderancaId");
+  const liderancaId = req.nextUrl.searchParams.get("liderancaId");
 
   const where: Record<string, unknown> = {
     lideranca: { backofficeId },

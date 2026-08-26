@@ -32,11 +32,11 @@ export function PasswordResetModal({
   apiPath = "/api/v1/gestor",
 }: PasswordResetModalProps) {
   const [loading, setLoading] = useState(false);
-  const [resetLink, setResetLink] = useState<string | null>(null);
+  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleGenerateLink = async () => {
+  const handleGenerateTemporaryPassword = async () => {
     setLoading(true);
     setError(null);
 
@@ -58,8 +58,8 @@ export function PasswordResetModal({
       }
 
       const data = await response.json();
-      setResetLink(data.resetLink);
-      toast.success("Link de reset gerado com sucesso!");
+      setTemporaryPassword(data.temporaryPassword);
+      toast.success("Senha temporária gerada com sucesso!");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro desconhecido";
       setError(message);
@@ -69,18 +69,17 @@ export function PasswordResetModal({
     }
   };
 
-  const handleCopyLink = async () => {
-    if (!resetLink) return;
+  const handleCopyTemporaryPassword = async () => {
+    if (!temporaryPassword) return;
 
     try {
-      const fullLink = `${window.location.origin}${resetLink}`;
-      await navigator.clipboard.writeText(fullLink);
+      await navigator.clipboard.writeText(temporaryPassword);
       setCopied(true);
-      toast.success("Link copiado para área de transferência!");
+      toast.success("Senha temporária copiada para área de transferência!");
 
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error("Erro ao copiar link");
+      toast.error("Erro ao copiar senha temporária");
     }
   };
 
@@ -90,7 +89,7 @@ export function PasswordResetModal({
         <DialogHeader>
           <DialogTitle>Reset de Senha</DialogTitle>
           <DialogDescription>
-            Gere um link de reset para {userName}
+            Gere uma senha temporária para {userName}
           </DialogDescription>
         </DialogHeader>
 
@@ -101,31 +100,31 @@ export function PasswordResetModal({
             </div>
           )}
 
-          {!resetLink ? (
+          {!temporaryPassword ? (
             <Button
-              onClick={handleGenerateLink}
+              onClick={handleGenerateTemporaryPassword}
               disabled={loading}
               className="w-full"
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {loading ? "Gerando link..." : "Gerar link de reset"}
+              {loading ? "Gerando senha..." : "Gerar senha temporária"}
             </Button>
           ) : (
             <div className="space-y-3">
               <div className="rounded-md bg-blue-50 p-3">
-                <p className="text-xs text-blue-600 mb-2">
-                  Link válido por 24 horas:
+                  <p className="text-xs text-blue-600 mb-2">
+                  Senha temporária — copie e envie por canal seguro:
                 </p>
                 <div className="flex gap-2">
                   <Input
                     readOnly
-                    value={`${window.location.origin}${resetLink}`}
+                    value={temporaryPassword}
                     className="text-xs bg-white"
                   />
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={handleCopyLink}
+                    onClick={handleCopyTemporaryPassword}
                     className="flex-shrink-0"
                   >
                     {copied ? (
@@ -137,7 +136,7 @@ export function PasswordResetModal({
                 </div>
               </div>
               <p className="text-xs text-gray-600">
-                ⚠️ Envie este link ao usuário através de um canal seguro.
+                ⚠️ O usuário deverá entrar com esta senha e alterá-la no Primeiro Acesso.
               </p>
             </div>
           )}
@@ -148,7 +147,7 @@ export function PasswordResetModal({
             variant="outline"
             onClick={() => {
               onOpenChange(false);
-              setResetLink(null);
+              setTemporaryPassword(null);
               setError(null);
               setCopied(false);
             }}

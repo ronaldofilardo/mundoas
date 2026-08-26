@@ -3,15 +3,15 @@ import { prisma } from "@asa/database";
 import { ok, badRequest, requireBackofficeWithScope } from "@/lib/api-helpers";
 import { rateLimit } from "@/lib/rate-limit";
 import { calcularComissaoComercial } from "@/lib/pontos-utils";
+import { reprocessarComissoesSchema } from "@asa/shared";
 import { criarAuditLog } from "@/lib/audit";
 import { intervaloMesReferencia, validarMesReferencia } from "@/lib/competencia";
 
 /**
  * POST /api/v1/backoffice/reprocessar-comissoes
  * 
- * Reprocessa comissões de procedimentos importados que não tinham comercial vinculado.
- * Útil quando a planilha foi importada sem "CPF do Comercial" mas deseja-se vincular
- * as vendas a um comercial específico.
+ * Reprocessa comissões de procedimentos já vinculados ao comercial escolhido.
+ * Produções sem comercial não entram nesta operação e permanecem sem comissão.
  */
 export async function POST(req: NextRequest) {
   // Rate limiting: 5 reprocessamentos por minuto
@@ -23,14 +23,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { comercialId, mesReferencia } = body as {
-      comercialId: string;
-      mesReferencia: string;
-    };
-
-    if (!comercialId || !validarMesReferencia(mesReferencia)) {
+    const parsedBody = reprocessarComissoesSchema.safeParse(body);
+    if (!parsedBody.success || !validarMesReferencia(parsedBody.data.mesReferencia)) {
       return badRequest("comercialId e mesReferencia válidos são obrigatórios");
     }
+    const { comercialId, mesReferencia } = parsedBody.data;
 
     const intervaloMes = intervaloMesReferencia(mesReferencia);
 
@@ -48,13 +45,12 @@ export async function POST(req: NextRequest) {
       return badRequest("Comercial não encontrado ou não pertence a este gestor");
     }
 
-    // Buscar procedimentos do mês que NÃO têm comercial vinculado OU têm mas precisam recalcular comissão
+    // Somente procedimentos já vinculados ao comercial escolhido podem ser processados.
+    // Linhas sem comercial ficam fora para não gerar comissão indevida.
     const procedimentosDoComercial = await prisma.procedimentoPF.findMany({
       where: {
-        OR: [
-          { comercialId: null },
-          { comercialId, valorComissao: 0 },
-        ],
+        comercialId,
+        valorComissao: 0,
         upload: { backofficeId },
         dataReferencia: {
           gte: intervaloMes.inicio,
@@ -90,74 +86,55 @@ export async function POST(req: NextRequest) {
       dataReferencia: intervaloMes.inicio,
     });
 
-    // Atualizar procedimentos com o comercial e comissão proporcional
-    const procedimentoIds = procedimentosDoComercial.map((p) => p.id);
-    await prisma.procedimentoPF.updateMany({
-      where: { id: { in: procedimentoIds } },
-      data: {
-        comercialId,
-        valorComissao: totalProcedimentos > 0 ? Number(comissaoTotal) / totalProcedimentos : 0,
-      },
-    });
-
-    // Calcular comissão proporcional para cada procedimento
-    for (const proc of procedimentosDoComercial) {
-      const percentual = 1 / totalProcedimentos;
-      const comissaoProporcional = Number(comissaoTotal) * percentual;
-
-      await prisma.procedimentoPF.update({
-        where: { id: proc.id },
+    // Atualizar procedimentos, comissão e meta atomicamente.
+    const comissaoPorProcedimento = Number(comissaoTotal) / totalProcedimentos;
+    await prisma.$transaction(async (tx) => {
+      await tx.procedimentoPF.updateMany({
+        where: { id: { in: procedimentosDoComercial.map((p) => p.id) } },
         data: {
-          valorComissao: comissaoProporcional,
+          comercialId,
+          valorComissao: comissaoPorProcedimento,
         },
       });
-    }
 
-    // Criar/atualizar comissão do comercial
-    await prisma.comissaoEquipe.upsert({
-      where: {
-        equipeId_mesReferencia: {
+      await tx.comissaoEquipe.upsert({
+        where: {
+          equipeId_mesReferencia: {
+            equipeId: comercialId,
+            mesReferencia,
+          },
+        },
+        create: {
           equipeId: comercialId,
-          mesReferencia: mesReferencia,
+          mesReferencia,
+          valorVendas: totalVendas,
+          valorComissao: comissaoTotal,
+          status: "CALCULADA",
         },
-      },
-      create: {
-        equipeId: comercialId,
-        mesReferencia,
-        valorVendas: totalVendas,
-        valorComissao: comissaoTotal,
-        status: "CALCULADA",
-      },
-      update: {
-        valorVendas: {
-          increment: totalVendas,
+        update: {
+          valorVendas: { increment: totalVendas },
+          valorComissao: { increment: comissaoTotal },
+          status: "CALCULADA",
         },
-        valorComissao: {
-          increment: comissaoTotal,
-        },
-        status: "CALCULADA",
-      },
-    });
+      });
 
-    // Atualizar meta do comercial
-    await prisma.metaEquipe.upsert({
-      where: {
-        equipeId_mesReferencia: {
+      await tx.metaEquipe.upsert({
+        where: {
+          equipeId_mesReferencia: {
+            equipeId: comercialId,
+            mesReferencia,
+          },
+        },
+        create: {
           equipeId: comercialId,
-          mesReferencia: mesReferencia,
+          mesReferencia,
+          valorMeta: 0,
+          valorAtingido: totalVendas,
         },
-      },
-      create: {
-        equipeId: comercialId,
-        mesReferencia,
-        valorMeta: 0,
-        valorAtingido: totalVendas,
-      },
-      update: {
-        valorAtingido: {
-          increment: totalVendas,
+        update: {
+          valorAtingido: { increment: totalVendas },
         },
-      },
+      });
     });
 
     await criarAuditLog({

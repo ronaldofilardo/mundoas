@@ -19,21 +19,16 @@ export async function GET() {
     return ok({ mostrar: false });
   }
 
-  const hoje = new Date();
-  const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-  const inicioProximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
-
-  // Existe fatura PAGA com vencimento dentro do mês corrente?
-  const faturaPagaDoMes = await prisma.faturaAsaas.findFirst({
+  // Mostra o lembrete (💳) enquanto existir qualquer fatura com
+  // status "Pendente" — a mesma condição exibida na coluna Status
+  // da página /backoffice/financeiro (pagoManualmente === false).
+  const faturaPendente = await prisma.faturaAsaas.findFirst({
     where: {
       assinaturaId: assinatura.id,
-      pagoManualmente: true,
-      vencimento: { gte: inicioMes, lt: inicioProximoMes },
+      pagoManualmente: false,
     },
+    select: { id: true },
   });
 
-  // Mostra o lembrete se ainda não há fatura paga pro mês corrente.
-  // A partir do dia 1º isso já é verdade (nada foi pago ainda no mês novo)
-  // e some assim que o Admin marcar a fatura do mês como paga.
-  return ok({ mostrar: !faturaPagaDoMes });
+  return ok({ mostrar: Boolean(faturaPendente) });
 }

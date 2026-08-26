@@ -64,19 +64,19 @@ describe("PasswordResetModal", () => {
     renderModal();
 
     expect(screen.getByRole("dialog")).toBeTruthy();
-    expect(screen.getByText("Gere um link de reset para Maria Silva")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Gerar link de reset" })).toBeTruthy();
+expect(screen.getByText("Gere uma senha temporária para Maria Silva")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Gerar senha temporária" })).toBeTruthy();
   });
 
-  it("gera link com caminho, método e payload corretos", async () => {
+  it("gera senha temporária com caminho, método e payload corretos", async () => {
     fetchMock.mockResolvedValue(
-      new Response(JSON.stringify({ resetLink: "/reset/token-1" }), { status: 200 }),
+      new Response(JSON.stringify({ temporaryPassword: "Temp-Abc123!" }), { status: 200 }),
     );
     renderModal();
 
-    fireEvent.click(screen.getByRole("button", { name: "Gerar link de reset" }));
+fireEvent.click(screen.getByRole("button", { name: "Gerar senha temporária" }));
 
-    await waitFor(() => expect(screen.getByDisplayValue("http://localhost:3000/reset/token-1")).toBeTruthy());
+    await waitFor(() => expect(screen.getByDisplayValue("Temp-Abc123!")).toBeTruthy());
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/v1/admin/usuarios/usuario-1/reset-password",
       expect.objectContaining({
@@ -84,7 +84,7 @@ describe("PasswordResetModal", () => {
         body: JSON.stringify({ userType: "USUARIO" }),
       }),
     );
-    expect(toast.success).toHaveBeenCalledWith("Link de reset gerado com sucesso!");
+    expect(toast.success).toHaveBeenCalledWith("Senha temporária gerada com sucesso!");
   });
 
   it("exibe erro retornado pela API", async () => {
@@ -93,25 +93,25 @@ describe("PasswordResetModal", () => {
     );
     renderModal();
 
-    fireEvent.click(screen.getByRole("button", { name: "Gerar link de reset" }));
+    fireEvent.click(screen.getByRole("button", { name: "Gerar senha temporária" }));
 
     expect(await screen.findByText("Usuário não encontrado")).toBeTruthy();
     expect(toast.error).toHaveBeenCalledWith("Usuário não encontrado");
   });
 
-  it("copia o link completo e fecha o modal limpando o estado", async () => {
+  it("copia a senha temporária e fecha o modal limpando o estado", async () => {
     fetchMock.mockResolvedValue(
-      new Response(JSON.stringify({ resetLink: "/reset/token-2" }), { status: 200 }),
+      new Response(JSON.stringify({ temporaryPassword: "Temp-Zyx987!" }), { status: 200 }),
     );
     renderModal();
-    fireEvent.click(screen.getByRole("button", { name: "Gerar link de reset" }));
+fireEvent.click(screen.getByRole("button", { name: "Gerar senha temporária" }));
 
-    const linkInput = await screen.findByDisplayValue("http://localhost:3000/reset/token-2");
-    expect(linkInput).toBeTruthy();
+    const passwordInput = await screen.findByDisplayValue("Temp-Zyx987!");
+    expect(passwordInput).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "copiar" }));
 
     await waitFor(() =>
-      expect(navigator.clipboard.writeText).toHaveBeenCalledWith("http://localhost:3000/reset/token-2"),
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith("Temp-Zyx987!"),
     );
     fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
     expect(onOpenChange).toHaveBeenCalledWith(false);

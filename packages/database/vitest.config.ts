@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["prisma/__tests__/schema-drift.test.ts"],
+    include: ["prisma/__tests__/**/*.test.ts"],
     testTimeout: 30000,
     pool: "forks",
     fileParallelism: false,
