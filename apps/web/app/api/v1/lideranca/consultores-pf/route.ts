@@ -4,10 +4,12 @@ import { hash } from "bcryptjs";
 import {
   badRequest,
   created,
+  forbidden,
   ok,
   requireLiderancaWithScope,
 } from "@/lib/api-helpers";
 import { gerarSenhaProvisoria } from "@/lib/utils";
+import { buscarSetoresDaRegraConsultores, normalizarChave } from "@/lib/setores-regras";
 import { z } from "zod";
 
 const criarConsultorPfSchema = z.object({
@@ -59,6 +61,8 @@ export async function POST(req: NextRequest) {
     console.error("[POST /consultores-pf] Erro na autenticação:", error);
     return error;
   }
+  const backofficeId = lideranca.backofficeId;
+  if (!backofficeId) return forbidden();
 
   console.log("[POST /consultores-pf] Lideranca:", lideranca.id, lideranca);
 
@@ -100,18 +104,47 @@ export async function POST(req: NextRequest) {
   }
 
   const setoresUnicos = Array.from(new Set(setoresNomes.map((s) => s.trim())));
+  const setoresPermitidos = await buscarSetoresDaRegraConsultores(backofficeId);
+  const permitidosPorChave = new Map(
+    setoresPermitidos.map((setor) => [normalizarChave(setor.nome), setor.nome]),
+  );
+  const setoresCanonicos = setoresUnicos.map((nome) => permitidosPorChave.get(normalizarChave(nome)) ?? null);
+  const setoresInvalidos = setoresUnicos.filter((_, index) => !setoresCanonicos[index]);
+
+  if (setoresInvalidos.length > 0) {
+    console.error("[POST /consultores-pf] Setores fora de Regras: Consultores:", setoresInvalidos);
+    return badRequest(
+      `Setor(es) inválido(s) ou não cadastrado(s) em Regras: Consultores: ${setoresInvalidos.join(", ")}`,
+    );
+  }
+
+  const nomesParaPersistir = setoresCanonicos.filter((nome): nome is string => Boolean(nome));
+
+  // Bases antigas podem ter o item CUSTOM na regra, mas ainda não ter
+  // materializado a linha correspondente em setores. Como os nomes foram
+  // validados contra a regra do próprio Backoffice, a materialização é segura.
+  await prisma.$transaction(
+    nomesParaPersistir.map((nome) =>
+      prisma.setor.upsert({
+        where: { backofficeId_nome: { backofficeId, nome } },
+        create: { backofficeId, nome, ativo: true },
+        update: { ativo: true },
+      }),
+    ),
+  );
+
   const setoresEncontrados = await prisma.setor.findMany({
     where: {
-      nome: { in: setoresUnicos },
+      nome: { in: nomesParaPersistir },
       ativo: true,
-      backofficeId: lideranca.backofficeId,
+      backofficeId,
     },
     select: { id: true, nome: true },
   });
 
-  if (setoresEncontrados.length !== setoresUnicos.length) {
+  if (setoresEncontrados.length !== nomesParaPersistir.length) {
     const encontrados = new Set(setoresEncontrados.map((s) => s.nome));
-    const faltantes = setoresUnicos.filter((n) => !encontrados.has(n));
+    const faltantes = nomesParaPersistir.filter((n) => !encontrados.has(n));
     console.error("[POST /consultores-pf] Setores inválidos:", faltantes);
     return badRequest(
       `Setor(es) inválido(s) ou inativo(s): ${faltantes.join(", ")}`
