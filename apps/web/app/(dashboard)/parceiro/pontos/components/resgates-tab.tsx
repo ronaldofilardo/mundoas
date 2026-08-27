@@ -10,6 +10,7 @@ interface ResgateItem {
     codigo: string;
     descricao: string;
     custoPontos: number;
+    prazoEntregaDias?: number;
   };
   cicloPontos: {
     id: string;
@@ -18,6 +19,8 @@ interface ResgateItem {
   pontosDebitados: number;
   status: string;
   solicitadoEm: string;
+  prazoEntregaDias: number;
+  prazoEntregaAte?: string;
   entregueEm?: string;
   canceladoEm?: string;
   observacao?: string;
@@ -103,6 +106,17 @@ export function ResgatesTab({ data }: { data?: ResgateItem[] }) {
                     <p className="text-xs text-gray-500 mt-1">
                       Ciclo: {item.cicloPontos.nome} • Solicitado em {new Date(item.solicitadoEm).toLocaleDateString("pt-BR")}
                     </p>
+                    <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
+                      <p className="text-xs font-semibold uppercase text-blue-700">Entrega em</p>
+                      <p className="text-sm font-medium text-blue-900">
+                        {item.prazoEntregaAte
+                          ? new Date(item.prazoEntregaAte).toLocaleDateString("pt-BR")
+                          : "Após aprovação"}
+                      </p>
+                      <p className="text-xs text-blue-700">
+                        Prazo: {item.prazoEntregaDias} {item.prazoEntregaDias === 1 ? "dia" : "dias"}
+                      </p>
+                    </div>
                     {item.entregueEm && (
                       <p className="text-xs text-green-600 mt-1">Entregue em {new Date(item.entregueEm).toLocaleDateString("pt-BR")}</p>
                     )}

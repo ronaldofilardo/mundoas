@@ -78,9 +78,7 @@ export function TabConsultores({ itens }: TabConsultoresProps) {
 
   async function handleCriarConsultor(data: {
     nome: string;
-    email: string;
     cpf: string;
-    telefone: string;
     liderancaId: string;
     setores: string[];
   }) {
@@ -97,9 +95,7 @@ export function TabConsultores({ itens }: TabConsultoresProps) {
 
   async function handleAtualizarConsultor(id: string, data: {
     nome: string;
-    email: string;
     cpf: string;
-    telefone: string;
     liderancaId: string;
     setores: string[];
   }) {
@@ -128,9 +124,7 @@ export function TabConsultores({ itens }: TabConsultoresProps) {
 
   function handleSalvar(data: {
     nome: string;
-    email: string;
     cpf: string;
-    telefone: string;
     liderancaId: string;
     setores: string[];
   }): Promise<void> {

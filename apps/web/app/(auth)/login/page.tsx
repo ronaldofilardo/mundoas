@@ -96,8 +96,9 @@ export default function LoginPage() {
     } else if (tipo === "GESTOR_PJ") {
       router.push("/gestor/dashboard");
     } else if (tipo === "PARCEIRO") {
-      router.push("/parceiro/indicados");} else if (tipo === "CONSULTOR" || tipo === "CONSULTOR_PF") {
-      router.push("/consultor/comissoes");
+      router.push("/parceiro/indicados");
+    } else if (tipo === "CONSULTOR" || tipo === "CONSULTOR_PF") {
+      router.push("/consultor/bonus");
     } else if (tipo === "LIDERANCA") {
       router.push("/lideranca");
     } else {

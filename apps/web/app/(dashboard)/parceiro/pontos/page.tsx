@@ -40,11 +40,13 @@ interface CatalogoData {
 interface ResgateData {
   resgates: Array<{
     id: string;
-    premio: { id: string; codigo: string; descricao: string; custoPontos: number };
+    premio: { id: string; codigo: string; descricao: string; custoPontos: number; prazoEntregaDias?: number };
     cicloPontos: { id: string; nome: string };
     pontosDebitados: number;
     status: string;
     solicitadoEm: string;
+    prazoEntregaDias: number;
+    prazoEntregaAte?: string;
     entregueEm?: string;
     canceladoEm?: string;
     observacao?: string;

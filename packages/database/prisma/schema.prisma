@@ -757,8 +757,9 @@ model Premio {
   atualizadoEm DateTime             @updatedAt @map("atualizado_em")
   backofficeId String               @map("backoffice_id") @db.Uuid
   codigo       String               @db.VarChar(50)
-  tipo         String               @db.VarChar(50)
-  backoffice   Backoffice           @relation(fields: [backofficeId], references: [id])
+  tipo             String               @db.VarChar(50)
+  prazoEntregaDias Int                  @default(0) @map("prazo_entrega_dias")
+  backoffice       Backoffice           @relation(fields: [backofficeId], references: [id])
   solicitacoes SolicitacaoResgate[]
 
   @@index([backofficeId])
@@ -772,8 +773,9 @@ model SolicitacaoResgate {
   consultorPfId   String?                  @map("consultor_pf_id") @db.Uuid
   premioId        String                   @map("premio_id") @db.Uuid
   cicloPontosId   String                   @map("ciclo_pontos_id") @db.Uuid
-  pontosDebitados Int                      @map("pontos_debitados")
-  status          StatusSolicitacaoResgate @default(SOLICITADO)
+  pontosDebitados  Int                      @map("pontos_debitados")
+  prazoEntregaDias Int                      @default(0) @map("prazo_entrega_dias")
+  status           StatusSolicitacaoResgate @default(SOLICITADO)
   solicitadoEm    DateTime                 @default(now()) @map("solicitado_em")
   processadoPor   String?                  @map("processado_por") @db.Uuid
   processadoEm    DateTime?                @map("processado_em")

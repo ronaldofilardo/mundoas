@@ -12,12 +12,29 @@ export async function GET() {
   const resgates = await prisma.solicitacaoResgate.findMany({
     where: { consultorPfId: consultorPfId! },
     include: {
-      premio: { select: { id: true, codigo: true, nome: true, descricao: true, custoPontos: true } },
+      premio: {
+        select: {
+          id: true,
+          codigo: true,
+          nome: true,
+          descricao: true,
+          custoPontos: true,
+          prazoEntregaDias: true,
+        },
+      },
       cicloPontos: { select: { id: true, nome: true } },
     },
     orderBy: { solicitadoEm: "desc" },
   });
-  return ok({ resgates });
+  return ok({
+    resgates: resgates.map((resgate) => ({
+      ...resgate,
+      prazoEntregaDias: resgate.prazoEntregaDias,
+      prazoEntregaAte: resgate.processadoEm && ["APROVADO", "ENTREGUE"].includes(resgate.status)
+        ? new Date(resgate.processadoEm.getTime() + resgate.prazoEntregaDias * 86400000).toISOString()
+        : undefined,
+    })),
+  });
 }
 
 export async function POST(req: NextRequest) {
@@ -43,7 +60,7 @@ export async function POST(req: NextRequest) {
   if (saldo < premio.custoPontos) return badRequest(`Saldo insuficiente. Você possui ${saldo} pontos e precisa de ${premio.custoPontos}`);
   const resultado = await prisma.$transaction(async (tx) => {
     const solicitacao = await tx.solicitacaoResgate.create({
-      data: { consultorPfId: consultorPfId!, premioId: premio.id, cicloPontosId: ciclo.id, pontosDebitados: premio.custoPontos, status: "SOLICITADO" },
+      data: { consultorPfId: consultorPfId!, premioId: premio.id, cicloPontosId: ciclo.id, pontosDebitados: premio.custoPontos, prazoEntregaDias: premio.prazoEntregaDias, status: "SOLICITADO" },
     });
     await tx.movimentacaoPontos.create({
       data: { consultorPfId: consultorPfId!, cicloPontosId: ciclo.id, tipo: "DEBITO", origem: "RESGATE", quantidade: premio.custoPontos, referenciaSolicitacaoResgateId: solicitacao.id, observacao: `Resgate de: ${premio.descricao}` },

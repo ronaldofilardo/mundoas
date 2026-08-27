@@ -14,7 +14,8 @@ const CreatePremioSchema = z.object({
   codigo: z.string().min(1, "Código é obrigatório"),
   tipo: z.string().min(1, "Tipo é obrigatório"),
   descricao: z.string().min(1, "Descrição é obrigatória"),
-  custoPontos: z.number().int().positive("Custo em pontos deve ser positivo").optional(),
+    custoPontos: z.number().int().positive("Custo em pontos deve ser positivo").optional(),
+  prazoEntregaDias: z.number().int().min(0, "Prazo de entrega não pode ser negativo"),
 }).refine((data) => data.custoPontos !== undefined, {
   message: "Custo em pontos é obrigatório",
   path: ["custoPontos"],
@@ -27,6 +28,7 @@ const UpdatePremioSchema = z.object({
   descricao: z.string().min(1).optional(),
   custoPontos: z.number().int().positive().optional(),
   ativo: z.boolean().optional(),
+  prazoEntregaDias: z.number().int().min(0, "Prazo de entrega não pode ser negativo").optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -35,7 +37,7 @@ export async function GET(req: NextRequest) {
     if (error) return error;
 
     const premios = await prisma.premio.findMany({
-      where: { backofficeId },
+      where: { backofficeId, ativo: true },
       orderBy: { criadoEm: "desc" },
     });
 
@@ -47,6 +49,7 @@ export async function GET(req: NextRequest) {
         tipo: p.tipo,
         descricao: p.descricao,
         custoPontos: p.custoPontos,
+        prazoEntregaDias: p.prazoEntregaDias,
         ativo: p.ativo,
         criadoEm: p.criadoEm.toISOString(),
       })),
@@ -69,7 +72,7 @@ export async function POST(req: NextRequest) {
       return badRequest(validation.error.message);
     }
 
-    const { nome, codigo, tipo, descricao, custoPontos } = validation.data;
+    const { nome, codigo, tipo, descricao, custoPontos, prazoEntregaDias } = validation.data;
     const custoPontosFinal = custoPontos ?? 0;
 
     const novoPremio = await prisma.premio.create({
@@ -80,6 +83,7 @@ export async function POST(req: NextRequest) {
         tipo,
         descricao,
         custoPontos: custoPontosFinal,
+        prazoEntregaDias,
         ativo: true,
       },
     });
@@ -91,6 +95,7 @@ export async function POST(req: NextRequest) {
       tipo: novoPremio.tipo,
       descricao: novoPremio.descricao,
       custoPontos: novoPremio.custoPontos,
+      prazoEntregaDias: novoPremio.prazoEntregaDias,
       ativo: novoPremio.ativo,
       mensagem: "Prêmio criado com sucesso",
     });
@@ -143,6 +148,9 @@ export async function PATCH(req: NextRequest) {
         ...(validation.data.ativo !== undefined && {
           ativo: validation.data.ativo,
         }),
+        ...(validation.data.prazoEntregaDias !== undefined && {
+          prazoEntregaDias: validation.data.prazoEntregaDias,
+        }),
       },
     });
 
@@ -153,6 +161,7 @@ export async function PATCH(req: NextRequest) {
       tipo: updated.tipo,
       descricao: updated.descricao,
       custoPontos: updated.custoPontos,
+      prazoEntregaDias: updated.prazoEntregaDias,
       ativo: updated.ativo,
       mensagem: "Prêmio atualizado com sucesso",
     });

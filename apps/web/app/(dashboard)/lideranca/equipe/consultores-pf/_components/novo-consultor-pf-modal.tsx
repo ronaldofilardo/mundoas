@@ -20,7 +20,6 @@ export function NovoConsultorPfModal({
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
-  const [telefone, setTelefone] = useState("");
   const [setores, setSetores] = useState<string[]>([]);
 
   useEffect(() => {
@@ -28,7 +27,6 @@ export function NovoConsultorPfModal({
       setNome("");
       setEmail("");
       setCpf("");
-      setTelefone("");
       setSetores([]);
     }
   }, [open]);
@@ -51,7 +49,7 @@ export function NovoConsultorPfModal({
       toast.error("Nome deve ter no mínimo 3 caracteres");
       return;
     }
-    if (!email.trim()) {
+    if (!email.trim() || !email.includes("@")) {
       toast.error("Informe um email válido");
       return;
     }
@@ -73,7 +71,6 @@ export function NovoConsultorPfModal({
           nome: nome.trim(),
           email: email.trim(),
           cpf: cpfLimpo,
-          telefone: telefone.trim() || undefined,
           setores,
         }),
       });
@@ -159,16 +156,6 @@ export function NovoConsultorPfModal({
                 required
                 minLength={11}
                 maxLength={14}
-              />
-            </label>
-            <label className="text-sm font-medium text-gray-700">
-              Telefone (opcional)
-              <input
-                type="tel"
-                className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
-                value={telefone}
-                onChange={(event) => setTelefone(event.target.value)}
-                placeholder="Ex: 11999999999"
               />
             </label>
           </div>

@@ -102,7 +102,7 @@ export async function PATCH(
           select: { nome: true, cpf: true },
         },
         premio: {
-          select: { codigo: true, descricao: true },
+          select: { codigo: true, descricao: true, prazoEntregaDias: true },
         },
       },
     });
@@ -113,6 +113,10 @@ return ok({
       parceiro: updatedResgate.parceiro,
       premio: updatedResgate.premio,
       processadoEm: updatedResgate.processadoEm?.toISOString(),
+      prazoEntregaDias: updatedResgate.prazoEntregaDias,
+      prazoEntregaAte: updatedResgate.processadoEm && ["APROVADO", "ENTREGUE"].includes(updatedResgate.status)
+        ? new Date(updatedResgate.processadoEm.getTime() + updatedResgate.prazoEntregaDias * 86400000).toISOString()
+        : undefined,
       entregueEm: updatedResgate.entregueEm?.toISOString(),
       mensagem: `Resgate atualizado para ${novoStatus}`,
     });

@@ -38,6 +38,7 @@ export async function GET(req: NextRequest) {
             codigo: true,
             descricao: true,
             custoPontos: true,
+            prazoEntregaDias: true,
           },
         },
         cicloPontos: {
@@ -59,6 +60,10 @@ export async function GET(req: NextRequest) {
         status: r.status,
         solicitadoEm: r.solicitadoEm.toISOString(),
         entregueEm: r.entregueEm?.toISOString(),
+        prazoEntregaDias: r.prazoEntregaDias > 0 ? r.prazoEntregaDias : r.premio.prazoEntregaDias,
+        prazoEntregaAte: r.processadoEm && ["APROVADO", "ENTREGUE"].includes(r.status)
+          ? new Date(r.processadoEm.getTime() + (r.prazoEntregaDias > 0 ? r.prazoEntregaDias : r.premio.prazoEntregaDias) * 86400000).toISOString()
+          : undefined,
         canceladoEm: r.canceladoEm?.toISOString(),
         observacao: r.observacao,
         podesCancelar: ["SOLICITADO", "EM_ANALISE"].includes(r.status),
@@ -162,6 +167,7 @@ export async function POST(req: NextRequest) {
           premioId,
           cicloPontosId: cicloVigente.id ?? undefined,
           pontosDebitados: premio.custoPontos,
+          prazoEntregaDias: premio.prazoEntregaDias,
           status: "SOLICITADO",
         },
       });

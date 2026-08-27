@@ -17,7 +17,7 @@ interface ConsultorPfFormData {
   nome: string;
   email: string;
   cpf: string;
-  telefone: string;
+
   liderancaId: string;
   setores: string[];
 }
@@ -47,7 +47,6 @@ export function ConsultorPfForm({
     nome: "",
     email: "",
     cpf: "",
-    telefone: "",
     liderancaId: "",
     setores: [],
   });
@@ -60,13 +59,32 @@ export function ConsultorPfForm({
   useEffect(() => {
     async function fetchOptions() {
       try {
-        const [setoresRes, liderancasRes] = await Promise.all([
-          fetch("/api/v1/backoffice/setores"),
+        const [setoresRes, liderancasRes, regrasRes] = await Promise.all([
+          fetch("/api/v1/backoffice/setores?ativo=true"),
           fetch("/api/v1/backoffice/liderancas?status=ATIVO"),
+          fetch("/api/v1/backoffice/regras-comerciais"),
         ]);
-        const setoresData = await setoresRes.json();
-        const liderancasData = await liderancasRes.json();
-        setSetores(setoresData);
+
+        if (!setoresRes.ok || !liderancasRes.ok || !regrasRes.ok) {
+          throw new Error("Não foi possível carregar as opções do cadastro");
+        }
+
+        const setoresData = await setoresRes.json() as Setor[];
+        const liderancasData = await liderancasRes.json() as Lideranca[];
+        const regrasData = await regrasRes.json() as {
+          itens?: Array<{ nome?: unknown }>;
+        };
+        const normalizar = (nome: string) => nome.trim().toLocaleUpperCase();
+        const nomesDosItensDaRegra = new Set(
+          (regrasData.itens ?? [])
+            .map((item) => typeof item.nome === "string" ? normalizar(item.nome) : "")
+            .filter(Boolean),
+        );
+        const setoresDaRegra = setoresData.filter((setor) =>
+          nomesDosItensDaRegra.has(normalizar(setor.nome)),
+        );
+
+        setSetores(setoresDaRegra);
         setLiderancas(liderancasData);
       } catch {
         toast.error("Erro ao carregar opções");
@@ -83,7 +101,7 @@ export function ConsultorPfForm({
         nome: consultor.nome,
         email: consultor.email,
         cpf: consultor.cpf,
-        telefone: consultor.telefone || "",
+
         liderancaId: consultor.liderancaId,
         setores: consultor.setores.map((s) => s.id),
       });
@@ -92,7 +110,7 @@ export function ConsultorPfForm({
         nome: "",
         email: "",
         cpf: "",
-        telefone: "",
+
         liderancaId: "",
         setores: [],
       });
@@ -131,9 +149,11 @@ export function ConsultorPfForm({
     if (!formData.nome.trim() || formData.nome.length < 3) {
       newErrors.nome = "Nome deve ter no mínimo 3 caracteres";
     }
-    if (!formData.email.trim() || !formData.email.includes("@")) {
+    
+        if (!formData.email.trim() || !formData.email.includes("@")) {
       newErrors.email = "Email inválido";
     }
+
     const cpfNumbers = formData.cpf.replace(/\D/g, "");
     if (cpfNumbers.length !== 11) {
       newErrors.cpf = "CPF deve ter 11 dígitos";
@@ -221,7 +241,8 @@ export function ConsultorPfForm({
               {errors.nome && <p className="mt-1 text-xs text-red-500">{errors.nome}</p>}
             </div>
 
-            <div className="md:col-span-2">
+
+                        <div className="md:col-span-2">
               <label htmlFor="consultor-pf-email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email <span className="text-red-500">*</span>
               </label>
@@ -235,11 +256,10 @@ export function ConsultorPfForm({
                 }`}
                 placeholder="email@exemplo.com"
                 disabled={isEditing}
+                required
               />
               {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
-              {isEditing && (
-                <p className="mt-1 text-xs text-gray-500">O email não pode ser alterado após a criação.</p>
-              )}
+              {isEditing && <p className="mt-1 text-xs text-gray-500">O email não pode ser alterado após a criação.</p>}
             </div>
 
             <div>
@@ -264,17 +284,6 @@ export function ConsultorPfForm({
               )}
             </div>
 
-            <div>
-              <label htmlFor="consultor-pf-telefone" className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
-              <input
-                id="consultor-pf-telefone"
-                type="tel"
-                value={formData.telefone}
-                onChange={(e) => handleChange("telefone", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 text-sm"
-                placeholder="(11) 99999-9999"
-              />
-            </div>
 
             <div>
               <label htmlFor="consultor-pf-lideranca" className="block text-sm font-medium text-gray-700 mb-1">
@@ -321,7 +330,7 @@ export function ConsultorPfForm({
               </div>
               {errors.setores && <p className="mt-1 text-xs text-red-500">{errors.setores}</p>}
               <p className="mt-1 text-xs text-gray-500">
-                Selecione ao menos um setor. Máximo de 20 setores.
+                Selecione ao menos um setor.
               </p>
             </fieldset>
           </div>

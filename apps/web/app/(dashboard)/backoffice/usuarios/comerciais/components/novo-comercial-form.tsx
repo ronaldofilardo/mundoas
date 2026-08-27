@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface NovoComercialFormProps {
@@ -11,27 +11,52 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
-  const [telefone, setTelefone] = useState("");
   const [lideranca, setLideranca] = useState("");
   const [funcao, setFuncao] = useState("");
+  const [funcoes, setFuncoes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingFuncoes, setLoadingFuncoes] = useState(false);
 
-  const funcoesComercial = [
-    "SUPERVISOR_COMERCIAL",
-    "GERENTE_CIRE",
-    "SUPERVISOR_ATIVO",
-    "SUPERVISOR_RECEPTIVO",
-  ];
+  useEffect(() => {
+    let cancelled = false;
 
-  const funcoesGestor = [
-    "GERENTE_CIRE",
-    "SUPERVISOR_ATIVO",
-    "SUPERVISOR_RECEPTIVO",
-    "SUPERVISOR_FRANQUIA",
-    "SUPERVISOR_ATENDIMENTO",
-    "GERENTE_ATENDIMENTO",
-    "SUPERVISOR_COMERCIAL",
-  ];
+    if (!lideranca) {
+      setFuncoes([]);
+      return;
+    }
+
+    async function carregarFuncoes() {
+      setLoadingFuncoes(true);
+      try {
+        const endpoint = lideranca === "COMERCIAL"
+          ? "/api/v1/backoffice/regras-comerciais"
+          : "/api/v1/backoffice/regras-gestores";
+        const res = await fetch(endpoint);
+        if (!res.ok) throw new Error("Não foi possível carregar as funções da regra");
+
+        const data = await res.json() as { itens?: Array<{ nome?: unknown }> };
+        const nomes = (data.itens ?? [])
+          .map((item) => typeof item.nome === "string" ? item.nome.trim() : "")
+          .filter(Boolean);
+
+        if (!cancelled) setFuncoes(Array.from(new Set(nomes)));
+      } catch (error) {
+        if (!cancelled) {
+          setFuncoes([]);
+          toast.error(error instanceof Error ? error.message : "Erro ao carregar funções");
+        }
+      } finally {
+        if (!cancelled) setLoadingFuncoes(false);
+      }
+    }
+
+    setFuncao("");
+    void carregarFuncoes();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lideranca]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,7 +83,6 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
           nome,
           cpf: cpfDigits,
           email: email.toLowerCase().trim(),
-          telefone: telefone || undefined,
           lideranca: lideranca || undefined,
           funcao: lideranca ? funcao : undefined,
           percentualComissao: 0,
@@ -82,7 +106,6 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
       setNome("");
       setCpf("");
       setEmail("");
-      setTelefone("");
       setLideranca("");
       setFuncao("");
       onCreated();
@@ -144,19 +167,6 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
           />
         </div>
         <div>
-          <label htmlFor="novo-comercial-telefone" className="block text-sm font-medium text-gray-700 mb-1">
-            Telefone
-          </label>
-          <input
-            id="novo-comercial-telefone"
-            type="tel"
-            value={telefone}
-            onChange={(e) => setTelefone(e.target.value)}
-            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-500"
-            placeholder="(00) 00000-0000"
-          />
-        </div>
-        <div>
           <label htmlFor="novo-comercial-lideranca" className="block text-sm font-medium text-gray-700 mb-1">
             Liderança
           </label>
@@ -183,13 +193,12 @@ export function NovoComercialForm({ onCreated }: NovoComercialFormProps) {
             value={funcao}
             onChange={(e) => setFuncao(e.target.value)}
             className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-500"
-            disabled={!lideranca}
+            disabled={!lideranca || loadingFuncoes}
           >
-            <option value="">Selecione</option>
-            {lideranca === "COMERCIAL" && funcoesComercial.map((f) => (
-              <option key={f} value={f}>{f.replace(/_/g, " ")}</option>
-            ))}
-            {lideranca === "GESTOR" && funcoesGestor.map((f) => (
+            <option value="">
+              {loadingFuncoes ? "Carregando..." : "Selecione"}
+            </option>
+            {funcoes.map((f) => (
               <option key={f} value={f}>{f.replace(/_/g, " ")}</option>
             ))}
           </select>

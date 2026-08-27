@@ -86,6 +86,7 @@ export async function GET(req: NextRequest) {
             codigo: true,
             descricao: true,
             custoPontos: true,
+            prazoEntregaDias: true,
           },
         },
         cicloPontos: {
@@ -101,7 +102,9 @@ export async function GET(req: NextRequest) {
     return ok({
       resgates: resgates
         .filter((r): r is typeof r & { parceiro: NonNullable<typeof r.parceiro> } => r.parceiro !== null)
-        .map((r) => ({
+        .map((r) => {
+        const prazoEntregaDias = r.prazoEntregaDias > 0 ? r.prazoEntregaDias : r.premio.prazoEntregaDias;
+        return ({
         id: r.id,
         parceiro: {
           id: r.parceiro.id,
@@ -113,6 +116,7 @@ export async function GET(req: NextRequest) {
           codigo: r.premio.codigo,
           descricao: r.premio.descricao,
           custoPontos: r.premio.custoPontos,
+          prazoEntregaDias: r.premio.prazoEntregaDias,
         },
         cicloPontos: {
           id: r.cicloPontos.id,
@@ -122,10 +126,17 @@ export async function GET(req: NextRequest) {
         status: r.status,
         solicitadoEm: r.solicitadoEm.toISOString(),
         processadoEm: r.processadoEm?.toISOString(),
+        // Registros criados antes do snapshot podem ter zero; nesses casos,
+        // usa-se o prazo atual do prêmio para manter a fila operacional útil.
+        prazoEntregaDias,
+        prazoEntregaAte: r.processadoEm && ["APROVADO", "ENTREGUE"].includes(r.status)
+          ? new Date(r.processadoEm.getTime() + prazoEntregaDias * 86400000).toISOString()
+          : undefined,
         entregueEm: r.entregueEm?.toISOString(),
         canceladoEm: r.canceladoEm?.toISOString(),
         observacao: r.observacao,
-      })),
+      });
+      }),
     });
   } catch (err) {
     console.error("Erro ao buscar resgates:", err);

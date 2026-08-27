@@ -169,13 +169,14 @@ export async function POST(req: NextRequest) {
       status,
     } = parsed.data;
     const cpfClean = cpf.replace(/\D/g, "");
+    const emailLower = email.toLowerCase().trim();
 
     if (tipo === "LIDERANCA" && !tipoLideranca) {
       return badRequest("Informe o tipo de liderança (COMERCIAL ou GESTOR)");
     }
 
     const existsUsuario = await prisma.usuario.findUnique({
-      where: { email: email.toLowerCase().trim() },
+      where: { email: emailLower },
     });
     if (existsUsuario) return badRequest("Email já cadastrado no sistema");
 
@@ -199,6 +200,34 @@ export async function POST(req: NextRequest) {
     });
     if (!backoffice) return forbidden();
 
+    if (funcao && tipoLideranca) {
+      const regra = tipoLideranca === "COMERCIAL"
+        ? await prisma.regraComercial.findUnique({
+            where: { backofficeId: backofficeId! },
+            select: {
+              itens: {
+                where: { nome: funcao, tipo: "CUSTOM" },
+                select: { id: true },
+                take: 1,
+              },
+            },
+          })
+        : await prisma.regraGestor.findUnique({
+            where: { backofficeId: backofficeId! },
+            select: {
+              itens: {
+                where: { nome: funcao, tipo: "CUSTOM" },
+                select: { id: true },
+                take: 1,
+              },
+            },
+          });
+
+      if (!regra?.itens.length) {
+        return badRequest("A função selecionada não está cadastrada na regra da liderança");
+      }
+    }
+
     const senhaTemporaria = gerarSenhaProvisoria(cpfClean);
     const senhaHash = await hash(senhaTemporaria, 12);
 
@@ -206,7 +235,7 @@ export async function POST(req: NextRequest) {
       const usuario = await tx.usuario.create({
         data: {
           nome,
-          email: email.toLowerCase().trim(),
+          email: emailLower,
           senhaHash,
           tipo,
           telefone: telefone || undefined,
@@ -244,7 +273,7 @@ export async function POST(req: NextRequest) {
       id: result.membro.id,
       usuarioId: result.usuario.id,
       nome,
-      email: email.toLowerCase().trim(),
+      email: emailLower,
       cpf: cpfClean,
       tipo,
       tipoLideranca: result.membro.tipoLideranca,

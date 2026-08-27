@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 
 interface Resgate {
   id: string;
-  premio: { id: string; nome: string; custoPontos: number };
+  premio: { id: string; nome: string; custoPontos: number; prazoEntregaDias?: number };
   cicloPontos: { id: string; nome: string };
   pontosDebitados: number;
   status: string;
   solicitadoEm: string;
+  prazoEntregaDias: number;
+  prazoEntregaAte?: string;
   entregueEm?: string;
   canceladoEm?: string;
   observacao?: string;
@@ -148,7 +150,7 @@ export function MinhassolicitacoesResgate() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
             <div>
               <p className="text-xs text-gray-600 uppercase mb-1">Pontos</p>
               <p className="text-lg font-semibold text-gray-900">
@@ -161,6 +163,17 @@ export function MinhassolicitacoesResgate() {
               </p>
               <p className="text-sm text-gray-700">
                 {new Date(resgate.solicitadoEm).toLocaleDateString("pt-BR")}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-600 uppercase mb-1">Entrega em</p>
+              <p className="text-sm font-medium text-gray-700">
+                {resgate.prazoEntregaAte
+                  ? new Date(resgate.prazoEntregaAte).toLocaleDateString("pt-BR")
+                  : "Após aprovação"}
+              </p>
+              <p className="text-xs text-gray-500">
+                Prazo: {resgate.prazoEntregaDias} {resgate.prazoEntregaDias === 1 ? "dia" : "dias"}
               </p>
             </div>
             <div>

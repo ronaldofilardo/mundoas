@@ -15,6 +15,7 @@ interface ResgateItem {
     codigo: string;
     descricao: string;
     custoPontos: number;
+    prazoEntregaDias: number;
   };
   cicloPontos: {
     id: string;
@@ -24,6 +25,8 @@ interface ResgateItem {
   status: string;
   solicitadoEm: string;
   processadoEm?: string;
+  prazoEntregaDias: number;
+  prazoEntregaAte?: string;
   entregueEm?: string;
   canceladoEm?: string;
   observacao?: string;
@@ -114,6 +117,7 @@ export function ResgatePontos({ data }: { data?: ResgateItem[] }) {
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">PONTOS</th>
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">STATUS</th>
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">SOLICITADO EM</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">ENTREGA ATÉ</th>
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">AÇÕES</th>
               </tr>
             </thead>
@@ -121,6 +125,11 @@ export function ResgatePontos({ data }: { data?: ResgateItem[] }) {
               {data.map((resgate) => {
                 const statusConfig = getStatusConfig(resgate.status);
                 const allowedTransitions = STATUS_TRANSITIONS[resgate.status] || [];
+                const prazoEntregaAte = resgate.prazoEntregaAte || (
+                  resgate.processadoEm && ["APROVADO", "ENTREGUE"].includes(resgate.status)
+                    ? new Date(new Date(resgate.processadoEm).getTime() + resgate.prazoEntregaDias * 86400000).toISOString()
+                    : null
+                );
 
                 return (
                   <tr key={resgate.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -141,6 +150,9 @@ export function ResgatePontos({ data }: { data?: ResgateItem[] }) {
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-600">
                       {new Date(resgate.solicitadoEm).toLocaleDateString("pt-BR")}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-600">
+                      {prazoEntregaAte ? new Date(prazoEntregaAte).toLocaleDateString("pt-BR") : "Após aprovação"}
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex flex-wrap gap-1">

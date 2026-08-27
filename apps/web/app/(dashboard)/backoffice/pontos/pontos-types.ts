@@ -48,18 +48,21 @@ export interface PremioPontosItem {
   tipo: string;
   descricao: string;
   custoPontos: number;
+  prazoEntregaDias: number;
   ativo: boolean;
 }
 
 export interface ResgatePontosItem {
   id: string;
   parceiro: { id: string; nome: string; cpf: string };
-  premio: { id: string; codigo: string; descricao: string; custoPontos: number };
+  premio: { id: string; codigo: string; descricao: string; custoPontos: number; prazoEntregaDias: number };
   cicloPontos: { id: string; nome: string };
   pontosDebitados: number;
   status: string;
   solicitadoEm: string;
   processadoEm?: string;
+  prazoEntregaDias: number;
+  prazoEntregaAte?: string;
   entregueEm?: string;
   canceladoEm?: string;
   observacao?: string;
