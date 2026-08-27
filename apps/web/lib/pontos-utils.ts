@@ -1,19 +1,16 @@
 import { prisma } from "@asa/database";
 import { Decimal } from "@prisma/client/runtime/library";
+import { obterValorBasePontos, validarValorBasePontos } from "./parceiros-pontos-regras";
 import {
   buscarVersaoComercial,
   buscarVersaoGestor,
 } from "./regras-versoes";
 
-/**
- * Calcula pontos baseado em produção, configuração vigente e tipo de arredondamento
- */
-export async function calcularPontosDeProducao(
-  valorProcedimento: number | Decimal,
-  dataReferencia: Date,
+/** Retorna a configuração de pontos vigente para a data de referência. */
+export async function obterConfiguracaoPontosVigente(
   backofficeId: string,
-): Promise<number> {
-  // Buscar configuração vigente para a data de referência
+  dataReferencia: Date,
+) {
   let config = await prisma.configuracaoPontos.findFirst({
     where: {
       backofficeId,
@@ -23,7 +20,8 @@ export async function calcularPontosDeProducao(
     orderBy: { vigenteDesde: "desc" },
   });
 
-  // Fallback: se não encontrou config para a data exata, usar a mais recente
+  // Compatibilidade: se não houver configuração vigente para a data,
+  // usar a configuração mais recente do mesmo Backoffice.
   if (!config) {
     config = await prisma.configuracaoPontos.findFirst({
       where: { backofficeId },
@@ -37,11 +35,20 @@ export async function calcularPontosDeProducao(
     );
   }
 
+  return config;
+}
+
+/** Aplica a fórmula configurada: valor da produção / reais por ponto. */
+export function calcularPontosComConfiguracao(
+  valorProcedimento: number | Decimal,
+  config: { valorPorPonto: Decimal; tipoArredondamento: string },
+): number {
   const valorNum =
-    typeof valorProcedimento === "number" ? valorProcedimento : valorProcedimento.toNumber();
+    typeof valorProcedimento === "number"
+      ? valorProcedimento
+      : valorProcedimento.toNumber();
   let pontos = valorNum / config.valorPorPonto.toNumber();
 
-  // Aplicar arredondamento
   if (config.tipoArredondamento === "PISO") {
     pontos = Math.floor(pontos);
   } else if (config.tipoArredondamento === "TETO") {
@@ -54,6 +61,18 @@ export async function calcularPontosDeProducao(
 }
 
 /**
+ * Calcula pontos baseado na produção, na configuração vigente e no arredondamento.
+ */
+export async function calcularPontosDeProducao(
+  valorProcedimento: number | Decimal,
+  dataReferencia: Date,
+  backofficeId: string,
+): Promise<number> {
+  const config = await obterConfiguracaoPontosVigente(backofficeId, dataReferencia);
+  return calcularPontosComConfiguracao(valorProcedimento, config);
+}
+
+/**
  * Obtém o ciclo de pontos vigente (EM_ANDAMENTO ou RESGATE_ABERTO)
  * Se `periodicidade` for informada, filtra também por ela, para que ciclos
  * SEMESTRAL e ANUAL possam coexistir.
@@ -61,6 +80,7 @@ export async function calcularPontosDeProducao(
 export async function obterCicloVigente(
   backofficeId: string,
   periodicidade?: "SEMESTRAL" | "ANUAL",
+  publico: "PARCEIRO" | "CONSULTOR_PF" = "PARCEIRO",
 ) {
   const agora = new Date();
 
@@ -68,6 +88,7 @@ export async function obterCicloVigente(
     where: {
       backofficeId,
       ...(periodicidade ? { periodicidade } : {}),
+      publico,
       OR: [
         { status: "EM_ANDAMENTO" },
         {
@@ -133,6 +154,56 @@ export async function calcularSaldoPontos(
   const estornos = somaEstornos._sum.quantidade || 0;
 
   return creditos - debitos + estornos;
+}
+
+/** Obtém um ciclo exclusivo do público Consultor PF. */
+export async function obterCicloBonusConsultorPf(backofficeId: string) {
+  return prisma.cicloPontos.findFirst({
+    where: {
+      backofficeId,
+      publico: "CONSULTOR_PF",
+      OR: [{ status: "EM_ANDAMENTO" }, { status: "RESGATE_ABERTO" }],
+    },
+    orderBy: { inicioAcumuloEm: "desc" },
+  });
+}
+
+/** Calcula o saldo PF sem misturar movimentos de Parceiro. */
+export async function calcularSaldoBonusConsultorPf(
+  consultorPfId: string,
+  cicloPontosId: string,
+): Promise<number> {
+  const [creditos, debitos, estornos] = await Promise.all([
+    prisma.movimentacaoPontos.aggregate({ _sum: { quantidade: true }, where: { consultorPfId, cicloPontosId, tipo: "CREDITO" } }),
+    prisma.movimentacaoPontos.aggregate({ _sum: { quantidade: true }, where: { consultorPfId, cicloPontosId, tipo: "DEBITO" } }),
+    prisma.movimentacaoPontos.aggregate({ _sum: { quantidade: true }, where: { consultorPfId, cicloPontosId, tipo: "ESTORNO" } }),
+  ]);
+  return (creditos._sum.quantidade ?? 0) - (debitos._sum.quantidade ?? 0) + (estornos._sum.quantidade ?? 0);
+}
+
+/** Usa a mesma configuração de pontos do Parceiro para creditar produção PF uma única vez. */
+export async function creditarBonusConsultorPfPorProducao(params: {
+  procedimentoId: string;
+  consultorPfId: string;
+  backofficeId: string;
+  cicloPontosId: string;
+  valorTotal: number | Decimal;
+  dataReferencia: Date;
+}) {
+  const existente = await prisma.movimentacaoPontos.findFirst({
+    where: { consultorPfId: params.consultorPfId, cicloPontosId: params.cicloPontosId, referenciaProcedimentoId: params.procedimentoId, origem: "PRODUCAO_IMPORTADA", tipo: "CREDITO" },
+    select: { id: true, quantidade: true },
+  });
+  if (existente) return { criado: false, movimentacao: existente };
+  const valorBase = obterValorBasePontos(params.valorTotal);
+  if (!validarValorBasePontos(valorBase)) throw new Error("Valor total deve ser maior que zero");
+  const pontos = await calcularPontosDeProducao(valorBase, params.dataReferencia, params.backofficeId);
+  if (pontos <= 0) throw new Error("Pontos calculados é zero ou negativo");
+  const movimentacao = await prisma.movimentacaoPontos.create({
+    data: { consultorPfId: params.consultorPfId, cicloPontosId: params.cicloPontosId, tipo: "CREDITO", origem: "PRODUCAO_IMPORTADA", quantidade: pontos, referenciaProcedimentoId: params.procedimentoId, descricao: "Bônus por produção PF" },
+    select: { id: true, quantidade: true },
+  });
+  return { criado: true, movimentacao };
 }
 
 /**
@@ -359,6 +430,7 @@ export async function calcularComissaoConsultorPf(params: {
 
   const regraComercial = await prisma.regraComercial.findUnique({
     where: { backofficeId },
+    include: { itens: { where: { tipo: "CUSTOM" } } },
   });
 
   const regraComercialVersao = regraComercial
@@ -390,6 +462,10 @@ export async function calcularComissaoConsultorPf(params: {
       franchisingCartao: regraComercialVigente.franchisingCartao,
       unidade: regraComercialVigente.unidade,
     },
+    itensCustom: (regraComercial?.itens ?? []).map((i) => ({
+      nome: i.nome,
+      percentual: Number(i.percentual),
+    })),
   });
   const percentualAplicado = valorProcedimento
     ? Number(((valorComissao / valorProcedimento) * 100).toFixed(2))
@@ -426,9 +502,22 @@ export function calcularValorComissaoPf(params: {
   valorProcedimento: number;
   tipoProcedimento?: string;
   regraComercial?: Record<string, number | string | Decimal> | null;
+  itensCustom?: Array<{ nome: string; percentual: number }>;
 }): number {
-  if (!params.regraComercial || !params.valorProcedimento) return 0;
-  const campo = CAMPOS_COMISSAO_PF[normalizarTipoProcedimento(params.tipoProcedimento)] ?? "unidade";
-  const percentual = Number(params.regraComercial[campo] ?? 0);
+  if (!params.valorProcedimento) return 0;
+  const tipoNormalizado = normalizarTipoProcedimento(params.tipoProcedimento);
+  const campo = CAMPOS_COMISSAO_PF[tipoNormalizado];
+  let percentual = 0;
+  if (campo && params.regraComercial) {
+    percentual = Number(params.regraComercial[campo] ?? 0);
+  } else if (tipoNormalizado && params.itensCustom) {
+    const item = params.itensCustom.find(
+      (i) => normalizarTipoProcedimento(i.nome) === tipoNormalizado,
+    );
+    if (item) percentual = Number(item.percentual) || 0;
+  }
+  if (!campo && !percentual && params.regraComercial) {
+    percentual = Number(params.regraComercial["unidade"] ?? 0);
+  }
   return Number((params.valorProcedimento * (percentual / 100)).toFixed(2));
 }

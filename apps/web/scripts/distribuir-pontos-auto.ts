@@ -1,6 +1,15 @@
 import { prisma } from "@asa/database";
 import { calcularPontosDeProducao, obterCicloVigente } from "../lib/pontos-utils";
 
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "P2002"
+  );
+}
+
 async function main() {
   console.log("🔄 Distribuindo pontos automaticamente para teste...\n");
 
@@ -55,6 +64,7 @@ async function main() {
       where: {
         referenciaProcedimentoId: proc.id,
         origem: "PRODUCAO_IMPORTADA",
+        tipo: "CREDITO",
       },
     });
 
@@ -71,18 +81,27 @@ async function main() {
       backoffice.id,
     );
 
-    // Criar movimentação
-    await prisma.movimentacaoPontos.create({
-      data: {
-        parceiroId: proc.parceiroId!,
-        cicloPontosId: ciclo.id,
-        tipo: "CREDITO",
-        quantidade: pontos,
-        descricao: `Pontos por produção: ${proc.procedimento.substring(0, 50)}`,
-        referenciaProcedimentoId: proc.id,
-        origem: "PRODUCAO_IMPORTADA",
-      },
-    });
+    // Criar movimentação. A constraint única do ledger é a proteção final
+    // contra duas execuções simultâneas desta rotina.
+    try {
+      await prisma.movimentacaoPontos.create({
+        data: {
+          parceiroId: proc.parceiroId!,
+          cicloPontosId: ciclo.id,
+          tipo: "CREDITO",
+          quantidade: pontos,
+          descricao: `Pontos por produção: ${proc.procedimento.substring(0, 50)}`,
+          referenciaProcedimentoId: proc.id,
+          origem: "PRODUCAO_IMPORTADA",
+        },
+      });
+    } catch (err) {
+      if (isUniqueViolation(err)) {
+        console.log(`⏭️  ${proc.paciente}: já distribuído por outra execução`);
+        continue;
+      }
+      throw err;
+    }
 
     console.log(`✅ ${proc.paciente}: ${pontos} pontos (R$ ${proc.valorComissao})`);
     totalDistribuido++;

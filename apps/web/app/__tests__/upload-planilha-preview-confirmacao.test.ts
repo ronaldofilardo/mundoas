@@ -312,3 +312,22 @@ describe("UploadPlanilhaPreview — backdrop do modal (a11y)", () => {
     }
   });
 });
+
+
+describe("UploadPlanilhaPreview — duplicidades e vínculo PF informativo", () => {
+  it("expõe a classificação DUPLICADA no contrato do preview", () => {
+    expect(source).toContain('"DUPLICADA"');
+    expect(source).toContain("summary.duplicadas");
+    expect(source).toContain("criarFeedbackDuplicidadesPreview");
+  });
+
+  it("abre feedback quando o preview detecta produção repetida", () => {
+    expect(source).toMatch(/const\s+duplicadas\s*=\s*data\.summary\?\.duplicadas\s*\?\?\s*0/);
+    expect(source).toMatch(/if\s*\(duplicadas\s*>\s*0\)/);
+  });
+
+  it("não trata Consultor PF ausente como rejeição de uma produção válida", () => {
+    expect(source).toContain("a produção será importada sem vínculo PF");
+    expect(source).toContain("Sem vínculo PF; será importada sem Consultor PF.");
+  });
+});

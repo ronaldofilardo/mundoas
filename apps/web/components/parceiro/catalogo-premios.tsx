@@ -98,8 +98,8 @@ export function CatalogoPremios() {
       {!catalogo.emPeriodoResgate && (
         <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
           <p className="text-amber-700 text-sm font-medium">
-            ⏰ O período de resgate ainda não foi aberto. Você pode visualizar
-            os prêmios, mas não poderá solicitar ainda.
+            O período de resgate está fechado no momento. A janela vai do início
+            do ciclo até o fim do resgate; você pode visualizar os prêmios enquanto isso.
           </p>
         </div>
       )}

@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
     const procedimentosDoComercial = await prisma.procedimentoPF.findMany({
       where: {
         comercialId,
+        modalidadeContemplacao: "COMISSAO",
         valorComissao: 0,
         upload: { backofficeId },
         dataReferencia: {

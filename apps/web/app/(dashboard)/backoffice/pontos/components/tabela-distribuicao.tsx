@@ -17,6 +17,7 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
   const [filtroDataInicio, setFiltroDataInicio] = useState("");
   const [filtroDataFim, setFiltroDataFim] = useState("");
   const [atualizando, setAtualizando] = useState(false);
+  const [distribuindoTodos, setDistribuindoTodos] = useState(false);
 
   const parceiros = useMemo(() => {
     if (!data) return [];
@@ -78,6 +79,45 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
     setFiltroDataFim("");
   };
 
+  const pendentes = useMemo(
+    () => (data || []).filter((p) => !p.pontosDistribuidos).length,
+    [data],
+  );
+
+  const handleDistribuirTodos = async () => {
+    if (!pendentes) return;
+    if (!window.confirm(`Distribuir pontos de ${pendentes} produção(ões) pendente(s)?`)) return;
+
+    setDistribuindoTodos(true);
+    try {
+      const res = await fetch("/api/v1/backoffice/pontos/distribuir-todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        toast.error(json.error || "Erro ao distribuir pontos em lote");
+        return;
+      }
+
+      if (json.erros?.length) {
+        toast.warning(
+          `${json.distribuidos} produção(ões) creditada(s), ${json.totalPontos} pontos no total. ${json.erros.length} com erro.`,
+        );
+      } else {
+        toast.success(json.mensagem || "Pontos distribuídos com sucesso!");
+      }
+
+      onDistribuir?.();
+    } catch {
+      toast.error("Erro ao distribuir pontos em lote");
+    } finally {
+      setDistribuindoTodos(false);
+    }
+  };
+
   const handleAtualizar = async () => {
     setAtualizando(true);
     try {
@@ -96,31 +136,57 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
         <h2 className="text-xl font-bold text-gray-900">
           Distribuir Pontos por Produção
         </h2>
-        <button
-          onClick={handleAtualizar}
-          disabled={atualizando}
-          className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {atualizando ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-              Atualizando...
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Atualizar
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleDistribuirTodos}
+            disabled={distribuindoTodos || pendentes === 0}
+            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {distribuindoTodos ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                Distribuindo...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Distribuir Todos
+              </>
+            )}
+          </button>
+          <button
+            onClick={handleAtualizar}
+            disabled={atualizando}
+            className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {atualizando ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                Atualizando...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Atualizar
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {ciclo && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
           <p className="text-sm text-blue-800">
             <strong>Ciclo vigente:</strong> {ciclo.nome}
+          </p>
+          <p className="text-xs text-blue-700 mt-1">
+            Fonte: produções válidas da lista de produção por upload deste Backoffice.
+            Os pontos são calculados por <strong>valor da produção ÷ R$ por ponto</strong>,
+            conforme a configuração vigente na data de referência.
           </p>
         </div>
       )}
@@ -223,6 +289,9 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
                 <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Total
                 </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  R$/ponto
+                </th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Data
                 </th>
@@ -248,6 +317,9 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
                   </td>
                   <td className="px-4 py-3 text-sm font-semibold text-green-600 text-right">
                     R$ {Number(producao.valorTotal ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-semibold text-blue-700 text-right">
+                    R$ {Number(producao.valorPorPonto ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600 text-center">
                     {new Date(producao.dataReferencia || producao.dataProcedimento || "").toLocaleDateString(

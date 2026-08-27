@@ -529,6 +529,7 @@ model UploadPlanilhaBackoffice {
   status          StatusUpload        @default(PROCESSANDO)
   totalRows       Int                 @default(0) @map("total_rows")
   processedRows   Int                 @default(0) @map("processed_rows")
+  duplicatedRows  Int                 @default(0) @map("duplicated_rows")
   rejectedRows    Int                 @default(0) @map("rejected_rows")
   orphanedRows    Int                 @default(0) @map("orphaned_rows")
   createdAt       DateTime            @default(now()) @map("created_at")
@@ -651,7 +652,7 @@ model CicloPontos {
   periodicidade         PeriodicidadeCiclo   @default(ANUAL) @map("periodicidade")
   publico               PublicoCicloPontos   @default(PARCEIRO) @map("publico")
   backofficeId          String               @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @map("backoffice_id") @db.Uuid
-  inicioResgateEm       DateTime?            @map("inicio_resgate_em")
+  inicioResgateEm       DateTime             @map("inicio_resgate_em")
   backoffice            Backoffice           @relation(fields: [backofficeId], references: [id])
   movimentacoes         MovimentacaoPontos[]
   rankingSnapshots      RankingSnapshot[]

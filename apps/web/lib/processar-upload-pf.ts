@@ -14,6 +14,10 @@ function normalizarCpf(cpf: string): string {
   return cpf.replace(/\D/g, "");
 }
 
+function dataParaChave(data: Date): string {
+  return data.toISOString().slice(0, 10);
+}
+
 /**
  * Processa upload de planilha PF em background.
  *
@@ -71,37 +75,29 @@ export async function processarUploadPlanilhaPF(
       throw new Error("Planilha vazia ou sem cabeçalhos");
     }
 
-    // Tornar o re-upload idempotente: remove os procedimentos/linhas brutas
-    // já existentes para este backoffice no mesmo mês de referência antes de
-    // inserir. O createMany com skipDuplicates NÃO atualiza linhas existentes,
-    // então re-envios colidiriam com registros antigos (ex.: valorTotal=0) e
-    // permaneceriam zerados na "Lista de Produção".
-    try {
-      const uploadAtual = await prisma.uploadPlanilhaBackoffice.findUnique({
-        where: { id: uploadId },
-        select: { mesReferencia: true },
+    // Reuploads são idempotentes sem apagar dados existentes. A chave segue
+    // a constraint única de procedimentos_pf: data + CPF + procedimento + unidade.
+    const uploadAtual = await prisma.uploadPlanilhaBackoffice.findUnique({
+      where: { id: uploadId },
+      select: { mesReferencia: true },
+    });
+    const chavesExistentes = new Set<string>();
+    if (uploadAtual?.mesReferencia) {
+      const [ano, mes] = uploadAtual.mesReferencia.split("-");
+      const inicioMes = new Date(Number(ano), Number(mes) - 1, 1);
+      const fimMes = new Date(Number(ano), Number(mes), 0, 23, 59, 59);
+      const existentes = await prisma.procedimentoPF.findMany({
+        where: {
+          upload: { backofficeId },
+          dataReferencia: { gte: inicioMes, lte: fimMes },
+        },
+        select: { dataReferencia: true, cpf: true, procedimento: true, unidade: true },
       });
-      if (uploadAtual?.mesReferencia) {
-        const [ano, mes] = uploadAtual.mesReferencia.split("-");
-        const inicioMes = new Date(Number(ano), Number(mes) - 1, 1);
-        const fimMes = new Date(Number(ano), Number(mes), 0, 23, 59, 59);
-        await prisma.procedimentoPF.deleteMany({
-          where: {
-            upload: { backofficeId },
-            dataReferencia: { gte: inicioMes, lte: fimMes },
-          },
-        });
-        await prisma.procedimentoPFRaw.deleteMany({
-          where: {
-            upload: { backofficeId, mesReferencia: uploadAtual.mesReferencia },
-          },
-        });
+      for (const existente of existentes) {
+        chavesExistentes.add(
+          `${dataParaChave(existente.dataReferencia)}|${normalizarCpf(existente.cpf)}|${existente.procedimento}|${existente.unidade}`,
+        );
       }
-    } catch (cleanupErr) {
-      console.warn(
-        "[processarUploadPlanilhaPF] Falha ao limpar registros anteriores do mês (não fatal):",
-        cleanupErr,
-      );
     }
 
     const headersRaw = jsonData[1] || [];
@@ -205,6 +201,7 @@ const [comerciais, consultoresPf, gestores] = await Promise.all([
 
     let totalRows = 0;
     let processedRows = 0;
+    let duplicatedRows = 0;
     let rejectedRows = 0;
     let orphanedRows = 0;
 
@@ -368,6 +365,13 @@ if (usuarioDaConta) {
         continue;
       }
 
+      const chaveProcedimento = `${dataParaChave(dataReferencia)}|${cpf}|${procedimento}|${unidade}`;
+      if (chavesExistentes.has(chaveProcedimento)) {
+        duplicatedRows++;
+        continue;
+      }
+      chavesExistentes.add(chaveProcedimento);
+
       procedimentosToCreate.push({
         dataReferencia,
         dataPagamento: new Date(),
@@ -387,7 +391,8 @@ if (usuarioDaConta) {
         consultorPfId,
       });
 
-      processedRows++;
+              processedRows++;
+
     }
 
     // Persistir TODAS as linhas em procedimentos_pf_raw (auditoria)
@@ -417,6 +422,7 @@ if (usuarioDaConta) {
         status: "CONCLUIDO",
         totalRows,
         processedRows,
+        duplicatedRows,
         rejectedRows,
         orphanedRows,
       },

@@ -19,7 +19,6 @@ export function CriarCicloForm({ ciclo, onSaved, onCancel }: CicloFormProps) {
   const [nome, setNome] = useState("");
   const [inicio, setInicio] = useState("");
   const [fimAcumulo, setFimAcumulo] = useState("");
-  const [inicioResgate, setInicioResgate] = useState("");
   const [fimResgate, setFimResgate] = useState("");
   const [salvando, setSalvando] = useState(false);
 
@@ -27,7 +26,6 @@ export function CriarCicloForm({ ciclo, onSaved, onCancel }: CicloFormProps) {
     setNome(ciclo?.nome ?? "");
     setInicio(toDateInput(ciclo?.inicioAcumuloEm));
     setFimAcumulo(toDateInput(ciclo?.fimAcumuloEm));
-    setInicioResgate(toDateInput(ciclo?.inicioResgateEm));
     setFimResgate(toDateInput(ciclo?.fimResgateEm));
   }, [ciclo]);
 
@@ -43,9 +41,6 @@ export function CriarCicloForm({ ciclo, onSaved, onCancel }: CicloFormProps) {
         nome: nome.trim(),
         inicioAcumuloEm: new Date(`${inicio}T00:00:00`).toISOString(),
         fimAcumuloEm: new Date(`${fimAcumulo}T00:00:00`).toISOString(),
-        inicioResgateEm: inicioResgate
-          ? new Date(`${inicioResgate}T00:00:00`).toISOString()
-          : undefined,
         fimResgateEm: new Date(`${fimResgate}T00:00:00`).toISOString(),
       };
 
@@ -68,7 +63,6 @@ export function CriarCicloForm({ ciclo, onSaved, onCancel }: CicloFormProps) {
         setNome("");
         setInicio("");
         setFimAcumulo("");
-        setInicioResgate("");
         setFimResgate("");
       }
     } catch (error) {
@@ -103,9 +97,8 @@ export function CriarCicloForm({ ciclo, onSaved, onCancel }: CicloFormProps) {
           <label className="block text-xs text-gray-600 mb-1" htmlFor="fimAcumulo">Fim do acúmulo</label>
           <input id="fimAcumulo" type="date" value={fimAcumulo} onChange={(e) => setFimAcumulo(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
-        <div>
-          <label className="block text-xs text-gray-600 mb-1" htmlFor="inicioResgate">Início do resgate (opcional)</label>
-          <input id="inicioResgate" type="date" value={inicioResgate} onChange={(e) => setInicioResgate(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+        <div className="md:col-span-2 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-800">
+          O resgate começa automaticamente no primeiro dia do ciclo e permanece disponível até o fim do resgate.
         </div>
         <div>
           <label className="block text-xs text-gray-600 mb-1" htmlFor="fimResgate">Fim do resgate</label>

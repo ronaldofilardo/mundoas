@@ -102,6 +102,22 @@ describe("Bônus PF — integração completa", () => {
     expect(bonusBackoffice).toContain("O lançamento ficará preservado no extrato");
   });
 
+  it("segue o design pattern da tela de Pontos", () => {
+    expect(bonusBackoffice).toContain("border-gray-200");
+    expect(bonusBackoffice).toContain("bg-gray-50");
+    expect(bonusBackoffice).toContain("bg-primary-600");
+    expect(bonusBackoffice).toContain("bg-blue-100");
+    expect(bonusBackoffice).toContain("bg-red-100");
+    expect(bonusBackoffice).toContain("Criar novo ciclo");
+    expect(bonusBackoffice).toContain('type="date"');
+    expect(bonusBackoffice).toContain("O resgate começa automaticamente no primeiro dia do ciclo");
+    expect(bonusBackoffice).toContain("toast.success");
+    expect(bonusBackoffice).not.toContain("border-violet-200");
+    expect(bonusBackoffice).not.toContain("bg-violet-600");
+    expect(bonusBackoffice).not.toContain("datetime-local");
+    expect(bonusBackoffice).not.toContain("Periodicidade");
+  });
+
   it("mantém ranking PF separado do ranking de Parceiros", () => {
     expect(schema).toContain("RankingSnapshotConsultorPf");
     expect(schema).toContain("RankingPosicaoConsultorPf");

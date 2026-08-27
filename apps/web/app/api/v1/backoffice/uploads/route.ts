@@ -6,6 +6,7 @@ import {
   requireBackofficeWithScope,
 } from "@/lib/api-helpers";
 import { processarUploadPlanilhaPF } from "@/lib/processar-upload-pf";
+import { mensagemUploadAmigavel } from "@/lib/upload-feedback";
 
 export async function POST(req: NextRequest) {
   const { backofficeId, error } = await requireBackofficeWithScope();
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest) {
         status: "PROCESSANDO",
         totalRows: 0,
         processedRows: 0,
+        duplicatedRows: 0,
         rejectedRows: 0,
         orphanedRows: 0,
       },
@@ -53,8 +55,7 @@ export async function POST(req: NextRequest) {
         where: { id: upload.id },
         data: { status: "ERRO" },
       });
-      const message = processError instanceof Error ? processError.message : "Erro desconhecido";
-      return badRequest("Erro ao processar planilha: " + message);
+      return badRequest(mensagemUploadAmigavel(processError));
     }
 
     // Buscar upload atualizado com contagens
@@ -67,6 +68,7 @@ export async function POST(req: NextRequest) {
         status: true,
         totalRows: true,
         processedRows: true,
+        duplicatedRows: true,
         rejectedRows: true,
         orphanedRows: true,
       },
@@ -74,8 +76,7 @@ export async function POST(req: NextRequest) {
 
     return created(uploadFinal);
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Erro desconhecido";
     console.error("[upload POST] Erro:", e);
-    return badRequest("Erro ao fazer upload: " + message);
+    return badRequest(mensagemUploadAmigavel(e));
   }
 }

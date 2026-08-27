@@ -18,27 +18,19 @@ export async function GET(req: NextRequest) {
     const backofficeId = parceiro?.backofficeId ?? undefined;
     const now = new Date();
 
-    // Buscar ciclo com resgate aberto (prioriza RESGATE_ABERTO e verifica datas)
+    // A janela de resgate começa no início do ciclo e pode ocorrer durante o acúmulo.
     const cicloResgateAberto = await prisma.cicloPontos.findFirst({
       where: {
         backofficeId,
-        status: "RESGATE_ABERTO",
+        status: { in: ["EM_ANDAMENTO", "RESGATE_ABERTO"] },
         inicioResgateEm: { lte: now },
         fimResgateEm: { gte: now },
       },
     });
 
-    // Se não há ciclo com resgate aberto, buscar ciclo em andamento para mostrar saldo
-    const cicloEmAndamento = !cicloResgateAberto
-      ? await prisma.cicloPontos.findFirst({
-          where: {
-            backofficeId,
-            status: "EM_ANDAMENTO",
-          },
-        })
-      : null;
-
-    const cicloVigente = cicloResgateAberto || cicloEmAndamento;
+    const cicloVigente = cicloResgateAberto || await prisma.cicloPontos.findFirst({
+      where: { backofficeId, status: "EM_ANDAMENTO" },
+    });
 
     // Calcular saldo atual
     let saldoAtual = 0;
@@ -92,7 +84,8 @@ export async function GET(req: NextRequest) {
       orderBy: { custoPontos: "asc" },
     });
 
-    // Determinar se está em período de resgate (ciclo com RESGATE_ABERTO e datas válidas)
+        // Determinar se está em período de resgate (início do ciclo até fim do resgate).
+
     const emPeriodoResgate = !!cicloResgateAberto;
 
     return ok({

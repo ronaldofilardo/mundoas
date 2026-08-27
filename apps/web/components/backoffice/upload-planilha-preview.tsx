@@ -7,6 +7,12 @@ import {
   UPLOAD_POLL_INTERVAL_MS,
   UPLOAD_POLL_MAX_ATTEMPTS,
 } from "@/lib/upload-status-poll";
+import {
+  criarFeedbackDuplicidadesPreview,
+  criarFeedbackResultado,
+  mensagemUploadAmigavel,
+  type UploadFeedback,
+} from "@/lib/upload-feedback";
 
 export interface ConsultorPfBadgeProps {
   text: string;
@@ -18,7 +24,7 @@ export interface ConsultorPfBadgeProps {
  * Determina o badge exibido na coluna "Consultor PF" do preview:
  *  - "-" cinza   → usuário da conta vazio
  *  - "✓" verde   → bate com consultor PF (mostra o nome no title)
- *  - "✗" vermelho → não bate
+ *  - "!" âmbar   → usuário não é Consultor PF; vínculo PF é opcional para a produção
  */
 export function getConsultorPfBadgeProps(
   usuarioDaConta?: string,
@@ -35,9 +41,9 @@ export function getConsultorPfBadgeProps(
     };
   }
   return {
-    text: "✗",
-    className: "text-red-600",
-    title: "Não bate com consultor PF",
+    text: "!",
+    className: "text-amber-600",
+    title: "Usuário da conta não foi localizado como Consultor PF; a produção será importada sem vínculo PF",
   };
 }
 
@@ -52,8 +58,9 @@ interface PreviewRow {
   usuarioDaConta: string;
   valorComissao?: number;
   valorTotal?: number;
-  status: "VALIDO" | "ORFAO" | "REJEITADO";
+  status: "VALIDO" | "ORFAO" | "REJEITADO" | "DUPLICADA";
   motivo?: string;
+  alerta?: string;
   parceiroNome?: string;
   comercialNome?: string;
   gestorNome?: string;
@@ -70,6 +77,7 @@ interface PreviewData {
     validos: number;
     orfaos: number;
     rejeitados: number;
+    duplicadas?: number;
     totalComissao: number;
     colunasEncontradas: string[];
     colunasObrigatorias: string[];
@@ -89,10 +97,17 @@ interface UploadResult {
   summary?: {
     totalRows?: number;
     processedRows?: number;
+    duplicatedRows?: number;
     rejectedRows?: number;
     orphanedRows?: number;
   };
+  totalRows?: number;
+  processedRows?: number;
+  duplicatedRows?: number;
+  rejectedRows?: number;
+  orphanedRows?: number;
 }
+
 
 export function UploadPlanilhaPreview({
   onUploadSuccess,
@@ -106,6 +121,11 @@ export function UploadPlanilhaPreview({
   const [showAllRows, setShowAllRows] = useState(false);
   const [mesReferencia, setMesReferencia] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [feedback, setFeedback] = useState<UploadFeedback | null>(null);
+
+  const abrirFeedback = useCallback((novoFeedback: UploadFeedback) => {
+    setFeedback(novoFeedback);
+  }, []);
 
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,7 +134,12 @@ export function UploadPlanilhaPreview({
 
       const fileName = selectedFile.name.toLowerCase();
       if (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls")) {
-        toast.error("Apenas arquivos Excel (.xlsx, .xls) são permitidos");
+        abrirFeedback({
+          tone: "error",
+          title: "Formato de arquivo não suportado",
+          message: "Selecione uma planilha Excel válida para continuar.",
+          details: ["Formatos aceitos: .xlsx e .xls."],
+        });
         return;
       }
 
@@ -150,6 +175,17 @@ export function UploadPlanilhaPreview({
         console.log("[Preview] Parsed data:", data);
         setPreviewData(data);
 
+        const duplicadas = data.summary?.duplicadas ?? 0;
+        if (duplicadas > 0) {
+          abrirFeedback(
+            criarFeedbackDuplicidadesPreview({
+              duplicadas,
+              total: data.summary.total,
+              validas: data.summary.validos,
+            }),
+          );
+        }
+
         // Extrair mês de referência da primeira linha que tiver data válida
         // (prioriza VALIDO, mas aceita ORFAO/REJEITADO como fallback para
         // que o usuário sempre consiga enviar o arquivo)
@@ -165,7 +201,12 @@ export function UploadPlanilhaPreview({
           `Planilha processada: ${data.summary.total} linhas encontradas`,
         );
       } catch (error: unknown) {
-        toast.error(error instanceof Error ? error.message : "Erro ao processar arquivo");
+        abrirFeedback({
+          tone: "error",
+          title: "Não foi possível ler a planilha",
+          message: error instanceof Error ? error.message : "Erro ao processar arquivo",
+          details: ["Confira se o arquivo não está corrompido.", "Verifique se as colunas obrigatórias estão presentes."],
+        });
         setFile(null);
       } finally {
         setLoading(false);
@@ -188,10 +229,16 @@ export function UploadPlanilhaPreview({
     }
 
     if (previewData.summary.validos === 0) {
-      toast.error(
-        "Nenhuma linha válida para enviar. Corrija as rejeições na planilha e tente novamente.",
-        { duration: 8000 },
-      );
+      abrirFeedback({
+        tone: "warning",
+        title: "Nenhuma linha válida para enviar",
+        message: "A planilha foi lida, mas nenhuma linha pode ser gravada neste momento.",
+        details: [
+          `Rejeitadas: ${previewData.summary.rejeitados}.`,
+          `Órfãs: ${previewData.summary.orfaos}.`,
+          "Corrija os dados indicados no preview e tente novamente.",
+        ],
+      });
       return;
     }
 
@@ -245,24 +292,41 @@ export function UploadPlanilhaPreview({
       if (!res.ok) {
         const errorMsg =
           responseData.error || `Erro ${res.status} ao fazer upload`;
-        toast.error(errorMsg);
+        abrirFeedback({
+          tone: "error",
+          title: "O upload não foi aceito",
+          message: errorMsg,
+          details: ["Nenhuma produção foi confirmada neste envio."],
+        });
         return;
       }
 
       const uploadId = responseData.id;
       const status = responseData.status;
-      const summary = responseData.summary;
+      const summary = responseData.summary ?? {
+        totalRows: responseData.totalRows,
+        processedRows: responseData.processedRows,
+        duplicatedRows: responseData.duplicatedRows,
+        rejectedRows: responseData.rejectedRows,
+        orphanedRows: responseData.orphanedRows,
+      };
 
       if (!uploadId) {
-        toast.error("Upload aceito, mas não foi possível rastrear o status.");
-        if (onUploadSuccess) onUploadSuccess();
+        abrirFeedback({
+          tone: "error",
+          title: "Não foi possível acompanhar o upload",
+          message: "O servidor aceitou a solicitação, mas não retornou um identificador.",
+          details: ["Nenhuma confirmação de gravação foi apresentada."],
+        });
         return;
       }
 
       if (status === "ERRO") {
-        toast.error(
-          "Falha ao processar a planilha. Verifique o arquivo e tente novamente.",
-        );
+        abrirFeedback(criarFeedbackResultado({
+          status: "ERRO",
+                      error: mensagemUploadAmigavel(responseData.error),
+
+        }));
         return;
       }
 
@@ -276,9 +340,10 @@ export function UploadPlanilhaPreview({
         const resultado = await sondarStatusUpload(uploadId);
 
         if (resultado.status === "ERRO") {
-          toast.error(
-            "Falha ao processar a planilha. Verifique o arquivo e tente novamente.",
-          );
+          abrirFeedback(criarFeedbackResultado({
+            status: "ERRO",
+            error: mensagemUploadAmigavel("Falha ao processar a planilha. Verifique o arquivo e tente novamente."),
+          }));
           return;
         }
 
@@ -288,27 +353,25 @@ export function UploadPlanilhaPreview({
             { duration: 8000 },
           );
         } else {
-          const processed = resultado.summary?.processedRows ?? 0;
-          const orfaos = resultado.summary?.orphanedRows ?? 0;
-          const rejeitados = resultado.summary?.rejectedRows ?? 0;
-          toast.success(
-            `Upload concluído! ${processed} procedimentos salvos` +
-              (orfaos ? ` · ${orfaos} órfãos` : "") +
-              (rejeitados ? ` · ${rejeitados} rejeitados` : ""),
-            { duration: 6000 },
-          );
+          abrirFeedback(criarFeedbackResultado({
+            status: "CONCLUIDO",
+            totalRows: resultado.summary?.totalRows,
+            processedRows: resultado.summary?.processedRows,
+            duplicatedRows: resultado.summary?.duplicatedRows,
+            rejectedRows: resultado.summary?.rejectedRows,
+            orphanedRows: resultado.summary?.orphanedRows,
+          }));
         }
       } else {
         // status === "CONCLUIDO" - processamento síncrono completo
-        const processed = summary?.processedRows ?? 0;
-        const orfaos = summary?.orphanedRows ?? 0;
-        const rejeitados = summary?.rejectedRows ?? 0;
-        toast.success(
-          `Upload concluído! ${processed} procedimentos salvos` +
-            (orfaos ? ` · ${orfaos} órfãos` : "") +
-            (rejeitados ? ` · ${rejeitados} rejeitados` : ""),
-          { duration: 6000 },
-        );
+        abrirFeedback(criarFeedbackResultado({
+          status: "CONCLUIDO",
+          totalRows: summary?.totalRows,
+          processedRows: summary?.processedRows,
+          duplicatedRows: summary?.duplicatedRows,
+          rejectedRows: summary?.rejectedRows,
+          orphanedRows: summary?.orphanedRows,
+        }));
       }
 
       // Reset
@@ -323,14 +386,12 @@ export function UploadPlanilhaPreview({
       }
     } catch (error: unknown) {
       console.error("[Upload] Erro:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Erro ao fazer upload. Verifique a conexão.",
-        {
-          duration: 8000,
-        },
-      );
+      abrirFeedback({
+        tone: "error",
+        title: "Erro de comunicação",
+        message: mensagemUploadAmigavel(error),
+        details: ["Verifique a conexão e tente novamente.", "Nenhuma confirmação de gravação foi apresentada."],
+      });
     } finally {
       setUploading(false);
     }
@@ -344,6 +405,8 @@ export function UploadPlanilhaPreview({
         return "bg-yellow-100 text-yellow-800";
       case "REJEITADO":
         return "bg-red-100 text-red-800";
+      case "DUPLICADA":
+        return "bg-amber-100 text-amber-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -452,7 +515,7 @@ export function UploadPlanilhaPreview({
               Resumo do Preview
             </h3>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
               <div className="text-center p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs text-gray-500">Total</p>
                 <p className="text-lg font-bold text-gray-900">
@@ -475,6 +538,12 @@ export function UploadPlanilhaPreview({
                 <p className="text-xs text-red-600">Rejeitados</p>
                 <p className="text-lg font-bold text-red-700">
                   {previewData.summary.rejeitados}
+                </p>
+              </div>
+              <div className="text-center p-3 bg-amber-50 rounded-lg">
+                <p className="text-xs text-amber-700">Duplicadas</p>
+                <p className="text-lg font-bold text-amber-800">
+                  {previewData.summary.duplicadas ?? 0}
                 </p>
               </div>
               <div className="text-center p-3 bg-blue-50 rounded-lg">
@@ -613,14 +682,19 @@ export function UploadPlanilhaPreview({
                         >
                           {row.status}
                         </span>
-                        {row.motivo && row.status === "REJEITADO" && (
+                        {row.motivo && (row.status === "REJEITADO" || row.status === "DUPLICADA") && (
                           <div
-                            className="text-xs text-red-600 mt-1"
+                            className={`text-xs mt-1 ${row.status === "DUPLICADA" ? "text-amber-700" : "text-red-600"}`}
                             title={row.motivo}
                           >
-                            {row.motivo.length > 20
-                              ? `${row.motivo.slice(0, 20)}...`
+                            {row.motivo.length > 42
+                              ? `${row.motivo.slice(0, 42)}...`
                               : row.motivo}
+                          </div>
+                        )}
+                        {row.alerta && (
+                          <div className="mt-1 text-[11px] text-amber-700" title={row.alerta}>
+                            Sem vínculo PF; será importada sem Consultor PF.
                           </div>
                         )}
                       </td>
@@ -668,6 +742,68 @@ export function UploadPlanilhaPreview({
             </div>
           )}
         </>
+      )}
+
+      {/* Modal de resultado: linguagem amigável para sucesso, aviso e erro */}
+      {feedback && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/40 p-4"
+          role="presentation"
+        >
+          <button
+            type="button"
+            aria-label="Fechar resultado do upload"
+            tabIndex={-1}
+            onClick={() => setFeedback(null)}
+            className="absolute inset-0 h-full w-full cursor-default"
+          />
+          <div
+            className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white shadow-2xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="upload-feedback-title"
+          >
+            <div className={`border-b px-5 py-4 ${feedback.tone === "success" ? "border-emerald-100 bg-emerald-50" : feedback.tone === "warning" ? "border-amber-100 bg-amber-50" : "border-red-100 bg-red-50"}`}>
+              <button
+                type="button"
+                aria-label="Fechar resultado do upload"
+                onClick={() => setFeedback(null)}
+                className="absolute right-3 top-3 rounded-md p-1 text-slate-500 hover:bg-white/70 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                ×
+              </button>
+              <div className="flex items-start gap-3 pr-6">
+                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-base font-bold ${feedback.tone === "success" ? "bg-emerald-100 text-emerald-700" : feedback.tone === "warning" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`} aria-hidden="true">
+                  {feedback.tone === "success" ? "✓" : feedback.tone === "warning" ? "!" : "×"}
+                </div>
+                <div>
+                  <h3 id="upload-feedback-title" className="text-base font-semibold text-slate-900">
+                    {feedback.title}
+                  </h3>
+                  <p className="mt-1 text-sm leading-5 text-slate-700">{feedback.message}</p>
+                </div>
+              </div>
+            </div>
+            <div className="px-5 py-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Resumo</p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {feedback.details.map((detail, index) => (
+                  <div key={`${detail}-${index}`} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-sm leading-5 text-slate-700">
+                    {detail}
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setFeedback(null)}
+                className="mt-4 w-full rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              >
+                Entendi
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Modal de confirmação quando há linhas rejeitadas */}

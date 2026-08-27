@@ -1,0 +1,14 @@
+{
+  "filesExecuted": 16,
+  "filesPassed": 12,
+  "filesFailed": 4,
+  "testsExecuted": 114,
+  "testsPassed": 87,
+  "testsFailed": 27,
+  "files": [
+    "/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/metas-lideranca-api.test.ts",
+    "/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/pontos-utils-fallback.test.ts",
+    "/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/regras-correcoes-conversa.test.ts",
+    "/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/setores-consultor-pf.test.ts"
+  ]
+}

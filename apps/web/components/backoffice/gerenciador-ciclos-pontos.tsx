@@ -187,7 +187,7 @@ export function GerenciadorCiclosPontos() {
             </div>
             <div>
               <label htmlFor="ciclo-fim-acumulo" className="block text-sm font-medium text-gray-700 mb-2">
-                Fim Acúmulo / Início Resgate
+                Fim Acúmulo
               </label>
               <input
                 id="ciclo-fim-acumulo"

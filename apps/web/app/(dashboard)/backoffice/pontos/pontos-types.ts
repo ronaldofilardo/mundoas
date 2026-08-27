@@ -13,10 +13,12 @@ export interface DistribuicaoPontosItem {
   procedimento?: string | null;
   parceiro?: { id?: string; nome?: string | null } | null;
   valorTotal?: number | string | null;
+  valorPorPonto?: number | string | null;
+  tipoArredondamento?: "PISO" | "TETO" | "PADRAO" | string | null;
   dataReferencia?: string | null;
   dataProcedimento?: string | null;
   pontosPotenciais?: number | null;
-  pontosDistribuidos?: { pontos: number } | null;
+  pontosDistribuidos?: { pontos: number; cicloPontosId?: string } | null;
 }
 
 export interface CicloPontosItem {
@@ -36,6 +38,8 @@ export interface RankingPontosItem {
   parceiro?: { nome?: string | null } | null;
   pontosAcumulados?: number | string | null;
   totalProducao?: number | string | null;
+  valorPontos?: number | string | null;
+  valorPorPonto?: number | string | null;
 }
 
 export interface PremioPontosItem {

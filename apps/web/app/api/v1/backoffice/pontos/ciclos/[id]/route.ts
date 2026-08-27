@@ -7,7 +7,6 @@ const DateFieldsSchema = z.object({
   nome: z.string().trim().min(1).optional(),
   inicioAcumuloEm: z.string().datetime("Data inválida").optional(),
   fimAcumuloEm: z.string().datetime("Data inválida").optional(),
-  inicioResgateEm: z.string().datetime("Data inválida").nullable().optional(),
   fimResgateEm: z.string().datetime("Data inválida").optional(),
 });
 
@@ -33,12 +32,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const inicio = data.inicioAcumuloEm ? new Date(data.inicioAcumuloEm) : ciclo.inicioAcumuloEm;
     const fimAcumulo = data.fimAcumuloEm ? new Date(data.fimAcumuloEm) : ciclo.fimAcumuloEm;
-    const inicioResgate = data.inicioResgateEm === undefined
-      ? ciclo.inicioResgateEm
-      : data.inicioResgateEm ? new Date(data.inicioResgateEm) : null;
+    // O resgate começa no primeiro dia do ciclo, inclusive durante o acúmulo.
+    const inicioResgate = inicio;
     const fimResgate = data.fimResgateEm ? new Date(data.fimResgateEm) : ciclo.fimResgateEm;
 
-    const dateError = validateDates(inicio, fimAcumulo, inicioResgate, fimResgate);
+    const dateError = validateDates(inicio, fimAcumulo, fimResgate);
     if (dateError) return badRequest(dateError);
 
     const sobreposto = await prisma.cicloPontos.findFirst({
@@ -107,7 +105,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   }
 }
 
-async function transitionStatus(ciclo: { id: string; status: string; fimAcumuloEm: Date; inicioResgateEm: Date | null }, novoStatus: "EM_ANDAMENTO" | "RESGATE_ABERTO" | "ENCERRADO") {
+async function transitionStatus(ciclo: { id: string; status: string; inicioAcumuloEm: Date; fimAcumuloEm: Date; inicioResgateEm: Date | null }, novoStatus: "EM_ANDAMENTO" | "RESGATE_ABERTO" | "ENCERRADO") {
   const transicoes: Record<string, string[]> = {
     EM_ANDAMENTO: ["RESGATE_ABERTO"],
     RESGATE_ABERTO: ["ENCERRADO"],
@@ -116,26 +114,24 @@ async function transitionStatus(ciclo: { id: string; status: string; fimAcumuloE
   if (!transicoes[ciclo.status]?.includes(novoStatus)) {
     return badRequest(`Não é possível transicionar de ${ciclo.status} para ${novoStatus}`);
   }
-  if (novoStatus === "RESGATE_ABERTO" && new Date() < ciclo.fimAcumuloEm) {
-    return badRequest(`A janela de resgate ainda não foi aberta. Aguarde até ${ciclo.fimAcumuloEm.toISOString()}`);
+  if (novoStatus === "RESGATE_ABERTO" && new Date() < ciclo.inicioAcumuloEm) {
+    return badRequest(`A janela de resgate ainda não foi aberta. Aguarde até ${ciclo.inicioAcumuloEm.toISOString()}`);
   }
   if (novoStatus === "ENCERRADO") await expirarPontosDoCiclo(ciclo.id);
   const atualizado = await prisma.cicloPontos.update({
     where: { id: ciclo.id },
     data: {
       status: novoStatus,
-      ...(novoStatus === "RESGATE_ABERTO" && { inicioResgateEm: ciclo.inicioResgateEm ?? new Date() }),
+      ...(novoStatus === "RESGATE_ABERTO" && { inicioResgateEm: ciclo.inicioAcumuloEm }),
       ...(novoStatus === "ENCERRADO" && { processadoExpiracaoEm: new Date() }),
     },
   });
   return ok({ id: atualizado.id, nome: atualizado.nome, status: atualizado.status, mensagem: `Ciclo transicionado para ${novoStatus}` });
 }
 
-function validateDates(inicio: Date, fimAcumulo: Date, inicioResgate: Date | null, fimResgate: Date) {
+function validateDates(inicio: Date, fimAcumulo: Date, fimResgate: Date) {
   if (inicio >= fimAcumulo) return "Data de fim de acúmulo deve ser posterior à data de início";
-  if (inicioResgate && fimAcumulo >= inicioResgate) return "Data de início do resgate deve ser posterior à data de fim de acúmulo";
   if (fimAcumulo >= fimResgate) return "Data de fim de resgate deve ser posterior ao fim de acúmulo";
-  if (inicioResgate && inicioResgate >= fimResgate) return "Data de fim de resgate deve ser posterior ao início do resgate";
   return null;
 }
 

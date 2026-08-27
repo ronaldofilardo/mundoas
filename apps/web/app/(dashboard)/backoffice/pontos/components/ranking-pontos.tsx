@@ -15,7 +15,7 @@ export function RankingPontos({ data }: { data?: RankingPontosItem[] }) {
               <th className="text-left p-2">#</th>
               <th className="text-left p-2">Parceiro</th>
               <th className="text-right p-2">Pontos</th>
-              <th className="text-right p-2">Produção (R$)</th>
+              <th className="text-right p-2">Valor dos pontos (R$)</th>
             </tr>
           </thead>
           <tbody>
@@ -24,7 +24,15 @@ export function RankingPontos({ data }: { data?: RankingPontosItem[] }) {
                 <td className="p-2">{pos.posicao ?? i + 1}</td>
                 <td className="p-2">{pos.parceiro?.nome}</td>
                 <td className="p-2 text-right font-semibold">{pos.pontosAcumulados}</td>
-                <td className="p-2 text-right font-semibold">{Number(pos.totalProducao || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                <td className="p-2 text-right font-semibold text-emerald-700">
+                  {Number(
+                    pos.valorPontos ??
+                      Number(pos.pontosAcumulados ?? 0) * Number(pos.valorPorPonto ?? 0),
+                  ).toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
+                </td>
               </tr>
             ))}
           </tbody>

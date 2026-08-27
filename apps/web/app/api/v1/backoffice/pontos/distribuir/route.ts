@@ -7,7 +7,11 @@ import {
 } from "@/lib/api-helpers";
 import { rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@asa/database";
-import { calcularPontosDeProducao, obterCicloVigente } from "@/lib/pontos-utils";
+import {
+  calcularPontosComConfiguracao,
+  calcularPontosDeProducao,
+  obterCicloVigente,
+} from "@/lib/pontos-utils";
 import { obterValorBasePontos, validarValorBasePontos, serializarValorMonetario } from "@/lib/parceiros-pontos-regras";
 
 type JsonObject = Record<string, unknown>;
@@ -18,6 +22,15 @@ function isJsonObject(value: unknown): value is JsonObject {
 
 function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "P2002"
+  );
 }
 
 export async function POST(req: NextRequest) {
@@ -75,17 +88,25 @@ export async function POST(req: NextRequest) {
       return badRequest("Produção não encontrada ou não tem parceiro associado");
     }
 
+    if (producao.modalidadeContemplacao !== "COMISSAO") {
+      return badRequest("Esta produção já foi contemplada por outra modalidade");
+    }
+
     // Verificar permissão: o parceiro da produção deve pertencer a este backoffice
     if (producao.parceiro?.backofficeId !== backofficeId) {
       return unauthorized();
     }
 
-    // Verificar se já existe pontos para esta produção
+    // A produção só pode gerar um crédito de produção importada em toda a sua vida.
+    // A checagem rápida melhora a UX; a constraint única do banco é a garantia final
+    // contra duas requisições concorrentes.
     const pontosExistentes = await prisma.movimentacaoPontos.findFirst({
       where: {
         referenciaProcedimentoId: producao.id,
         origem: "PRODUCAO_IMPORTADA",
+        tipo: "CREDITO",
       },
+      select: { id: true, cicloPontosId: true, quantidade: true },
     });
 
     if (pontosExistentes) {
@@ -93,7 +114,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Obter ciclo vigente
-    const cicloVigente = await obterCicloVigente(backofficeId);
+    const cicloVigente = await obterCicloVigente(backofficeId, undefined, "PARCEIRO");
 
     if (!cicloVigente) {
       return badRequest(
@@ -130,28 +151,37 @@ export async function POST(req: NextRequest) {
     }
 
 // Criar movimentação de crédito em transação
-    const resultado = await prisma.$transaction(async (tx) => {
-      // Criar movimentação de crédito
-      const movimentacao = await tx.movimentacaoPontos.create({
-        data: {
-          parceiroId: producao.parceiroId!,
-          cicloPontosId: cicloVigente.id,
-          tipo: "CREDITO",
-          quantidade: pontos,
-          descricao: `Pontos por produção: ${producao.procedimento.substring(0, 50)}`,
-          referenciaProcedimentoId: producao.id,
-          origem: "PRODUCAO_IMPORTADA",
-        },
-      });
+    let resultado;
+    try {
+      resultado = await prisma.$transaction(async (tx) => {
+        // Criar movimentação de crédito. A constraint única
+        // mov_pontos_credito_producao_unq impede duplicidade mesmo sob concorrência.
+        const movimentacao = await tx.movimentacaoPontos.create({
+          data: {
+            parceiroId: producao.parceiroId!,
+            cicloPontosId: cicloVigente.id,
+            tipo: "CREDITO",
+            quantidade: pontos,
+            descricao: `Pontos por produção: ${producao.procedimento.substring(0, 50)}`,
+            referenciaProcedimentoId: producao.id,
+            origem: "PRODUCAO_IMPORTADA",
+          },
+        });
 
-      return {
-        movimentacao: {
-          id: movimentacao.id,
-          tipo: movimentacao.tipo,
-          quantidade: movimentacao.quantidade,
-        },
-      };
-    });
+        return {
+          movimentacao: {
+            id: movimentacao.id,
+            tipo: movimentacao.tipo,
+            quantidade: movimentacao.quantidade,
+          },
+        };
+      });
+    } catch (err) {
+      if (isUniqueViolation(err)) {
+        return badRequest("Pontos já foram distribuídos para esta produção");
+      }
+      throw err;
+    }
 
     return ok({
       mensagem: "Pontos distribuídos com sucesso",
@@ -214,7 +244,12 @@ export async function GET(req: NextRequest) {
     // Buscar todas as produções com estes parceiros
     const producoes = await prisma.procedimentoPF.findMany({
       where: {
-        parceiroId: parceiroIds.length > 0 ? { in: parceiroIds } : undefined,
+        OR: [
+          { upload: { backofficeId } },
+          { parceiro: { backofficeId } },
+        ],
+        parceiroId: { in: parceiroIds },
+        modalidadeContemplacao: "COMISSAO",
       },
       include: {
         parceiro: {
@@ -230,21 +265,40 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Buscar pontos já distribuídos
+    const producaoIds = producoes.map((producao) => producao.id);
+
+    // O status é global por produção: um crédito já existente em qualquer ciclo
+    // deve impedir nova distribuição nesta tela e em ciclos posteriores.
     const pontosDistribuidos = await prisma.movimentacaoPontos.findMany({
       where: {
-        cicloPontosId: cicloId,
+        referenciaProcedimentoId: { in: producaoIds },
         origem: "PRODUCAO_IMPORTADA",
+        tipo: "CREDITO",
       },
-      include: {
-        parceiro: {
-          select: {
-            id: true,
-            nome: true,
-          },
-        },
+      select: {
+        id: true,
+        referenciaProcedimentoId: true,
+        cicloPontosId: true,
+        quantidade: true,
+        criadoEm: true,
       },
     });
+
+    // Buscar configuração para calcular os pontos potenciais
+    const configuracoes = await prisma.configuracaoPontos.findMany({
+      where: { backofficeId },
+      orderBy: { vigenteDesde: "desc" },
+    });
+
+    if (configuracoes.length === 0) {
+      return badRequest("Nenhuma configuração de pontos cadastrada para este Backoffice");
+    }
+
+    const obterConfigParaData = (dataReferencia: Date) =>
+      configuracoes.find((item) =>
+        item.vigenteDesde <= dataReferencia &&
+        (!item.vigenteAte || item.vigenteAte >= dataReferencia),
+      ) ?? configuracoes[0];
 
     const producoesComPontos = await Promise.all(producoes.map(async (producao) => {
       const pontos = pontosDistribuidos.find((p) => p.referenciaProcedimentoId === producao.id);
@@ -252,11 +306,11 @@ export async function GET(req: NextRequest) {
       // Calcular pontos potenciais para este procedimento
       let pontosPotenciais = 0;
       let erroCalculo = null;
-      try {
-        pontosPotenciais = await calcularPontosDeProducao(
+        try {
+        const config = obterConfigParaData(producao.dataReferencia);
+        pontosPotenciais = calcularPontosComConfiguracao(
           producao.valorTotal ?? 0,
-          producao.dataReferencia,
-          backofficeId,
+          config,
         );
       } catch (err: unknown) {
         erroCalculo = err instanceof Error ? err.message : "Erro ao calcular pontos";
@@ -270,10 +324,16 @@ export async function GET(req: NextRequest) {
         paciente: producao.paciente,
         valorComissao: producao.valorComissao?.toString() || "0",
         valorTotal: serializarValorMonetario(producao.valorTotal),
+        valorPorPonto: serializarValorMonetario(
+          obterConfigParaData(producao.dataReferencia).valorPorPonto,
+        ),
+        tipoArredondamento: obterConfigParaData(producao.dataReferencia)
+          .tipoArredondamento,
         parceiro: producao.parceiro,
         pontosDistribuidos: pontos ? {
           id: pontos.id,
           pontos: pontos.quantidade,
+          cicloPontosId: pontos.cicloPontosId,
           dataReferencia: pontos.criadoEm.toISOString(),
         } : null,
         pontosPotenciais,

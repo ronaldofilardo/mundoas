@@ -88,53 +88,6 @@ async function main() {
     },
   });
 
-  // Gestor PJ
-  const senhaGestorPj = await hash("123456", 12);
-  await prisma.usuario.upsert({
-    where: { email: "gestor-pj@asa.com" },
-    update: {
-      senhaHash: senhaGestorPj,
-      senhaTemporaria: false,
-      tipo: "GESTOR_PJ",
-      papel: "GESTOR_PJ",
-      status: "ATIVO",
-    },
-    create: {
-      nome: "Gestor Pessoa Jurídica",
-      email: "gestor-pj@asa.com",
-      senhaHash: senhaGestorPj,
-      tipo: "GESTOR_PJ",
-      papel: "GESTOR_PJ",
-      senhaTemporaria: false,
-      status: "ATIVO",
-    },
-  });
-
-  // Consultor
-  const senhaConsultor = await hash("123456", 12);
-  const consultorUsuario = await prisma.usuario.upsert({
-    where: { email: "consultor@asa.com" },
-    update: { senhaHash: senhaConsultor, senhaTemporaria: false, status: "ATIVO" },
-    create: {
-      nome: "Consultor",
-      email: "consultor@asa.com",
-      senhaHash: senhaConsultor,
-      tipo: "CONSULTOR",
-      papel: null,
-      senhaTemporaria: false,
-      status: "ATIVO",
-    },
-  });
-
-  const consultorRecord = await prisma.consultor.upsert({
-    where: { usuarioId: consultorUsuario.id },
-    update: { cpf: "12345678903" },
-    create: {
-      usuarioId: consultorUsuario.id,
-      cpf: "12345678903",
-    },
-  });
-
   // Liderança
   const senhaLider = await hash("123456", 12);
   const liderUsuario = await prisma.usuario.upsert({

@@ -12,6 +12,16 @@ import {
   validarValorBasePontos,
 } from "@/lib/parceiros-pontos-regras";
 
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "P2002"
+  );
+}
+
+
 export async function POST(req: NextRequest) {
   // Rate limiting: operação em lote
   const rateLimitResponse = await rateLimit(req, { limit: 10, windowMs: 60 * 1000 });
@@ -22,7 +32,7 @@ export async function POST(req: NextRequest) {
     if (error) return error;
 
     // Obter ciclo vigente
-    const cicloVigente = await obterCicloVigente(backofficeId);
+    const cicloVigente = await obterCicloVigente(backofficeId, undefined, "PARCEIRO");
     if (!cicloVigente) {
       return badRequest(
         "Nenhum ciclo de pontos vigente encontrado. Crie um ciclo antes de distribuir pontos.",
@@ -48,7 +58,12 @@ export async function POST(req: NextRequest) {
     // Produções dentro do período de acumulo do ciclo
     const producoes = await prisma.procedimentoPF.findMany({
       where: {
+        OR: [
+          { upload: { backofficeId } },
+          { parceiro: { backofficeId } },
+        ],
         parceiroId: { in: parceiroIds },
+        modalidadeContemplacao: "COMISSAO",
         dataReferencia: {
           gte: cicloVigente.inicioAcumuloEm,
           lte: cicloVigente.fimAcumuloEm,
@@ -60,11 +75,13 @@ export async function POST(req: NextRequest) {
       orderBy: { dataReferencia: "desc" },
     });
 
-    // Movimentações já existentes (para não duplicar)
+    // Movimentações já existentes em qualquer ciclo. A produção só pode
+    // receber um crédito de produção importada durante toda a sua vida.
     const jaDistribuidas = await prisma.movimentacaoPontos.findMany({
       where: {
         referenciaProcedimentoId: { in: producoes.map((p) => p.id) },
         origem: "PRODUCAO_IMPORTADA",
+        tipo: "CREDITO",
       },
       select: { referenciaProcedimentoId: true },
     });
@@ -73,12 +90,16 @@ export async function POST(req: NextRequest) {
     );
 
     let distribuidos = 0;
+    let ignorados = 0;
     let totalPontos = 0;
     const erros: Array<{ producaoId: string; paciente: string; erro: string }> = [];
 
     for (const producao of producoes) {
       if (!producao.parceiroId) continue;
-      if (jaDistribuidasSet.has(producao.id)) continue;
+      if (jaDistribuidasSet.has(producao.id)) {
+        ignorados += 1;
+        continue;
+      }
 
       try {
         const valorBasePontos = obterValorBasePontos(producao.valorTotal);
@@ -121,6 +142,12 @@ export async function POST(req: NextRequest) {
         distribuidos += 1;
         totalPontos += pontos;
       } catch (err) {
+        if (isUniqueViolation(err)) {
+          // Outra requisição ganhou a corrida e persistiu o crédito primeiro.
+          // Isso é um resultado idempotente, não uma falha operacional.
+          ignorados += 1;
+          continue;
+        }
         erros.push({
           producaoId: producao.id,
           paciente: producao.paciente,
@@ -130,9 +157,13 @@ export async function POST(req: NextRequest) {
     }
 
     return ok({
-      mensagem: `${distribuidos} produção(ões) creditada(s) com sucesso`,
+      mensagem:
+        ignorados > 0
+          ? `${distribuidos} produção(ões) creditada(s) com sucesso; ${ignorados} já distribuída(s) foram ignorada(s)`
+          : `${distribuidos} produção(ões) creditada(s) com sucesso`,
       ciclo: { id: cicloVigente.id, nome: cicloVigente.nome },
       distribuidos,
+      ignorados,
       totalPontos,
       erros,
     });

@@ -131,6 +131,37 @@ export async function requireBackoffice() {
 
 
 
+export async function requireConsultorPfWithScope() {
+  const session = await getSession();
+  if (!session?.user) {
+    return { session: null, consultorPfId: null, backofficeId: null, error: unauthorized() };
+  }
+  if (session.user.tipo !== "CONSULTOR") {
+    return { session: null, consultorPfId: null, backofficeId: null, error: forbidden() };
+  }
+  const consultor = await prisma.consultorPf.findUnique({
+    where: { usuarioId: session.user.id },
+    select: {
+      id: true,
+      status: true,
+      lideranca: { select: { backofficeId: true } },
+    },
+  });
+  if (!consultor || consultor.status !== "ATIVO") {
+    return { session: null, consultorPfId: null, backofficeId: null, error: forbidden() };
+  }
+  return {
+    session,
+    consultorPfId: consultor.id,
+    backofficeId: consultor.lideranca.backofficeId,
+    error: null,
+  };
+}
+
+// Alias de compatibilidade: algumas rotas históricas usam PF em maiúsculas.
+// Mantém o mesmo escopo e a mesma implementação, sem duplicar a lógica.
+export const requireConsultorPFWithScope = requireConsultorPfWithScope;
+
 export async function requireParceiro() {
   const session = await getSession();
   if (!session?.user) return { session: null, error: unauthorized() };

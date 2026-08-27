@@ -8,6 +8,8 @@ type RankingPosicao = {
   parceiro: { id: string; nome: string; cpf: string; email?: string | null };
   pontosAcumulados: number;
   totalProducao: number;
+  valorPontos: number;
+  valorPorPonto: number;
 };
 
 type RankingResultado = {
@@ -74,8 +76,21 @@ export async function GET(req: NextRequest) {
       return badRequest('Ciclo não encontrado ou não pertence ao backoffice');
     }
 
-    // Verificar cache
-    const cacheKey = `ranking:${cicloId}`;
+    const agora = new Date();
+    const configuracaoVigente = await prisma.configuracaoPontos.findFirst({
+      where: {
+        backofficeId,
+        vigenteDesde: { lte: agora },
+        OR: [{ vigenteAte: null }, { vigenteAte: { gte: agora } }],
+      },
+      orderBy: { vigenteDesde: "desc" },
+      select: { id: true, valorPorPonto: true },
+    });
+    const valorPorPonto = Number(configuracaoVigente?.valorPorPonto ?? 0);
+
+    // A configuração faz parte da chave para não exibir valor monetário
+    // desatualizado durante o TTL do cache após alterar R$ por ponto.
+    const cacheKey = `ranking:${cicloId}:config:${configuracaoVigente?.id ?? "sem-config"}`;
     if (!forceRefresh) {
       const cached = rankingCache.get(cacheKey);
       if (cached) {
@@ -162,6 +177,7 @@ export async function GET(req: NextRequest) {
         });
         const totalProducao = Number(prod._sum.valorComissao || 0);
 
+        const pontos = c - d + e;
         return {
           parceiro: {
             id: p.id,
@@ -169,8 +185,10 @@ export async function GET(req: NextRequest) {
             cpf: p.cpf,
             email: p.usuario?.email,
           },
-          pontos: c - d + e,
+          pontos,
           totalProducao,
+          valorPontos: pontos * valorPorPonto,
+          valorPorPonto,
         };
       }),
     );
@@ -183,6 +201,8 @@ export async function GET(req: NextRequest) {
         parceiro: item.parceiro,
         pontosAcumulados: item.pontos,
         totalProducao: item.totalProducao,
+        valorPontos: item.valorPontos,
+        valorPorPonto: item.valorPorPonto,
       }));
 
     const resultado = {

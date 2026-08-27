@@ -13,7 +13,6 @@ const CreateCicloSchema = z.object({
   periodicidade: z.enum(["SEMESTRAL", "ANUAL"]).optional(),
   inicioAcumuloEm: z.string().datetime("Data inválida"),
   fimAcumuloEm: z.string().datetime("Data inválida"),
-  inicioResgateEm: z.string().datetime("Data inválida").optional(),
   fimResgateEm: z.string().datetime("Data inválida"),
 });
 
@@ -58,12 +57,13 @@ export async function POST(req: NextRequest) {
       return badRequest(validation.error.message);
     }
 
-  const { nome, periodicidade: periodicidadeInformada, inicioAcumuloEm, fimAcumuloEm, inicioResgateEm, fimResgateEm } =
+  const { nome, periodicidade: periodicidadeInformada, inicioAcumuloEm, fimAcumuloEm, fimResgateEm } =
     validation.data;
 
   const inicio = new Date(inicioAcumuloEm);
   const fimAcumulo = new Date(fimAcumuloEm);
-  const inicioResgate = inicioResgateEm ? new Date(inicioResgateEm) : null;
+  // O resgate começa no primeiro dia do ciclo, inclusive durante o acúmulo.
+  const inicioResgate = inicio;
   const fimResgate = new Date(fimResgateEm);
   const duracaoEmDias = Math.ceil((fimAcumulo.getTime() - inicio.getTime()) / 86400000);
   const periodicidade = periodicidadeInformada ?? (duracaoEmDias <= 184 ? "SEMESTRAL" : "ANUAL");
@@ -71,11 +71,6 @@ export async function POST(req: NextRequest) {
   if (inicio >= fimAcumulo) {
     return badRequest(
       "Data de fim de acúmulo deve ser posterior à data de início",
-    );
-  }
-  if (inicioResgate && fimAcumulo >= inicioResgate) {
-    return badRequest(
-      "Data de início do resgate deve ser posterior à data de fim de acúmulo",
     );
   }
   if (fimAcumulo >= fimResgate) {

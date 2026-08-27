@@ -1,0 +1,42 @@
+{
+  "filesExecuted": 253,
+  "filesPassed": 229,
+  "filesFailed": 24,
+  "testsExecuted": 1370,
+  "testsPassed": 1158,
+  "testsFailed": 128,
+  "failedDatabaseInfrastructure": {
+    "files": 17,
+    "tests": 128
+  },
+  "failedOther": {
+    "files": 7,
+    "tests": 0
+  }
+}
+
+=== FAILED FILES ===
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/api-admin-functional.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/backoffice-pontos-distribuir-route.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/backoffice-pontos-distribuir-todos-route.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/backoffice-pontos-ranking.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/billing-assinatura.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/comerciais-api-email-fix.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/comerciais-delete.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/comerciais-sem-lideranca.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/comissoes-gestao-page.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/consultor-pf-api.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/consultor-pf-contrato-idor.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/gestor-consultor.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/lideranca-equipe-consistente.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/metas-lideranca-api.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/migracao-backoffice.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/parceiro-indicados.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/parceiro-preferencia-ciclo.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/pontos-utils-fallback.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/regras-api.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/regras-backoffice-unit.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/regras-correcoes-conversa.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/setores-consultor-pf.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/app/__tests__/upload-comissoes.test.ts
+/home/ubuntu/mundoas_current_work/apps/web/lib/__tests__/db.test.ts

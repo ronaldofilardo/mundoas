@@ -1,0 +1,209 @@
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:12:  podeSolicitar: boolean;
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:16:  emPeriodoResgate: boolean;
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:25:    if (!premio.podeSolicitar) return;
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:27:    if (!confirm(`Confirmar solicitação de resgate: ${premio.descricao} (${premio.custoPontos} pontos)?`)) {
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:33:      const res = await fetch(`/api/v1/parceiro/pontos/resgates`, {
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:42:        throw new Error(json.error || "Erro ao solicitar resgate");
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:45:      toast.success("Solicitação de resgate enviada com sucesso!");
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:48:      toast.error(err instanceof Error ? err.message : "Erro ao solicitar resgate");
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:58:      {data?.emPeriodoResgate ? (
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:61:            <strong>Período de resgate aberto!</strong> Você pode solicitar resgates dos seus pontos.
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:68:            <strong>Período de resgate fechado.</strong> Aguarde a abertura do próximo período para solicitar resgates.
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:81:              className={`border border-gray-200 rounded-lg p-4 hover:shadow-md transition ${!premio.podeSolicitar ? "opacity-60" : ""}`}
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:92:                  disabled={!premio.podeSolicitar || solicitandoId === premio.id}
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:94:                    !premio.podeSolicitar
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:102:              {!premio.podeSolicitar && data?.emPeriodoResgate && (
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:105:              {!premio.podeSolicitar && !data?.emPeriodoResgate && (
+apps/web/app/(dashboard)/parceiro/pontos/components/premios-tab.tsx:106:                <p className="text-xs text-yellow-600 mt-2">Período de resgate fechado</p>
+apps/web/app/(dashboard)/parceiro/pontos/components/resgates-tab.tsx:49:  const handleCancelar = async (resgate: ResgateItem) => {
+apps/web/app/(dashboard)/parceiro/pontos/components/resgates-tab.tsx:50:    if (!resgate.podesCancelar) return;
+apps/web/app/(dashboard)/parceiro/pontos/components/resgates-tab.tsx:56:    setCancelandoId(resgate.id);
+apps/web/app/(dashboard)/parceiro/pontos/components/resgates-tab.tsx:58:      const res = await fetch(`/api/v1/parceiro/pontos/resgates/${resgate.id}`, {
+apps/web/app/(dashboard)/parceiro/pontos/components/resgates-tab.tsx:85:          <p>Nenhuma solicitação de resgate realizada</p>
+apps/web/app/(dashboard)/parceiro/pontos/components/resgates-tab.tsx:86:          <p className="text-sm mt-2">Acesse a aba <strong>Prêmios</strong> para solicitar seu primeiro resgate</p>
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:7:import { ResgatesTab } from "./components/resgates-tab";
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:9:type TabType = "carteira" | "premios" | "resgates";
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:28:  emPeriodoResgate: boolean;
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:36:    podeSolicitar: boolean;
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:41:  resgates: Array<{
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:58:  resgates?: ResgateData;
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:66:  { id: "resgates", label: "Resgates", icon: "🔄" },
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:87:        endpoint = "/api/v1/parceiro/pontos/carteira";
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:89:        endpoint = "/api/v1/parceiro/pontos/premios";
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:90:      } else if (activeTab === "resgates") {
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:91:        endpoint = "/api/v1/parceiro/pontos/resgates";
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:113:            Gerencie seus pontos, carteira e resgates
+apps/web/app/(dashboard)/parceiro/pontos/page.tsx:150:              {activeTab === "resgates" && <ResgatesTab data={data.resgates?.resgates} />}
+apps/web/components/parceiro/catalogo-premios.tsx:13:  emPeriodoResgate: boolean;
+apps/web/components/parceiro/catalogo-premios.tsx:31:        const response = await fetch("/api/v1/parceiro/pontos/premios");
+apps/web/components/parceiro/catalogo-premios.tsx:48:      const response = await fetch("/api/v1/parceiro/pontos/resgates", {
+apps/web/components/parceiro/catalogo-premios.tsx:60:        const response = await fetch("/api/v1/parceiro/pontos/premios");
+apps/web/components/parceiro/catalogo-premios.tsx:65:      alert("Erro ao solicitar resgate");
+apps/web/components/parceiro/catalogo-premios.tsx:97:      {/* Aviso se não está em período de resgate */}
+apps/web/components/parceiro/catalogo-premios.tsx:98:      {!catalogo.emPeriodoResgate && (
+apps/web/components/parceiro/catalogo-premios.tsx:101:            ⏰ O período de resgate ainda não foi aberto. Você pode visualizar
+apps/web/components/parceiro/catalogo-premios.tsx:154:                  !catalogo.emPeriodoResgate ||
+apps/web/components/parceiro/catalogo-premios.tsx:159:                  !catalogo.emPeriodoResgate ||
+apps/web/components/parceiro/catalogo-premios.tsx:171:                    : !catalogo.emPeriodoResgate
+apps/web/components/parceiro/extrato-movimentacoes.tsx:15:          "/api/v1/parceiro/pontos/extrato?limit=50",
+apps/web/components/parceiro/minha-carteira.tsx:14:        const response = await fetch("/api/v1/parceiro/pontos/carteira");
+apps/web/components/parceiro/minha-carteira.tsx:54:  const periodoAtivo = carteira.periodoResgate
+apps/web/components/parceiro/minha-carteira.tsx:55:    ? "RESGATE_ABERTO"
+apps/web/components/parceiro/minha-carteira.tsx:104:          {carteira.periodoResgate && (
+apps/web/components/parceiro/minha-carteira.tsx:110:                {new Date(carteira.periodoResgate.inicio).toLocaleDateString(
+apps/web/components/parceiro/minha-carteira.tsx:114:                {new Date(carteira.periodoResgate.fim).toLocaleDateString(
+apps/web/components/parceiro/minha-carteira.tsx:130:                periodoAtivo === "RESGATE_ABERTO"
+apps/web/components/parceiro/minha-carteira.tsx:136:              {periodoAtivo === "RESGATE_ABERTO"
+apps/web/components/parceiro/minha-carteira.tsx:137:                ? "Período de resgate aberto ✓"
+apps/web/components/parceiro/minha-carteira.tsx:150:          {periodoAtivo === "RESGATE_ABERTO" && (
+apps/web/components/parceiro/minha-carteira.tsx:152:              Período de resgate está aberto! Você pode solicitar prêmios agora.
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:19:  const [resgates, setResgates] = useState<Resgate[]>([]);
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:27:        const response = await fetch("/api/v1/parceiro/pontos/resgates");
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:30:        setResgates(data.resgates);
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:41:  const handleCancelar = async (resgateId: string) => {
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:44:    setCancelando(resgateId);
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:47:        `/api/v1/parceiro/pontos/resgates/${resgateId}`,
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:63:        const response = await fetch("/api/v1/parceiro/pontos/resgates");
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:65:        setResgates(data.resgates);
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:114:  if (resgates.length === 0) {
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:118:          Você ainda não tem solicitações de resgate
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:126:      {resgates.map((resgate) => (
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:128:          key={resgate.id}
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:134:                {resgate.premio.nome}
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:137:                {resgate.cicloPontos.nome}
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:143:                  resgate.status,
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:146:                {getStatusLabel(resgate.status)}
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:155:                {resgate.pontosDebitados}
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:163:                {new Date(resgate.solicitadoEm).toLocaleDateString("pt-BR")}
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:169:                {resgate.id.substring(0, 8)}...
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:174:          {resgate.observacao && (
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:178:                {resgate.observacao}
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:184:            {resgate.podesCancelar && (
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:186:                onClick={() => handleCancelar(resgate.id)}
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:187:                disabled={cancelando === resgate.id}
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:189:                  cancelando === resgate.id
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:194:                {cancelando === resgate.id
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:200:            {resgate.status === "ENTREGUE" && (
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:206:            {resgate.status === "REJEITADO" && (
+apps/web/components/parceiro/minhas-solicitacoes-resgate.tsx:212:            {resgate.status === "CANCELADO" && (
+apps/web/app/api/v1/parceiro/pontos/carteira/route.ts:46:        OR: [{ status: "EM_ANDAMENTO" }, { status: "RESGATE_ABERTO" }],
+apps/web/app/api/v1/parceiro/pontos/carteira/route.ts:59:          periodoResgate: null,
+apps/web/app/api/v1/parceiro/pontos/carteira/route.ts:67:    const inicioResgate = cicloVigente.inicioResgateEm ?? cicloVigente.inicioAcumuloEm;
+apps/web/app/api/v1/parceiro/pontos/carteira/route.ts:68:    const resgateAberto = agora >= inicioResgate && agora <= cicloVigente.fimResgateEm;
+apps/web/app/api/v1/parceiro/pontos/carteira/route.ts:146:          fim: cicloVigente.fimAcumuloEm.toISOString(),
+apps/web/app/api/v1/parceiro/pontos/carteira/route.ts:148:        periodoResgate: resgateAberto
+apps/web/app/api/v1/parceiro/pontos/extrato/route.ts:33:          OR: [{ status: "EM_ANDAMENTO" }, { status: "RESGATE_ABERTO" }],
+apps/web/app/api/v1/parceiro/pontos/premios/route.ts:21:    // A janela de resgate começa no início do ciclo e pode ocorrer durante o acúmulo.
+apps/web/app/api/v1/parceiro/pontos/premios/route.ts:25:        status: { in: ["EM_ANDAMENTO", "RESGATE_ABERTO"] },
+apps/web/app/api/v1/parceiro/pontos/premios/route.ts:26:        inicioResgateEm: { lte: now },
+apps/web/app/api/v1/parceiro/pontos/premios/route.ts:87:        // Determinar se está em período de resgate (início do ciclo até fim do resgate).
+apps/web/app/api/v1/parceiro/pontos/premios/route.ts:89:    const emPeriodoResgate = !!cicloResgateAberto;
+apps/web/app/api/v1/parceiro/pontos/premios/route.ts:93:        emPeriodoResgate,
+apps/web/app/api/v1/parceiro/pontos/premios/route.ts:97:          podeSolicitar: emPeriodoResgate && saldoAtual >= p.custoPontos,
+apps/web/app/api/v1/parceiro/pontos/ranking/route.ts:32:          OR: [{ status: "EM_ANDAMENTO" }, { status: "RESGATE_ABERTO" }],
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:23:    const resgateId = params.id;
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:31:    // Buscar resgate
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:32:    const resgate = await prisma.solicitacaoResgate.findUnique({
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:33:      where: { id: resgateId },
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:36:    if (!resgate) {
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:41:    if (resgate.parceiroId !== parceiroId) {
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:46:    if (!["SOLICITADO", "EM_ANALISE"].includes(resgate.status)) {
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:48:        `Não é possível cancelar uma solicitação com status ${resgate.status}`,
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:54:      // Atualizar status do resgate
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:55:      const resgateCancelado = await tx.solicitacaoResgate.update({
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:56:        where: { id: resgateId },
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:67:          cicloPontosId: resgate.cicloPontosId,
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:70:          quantidade: resgate.pontosDebitados,
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:71:          referenciaSolicitacaoResgateId: resgateId,
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:72:          observacao: "Estorno: cancelamento de resgate pelo parceiro",
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:76:      return resgateCancelado;
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:83:      pontosDevolvidosAoSaldo: resgate.pontosDebitados,
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:87:    console.error("Erro ao cancelar resgate:", err);
+apps/web/app/api/v1/parceiro/pontos/resgates/[id]/route.ts:88:    return badRequest("Erro ao cancelar resgate");
+apps/web/app/api/v1/parceiro/pontos/resgates/route.ts:32:    const resgates = await prisma.solicitacaoResgate.findMany({
+apps/web/app/api/v1/parceiro/pontos/resgates/route.ts:54:      resgates: resgates.map((r) => ({
+apps/web/app/api/v1/parceiro/pontos/resgates/route.ts:68:    console.error("Erro ao buscar resgates:", err);
+apps/web/app/api/v1/parceiro/pontos/resgates/route.ts:69:    return badRequest("Erro ao buscar resgates");
+apps/web/app/api/v1/parceiro/pontos/resgates/route.ts:107:        status: { in: ["EM_ANDAMENTO", "RESGATE_ABERTO"] },
+apps/web/app/api/v1/parceiro/pontos/resgates/route.ts:108:        inicioResgateEm: { lte: now },
+apps/web/app/api/v1/parceiro/pontos/resgates/route.ts:114:      return badRequest("Período de resgate não está aberto");
+apps/web/app/api/v1/parceiro/pontos/resgates/route.ts:158:      // Criar solicitação de resgate
+apps/web/app/api/v1/parceiro/pontos/resgates/route.ts:191:      mensagem: "Solicitação de resgate criada com sucesso",
+apps/web/app/api/v1/parceiro/pontos/resgates/route.ts:194:    console.error("Erro ao solicitar resgate:", err);
+apps/web/app/api/v1/parceiro/pontos/resgates/route.ts:195:    return badRequest("Erro ao solicitar resgate");
+apps/web/app/__tests__/ciclos-configuracao-crud.test.tsx:17:  fimAcumuloEm: "2026-06-30T00:00:00.000Z",
+apps/web/app/__tests__/ciclos-configuracao-crud.test.tsx:18:  inicioResgateEm: "2026-07-01T00:00:00.000Z",
+apps/web/app/__tests__/ciclos-configuracao-crud.test.tsx:37:    expect(screen.getByLabelText("Fim do resgate")).toBeTruthy();
+apps/web/app/__tests__/ciclos-configuracao-crud.test.tsx:50:    fireEvent.change(screen.getByLabelText("Fim do resgate"), { target: { value: "2026-07-31" } });
+apps/web/app/__tests__/ciclos-configuracao-crud.test.tsx:58:    expect(body.fimAcumuloEm).toContain("2026-06-30");
+apps/web/app/__tests__/api-parceiro-functional.test.ts:4:import { GET as GETParceiroPontos } from "@/app/api/v1/parceiro/pontos/resgates/route";
+apps/web/app/__tests__/api-parceiro-functional.test.ts:22:  it("pontos/resgates/route — módulo importado", async () => {
+apps/web/app/__tests__/backoffice-pontos-distribuir-route.test.ts:79:        fimAcumuloEm: new Date('2026-12-31'),
+apps/web/app/__tests__/backoffice-pontos-distribuir-todos-route.test.ts:68:        fimAcumuloEm: new Date('2026-12-31'),
+apps/web/app/__tests__/backoffice-pontos-ranking.test.ts:47:        fimAcumuloEm: new Date(Date.now() + 90 * 86400 * 1000),
+apps/web/app/__tests__/backoffice-pontos-tabs.test.ts:21:type IndicacaoSubTabType = "distribuir" | "premios" | "ranking" | "resgates";
+apps/web/app/__tests__/backoffice-pontos-tabs.test.ts:38:  { id: "resgates", label: "Resgates" },
+apps/web/app/__tests__/backoffice-pontos-tabs.test.ts:100:    expect(CONFIG_SUB_TAB_IDS.has("resgates" as ConfigSubTabType)).toBe(false);
+apps/web/app/__tests__/backoffice-pontos-tabs.test.ts:122:    expect(INDICACAO_SUB_TAB_IDS.has("resgates")).toBe(true);
+apps/web/app/__tests__/backoffice-pontos-tabs.test.ts:144:    expect(resolveActiveTab("indicacao", "ciclos", "resgates")).toBe("resgates");
+apps/web/app/__tests__/backoffice-pontos-tabs.test.ts:159:      /type IndicacaoSubTabType = "distribuir" \| "premios" \| "ranking" \| "resgates"/,
+apps/web/app/__tests__/backoffice-pontos-tabs.test.ts:258:  it("renderiza ResgatePontos na subaba resgates de INDICAÇÃO", () => {
+apps/web/app/__tests__/backoffice-pontos-tabs.test.ts:260:      /activeMainTab === "indicacao" && activeIndicacaoSubTab === "resgates" && <ResgatePontos/,
+apps/web/app/__tests__/componentes-pontos.test.ts:39:        fimAcumuloEm: new Date('2026-06-30'),
+apps/web/app/__tests__/componentes-pontos.test.ts:51:               p.dataReferencia <= ciclo.fimAcumuloEm;
+apps/web/app/__tests__/componentes-pontos.test.ts:152:        EM_ANDAMENTO: ['RESGATE_ABERTO'],
+apps/web/app/__tests__/componentes-pontos.test.ts:153:        RESGATE_ABERTO: ['ENCERRADO'],
+apps/web/app/__tests__/componentes-pontos.test.ts:161:      expect(podeTransicionar('EM_ANDAMENTO', 'RESGATE_ABERTO')).toBe(true);
+apps/web/app/__tests__/componentes-pontos.test.ts:163:      expect(podeTransicionar('RESGATE_ABERTO', 'ENCERRADO')).toBe(true);
+apps/web/app/__tests__/componentes-pontos.test.ts:245:    it('deve validar saldo suficiente para resgate', () => {
+apps/web/app/__tests__/componentes-pontos.test.ts:255:    it('deve transicionar status do resgate', () => {
+apps/web/app/__tests__/componentes-pontos.test.ts:275:    it('deve calcular pontos debitados no resgate', () => {
+apps/web/app/__tests__/componentes-pontos.test.ts:276:      const resgates = [
+apps/web/app/__tests__/componentes-pontos.test.ts:282:      const totalDebitado = resgates.reduce((sum, r) => {
+apps/web/app/__tests__/migracao-backoffice.test.ts:250:        fimAcumuloEm: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+apps/web/app/__tests__/parceiro-preferencia-ciclo.test.ts:112:          fimAcumuloEm: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+apps/web/app/__tests__/parceiro-preferencia-ciclo.test.ts:183:        fimAcumuloEm: new Date("2026-06-30"),
+apps/web/app/__tests__/parceiro-preferencia-ciclo.test.ts:194:        fimAcumuloEm: new Date("2027-12-31"),
+apps/web/app/__tests__/premios-api.test.ts:2: * Testes da API de Prêmios - /api/v1/backoffice/pontos/premios
+apps/web/app/__tests__/premios-api.test.ts:8:describe('API /api/v1/backoffice/pontos/premios', () => {
+apps/web/app/__tests__/premios-api.test.ts:9:  const BASE_URL = '/api/v1/backoffice/pontos/premios';
+apps/web/app/__tests__/premios-api.test.ts:19:  describe('POST /api/v1/backoffice/pontos/premios', () => {
+apps/web/app/__tests__/premios-api.test.ts:87:  describe('GET /api/v1/backoffice/pontos/premios', () => {
+apps/web/app/__tests__/premios-api.test.ts:157:  describe('PATCH /api/v1/backoffice/pontos/premios?id={id}', () => {
+apps/web/app/__tests__/premios-api.test.ts:207:  describe('DELETE /api/v1/backoffice/pontos/premios?id={id}', () => {
+apps/web/app/__tests__/premios-api.test.ts:239:    it('deve preservar histórico de resgates', () => {
+apps/web/app/__tests__/README.md:118:it('deve criar ciclo, configuração, prêmio e resgate', async () => {
+apps/web/app/__tests__/resgate-pontos-unit.test.ts:3:describe("resgate-pontos - interface", () => {
+apps/web/app/__tests__/resgate-pontos-unit.test.ts:4:  it("deve aceitar estrutura de resgates", () => {
+apps/web/app/__tests__/resgate-pontos-unit.test.ts:5:    const resgates = [{ id: "r1", nome: "João", valor: 500, status: "ABERTO" }];
+apps/web/app/__tests__/resgate-pontos-unit.test.ts:6:    expect(resgates[0].valor).toBe(500);
+apps/web/app/__tests__/use-pontos-data-unit.test.ts:4:  it("deve incluir 'ciclos', 'premios', 'ranking', 'resgates'", () => {
+apps/web/app/__tests__/use-pontos-data-unit.test.ts:5:    const tabs = ["ciclos", "configuracao", "distribuir", "premios", "ranking", "resgates"];
+apps/web/app/__tests__/use-pontos-data-unit.test.ts:7:    expect(tabs).toContain("resgates");
+apps/web/app/__tests__/backoffice-ciclos-crud-route.test.ts:46:  fimAcumuloEm: new Date("2026-06-30T00:00:00.000Z"),
+apps/web/app/__tests__/backoffice-ciclos-crud-route.test.ts:47:  inicioResgateEm: new Date("2026-07-01T00:00:00.000Z"),
+apps/web/app/__tests__/backoffice-ciclos-crud-route.test.ts:80:      fimAcumuloEm: "2026-06-30T00:00:00.000Z",
+apps/web/app/__tests__/backoffice-ciclos-crud-route.test.ts:96:      fimAcumuloEm: "2026-06-30T00:00:00.000Z",
+apps/web/app/__tests__/backoffice-ciclos-crud-route.test.ts:125:  it("bloqueia exclusão quando há movimentações ou resgates", async () => {
+apps/web/app/__tests__/bonus-consultor-pf-regression.test.ts:18:const bonusResgates = read("app", "api", "v1", "consultor", "bonus", "resgates", "route.ts");
+apps/web/app/__tests__/bonus-consultor-pf-regression.test.ts:45:    expect(bonusConsultor).toContain("/api/v1/consultor/bonus/resgates");
+apps/web/app/__tests__/bonus-consultor-pf-regression.test.ts:55:    expect(bonusBackoffice).toContain("fimAcumuloEm");
+apps/web/app/__tests__/bonus-consultor-pf-regression.test.ts:81:  it("mantém carteira, prêmios e resgates segregados para Consultor PF", () => {
+apps/web/app/__tests__/resgate-window-rule.test.ts:4:describe("Janela de resgate desde o início do ciclo", () => {
+apps/web/app/__tests__/resgate-window-rule.test.ts:11:  const parceiroResgate = read("app", "api", "v1", "parceiro", "pontos", "resgates", "route.ts");
+apps/web/app/__tests__/resgate-window-rule.test.ts:12:  const bonusResgate = read("app", "api", "v1", "consultor", "bonus", "resgates", "route.ts");
+apps/web/app/__tests__/resgate-window-rule.test.ts:17:  it("deriva o início do resgate do início do ciclo no CRUD principal", () => {
+apps/web/app/__tests__/resgate-window-rule.test.ts:20:    expect(cicloPost).not.toContain("Data de início do resgate deve ser posterior à data de fim de acúmulo");
+apps/web/app/__tests__/resgate-window-rule.test.ts:21:    expect(cicloPatch).not.toContain("Data de início do resgate deve ser posterior à data de fim de acúmulo");
+apps/web/app/__tests__/resgate-window-rule.test.ts:25:    expect(bonusPost).toContain("inicioResgateEm: parsed.data.inicioAcumuloEm");
+apps/web/app/__tests__/resgate-window-rule.test.ts:27:    expect(bonusPost).not.toContain("Início do resgate deve ser posterior ao fim do acúmulo");
+apps/web/app/__tests__/resgate-window-rule.test.ts:31:  it("permite solicitar resgate durante EM_ANDAMENTO dentro da janela", () => {
+apps/web/app/__tests__/resgate-window-rule.test.ts:32:    expect(parceiroResgate).toContain('status: { in: ["EM_ANDAMENTO", "RESGATE_ABERTO"] }');
+apps/web/app/__tests__/resgate-window-rule.test.ts:33:    expect(bonusResgate).toContain('status: { in: ["EM_ANDAMENTO", "RESGATE_ABERTO"] }');
+apps/web/app/__tests__/resgate-window-rule.test.ts:34:    expect(parceiroResgate).toContain("inicioResgateEm: { lte: now }");
+apps/web/app/__tests__/resgate-window-rule.test.ts:36:    expect(parceiroPremios).toContain('status: { in: ["EM_ANDAMENTO", "RESGATE_ABERTO"] }');
+apps/web/app/__tests__/resgate-window-rule.test.ts:37:    expect(parceiroPremios).toContain("const emPeriodoResgate = !!cicloResgateAberto");
+apps/web/app/__tests__/resgate-window-rule.test.ts:41:    expect(parceiroCarteira).toContain("const inicioResgate = cicloVigente.inicioResgateEm ?? cicloVigente.inicioAcumuloEm");
+apps/web/app/__tests__/resgate-window-rule.test.ts:43:    expect(parceiroCarteira).not.toContain("inicio: cicloVigente.fimAcumuloEm.toISOString()");
+apps/web/app/__tests__/resgate-window-rule.test.ts:46:  it("não oferece mais um campo manual de início do resgate", () => {
+apps/web/app/__tests__/resgate-window-rule.test.ts:48:    expect(form).toContain("O resgate começa automaticamente no primeiro dia do ciclo");

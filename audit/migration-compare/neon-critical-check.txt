@@ -1,0 +1,36 @@
+            item             | total 
+-----------------------------+-------
+ ciclos_inicio_resgate_nulo  |     0
+ movimentacoes_parceiro_nulo |     0
+ solicitacoes_parceiro_nulo  |     0
+ password_reset_tokens       |     0
+ consultores_pf              |     0
+ procedimentos_pf            |    24
+ ciclos_pontos               |     2
+(7 rows)
+
+                    conname                     |        tabela        |                                            definicao                                            
+------------------------------------------------+----------------------+-------------------------------------------------------------------------------------------------
+ movimentacoes_pontos_ciclo_pontos_id_fkey      | movimentacoes_pontos | FOREIGN KEY (ciclo_pontos_id) REFERENCES ciclos_pontos(id) ON UPDATE CASCADE ON DELETE RESTRICT
+ movimentacoes_pontos_ciclo_pontos_id_not_null  | movimentacoes_pontos | NOT NULL ciclo_pontos_id
+ movimentacoes_pontos_criado_em_not_null        | movimentacoes_pontos | NOT NULL criado_em
+ movimentacoes_pontos_id_not_null               | movimentacoes_pontos | NOT NULL id
+ movimentacoes_pontos_origem_not_null           | movimentacoes_pontos | NOT NULL origem
+ movimentacoes_pontos_parceiro_id_fkey          | movimentacoes_pontos | FOREIGN KEY (parceiro_id) REFERENCES parceiros(id) ON UPDATE CASCADE ON DELETE RESTRICT
+ movimentacoes_pontos_parceiro_id_not_null      | movimentacoes_pontos | NOT NULL parceiro_id
+ movimentacoes_pontos_pkey                      | movimentacoes_pontos | PRIMARY KEY (id)
+ movimentacoes_pontos_quantidade_not_null       | movimentacoes_pontos | NOT NULL quantidade
+ movimentacoes_pontos_tipo_not_null             | movimentacoes_pontos | NOT NULL tipo
+ solicitacoes_resgate_ciclo_pontos_id_fkey      | solicitacoes_resgate | FOREIGN KEY (ciclo_pontos_id) REFERENCES ciclos_pontos(id) ON UPDATE CASCADE ON DELETE RESTRICT
+ solicitacoes_resgate_ciclo_pontos_id_not_null  | solicitacoes_resgate | NOT NULL ciclo_pontos_id
+ solicitacoes_resgate_id_not_null               | solicitacoes_resgate | NOT NULL id
+ solicitacoes_resgate_parceiro_id_fkey          | solicitacoes_resgate | FOREIGN KEY (parceiro_id) REFERENCES parceiros(id) ON UPDATE CASCADE ON DELETE RESTRICT
+ solicitacoes_resgate_parceiro_id_not_null      | solicitacoes_resgate | NOT NULL parceiro_id
+ solicitacoes_resgate_pkey                      | solicitacoes_resgate | PRIMARY KEY (id)
+ solicitacoes_resgate_pontos_debitados_not_null | solicitacoes_resgate | NOT NULL pontos_debitados
+ solicitacoes_resgate_premio_id_fkey            | solicitacoes_resgate | FOREIGN KEY (premio_id) REFERENCES premios(id) ON UPDATE CASCADE ON DELETE RESTRICT
+ solicitacoes_resgate_premio_id_not_null        | solicitacoes_resgate | NOT NULL premio_id
+ solicitacoes_resgate_solicitado_em_not_null    | solicitacoes_resgate | NOT NULL solicitado_em
+ solicitacoes_resgate_status_not_null           | solicitacoes_resgate | NOT NULL status
+(21 rows)
+

@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { UploadPlanilhaPreview } from "@/components/backoffice/upload-planilha-preview";
+import { normalizarNomeUnidade } from "@/lib/formatadores-producao";
 
 interface Parceiro {
   id: string;
@@ -63,6 +64,7 @@ export default function BackofficeProducao() {
 function BackofficeProducaoInner() {
   const [data, setData] = useState<ProducaoData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [filterMes, setFilterMes] = useState("");
   const [filterParceiro, setFilterParceiro] = useState("");
   const [filterConsultorPf, setFilterConsultorPf] = useState("");
@@ -95,10 +97,37 @@ function BackofficeProducaoInner() {
       if (filterConsultorPf) params.set("consultorPfId", filterConsultorPf);
 
       const res = await fetch(`/api/v1/backoffice/producao?${params}`);
-      const json = await res.json();
-      setData(json);
+      const json: unknown = await res.json();
+
+      if (!res.ok || typeof json !== "object" || json === null) {
+        const message =
+          typeof json === "object" && json !== null && "error" in json &&
+          typeof json.error === "string"
+            ? json.error
+            : "Erro ao carregar dados de produção";
+        throw new Error(message);
+      }
+
+      const payload = json as Partial<ProducaoData>;
+      setData({
+        procedimentos: Array.isArray(payload.procedimentos) ? payload.procedimentos : [],
+        parceiros: Array.isArray(payload.parceiros) ? payload.parceiros : [],
+        mesesDisponiveis: Array.isArray(payload.mesesDisponiveis)
+          ? payload.mesesDisponiveis
+          : [],
+        consultoresPf: Array.isArray(payload.consultoresPf) ? payload.consultoresPf : [],
+        pagination: payload.pagination ?? {
+          page: currentPage,
+          limit: 50,
+          total: 0,
+          totalPages: 0,
+        },
+      });
+      setErrorMessage(null);
     } catch (e) {
-      toast.error("Erro ao carregar dados de produção");
+      const message = e instanceof Error ? e.message : "Erro ao carregar dados de produção";
+      setErrorMessage(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -159,6 +188,12 @@ function BackofficeProducaoInner() {
 
   return (
     <div className="font-sans space-y-4">
+      {errorMessage && (
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Produção</h1>
@@ -246,7 +281,7 @@ function BackofficeProducaoInner() {
             className="text-sm border rounded px-3 py-2"
           >
             <option value="">Todos os Parceiros</option>
-            {data?.parceiros.map((p) => (
+            {(data?.parceiros ?? []).map((p) => (
               <option key={p.id} value={p.id}>
                 {p.nome}
               </option>
@@ -303,7 +338,7 @@ function BackofficeProducaoInner() {
                   <td className="p-2 text-gray-600">
                     R$ {Number(p.valorTotal || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </td>
-                  <td className="p-2 text-gray-600">{p.unidade}</td>
+                  <td className="p-2 text-gray-600">{normalizarNomeUnidade(p.unidade)}</td>
                   <td className="p-2 text-gray-600">
                     {p.comercial?.nome || p.consultorPf?.nome || "-"}
                   </td>

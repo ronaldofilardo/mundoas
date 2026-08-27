@@ -171,6 +171,16 @@ describe('API - Backoffice Pontos Distribuir', () => {
       // Tentar novamente
       const res = await distribuirHandlers.POST(makePostRequest({ producaoId: procedimentoId }));
       expect(res.status).toBe(400);
+      expect((await res.json()).error).toContain("já foram distribuídos");
+
+      const movimentacoes = await prisma.movimentacaoPontos.findMany({
+        where: {
+          referenciaProcedimentoId: procedimentoId,
+          origem: "PRODUCAO_IMPORTADA",
+          tipo: "CREDITO",
+        },
+      });
+      expect(movimentacoes).toHaveLength(1);
     });
   });
 
@@ -195,6 +205,16 @@ describe('API - Backoffice Pontos Distribuir', () => {
       const data = await res.json();
       expect(data.producoes).toBeDefined();
       expect(Array.isArray(data.producoes)).toBe(true);
+      expect(data.producoes).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: procedimentoId,
+            valorTotal: "200",
+            valorPorPonto: "1",
+            pontosPotenciais: 200,
+          }),
+        ]),
+      );
     });
   });
 });

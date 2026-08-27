@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
     const cicloVigente = await prisma.cicloPontos.findFirst({
       where: {
         backofficeId,
-        status: "RESGATE_ABERTO",
+        status: { in: ["EM_ANDAMENTO", "RESGATE_ABERTO"] },
         inicioResgateEm: { lte: now },
         fimResgateEm: { gte: now },
       },

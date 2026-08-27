@@ -35,15 +35,9 @@ if (databaseName !== 'asa_db_test') {
   process.exit(1);
 }
 
-console.log(`[pretest] Reset controlado somente em ${databaseName}`);
-execSync('pnpm exec prisma migrate reset --force --skip-seed', {
-  cwd: path.resolve(__dirname, '..', '..', '..', 'packages', 'database'),
-  env: { ...process.env, ...env },
-  stdio: 'inherit',
-});
-
-console.log(`[pretest] Aplicando migrations em ${databaseName}`);
-execSync('pnpm exec prisma migrate deploy', {
+console.log(`[pretest] Proteção ativa: nenhum reset será executado em ${databaseName}`);
+console.log(`[pretest] Aplicando somente migrations pendentes em ${databaseName}`);
+execSync('node ../../scripts/prisma-safe.cjs migrate-deploy', {
   cwd: path.resolve(__dirname, '..', '..', '..', 'packages', 'database'),
   env: { ...process.env, ...env },
   stdio: 'inherit',

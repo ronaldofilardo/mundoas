@@ -6,7 +6,9 @@ export type StatusUpload = "PROCESSANDO" | "CONCLUIDO" | "ERRO";
 export interface UploadStatusResult {
   status: StatusUpload;
   summary?: {
+    totalRows?: number;
     processedRows?: number;
+    duplicatedRows?: number;
     rejectedRows?: number;
     orphanedRows?: number;
   };
@@ -32,7 +34,9 @@ export async function sondarStatusUpload(uploadId: string): Promise<UploadStatus
         return {
           status,
           summary: {
+            totalRows: json?.totalRows,
             processedRows: json?.processedRows,
+            duplicatedRows: json?.duplicatedRows,
             rejectedRows: json?.rejectedRows,
             orphanedRows: json?.orphanedRows,
           },

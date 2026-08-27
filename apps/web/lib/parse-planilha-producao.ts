@@ -24,8 +24,9 @@ interface PreviewRow {
   usuarioDaConta: string;
   valorComissao?: number;
   valorTotal?: number;
-  status: "VALIDO" | "ORFAO" | "REJEITADO";
+  status: "VALIDO" | "ORFAO" | "REJEITADO" | "DUPLICADA";
   motivo?: string;
+  alerta?: string;
   parceiroNome?: string;
   comercialNome?: string;
   gestorNome?: string;
@@ -42,6 +43,7 @@ interface ParseResult {
     validos: number;
     orfaos: number;
     rejeitados: number;
+    duplicadas: number;
     totalComissao: number;
     colunasEncontradas: string[];
     colunasObrigatorias: string[];
@@ -219,6 +221,25 @@ const [comerciaisResult, consultoresPfResult, gestoresResult] = await Promise.al
   let totalValidos = 0;
   let totalOrfaos = 0;
   let totalRejeitados = 0;
+  let totalDuplicadas = 0;
+
+  // A produção não deve aparecer como nova se a mesma chave já estiver
+  // persistida em qualquer upload deste Backoffice. A consulta é apenas de
+  // leitura e falha de forma não bloqueante para preservar o preview.
+  const chavesExistentes = new Set<string>();
+  try {
+    const existentes = await prisma.procedimentoPF.findMany({
+      where: { upload: { backofficeId } },
+      select: { dataReferencia: true, cpf: true, procedimento: true, unidade: true },
+    });
+    for (const existente of existentes) {
+      chavesExistentes.add(
+        `${dataParaChave(existente.dataReferencia)}|${normalizarCpf(existente.cpf)}|${existente.procedimento}|${existente.unidade}`,
+      );
+    }
+  } catch (error) {
+    console.warn("[parsePlanilhaProducao] Não foi possível consultar duplicidades no preview:", error);
+  }
 
   const MAX_PREVIEW_ROWS = 100;
 
@@ -252,8 +273,9 @@ const valorTotalRaw =
     }
 
     // Validar dados
-    let status: "VALIDO" | "ORFAO" | "REJEITADO" = "VALIDO";
+    let status: "VALIDO" | "ORFAO" | "REJEITADO" | "DUPLICADA" = "VALIDO";
     let motivo: string | undefined;
+    let alerta: string | undefined;
 
     if (valorTotal === null || !Number.isFinite(valorTotal)) {
       status = "REJEITADO";
@@ -337,13 +359,31 @@ if (status === "VALIDO" && usuarioDaConta) {
        }
     }
 
-    // Contabilizar
+    if (status === "VALIDO" && dataReferencia && cpfValido && parceiroEncontrado) {
+      const chaveProcedimento = `${dataReferencia}|${cpf}|${procedimento}|${unidade || "NÃO INFORMADA"}`;
+      if (chavesExistentes.has(chaveProcedimento)) {
+        status = "DUPLICADA";
+        motivo = "Produção já existe no banco e será ignorada para evitar duplicidade";
+        totalDuplicadas++;
+      } else {
+        // Também evita que duas linhas iguais da mesma planilha sejam
+        // apresentadas como novas.
+        chavesExistentes.add(chaveProcedimento);
+      }
+    }
+
     if (status === "VALIDO") {
       totalValidos++;
     } else if (status === "ORFAO") {
       totalOrfaos++;
+    } else if (status === "DUPLICADA") {
+      // Duplicadas são contabilizadas separadamente de rejeitadas.
     } else {
       totalRejeitados++;
+    }
+
+    if (status === "VALIDO" && usuarioDaConta && !consultorPf) {
+      alerta = "Usuário não localizado como Consultor PF; a produção será importada sem esse vínculo.";
     }
 
     // Adicionar ao preview (limitado)
@@ -359,6 +399,7 @@ if (status === "VALIDO" && usuarioDaConta) {
         usuarioDaConta,
         status,
         motivo,
+        alerta,
         parceiroNome: parceiroEncontrado?.nome,
         comercialNome: parceiroEncontrado
           ? comercialPorId.get(parceiroEncontrado.comercialId ?? "")
@@ -384,6 +425,7 @@ if (status === "VALIDO" && usuarioDaConta) {
       validos: totalValidos,
       orfaos: totalOrfaos,
       rejeitados: totalRejeitados,
+      duplicadas: totalDuplicadas,
       totalComissao: 0,
       colunasEncontradas: Object.values(headers).map((h) => String(h).trim()),
       colunasObrigatorias: COLUNAS_OBRIGATORIAS,
@@ -449,4 +491,8 @@ function normalizarNome(nome: string): string {
 
 function normalizarCpf(cpf: string): string {
   return cpf.replace(/\D/g, "");
+}
+
+function dataParaChave(data: Date): string {
+  return data.toISOString().slice(0, 10);
 }

@@ -406,6 +406,7 @@ CREATE TABLE public.ciclos_pontos (
     nome character varying(255) NOT NULL,
     inicio_acumulo_em timestamp(3) without time zone NOT NULL,
     fim_acumulo_em timestamp(3) without time zone NOT NULL,
+    inicio_resgate_em timestamp(3) without time zone NOT NULL,
     fim_resgate_em timestamp(3) without time zone NOT NULL,
     status public."StatusCicloPontos" DEFAULT 'EM_ANDAMENTO'::public."StatusCicloPontos" NOT NULL,
     processado_expiracao_em timestamp(3) without time zone,

@@ -63,6 +63,10 @@ const parceiro = await prisma.parceiro.findUnique({
       });
     }
 
+    const agora = new Date();
+    const inicioResgate = cicloVigente.inicioResgateEm ?? cicloVigente.inicioAcumuloEm;
+    const resgateAberto = agora >= inicioResgate && agora <= cicloVigente.fimResgateEm;
+
     // Calcular saldo do parceiro no ciclo
     const creditos = await prisma.movimentacaoPontos.aggregate({
       _sum: { quantidade: true },
@@ -141,13 +145,12 @@ return ok({
           inicio: cicloVigente.inicioAcumuloEm.toISOString(),
           fim: cicloVigente.fimAcumuloEm.toISOString(),
         },
-        periodoResgate:
-          cicloVigente.status === "RESGATE_ABERTO"
-            ? {
-                inicio: cicloVigente.fimAcumuloEm.toISOString(),
-                fim: cicloVigente.fimResgateEm.toISOString(),
-              }
-            : null,
+        periodoResgate: resgateAberto
+          ? {
+              inicio: inicioResgate.toISOString(),
+              fim: cicloVigente.fimResgateEm.toISOString(),
+            }
+          : null,
         statusCiclo: cicloVigente.status,
       },
       periodicidadeCicloEscolhida: periodicidadeEscolhida,

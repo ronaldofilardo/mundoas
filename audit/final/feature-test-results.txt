@@ -1,0 +1,13 @@
+PASSED | backoffice-pontos-tabs.test.ts | tests=42 passed=42 failed=0
+PASSED | bonus-consultor-pf-regression.test.ts | tests=9 passed=9 failed=0
+PASSED | ciclos-configuracao-crud.test.tsx | tests=4 passed=4 failed=0
+PASSED | consultor-pf-novo-modal.test.ts | tests=2 passed=2 failed=0
+PASSED | pontos-utils-config-calculation.test.ts | tests=3 passed=3 failed=0
+FAILED | pontos-utils-fallback.test.ts | tests=7 passed=0 failed=7
+PASSED | primeiro-acesso-functional.test.ts | tests=5 passed=5 failed=0
+PASSED | primeiro-acesso-ui.test.ts | tests=3 passed=3 failed=0
+PASSED | ranking-pontos-unit.test.ts | tests=1 passed=1 failed=0
+FAILED | regras-correcoes-conversa.test.ts | tests=9 passed=3 failed=6
+PASSED | resgate-pontos-unit.test.ts | tests=1 passed=1 failed=0
+PASSED | setores-scope-option-b.test.ts | tests=2 passed=2 failed=0
+PASSED | pontos-utils-comissao-pf.test.ts | tests=8 passed=8 failed=0
