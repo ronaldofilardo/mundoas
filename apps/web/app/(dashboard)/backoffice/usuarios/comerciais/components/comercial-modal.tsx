@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Comercial } from "../types";
 
 interface ComercialModalProps {
@@ -22,16 +22,52 @@ export function ComercialModal({ comercial, onSave, onClose }: ComercialModalPro
   const [isLideranca, setIsLideranca] = useState<boolean>(!!liderancaInicial);
   const [tipoLideranca, setTipoLideranca] = useState<string>(liderancaInicial);
   const [tipo, setTipo] = useState<string>(comercial.tipo || "");
+  const [funcoes, setFuncoes] = useState<string[]>([]);
+  const [loadingFuncoes, setLoadingFuncoes] = useState(false);
 
-const funcoes = [
-  "GERENTE_CIRE",
-  "SUPERVISOR_ATIVO",
-  "SUPERVISOR_RECEPTIVO",
-  "SUPERVISOR_FRANQUIA",
-  "SUPERVISOR_ATENDIMENTO",
-  "GERENTE_ATENDIMENTO",
-  "SUPERVISOR_COMERCIAL",
-];
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!tipoLideranca) {
+      setFuncoes([]);
+      return;
+    }
+
+    async function carregarFuncoes() {
+      setLoadingFuncoes(true);
+      try {
+        const endpoint = tipoLideranca === "COMERCIAL"
+          ? "/api/v1/backoffice/regras-comerciais"
+          : "/api/v1/backoffice/regras-gestores";
+        const res = await fetch(endpoint);
+        if (!res.ok) throw new Error("Não foi possível carregar as funções da regra");
+
+        const data = await res.json() as { itens?: Array<{ nome?: unknown }> };
+        const nomes = (data.itens ?? [])
+          .map((item) => typeof item.nome === "string" ? item.nome.trim() : "")
+          .filter(Boolean);
+
+        if (!cancelled) setFuncoes(Array.from(new Set(nomes)));
+      } catch {
+        if (!cancelled) {
+          setFuncoes([]);
+        }
+      } finally {
+        if (!cancelled) setLoadingFuncoes(false);
+      }
+    }
+
+    setFuncao("");
+    void carregarFuncoes();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tipoLideranca]);
+
+  function setFuncao(value: string) {
+    setFormData((prev) => ({ ...prev, funcao: value }));
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -163,16 +199,19 @@ const funcoes = [
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="f">
               Função
             </label>
-            <select id="f"
-              value={formData.funcao || ""}
-              onChange={(e) => setFormData({ ...formData, funcao: e.target.value })}
-              className="w-full px-3 py-2 border rounded"
-            >
-              <option value="">Selecione</option>
-              {funcoes.map((f) => (
-                <option key={f} value={f}>{f.replace(/_/g, " ")}</option>
-              ))}
-            </select>
+              <select id="f"
+                value={formData.funcao || ""}
+                onChange={(e) => setFuncao(e.target.value)}
+                className="w-full px-3 py-2 border rounded"
+                disabled={!isLideranca || !tipoLideranca || loadingFuncoes}
+              >
+                <option value="">
+                  {loadingFuncoes ? "Carregando..." : "Selecione"}
+                </option>
+                {funcoes.map((f) => (
+                  <option key={f} value={f}>{f.replace(/_/g, " ")}</option>
+                ))}
+              </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="status">
