@@ -16,6 +16,7 @@ dist/
 # Logs & Temp
 logs/
 *.log
+apps/web/test-results.txt
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -24,6 +25,7 @@ pnpm-debug.log*
 # Testing
 coverage/
 .turbo/
+audit/
 
 # Uploads
 uploads/
