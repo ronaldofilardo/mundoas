@@ -183,6 +183,7 @@ export async function PUT(req: NextRequest) {
   }
 
   const normalizedEmail = (email ?? parceiro.usuario.email).toLowerCase().trim();
+  const currentEmail = parceiro.usuario.email.toLowerCase().trim();
 
   const existingUser = await prisma.usuario.findFirst({
     where: {
@@ -196,10 +197,12 @@ export async function PUT(req: NextRequest) {
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.usuario.update({
-      where: { id: parceiro.usuarioId },
-      data: { email: normalizedEmail },
-    });
+    if (normalizedEmail !== currentEmail) {
+      await tx.usuario.update({
+        where: { id: parceiro.usuarioId },
+        data: { email: normalizedEmail },
+      });
+    }
 
     await tx.parceiro.update({
       where: { id },
