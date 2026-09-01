@@ -196,22 +196,29 @@ export async function PUT(req: NextRequest) {
     return badRequest("E-mail já cadastrado");
   }
 
-  await prisma.$transaction(async (tx) => {
-    if (normalizedEmail !== currentEmail) {
-      await tx.usuario.update({
-        where: { id: parceiro.usuarioId },
-        data: { email: normalizedEmail },
-      });
-    }
+  try {
+    await prisma.$transaction(async (tx) => {
+      if (normalizedEmail !== currentEmail) {
+        await tx.usuario.update({
+          where: { id: parceiro.usuarioId },
+          data: { email: normalizedEmail },
+        });
+      }
 
-    await tx.parceiro.update({
-      where: { id },
-      data: {
-        nome,
-        cpf: cpfUnmasked,
-      },
+      await tx.parceiro.update({
+        where: { id },
+        data: {
+          nome,
+          cpf: cpfUnmasked,
+        },
+      });
     });
-  });
+  } catch (err: any) {
+    if (err?.code === "P2002") {
+      return badRequest("E-mail já cadastrado");
+    }
+    throw err;
+  }
 
   await criarAuditLog({
     usuarioId: session.user.id,
