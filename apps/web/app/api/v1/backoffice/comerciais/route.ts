@@ -47,6 +47,7 @@ export const GET = async () => {
     status: l.status,
     createdAt: l.createdAt,
     liderancaId: null,
+    tipo: l.tipo,
     tipoLideranca: l.tipoLideranca,
     isLideranca: true,
   }));
@@ -62,6 +63,7 @@ export const GET = async () => {
       status: c.status,
       createdAt: c.createdAt,
       liderancaId: c.liderancaId,
+      tipo: c.tipo,
       tipoLideranca: c.tipoLideranca,
       isLideranca: false,
     })),
@@ -76,6 +78,7 @@ export const GET = async () => {
         status: c.status,
         createdAt: c.createdAt,
         liderancaId: c.liderancaId,
+        tipo: c.tipo,
         tipoLideranca: c.tipoLideranca,
         isLideranca: false,
       })),
