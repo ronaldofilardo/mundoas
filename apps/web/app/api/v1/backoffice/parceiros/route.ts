@@ -184,31 +184,27 @@ export async function PUT(req: NextRequest) {
 
   const normalizedEmail = (email ?? parceiro.usuario.email).toLowerCase().trim();
 
-  const existingUser = await prisma.usuario.findFirst({
-    where: {
-      email: normalizedEmail,
-      id: { not: parceiro.usuarioId },
-    },
-  });
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.usuario.update({
+        where: { id: parceiro.usuarioId },
+        data: { email: normalizedEmail },
+      });
 
-  if (existingUser) {
-    return badRequest("E-mail já cadastrado");
+      await tx.parceiro.update({
+        where: { id },
+        data: {
+          nome,
+          cpf: cpfUnmasked,
+        },
+      });
+    });
+  } catch (err: any) {
+    if (err?.code === "P2002") {
+      return badRequest("E-mail já cadastrado");
+    }
+    throw err;
   }
-
-  await prisma.$transaction(async (tx) => {
-    await tx.usuario.update({
-      where: { id: parceiro.usuarioId },
-      data: { email: normalizedEmail },
-    });
-
-    await tx.parceiro.update({
-      where: { id },
-      data: {
-        nome,
-        cpf: cpfUnmasked,
-      },
-    });
-  });
 
   await criarAuditLog({
     usuarioId: session.user.id,
