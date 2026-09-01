@@ -9,7 +9,7 @@ export interface Comercial {
   telefone?: string | null;
   lideranca?: "COMERCIAL" | "GESTOR";
   tipoLideranca?: "COMERCIAL" | "GESTOR";
-  tipo?: "GERENTE" | "SUPERVISOR" | "LIDER";
+  tipo?: "COMERCIAL" | "LIDERANCA";
   isLideranca?: boolean;
   isConsultorPf?: boolean;
 }

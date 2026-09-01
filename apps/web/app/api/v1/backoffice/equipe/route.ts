@@ -116,6 +116,7 @@ export async function GET(req: NextRequest) {
       nome: c.nome,
       cpf: c.cpf,
       email: c.usuario.email,
+      tipo: c.tipo,
       funcao: c.funcao,
       percentualComissao: c.percentualComissao,
       status: c.status,

@@ -24,6 +24,7 @@ export function ComercialModal({ comercial, onSave, onClose }: ComercialModalPro
   const [tipo, setTipo] = useState<string>(comercial.tipo || "");
   const [funcoes, setFuncoes] = useState<string[]>([]);
   const [loadingFuncoes, setLoadingFuncoes] = useState(false);
+  const [initialMount, setInitialMount] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +48,12 @@ export function ComercialModal({ comercial, onSave, onClose }: ComercialModalPro
           .map((item) => typeof item.nome === "string" ? item.nome.trim() : "")
           .filter(Boolean);
 
-        if (!cancelled) setFuncoes(Array.from(new Set(nomes)));
+        if (!cancelled) {
+          setFuncoes(Array.from(new Set(nomes)));
+          if (initialMount && comercial.funcao) {
+            setFuncao(comercial.funcao);
+          }
+        }
       } catch {
         if (!cancelled) {
           setFuncoes([]);
@@ -57,8 +63,11 @@ export function ComercialModal({ comercial, onSave, onClose }: ComercialModalPro
       }
     }
 
-    setFuncao("");
+    if (!initialMount) {
+      setFuncao("");
+    }
     void carregarFuncoes();
+    if (initialMount) setInitialMount(false);
 
     return () => {
       cancelled = true;
@@ -185,14 +194,13 @@ export function ComercialModal({ comercial, onSave, onClose }: ComercialModalPro
               value={tipo}
               onChange={(e) => {
                 setTipo(e.target.value);
-                setFormData({ ...formData, tipo: e.target.value as "GERENTE" | "SUPERVISOR" | "LIDER" | undefined });
+                setFormData({ ...formData, tipo: e.target.value as "COMERCIAL" | "LIDERANCA" | undefined });
               }}
               className="w-full px-3 py-2 border rounded"
             >
               <option value="">Selecione</option>
-              <option value="GERENTE">Gerente</option>
-              <option value="SUPERVISOR">Supervisor</option>
-              <option value="LIDER">Lider</option>
+              <option value="COMERCIAL">Comercial</option>
+              <option value="LIDERANCA">Liderança</option>
             </select>
           </div>
           <div>

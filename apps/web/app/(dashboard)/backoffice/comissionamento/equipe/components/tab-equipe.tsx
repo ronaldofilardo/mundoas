@@ -54,7 +54,7 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
       funcao: item.funcao ?? undefined,
       lideranca,
       tipoLideranca: lideranca,
-      tipo: undefined,
+      tipo: item.tipo as "COMERCIAL" | "LIDERANCA" | undefined,
       status: item.status,
       percentualComissao: item.percentualComissao ?? 0,
     });
@@ -76,7 +76,7 @@ export function TabEquipe({ itens, refetch }: TabEquipeProps) {
       funcao: item.funcao ?? undefined,
       lideranca,
       tipoLideranca: lideranca,
-      tipo: undefined,
+      tipo: item.tipo as "COMERCIAL" | "LIDERANCA" | undefined,
       status: item.status,
       percentualComissao: item.percentualComissao ?? 0,
     });
