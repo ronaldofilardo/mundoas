@@ -79,10 +79,20 @@ model Backoffice {
   usuarioId                 String               @unique @map("usuario_id") @db.Uuid
   nome                      String               @db.VarChar(255)
   cpf                       String               @unique @db.VarChar(14)
+  razaoSocial               String?              @map("razao_social") @db.VarChar(255)
+  cnpj                      String?              @db.VarChar(20)
+  cep                       String?              @db.VarChar(10)
+  logradouro                String?              @db.VarChar(255)
+  numero                    String?              @db.VarChar(10)
+  complemento               String?              @db.VarChar(100)
+  bairro                    String?              @db.VarChar(100)
+  cidade                    String?              @db.VarChar(100)
+  uf                        String?              @db.VarChar(2)
+  telefone                  String?              @db.VarChar(20)
   percentualComissaoDefault Decimal              @default(5.00) @map("percentual_comissao_default") @db.Decimal(5, 2)
   percentualComissaoMax     Decimal              @default(100.00) @map("percentual_comissao_max") @db.Decimal(5, 2)
   createdAt                 DateTime             @default(now()) @map("created_at")
-  updatedAt                 DateTime             @default(now()) @updatedAt @map("updated_at")
+  updatedAt                 DateTime             @updatedAt @map("updated_at")
   assinatura                Assinatura?
   usuario                   Usuario              @relation(fields: [usuarioId], references: [id])
   ciclosPontos              CicloPontos[]

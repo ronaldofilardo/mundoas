@@ -108,6 +108,15 @@ export async function GET() {
       hierarquia: "BACKOFFICE" as const,
       criadoEm: bo.usuario.criadoEm?.toISOString(),
       // Backoffice-specific fields
+      razaoSocial: bo.razaoSocial,
+      cnpj: bo.cnpj,
+      cep: bo.cep,
+      logradouro: bo.logradouro,
+      numero: bo.numero,
+      complemento: bo.complemento,
+      bairro: bo.bairro,
+      cidade: bo.cidade,
+      uf: bo.uf,
       percentualComissaoDefault: Number(bo.percentualComissaoDefault),
       percentualComissaoMax: Number(bo.percentualComissaoMax),
     }));

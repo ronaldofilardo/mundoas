@@ -11,6 +11,8 @@ import { prisma } from "@asa/database";
 vi.mock("@/lib/api-helpers", () => ({
   requireLiderancaWithScope: vi.fn(),
   badRequest: (message: string) => Response.json({ error: message }, { status: 400 }),
+  forbidden: () => Response.json({ error: "Acesso negado" }, { status: 403 }),
+  notFound: (message: string) => Response.json({ error: message }, { status: 404 }),
   ok: (data: unknown) => Response.json(data),
   created: (data: unknown) => Response.json(data, { status: 201 }),
 }));
@@ -19,8 +21,9 @@ vi.mock("@asa/database", () => ({
   prisma: {
     consultorPf: { findMany: vi.fn(), findUnique: vi.fn(), create: vi.fn() },
     usuario: { findUnique: vi.fn(), create: vi.fn() },
-    setor: { findMany: vi.fn() },
+    setor: { findMany: vi.fn(), upsert: vi.fn() },
     consultorPfSetor: { createMany: vi.fn() },
+    regraComercial: { findUnique: vi.fn() },
     $transaction: vi.fn(),
   },
 }));
@@ -35,7 +38,7 @@ type ScopeResult = {
 
 const scopeMock = vi.mocked(requireLiderancaWithScope);
 const prismaMock = vi.mocked(prisma);
-const params = { lideranca: { id: "lideranca-1" }, error: null };
+const params = { lideranca: { id: "lideranca-1", backofficeId: "backoffice-1" }, error: null };
 
 function authenticate(): void {
   scopeMock.mockResolvedValue(params as Awaited<ReturnType<typeof requireLiderancaWithScope>>);
@@ -110,6 +113,9 @@ describe("API lideranca/consultores-pf — contrato funcional", () => {
     authenticate();
     prismaMock.usuario.findUnique.mockResolvedValue(null);
     prismaMock.consultorPf.findUnique.mockResolvedValue(null);
+    prismaMock.regraComercial.findUnique.mockResolvedValue({
+      itens: [{ nome: "Saúde", ordem: 1 }],
+    } as any);
     prismaMock.setor.findMany.mockResolvedValue([
       { id: "setor-1", nome: "Saúde" },
     ] as Awaited<ReturnType<typeof prisma.setor.findMany>>);

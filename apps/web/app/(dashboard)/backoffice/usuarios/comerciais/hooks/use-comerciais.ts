@@ -9,7 +9,7 @@ export function useComerciais() {
   async function fetchComerciais() {
     setLoading(true);
     try {
-      const res = await fetch("/api/v1/backoffice/comerciais");
+      const res = await fetch("/api/v1/backoffice/comerciais", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setComerciais(data);

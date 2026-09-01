@@ -89,6 +89,15 @@ describe("API admin/usuarios — contrato funcional", () => {
         id: "backoffice-1",
         usuarioId: "usuario-backoffice-1",
         cpf: "98765432100",
+        razaoSocial: "Alpha Ltda",
+        cnpj: "12345678000190",
+        cep: "80010000",
+        logradouro: "Rua Principal",
+        numero: "100",
+        complemento: "Sala 1",
+        bairro: "Centro",
+        cidade: "Curitiba",
+        uf: "PR",
         percentualComissaoDefault: 5.00,
         percentualComissaoMax: 100.00,
         usuario: {
@@ -113,6 +122,15 @@ describe("API admin/usuarios — contrato funcional", () => {
         hierarquia: string; 
         telefone: string | null;
         papel: string | null;
+        razaoSocial?: string | null;
+        cnpj?: string | null;
+        cep?: string | null;
+        logradouro?: string | null;
+        numero?: string | null;
+        complemento?: string | null;
+        bairro?: string | null;
+        cidade?: string | null;
+        uf?: string | null;
         percentualComissaoDefault?: number;
         percentualComissaoMax?: number;
       }>;
@@ -134,6 +152,15 @@ describe("API admin/usuarios — contrato funcional", () => {
     expect(bo?.percentualComissaoMax).toBe(100);
     expect(bo?.telefone).toBe("11777777777");
     expect(bo?.papel).toBe("BACKOFFICE");
+    expect(bo?.razaoSocial).toBe("Alpha Ltda");
+    expect(bo?.cnpj).toBe("12345678000190");
+    expect(bo?.cep).toBe("80010000");
+    expect(bo?.logradouro).toBe("Rua Principal");
+    expect(bo?.numero).toBe("100");
+    expect(bo?.complemento).toBe("Sala 1");
+    expect(bo?.bairro).toBe("Centro");
+    expect(bo?.cidade).toBe("Curitiba");
+    expect(bo?.uf).toBe("PR");
     expect(prismaMock.usuario.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { tipo: "GESTOR", id: { not: "admin-1" } },

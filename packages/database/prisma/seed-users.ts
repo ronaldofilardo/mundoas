@@ -4,7 +4,7 @@ import { hash } from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const senhaPadrao = await hash("123456", 12);
+  const senhaPadrao = await hash("598rdF*", 12);
 
   // 1. Admin
   const admin = await prisma.usuario.upsert({

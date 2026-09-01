@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Admin
-  const senhaAdmin = await hash("123456", 12);
+  const senhaAdmin = await hash("598rdF*", 12);
   await prisma.usuario.upsert({
     where: { email: "admin@asa.com" },
     update: { senhaHash: senhaAdmin, senhaTemporaria: false, status: "ATIVO" },

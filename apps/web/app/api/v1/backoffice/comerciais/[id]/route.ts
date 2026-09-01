@@ -56,6 +56,7 @@ export const GET = async (
     status: comercial.status,
     createdAt: comercial.createdAt,
     liderancaId: comercial.liderancaId,
+    tipo: comercial.tipo,
     tipoLideranca: comercial.tipoLideranca,
     funcao: comercial.funcao,
   });

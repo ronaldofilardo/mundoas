@@ -10,7 +10,7 @@ VALUES (
   '00000000-0000-0000-0001-000000000001',
   'Administrador',
   'admin@asa.com',
-  '$2a$12$uF0dL8sTPbckvCzvlvgK0uDoK3dm/wEufvO0Xfn1MNiI4T.6Nknni',
+  '$2a$12$ljxPs3gnD.X1ZSIgBv3U7eHIl.zz0G28DAQduiOLlUSdiHQ2fuih',
   'ADMIN',
   '(11) 99999-0000',
   'ATIVO',

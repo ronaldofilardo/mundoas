@@ -291,7 +291,8 @@ export function TabComerciais() {
   }
 
   async function handleEditarComercial(comercialId: string) {
-    const comercial = comerciais.find((c) => c.id === comercialId);
+    const data = await refetchComerciais();
+    const comercial = data.find((c: Comercial) => c.id === comercialId) ?? comerciais.find((c) => c.id === comercialId);
     if (!comercial) return;
     setComercialEditando(comercial);
     setShowModal(true);

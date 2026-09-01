@@ -10,7 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Loader2, Key, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Key, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { PasswordResetModal } from "@/components/password-reset-modal";
 import {
@@ -28,9 +29,21 @@ interface Usuario {
   nome: string;
   email: string;
   cpf: string | null;
-  tipo: "GESTOR" | "CONSULTOR";
+  tipo: "GESTOR" | "CONSULTOR" | "BACKOFFICE";
   status: "ATIVO" | "INATIVO";
-  hierarquia: "GESTOR" | "CONSULTOR";
+  hierarquia: "GESTOR" | "CONSULTOR" | "BACKOFFICE";
+  telefone?: string | null;
+  razaoSocial?: string | null;
+  cnpj?: string | null;
+  cep?: string | null;
+  logradouro?: string | null;
+  numero?: string | null;
+  complemento?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  uf?: string | null;
+  percentualComissaoDefault?: number;
+  percentualComissaoMax?: number;
 }
 
 export default function UsuariosPage() {
@@ -41,6 +54,26 @@ export default function UsuariosPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteInfo, setDeleteInfo] = useState<any>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editUsuario, setEditUsuario] = useState<Usuario | null>(null);
+  const [editForm, setEditForm] = useState({
+    nome: "",
+    email: "",
+    telefone: "",
+    razaoSocial: "",
+    cnpj: "",
+    cep: "",
+    logradouro: "",
+    numero: "",
+    complemento: "",
+    bairro: "",
+    cidade: "",
+    uf: "",
+    percentualComissaoDefault: "",
+    percentualComissaoMax: "",
+  });
+  const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
     fetchUsuarios();
@@ -69,6 +102,79 @@ export default function UsuariosPage() {
   const handleResetPassword = (usuario: Usuario) => {
     setSelectedUsuario(usuario);
     setResetModalOpen(true);
+  };
+
+  const handleEditClick = (usuario: Usuario) => {
+    setEditUsuario(usuario);
+    setEditForm({
+      nome: usuario.nome || "",
+      email: usuario.email || "",
+      telefone: usuario.telefone || "",
+      razaoSocial: usuario.razaoSocial || "",
+      cnpj: usuario.cnpj || "",
+      cep: usuario.cep || "",
+      logradouro: usuario.logradouro || "",
+      numero: usuario.numero || "",
+      complemento: usuario.complemento || "",
+      bairro: usuario.bairro || "",
+      cidade: usuario.cidade || "",
+      uf: usuario.uf || "",
+      percentualComissaoDefault: usuario.percentualComissaoDefault?.toString() || "",
+      percentualComissaoMax: usuario.percentualComissaoMax?.toString() || "",
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editUsuario) return;
+    setSavingEdit(true);
+    try {
+      const response = await fetch(
+        `/api/v1/admin/usuarios/${editUsuario.id}?type=${editUsuario.tipo}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nome: editForm.nome,
+            email: editForm.email,
+            telefone: editForm.telefone || null,
+            ...(editUsuario.tipo === "BACKOFFICE" && {
+              razaoSocial: editForm.razaoSocial || null,
+              cnpj: editForm.cnpj || null,
+              cep: editForm.cep || null,
+              logradouro: editForm.logradouro || null,
+              numero: editForm.numero || null,
+              complemento: editForm.complemento || null,
+              bairro: editForm.bairro || null,
+              cidade: editForm.cidade || null,
+              uf: editForm.uf || null,
+              percentualComissaoDefault: editForm.percentualComissaoDefault
+                ? parseFloat(editForm.percentualComissaoDefault)
+                : undefined,
+              percentualComissaoMax: editForm.percentualComissaoMax
+                ? parseFloat(editForm.percentualComissaoMax)
+                : undefined,
+            }),
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Erro ao salvar");
+      }
+
+      toast.success("Dados atualizados com sucesso");
+      setEditModalOpen(false);
+      setEditUsuario(null);
+      await fetchUsuarios();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Erro ao salvar alterações",
+      );
+    } finally {
+      setSavingEdit(false);
+    }
   };
 
   const handleDeleteClick = async (usuario: Usuario) => {
@@ -132,6 +238,8 @@ export default function UsuariosPage() {
         return "bg-purple-100 text-purple-800";
       case "CONSULTOR":
         return "bg-blue-100 text-blue-800";
+      case "BACKOFFICE":
+        return "bg-amber-100 text-amber-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -198,6 +306,15 @@ export default function UsuariosPage() {
                   </span>
                 </TableCell>
                 <TableCell className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleEditClick(usuario)}
+                    className="gap-2"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Editar
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
@@ -287,6 +404,227 @@ export default function UsuariosPage() {
                 </>
               ) : (
                 "Remover usuário"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              Editar {editUsuario?.tipo === "BACKOFFICE" ? "Unidade" : "Usuário"}
+            </DialogTitle>
+            <DialogDescription>
+              {editUsuario?.nome}
+            </DialogDescription>
+          </DialogHeader>
+
+          {editUsuario && (
+            <div className="space-y-4 py-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Nome
+                  </label>
+                  <Input
+                    value={editForm.nome}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, nome: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <Input
+                    type="email"
+                    value={editForm.email}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, email: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Telefone
+                  </label>
+                  <Input
+                    value={editForm.telefone}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, telefone: e.target.value })
+                    }
+                  />
+                </div>
+                {editUsuario.tipo === "BACKOFFICE" && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      CPF
+                    </label>
+                    <Input value={editUsuario.cpf || ""} disabled />
+                  </div>
+                )}
+              </div>
+
+              {editUsuario.tipo === "BACKOFFICE" && (
+                <>
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                      Dados da Unidade
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Razão Social
+                        </label>
+                        <Input
+                          value={editForm.razaoSocial}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              razaoSocial: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          CNPJ
+                        </label>
+                        <Input
+                          value={editForm.cnpj}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, cnpj: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                      Endereço
+                    </h3>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Logradouro
+                        </label>
+                        <Input
+                          value={editForm.logradouro}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              logradouro: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Número
+                        </label>
+                        <Input
+                          value={editForm.numero}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, numero: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 mt-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Complemento
+                        </label>
+                        <Input
+                          value={editForm.complemento}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              complemento: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Bairro
+                        </label>
+                        <Input
+                          value={editForm.bairro}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, bairro: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          CEP
+                        </label>
+                        <Input
+                          value={editForm.cep}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, cep: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mt-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Cidade
+                        </label>
+                        <Input
+                          value={editForm.cidade}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, cidade: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          UF
+                        </label>
+                        <Input
+                          value={editForm.uf}
+                          maxLength={2}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              uf: e.target.value.toUpperCase(),
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditModalOpen(false)}
+              disabled={savingEdit}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={savingEdit}>
+              {savingEdit ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                "Salvar"
               )}
             </Button>
           </DialogFooter>

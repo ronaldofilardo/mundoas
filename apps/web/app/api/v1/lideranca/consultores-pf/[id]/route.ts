@@ -5,7 +5,10 @@ import { z } from "zod";
 
 const atualizarConsultorPfSchema = z.object({
   nome: z.string().min(3, "Nome deve ter no mínimo 3 caracteres").optional(),
+  email: z.string().email("Email inválido").optional(),
+  cpf: z.string().regex(/^\d{11}$/, "CPF deve ter 11 dígitos").optional(),
   telefone: z.string().optional(),
+  setores: z.array(z.string()).min(1, "Selecione ao menos um setor").optional(),
   status: z.enum(["ATIVO", "INATIVO"]).optional(),
 });
 
@@ -37,14 +40,33 @@ export async function PATCH(
     return badRequest(parsed.error.errors.map((e) => e.message).join(", "));
   }
 
-  const { nome, telefone, status } = parsed.data;
+  const { nome, email, cpf, telefone, setores, status } = parsed.data;
+
+  if (cpf && cpf !== consultorPf.cpf) {
+    const existingCpf = await prisma.consultorPf.findUnique({
+      where: { cpf },
+    });
+    if (existingCpf) {
+      return badRequest("CPF já cadastrado para outro consultor");
+    }
+  }
+
+  if (email && email !== consultorPf.usuario.email) {
+    const existingEmail = await prisma.usuario.findUnique({
+      where: { email },
+    });
+    if (existingEmail && existingEmail.id !== consultorPf.usuarioId) {
+      return badRequest("Email já cadastrado para outro usuário");
+    }
+  }
 
   const updated = await prisma.$transaction(async (tx) => {
-    const updatedUsuario = nome || telefone || status
+    const updatedUsuario = nome || email || telefone || status
       ? await tx.usuario.update({
           where: { id: consultorPf.usuarioId },
           data: {
             ...(nome && { nome }),
+            ...(email && { email }),
             ...(telefone !== undefined && { telefone: telefone || null }),
             ...(status && { status }),
           },
@@ -55,10 +77,31 @@ export async function PATCH(
       where: { id: consultorPf.id },
       data: {
         ...(nome && { nome }),
+        ...(cpf && { cpf }),
         ...(status && { status }),
         atualizadoEm: new Date(),
       },
     });
+
+    if (setores) {
+      const setorRecords = await tx.setor.findMany({
+        where: { nome: { in: setores } },
+      });
+      const setorIds = setorRecords.map((s) => s.id);
+
+      await tx.consultorPfSetor.deleteMany({
+        where: { consultorPfId: consultorPf.id },
+      });
+
+      if (setorIds.length > 0) {
+        await tx.consultorPfSetor.createMany({
+          data: setorIds.map((setorId) => ({
+            consultorPfId: consultorPf.id,
+            setorId,
+          })),
+        });
+      }
+    }
 
     return { usuario: updatedUsuario, consultorPf: updatedConsultorPf };
   });

@@ -11,10 +11,20 @@ export async function POST(req: NextRequest) {
     if (error) return error;
 
     const body = await req.json();
-    const { nome, email, cpf } = body as {
+    const { nome, email, cpf, razaoSocial, cnpj, cep, logradouro, numero, complemento, bairro, cidade, uf, telefone } = body as {
       nome?: string;
       email?: string;
       cpf?: string;
+      razaoSocial?: string;
+      cnpj?: string;
+      cep?: string;
+      logradouro?: string;
+      numero?: string;
+      complemento?: string;
+      bairro?: string;
+      cidade?: string;
+      uf?: string;
+      telefone?: string;
     };
 
     if (!nome || !email || !cpf) {
@@ -56,6 +66,16 @@ export async function POST(req: NextRequest) {
           usuarioId: usuario.id,
           nome,
           cpf: cpfClean,
+          razaoSocial,
+          cnpj,
+          logradouro,
+          cep,
+          numero,
+          complemento,
+          bairro,
+          cidade,
+          uf,
+          telefone,
         },
       });
 

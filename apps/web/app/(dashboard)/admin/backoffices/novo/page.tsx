@@ -12,6 +12,16 @@ export default function NovoBackofficePage() {
     nome: "",
     email: "",
     cpf: "",
+    razaoSocial: "",
+    cnpj: "",
+    cep: "",
+    logradouro: "",
+    numero: "",
+    complemento: "",
+    bairro: "",
+    cidade: "",
+    uf: "",
+    telefone: "",
   });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -114,6 +124,141 @@ export default function NovoBackofficePage() {
           <p className="text-xs text-gray-400 mt-1">
             A senha provisória será os 5 primeiros dígitos do CPF.
           </p>
+        </div>
+
+        <h3 className="text-xs font-medium text-gray-500 mb-2">Dados da Pessoa Jurídica</h3>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="razaoSocial">
+            Razão Social
+          </label>
+          <input id="razaoSocial"
+            name="razaoSocial"
+            value={formData.razaoSocial}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2 text-sm"
+            placeholder="Nome empresarial"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="cnpj">
+            CNPJ
+          </label>
+          <input id="cnpj"
+            name="cnpj"
+            value={formData.cnpj}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2 text-sm"
+            placeholder="Somente números"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="cep">
+              CEP
+            </label>
+            <input id="cep"
+              name="cep"
+              value={formData.cep}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2 text-sm"
+              placeholder="Somente números"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="uf">
+              UF
+            </label>
+            <input id="uf"
+              name="uf"
+              value={formData.uf}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2 text-sm"
+              placeholder="Ex: SP"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="logradouro">
+              Logradouro
+            </label>
+            <input id="logradouro"
+              name="logradouro"
+              value={formData.logradouro}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2 text-sm"
+              placeholder="Ex: Rua Principal"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="numero">
+              Número
+            </label>
+            <input id="numero"
+              name="numero"
+              value={formData.numero}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2 text-sm"
+              placeholder="Ex: 100"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="complemento">
+            Complemento
+          </label>
+          <input id="complemento"
+            name="complemento"
+            value={formData.complemento}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2 text-sm"
+            placeholder="Ex: Apto 101"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="bairro">
+            Bairro
+          </label>
+          <input id="bairro"
+            name="bairro"
+            value={formData.bairro}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2 text-sm"
+            placeholder="Ex: Centro"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="cidade">
+              Cidade
+            </label>
+            <input id="cidade"
+              name="cidade"
+              value={formData.cidade}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2 text-sm"
+              placeholder="Ex: São Paulo"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="telefone">
+              Telefone
+            </label>
+            <input id="telefone"
+              name="telefone"
+              value={formData.telefone}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2 text-sm"
+              placeholder="Somente números"
+            />
+          </div>
         </div>
 
         <div className="flex gap-3 pt-2">
