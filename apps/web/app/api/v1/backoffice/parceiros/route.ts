@@ -182,9 +182,11 @@ export async function PUT(req: NextRequest) {
     }
   }
 
+  const normalizedEmail = (email ?? parceiro.usuario.email).toLowerCase().trim();
+
   const existingUser = await prisma.usuario.findFirst({
     where: {
-      email,
+      email: normalizedEmail,
       id: { not: parceiro.usuarioId },
     },
   });
@@ -193,17 +195,19 @@ export async function PUT(req: NextRequest) {
     return badRequest("E-mail já cadastrado");
   }
 
-  await prisma.usuario.update({
-    where: { id: parceiro.usuarioId },
-    data: { email },
-  });
+  await prisma.$transaction(async (tx) => {
+    await tx.usuario.update({
+      where: { id: parceiro.usuarioId },
+      data: { email: normalizedEmail },
+    });
 
-  await prisma.parceiro.update({
-    where: { id },
-    data: {
-      nome,
-      cpf: cpfUnmasked,
-    },
+    await tx.parceiro.update({
+      where: { id },
+      data: {
+        nome,
+        cpf: cpfUnmasked,
+      },
+    });
   });
 
   await criarAuditLog({
@@ -211,7 +215,7 @@ export async function PUT(req: NextRequest) {
     acao: "ATUALIZAR",
     entidade: "PARCEIRO",
     entidadeId: id,
-    detalhes: { nome, cpf: cpfUnmasked },
+    detalhes: { nome, email: normalizedEmail, cpf: cpfUnmasked },
   });
 
   return ok({ success: true });

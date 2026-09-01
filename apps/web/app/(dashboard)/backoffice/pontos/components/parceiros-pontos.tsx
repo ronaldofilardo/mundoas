@@ -774,20 +774,20 @@ export function ParceirosPontos() {
                           : masked.length > 3
                             ? `${masked.slice(0, 3)}.${masked.slice(3)}`
                             : masked;
-                    setForm({ ...form, cpf: f });
+                     setForm({ ...form, cpf: f });
 
-                    if (!editParceiro && masked.length === 11) {
-                      const windowWithTimeout = window as WindowWithCpfTimeout;
-                      if (windowWithTimeout.cpfTimeout) {
-                        clearTimeout(windowWithTimeout.cpfTimeout);
-                      }
-                      windowWithTimeout.cpfTimeout = setTimeout(() => {
-                        validateCpfRealTime(f);
-                      }, 500);
-                    } else if (!editParceiro) {
-                      setCpfValidation("");
-                    }
-                  }}
+                     if (masked.length === 11) {
+                       const windowWithTimeout = window as WindowWithCpfTimeout;
+                       if (windowWithTimeout.cpfTimeout) {
+                         clearTimeout(windowWithTimeout.cpfTimeout);
+                       }
+                       windowWithTimeout.cpfTimeout = setTimeout(() => {
+                         validateCpfRealTime(f);
+                       }, 500);
+                     } else {
+                       setCpfValidation("");
+                     }
+                   }}
                   placeholder="000.000.000-00"
                   className={`w-full px-3 py-2 border rounded-lg text-sm focus-ring ${
                     !editParceiro && cpfValidation === "invalid"
@@ -795,9 +795,8 @@ export function ParceirosPontos() {
                       : !editParceiro && cpfValidation === "valid"
                         ? "border-green-500"
                         : ""
-                  }`}
-                  disabled={!!editParceiro}
-                />
+                   }`}
+                 />
                 {!editParceiro && cpfValidation === "invalid" && (
                   <p className="text-xs text-red-600 mt-1">
                     CPF inválido ou não disponível
