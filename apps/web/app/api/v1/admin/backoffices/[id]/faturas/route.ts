@@ -21,11 +21,20 @@ export async function POST(
       return badRequest("Informe a data de vencimento.");
     }
 
-    const assinatura = await prisma.assinatura.findUnique({
+    let assinatura = await prisma.assinatura.findUnique({
       where: { backofficeId: params.id },
     });
+
     if (!assinatura) {
-      return notFound("Assinatura não encontrada para esta unidade.");
+      assinatura = await prisma.assinatura.create({
+        data: {
+          backofficeId: params.id,
+          statusAssinatura: "CORTESIA",
+          cortesiaDesde: new Date(),
+          cortesiaPorUsuarioId: session!.user.id,
+          motivoCortesia: "Assinatura criada automaticamente — unidade sem assinatura",
+        },
+      });
     }
 
     const fatura = await prisma.faturaAsaas.create({
@@ -56,14 +65,23 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const { error } = await requireAdmin();
+  const { session, error } = await requireAdmin();
   if (error) return error;
 
-  const assinatura = await prisma.assinatura.findUnique({
+  let assinatura = await prisma.assinatura.findUnique({
     where: { backofficeId: params.id },
   });
+
   if (!assinatura) {
-    return notFound("Assinatura não encontrada para esta unidade.");
+    assinatura = await prisma.assinatura.create({
+      data: {
+        backofficeId: params.id,
+        statusAssinatura: "CORTESIA",
+        cortesiaDesde: new Date(),
+        cortesiaPorUsuarioId: session!.user.id,
+        motivoCortesia: "Assinatura criada automaticamente — unidade sem assinatura",
+      },
+    });
   }
 
   const faturas = await prisma.faturaAsaas.findMany({

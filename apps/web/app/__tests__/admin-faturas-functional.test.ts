@@ -16,7 +16,7 @@ vi.mock("@/lib/api-helpers", () => ({
 
 vi.mock("@asa/database", () => ({
   prisma: {
-    assinatura: { findUnique: vi.fn(), update: vi.fn() },
+    assinatura: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
     faturaAsaas: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn() },
     $transaction: vi.fn(),
   },
@@ -73,16 +73,43 @@ describe("APIs admin/backoffices/:id/faturas — contrato funcional", () => {
     expect(prismaMock.assinatura.findUnique).not.toHaveBeenCalled();
   });
 
-  it("retorna 404 quando não existe assinatura", async () => {
+  it("cria assinatura automaticamente e depois cria fatura quando não existe assinatura", async () => {
     authenticate();
     prismaMock.assinatura.findUnique.mockResolvedValue(null);
+    prismaMock.assinatura.create.mockResolvedValue({
+      id: "assinatura-new",
+      backofficeId: "backoffice-1",
+      statusAssinatura: "CORTESIA",
+    } as Awaited<ReturnType<typeof prisma.assinatura.create>>);
+    prismaMock.faturaAsaas.create.mockResolvedValue({
+      id: "fatura-1",
+      statusPagamento: "PENDING",
+      valor: 100,
+    } as Awaited<ReturnType<typeof prisma.faturaAsaas.create>>);
 
     const response = await POST(
       request({ valor: 100, vencimento: "2026-09-01" }),
       backofficeParams,
     );
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(201);
+    expect(prismaMock.assinatura.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          backofficeId: "backoffice-1",
+          statusAssinatura: "CORTESIA",
+        }),
+      }),
+    );
+    expect(prismaMock.faturaAsaas.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          assinaturaId: "assinatura-new",
+          valor: 100,
+          statusPagamento: "PENDING",
+        }),
+      }),
+    );
   });
 
   it("cria fatura pendente para a assinatura da unidade", async () => {

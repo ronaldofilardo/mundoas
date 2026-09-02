@@ -115,16 +115,25 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const { error } = await requireAdmin();
+  const { session, error } = await requireAdmin();
   if (error) return error;
 
-  const assinatura = await prisma.assinatura.findUnique({
+  let assinatura = await prisma.assinatura.findUnique({
     where: { backofficeId: params.id },
     include: { backoffice: { select: { nome: true, cpf: true } } },
   });
 
   if (!assinatura) {
-    return notFound("Assinatura não encontrada para esta unidade.");
+    assinatura = await prisma.assinatura.create({
+      data: {
+        backofficeId: params.id,
+        statusAssinatura: "CORTESIA",
+        cortesiaDesde: new Date(),
+        cortesiaPorUsuarioId: session!.user.id,
+        motivoCortesia: "Assinatura criada automaticamente — unidade sem assinatura",
+      },
+      include: { backoffice: { select: { nome: true, cpf: true } } },
+    });
   }
 
   return ok(assinatura);

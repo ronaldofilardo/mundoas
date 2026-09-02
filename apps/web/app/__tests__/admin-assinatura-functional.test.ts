@@ -16,7 +16,7 @@ vi.mock("@/lib/api-helpers", () => ({
 }));
 
 vi.mock("@asa/database", () => ({
-  prisma: { assinatura: { findUnique: vi.fn(), update: vi.fn() } },
+  prisma: { assinatura: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn() } },
 }));
 
 vi.mock("@/lib/audit", () => ({ criarAuditLog: vi.fn().mockResolvedValue(undefined) }));
@@ -103,15 +103,32 @@ describe("API admin/backoffices/:id/assinatura — contrato funcional", () => {
     );
   });
 
-  it("retorna 404 quando a assinatura não existe", async () => {
+  it("cria assinatura automaticamente quando não existe", async () => {
     authenticate();
     prismaMock.assinatura.findUnique.mockResolvedValue(null);
+    prismaMock.assinatura.create.mockResolvedValue({
+      id: "assinatura-new",
+      backofficeId: "backoffice-1",
+      statusAssinatura: "CORTESIA",
+      cortesiaDesde: new Date(),
+      cortesiaPorUsuarioId: "admin-1",
+      motivoCortesia: "Assinatura criada automaticamente — unidade sem assinatura",
+    } as Awaited<ReturnType<typeof prisma.assinatura.create>>);
 
     const response = await GET(
       new NextRequest("http://localhost/api/v1/admin/backoffices/backoffice-1/assinatura"),
       params,
     );
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(200);
+    expect(prismaMock.assinatura.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          backofficeId: "backoffice-1",
+          statusAssinatura: "CORTESIA",
+        }),
+        include: expect.any(Object),
+      }),
+    );
   });
 });
