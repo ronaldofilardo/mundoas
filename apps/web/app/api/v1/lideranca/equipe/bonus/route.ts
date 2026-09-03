@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
   const gestoresComConsultores = gestores.filter((g) => g.consultorPfs.length > 0);
 
   if (gestoresComConsultores.length === 0) {
-    return ok<Response>({
+    return ok({
       gestores: [],
       resumo: { totalGestores: 0, totalConsultores: 0, totalPontosDistribuidos: 0 },
     });
@@ -142,6 +142,7 @@ export async function GET(req: NextRequest) {
 
   const saldoPorConsultor = new Map<string, number>();
   for (const mov of movimentacoes) {
+    if (!mov.consultorPfId) continue;
     const current = saldoPorConsultor.get(mov.consultorPfId) ?? 0;
     const quantidade = Number(mov.quantidade);
     if (mov.tipo === "CREDITO") saldoPorConsultor.set(mov.consultorPfId, current + quantidade);
@@ -150,6 +151,7 @@ export async function GET(req: NextRequest) {
 
   const ultimaProducaoPorConsultor = new Map<string, string | null>();
   for (const row of ultimasProducoesRaw) {
+    if (!row.consultorPfId) continue;
     ultimaProducaoPorConsultor.set(
       row.consultorPfId,
       row._max.dataReferencia ? new Date(row._max.dataReferencia).toISOString() : null,
@@ -158,6 +160,7 @@ export async function GET(req: NextRequest) {
 
   const totalResgatesPorConsultor = new Map<string, number>();
   for (const row of resgatesRaw) {
+    if (!row.consultorPfId) continue;
     totalResgatesPorConsultor.set(row.consultorPfId, row._count.id);
   }
 
@@ -185,7 +188,7 @@ export async function GET(req: NextRequest) {
     };
   });
 
-  return ok<Response>({
+  return ok({
     ciclo: ciclo
       ? { id: ciclo.id, nome: ciclo.nome, status: ciclo.status }
       : null,

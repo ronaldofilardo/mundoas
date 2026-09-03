@@ -189,10 +189,23 @@ describe("GET /api/v1/lideranca/equipe/bonus", () => {
     expect(body.resumo.totalPontosDistribuidos).toBe(0);
   });
 
-  it("inclui última produção e total de resgates por consultor", async () => {
+  it("ignora movimentacoes, procedimentos e resgates com consultorPfId nulo", async () => {
+    mocks.prisma.movimentacaoPontos.findMany.mockResolvedValue([
+      { consultorPfId: null, tipo: "CREDITO", quantidade: 10 },
+      { consultorPfId, tipo: "CREDITO", quantidade: 5 },
+    ] as Array<{ consultorPfId: string | null; tipo: string; quantidade: number }>);
+    mocks.prisma.procedimentoPF.groupBy.mockResolvedValue([
+      { consultorPfId: null, _max: { dataReferencia: new Date("2026-08-01T00:00:00.000Z") } },
+      { consultorPfId, _max: { dataReferencia: new Date("2026-08-01T00:00:00.000Z") } },
+    ] as Array<{ consultorPfId: string | null; _max: { dataReferencia: Date | null } }>);
+    mocks.prisma.solicitacaoResgate.groupBy.mockResolvedValue([
+      { consultorPfId: null, _count: { id: 1 } },
+      { consultorPfId, _count: { id: 1 } },
+    ] as Array<{ consultorPfId: string | null; _count: { id: number } }>);
     const response = await GETBonus(bonusRequest());
     const body = await response.json();
     expect(response.status).toBe(200);
+    expect(body.gestores[0].consultores[0].saldoPontos).toBe(5);
     expect(body.gestores[0].consultores[0].ultimaProducao).toBeTruthy();
     expect(body.gestores[0].consultores[0].totalResgates).toBe(1);
   });
