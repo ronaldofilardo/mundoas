@@ -6,12 +6,10 @@
  *      a coluna backoffice_id (NOT NULL) e o upsert deve funcionar.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { prisma } from '@asa/database';
-import { hash } from 'bcryptjs';
 import {
   mockAuthAsBackoffice,
-  mockAuthAsUnauthorized,
   resetAuthMocks,
   makeJsonRequest,
   setMockUserId,
@@ -20,114 +18,47 @@ import { createTestBackoffice } from './test-helpers';
 import * as regrasComerciaisHandlers from '../api/v1/backoffice/regras-comerciais/route';
 import * as regrasGestoresHandlers from '../api/v1/backoffice/regras-gestores/route';
 
-/* ------------------------------------------------------------------ */
-/* 1) Correção do "Carregando..." infinito em tab-regras.tsx            */
-/* ------------------------------------------------------------------ */
-
 describe('TabRegras - correção do "Carregando..." infinito', () => {
   it('deve popular states com objetos zerados quando a API retorna !ok', () => {
-    // Simula o comportamento de fetchRegras: quando qualquer fetch falha,
-    // os states devem ser preenchidos com objetos zerados (não null) para
-    // que loading=false && regras != null saiam do "Carregando...".
     const comFala = false;
-    const regrasComerciaisZeradas = comFala
-      ? null
-      : {
-          cartaoAcessoSaude: 0,
-          cireAtivo: 0,
-          cireReceptivo: 0,
-          franchisingAcesso: 0,
-          franchisingCartao: 0,
-          unidade: 0,
-        };
-    const regrasGestoresZeradas = comFala
-      ? null
-      : {
-          gerenteCire: 0,
-          supervisorAtivo: 0,
-          supervisorReceptivo: 0,
-          supervisorFranquia: 0,
-          supervisorAtendimento: 0,
-          gerenteAtendimento: 0,
-          supervisorComercial: 0,
-        };
+    const regrasComerciaisZeradas = comFala ? null : { itens: [] };
+    const regrasGestoresZeradas = comFala ? null : { itens: [] };
 
     expect(regrasComerciaisZeradas).not.toBeNull();
     expect(regrasGestoresZeradas).not.toBeNull();
-    expect(regrasComerciaisZeradas).toEqual({
-      cartaoAcessoSaude: 0,
-      cireAtivo: 0,
-      cireReceptivo: 0,
-      franchisingAcesso: 0,
-      franchisingCartao: 0,
-      unidade: 0,
-    });
-    expect(regrasGestoresZeradas).toEqual({
-      gerenteCire: 0,
-      supervisorAtivo: 0,
-      supervisorReceptivo: 0,
-      supervisorFranquia: 0,
-      supervisorAtendimento: 0,
-      gerenteAtendimento: 0,
-      supervisorComercial: 0,
-    });
+    expect(regrasComerciaisZeradas).toEqual({ itens: [] });
+    expect(regrasGestoresZeradas).toEqual({ itens: [] });
   });
 
   it('deve garantir que loading=false && regras populadas permite sair de Carregando', () => {
     const loading = false;
-    const regrasComerciais = {
-      cartaoAcessoSaude: 0,
-      cireAtivo: 0,
-      cireReceptivo: 0,
-      franchisingAcesso: 0,
-      franchisingCartao: 0,
-      unidade: 0,
-    };
+    const regrasComerciais = { itens: [] };
     const isLoading = loading || !regrasComerciais;
     expect(isLoading).toBe(false);
   });
 
   it('deve popular objetos zerados também em caso de exceção (try/catch)', () => {
-    // Simula que fetch joga exceção: o catch também deve popular com zeros
     let regrasComerciais: unknown = null;
     try {
       throw new Error('network error');
     } catch {
-      regrasComerciais = {
-        cartaoAcessoSaude: 0,
-        cireAtivo: 0,
-        cireReceptivo: 0,
-        franchisingAcesso: 0,
-        franchisingCartao: 0,
-        unidade: 0,
-      };
+      regrasComerciais = { itens: [] };
     }
     expect(regrasComerciais).not.toBeNull();
-    expect(regrasComerciais).toHaveProperty('cartaoAcessoSaude', 0);
+    expect(regrasComerciais).toHaveProperty('itens');
   });
 });
 
-/* ------------------------------------------------------------------ */
-/* 2) Migration backoffice_id em regras_comerciais e regras_gestores   */
-/* ------------------------------------------------------------------ */
-
 describe('Migration backoffice_id - colunas criadas', () => {
-  it('regra_comerciais deve ter a coluna backoffice_id no schema Prisma', async () => {
-    // Cria e deleta um registro pra validar que o upsert aceita backofficeId.
+  it('regra_comercial deve aceitar upsert por backofficeId', async () => {
     const { backoffice, usuario } = await createTestBackoffice();
     try {
       const regra = await prisma.regraComercial.upsert({
         where: { backofficeId: backoffice.id },
-        create: {
-          backofficeId: backoffice.id,
-          cartaoAcessoSaude: 10,
-        },
-        update: {
-          cartaoAcessoSaude: 99,
-        },
+        create: { backofficeId: backoffice.id },
+        update: {},
       });
       expect(regra.backofficeId).toBe(backoffice.id);
-      expect(typeof regra.cartaoAcessoSaude).toBeDefined();
     } finally {
       await prisma.regraComercial.deleteMany({ where: { backofficeId: backoffice.id } }).catch(() => {});
       await prisma.backoffice.delete({ where: { id: backoffice.id } }).catch(() => {});
@@ -135,18 +66,13 @@ describe('Migration backoffice_id - colunas criadas', () => {
     }
   });
 
-  it('regra_gestores deve ter a coluna backoffice_id no schema Prisma', async () => {
+  it('regra_gestor deve aceitar upsert por backofficeId', async () => {
     const { backoffice, usuario } = await createTestBackoffice();
     try {
       const regra = await prisma.regraGestor.upsert({
         where: { backofficeId: backoffice.id },
-        create: {
-          backofficeId: backoffice.id,
-          gerenteCire: 12,
-        },
-        update: {
-          gerenteCire: 88,
-        },
+        create: { backofficeId: backoffice.id },
+        update: {},
       });
       expect(regra.backofficeId).toBe(backoffice.id);
     } finally {
@@ -156,7 +82,7 @@ describe('Migration backoffice_id - colunas criadas', () => {
     }
   });
 
-  it('regra_comerciais deve ter backoffice_id único', async () => {
+  it('regra_comercial deve ter backoffice_id único', async () => {
     const { backoffice: b1, usuario: u1 } = await createTestBackoffice();
     const { backoffice: b2, usuario: u2 } = await createTestBackoffice();
     try {
@@ -164,7 +90,6 @@ describe('Migration backoffice_id - colunas criadas', () => {
       await expect(
         prisma.regraComercial.create({ data: { backofficeId: b1.id } }),
       ).rejects.toThrow();
-      // IDs diferentes não devem colidir
       await prisma.regraComercial.create({ data: { backofficeId: b2.id } });
     } finally {
       await prisma.regraComercial.deleteMany({ where: { backofficeId: { in: [b1.id, b2.id] } } }).catch(() => {});
@@ -177,11 +102,7 @@ describe('Migration backoffice_id - colunas criadas', () => {
   });
 });
 
-/* ------------------------------------------------------------------ */
-/* 3) PUT regras-comerciais e regras-gestores funcionando após migration */
-/* ------------------------------------------------------------------ */
-
-describe('API regras - PUT após migration backoffice_id', () => {
+describe('API regras - POST e GET após migration backoffice_id', () => {
   let backofficeId: string;
   let backofficeUsuarioId: string;
 
@@ -202,52 +123,39 @@ describe('API regras - PUT após migration backoffice_id', () => {
       .catch(() => {});
   });
 
-  it('PUT regras-comerciais deve funcionar (coluna backoffice_id existe)', async () => {
+  it('POST regras-comerciais deve criar item custom', async () => {
     mockAuthAsBackoffice(backofficeId);
-    const res = await regrasComerciaisHandlers.PUT(
-      makeJsonRequest({
-        cartaoAcessoSaude: 10,
-        cireAtivo: 15,
-        cireReceptivo: 12,
-        franchisingAcesso: 8,
-        franchisingCartao: 5,
-        unidade: 20,
-      }),
+    const res = await regrasComerciaisHandlers.POST(
+      makeJsonRequest({ nome: 'Venda Direta', percentual: 10 }),
     );
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(Number(data.cartaoAcessoSaude)).toBe(10);
-    expect(Number(data.cireAtivo)).toBe(15);
+    expect(data.nome).toBe('Venda Direta');
+    expect(Number(data.percentual)).toBe(10);
   });
 
-  it('PUT regras-gestores deve funcionar (coluna backoffice_id existe)', async () => {
+  it('POST regras-gestores deve criar item custom', async () => {
     mockAuthAsBackoffice(backofficeId);
-    const res = await regrasGestoresHandlers.PUT(
-      makeJsonRequest({
-        gerenteCire: 10,
-        supervisorAtivo: 15,
-        supervisorReceptivo: 12,
-        supervisorFranquia: 8,
-        supervisorAtendimento: 5,
-        gerenteAtendimento: 20,
-        supervisorComercial: 18,
-      }),
+    const res = await regrasGestoresHandlers.POST(
+      makeJsonRequest({ nome: 'Meta Ldier', percentual: 12 }),
     );
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(Number(data.gerenteCire)).toBe(10);
-    expect(Number(data.supervisorAtivo)).toBe(15);
+    expect(data.nome).toBe('Meta Ldier');
+    expect(Number(data.percentual)).toBe(12);
   });
 
-  it('GET regras-comerciais deve retornar regras após upsert', async () => {
+  it('GET regras-comerciais deve listar apenas itens custom', async () => {
     mockAuthAsBackoffice(backofficeId);
-    // primeiro PUT cria a regra
-    await regrasComerciaisHandlers.PUT(
-      makeJsonRequest({ cartaoAcessoSaude: 7 }),
+    await regrasComerciaisHandlers.POST(
+      makeJsonRequest({ nome: 'Item A', percentual: 1 }),
+    );
+    await regrasComerciaisHandlers.POST(
+      makeJsonRequest({ nome: 'Item B', percentual: 2 }),
     );
     const res = await regrasComerciaisHandlers.GET();
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(Number(data.cartaoAcessoSaude)).toBe(7);
+    expect(data.itens).toHaveLength(2);
   });
 });

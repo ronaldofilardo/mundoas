@@ -97,6 +97,7 @@ model Backoffice {
   usuario                   Usuario              @relation(fields: [usuarioId], references: [id])
   ciclosPontos              CicloPontos[]
   configuracoesPontos       ConfiguracaoPontos[]
+  configuracoesBonus        ConfiguracaoBonus[]
   equipe                    Equipe[]
   parceiros                 Parceiro[]
   premios                   Premio[]
@@ -114,6 +115,7 @@ model Assinatura {
   asaasCustomerId       String?          @map("asaas_customer_id") @db.VarChar(100)
   asaasSubscriptionId   String?          @map("asaas_subscription_id") @db.VarChar(100)
   statusAssinatura      StatusAssinatura @default(ATIVA) @map("status_assinatura")
+  planoAssinatura       PlanoAssinatura? @map("plano_assinatura")
   bloqueadoEm           DateTime?        @map("bloqueado_em")
   bloqueadoPorUsuarioId String?          @map("bloqueado_por_usuario_id") @db.Uuid
   motivoBloqueio        String?          @map("motivo_bloqueio")
@@ -121,6 +123,10 @@ model Assinatura {
   cortesiaPorUsuarioId  String?          @map("cortesia_por_usuario_id") @db.Uuid
   motivoCortesia        String?          @map("motivo_cortesia")
   cortesiaExpiraEm      DateTime?        @map("cortesia_expira_em")
+  // --- Onboarding: aceite jurídico (Etapa 2 do fluxo mundoAS) ---
+  termosAceitosEm       DateTime?        @map("termos_aceitos_em")
+  termosAceitosIp       String?          @map("termos_aceitos_ip") @db.VarChar(45)
+  termosVersao          String?          @map("termos_versao") @db.VarChar(20)
   criadoEm              DateTime         @default(now()) @map("criado_em")
   atualizadoEm          DateTime         @default(now()) @updatedAt @map("atualizado_em")
   backoffice            Backoffice       @relation(fields: [backofficeId], references: [id])
@@ -341,12 +347,6 @@ model ComissaoEquipe {
 
 model RegraComercial {
   id                String     @id @default(uuid()) @db.Uuid
-  cartaoAcessoSaude Decimal    @default(0) @map("cartao_acesso_saude") @db.Decimal(5, 2)
-  cireAtivo         Decimal    @default(0) @map("cire_ativo") @db.Decimal(5, 2)
-  cireReceptivo     Decimal    @default(0) @map("cire_receptivo") @db.Decimal(5, 2)
-  franchisingAcesso Decimal    @default(0) @map("franchising_acesso") @db.Decimal(5, 2)
-  franchisingCartao Decimal    @default(0) @map("franchising_cartao") @db.Decimal(5, 2)
-  unidade           Decimal    @default(0) @map("unidade") @db.Decimal(5, 2)
   createdAt         DateTime   @default(now()) @map("created_at")
   updatedAt         DateTime   @updatedAt @map("updated_at")
   backofficeId      String     @unique @map("backoffice_id") @db.Uuid
@@ -360,13 +360,6 @@ model RegraComercial {
 
 model RegraGestor {
   id                    String     @id @default(uuid()) @db.Uuid
-  gerenteCire           Decimal    @default(0) @map("gerente_cire") @db.Decimal(5, 2)
-  supervisorAtivo       Decimal    @default(0) @map("supervisor_ativo") @db.Decimal(5, 2)
-  supervisorReceptivo   Decimal    @default(0) @map("supervisor_receptivo") @db.Decimal(5, 2)
-  supervisorFranquia    Decimal    @default(0) @map("supervisor_franquia") @db.Decimal(5, 2)
-  supervisorAtendimento Decimal    @default(0) @map("supervisor_atendimento") @db.Decimal(5, 2)
-  gerenteAtendimento    Decimal    @default(0) @map("gerente_atendimento") @db.Decimal(5, 2)
-  supervisorComercial   Decimal    @default(0) @map("supervisor_comercial") @db.Decimal(5, 2)
   createdAt             DateTime   @default(now()) @map("created_at")
   updatedAt             DateTime   @updatedAt @map("updated_at")
   backofficeId          String     @unique @map("backoffice_id") @db.Uuid
@@ -381,12 +374,6 @@ model RegraGestor {
 model RegraFalta {
   id                            String     @id @default(uuid()) @db.Uuid
   backofficeId                  String     @unique @map("backoffice_id") @db.Uuid
-  consultorUnidadeComFalta      Decimal    @default(0) @map("consultor_unidade_com_falta") @db.Decimal(9, 4)
-  consultorUnidadeSemFalta      Decimal    @default(0) @map("consultor_unidade_sem_falta") @db.Decimal(9, 4)
-  supervisorAtendimentoComFalta Decimal    @default(0) @map("supervisor_atendimento_com_falta") @db.Decimal(9, 4)
-  supervisorAtendimentoSemFalta Decimal    @default(0) @map("supervisor_atendimento_sem_falta") @db.Decimal(9, 4)
-  gerenteComercialComFalta      Decimal    @default(0) @map("gerente_comercial_com_falta") @db.Decimal(9, 4)
-  gerenteComercialSemFalta      Decimal    @default(0) @map("gerente_comercial_sem_falta") @db.Decimal(9, 4)
   createdAt                     DateTime   @default(now()) @map("created_at")
   updatedAt                     DateTime   @updatedAt @map("updated_at")
   backoffice                    Backoffice @relation(fields: [backofficeId], references: [id], onDelete: Cascade)
@@ -400,12 +387,6 @@ model RegraComercialVersao {
   id                String         @id @default(uuid()) @db.Uuid
   regraComercialId  String         @map("regra_comercial_id") @db.Uuid
   competencia       String         @db.VarChar(7)
-  cartaoAcessoSaude Decimal        @default(0) @map("cartao_acesso_saude") @db.Decimal(5, 2)
-  cireAtivo         Decimal        @default(0) @map("cire_ativo") @db.Decimal(5, 2)
-  cireReceptivo     Decimal        @default(0) @map("cire_receptivo") @db.Decimal(5, 2)
-  franchisingAcesso Decimal        @default(0) @map("franchising_acesso") @db.Decimal(5, 2)
-  franchisingCartao Decimal        @default(0) @map("franchising_cartao") @db.Decimal(5, 2)
-  unidade           Decimal        @default(0) @db.Decimal(5, 2)
   criadoEm          DateTime       @default(now()) @map("criado_em")
   regraComercial    RegraComercial @relation(fields: [regraComercialId], references: [id], onDelete: Cascade)
 
@@ -418,13 +399,6 @@ model RegraGestorVersao {
   id                    String       @id @default(uuid()) @db.Uuid
   regraGestorId         String       @map("regra_gestor_id") @db.Uuid
   competencia           String       @db.VarChar(7)
-  gerenteCire           Decimal      @default(0) @map("gerente_cire") @db.Decimal(5, 2)
-  supervisorAtivo       Decimal      @default(0) @map("supervisor_ativo") @db.Decimal(5, 2)
-  supervisorReceptivo   Decimal      @default(0) @map("supervisor_receptivo") @db.Decimal(5, 2)
-  supervisorFranquia    Decimal      @default(0) @map("supervisor_franquia") @db.Decimal(5, 2)
-  supervisorAtendimento Decimal      @default(0) @map("supervisor_atendimento") @db.Decimal(5, 2)
-  gerenteAtendimento    Decimal      @default(0) @map("gerente_atendimento") @db.Decimal(5, 2)
-  supervisorComercial   Decimal      @default(0) @map("supervisor_comercial") @db.Decimal(5, 2)
   criadoEm              DateTime     @default(now()) @map("criado_em")
   regraGestor           RegraGestor  @relation(fields: [regraGestorId], references: [id], onDelete: Cascade)
 
@@ -649,6 +623,23 @@ model ConfiguracaoPontos {
   @@map("configuracoes_pontos")
 }
 
+model ConfiguracaoBonus {
+  id                 String             @id @default(uuid()) @db.Uuid
+  valorPorPonto      Decimal            @map("valor_por_ponto") @db.Decimal(10, 2)
+  tipoArredondamento TipoArredondamento @default(PADRAO) @map("tipo_arredondamento")
+  vigenteDesde       DateTime           @map("vigente_desde")
+  vigenteAte         DateTime?          @map("vigente_ate")
+  criadoPor          String?            @map("criado_por") @db.Uuid
+  criadoEm           DateTime           @default(now()) @map("criado_em")
+  atualizadoEm       DateTime           @updatedAt @map("atualizado_em")
+  backofficeId       String             @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @map("backoffice_id") @db.Uuid
+  backoffice         Backoffice         @relation(fields: [backofficeId], references: [id])
+
+  @@index([backofficeId])
+  @@index([vigenteDesde])
+  @@map("configuracoes_bonus")
+}
+
 model CicloPontos {
   id                    String               @id @default(uuid()) @db.Uuid
   nome                  String               @db.VarChar(255)
@@ -806,11 +797,18 @@ model SolicitacaoResgate {
 }
 
 enum StatusAssinatura {
+  PENDENTE_TERMOS
+  PENDENTE_PAGAMENTO
   ATIVA
   INADIMPLENTE
   BLOQUEADA_MANUAL
   CORTESIA
   CANCELADA
+}
+
+enum PlanoAssinatura {
+  MENSAL
+  ANUAL
 }
 
 enum StatusPagamentoFatura {

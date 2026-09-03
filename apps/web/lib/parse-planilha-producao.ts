@@ -324,7 +324,7 @@ const valorTotalRaw =
     let gestorEncontrado: PessoaRef | null = null;
     let resgatadoPorConsultorPf = false;
 
-    if (status !== "REJEITADO" && status !== "DUPLICADA") {
+    if (status !== "REJEITADO") {
       if (!cpfValido) {
         status = "ORFAO";
         motivo = !cpf ? "CPF ausente" : "CPF inválido";

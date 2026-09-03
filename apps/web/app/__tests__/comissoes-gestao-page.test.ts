@@ -429,67 +429,63 @@ describe("Comissões Gestão - Página e Funcionalidades", () => {
   });
 
   describe("Regras de Comissão", () => {
-    it("deve criar regras comerciais", async () => {
+    it("deve criar regras comerciais com item custom", async () => {
       const regrasComerciais = await prisma.regraComercial.create({
         data: {
           backofficeId,
-          cartaoAcessoSaude: 5.0,
-          cireAtivo: 3.0,
-          cireReceptivo: 2.5,
-          franchisingAcesso: 4.0,
-          franchisingCartao: 3.5,
-          unidade: 6.0,
+          itens: {
+            create: [
+              { nome: "Cartão Acesso Saúde", percentual: 5.0, tipo: "CUSTOM", ordem: 0 },
+            ],
+          },
         },
+        include: { itens: true },
       });
 
-      expect(regrasComerciais).toBeDefined();
-      expect(Number(regrasComerciais.cartaoAcessoSaude)).toBe(5.0);
+      expect(regrasComerciais.itens).toHaveLength(1);
+      expect(Number(regrasComerciais.itens[0].percentual)).toBe(5.0);
     });
 
-    it("deve criar regras de gestores", async () => {
+    it("deve criar regras de gestores com item custom", async () => {
       const regrasGestores = await prisma.regraGestor.create({
         data: {
           backofficeId,
-          gerenteCire: 2.0,
-          supervisorAtivo: 1.5,
-          supervisorReceptivo: 1.0,
-          supervisorFranquia: 1.5,
-          supervisorAtendimento: 1.0,
-          gerenteAtendimento: 2.0,
-          supervisorComercial: 2.5,
+          itens: {
+            create: [
+              { nome: "Gerente Cire", percentual: 2.0, tipo: "CUSTOM", ordem: 0 },
+            ],
+          },
         },
+        include: { itens: true },
       });
 
-      expect(regrasGestores).toBeDefined();
-      expect(Number(regrasGestores.gerenteCire)).toBe(2.0);
+      expect(regrasGestores.itens).toHaveLength(1);
+      expect(Number(regrasGestores.itens[0].percentual)).toBe(2.0);
     });
 
-    it("deve atualizar regras existentes", async () => {
-      // Criar regras apenas se não existir
+    it("deve atualizar item custom existente", async () => {
       let regras = await prisma.regraComercial.findUnique({
         where: { backofficeId },
+        include: { itens: true },
       });
 
       if (!regras) {
-regras = await prisma.regraComercial.create({
-        data: {
-          backofficeId,
-            cartaoAcessoSaude: 5.0,
-            cireAtivo: 3.0,
-            cireReceptivo: 2.5,
-            franchisingAcesso: 4.0,
-            franchisingCartao: 3.5,
-            unidade: 6.0,
+        regras = await prisma.regraComercial.create({
+          data: {
+            backofficeId,
+            itens: { create: [{ nome: "Cartão Acesso Saúde", percentual: 5.0, tipo: "CUSTOM", ordem: 0 }] },
           },
+          include: { itens: true },
         });
       }
 
-      const regrasAtualizadas = await prisma.regraComercial.update({
-        where: { id: regras.id },
-        data: { cartaoAcessoSaude: 7.0 },
+      const itemId = regras.itens[0].id;
+      const itemAtualizado = await prisma.regraComercialItem.update({
+        where: { id: itemId },
+        data: { percentual: 7.0 },
       });
 
-      expect(Number(regrasAtualizadas.cartaoAcessoSaude)).toBe(7.0);
+      expect(Number(itemAtualizado.percentual)).toBe(7.0);
     });
   });
 

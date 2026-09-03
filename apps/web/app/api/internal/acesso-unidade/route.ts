@@ -27,6 +27,27 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // ---------------------------------------------------------------------
+  // Onboarding do mundoAS (Plano de Implementação): PENDENTE_TERMOS e
+  // PENDENTE_PAGAMENTO não são "bloqueio" no sentido de inadimplência —
+  // são etapas do fluxo que o gestor ainda precisa concluir. O middleware
+  // usa `etapaOnboarding` para decidir para qual tela redirecionar, em vez
+  // de simplesmente barrar o acesso.
+  // ---------------------------------------------------------------------
+  if (assinatura.statusAssinatura === "PENDENTE_TERMOS") {
+    return NextResponse.json(
+      { liberado: false, status: assinatura.statusAssinatura, etapaOnboarding: "TERMOS" },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
+  if (assinatura.statusAssinatura === "PENDENTE_PAGAMENTO") {
+    return NextResponse.json(
+      { liberado: false, status: assinatura.statusAssinatura, etapaOnboarding: "PAGAMENTO" },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
   // Cortesia expirada é tratada como se não fosse mais cortesia.
   const cortesiaValida =
     assinatura.statusAssinatura === "CORTESIA" &&

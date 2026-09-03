@@ -18,7 +18,7 @@ describe("resolveNavProfile", () => {
   it("BACKOFFICE → perfil backoffice (sem rota)", () => {
     const p = resolveNavProfile({ tipo: "BACKOFFICE", name: "X" });
     expect(p.id).toBe("backoffice");
-    expect(p.groups.find((g) => g.title === "Comissionamento")?.links.length).toBeGreaterThan(0);
+    expect(p.groups.find((g) => g.title === "Equipe")?.links.length).toBeGreaterThan(0);
   });
 
   it("rota tem prioridade sobre sessão (sessão Consultor em /gestor/* → gestor)", () => {
@@ -85,16 +85,28 @@ describe("manifesto — Consultor", () => {
 });
 
 describe("manifesto — Metas & Produção", () => {
-  it("perfil backoffice expõe link 'Metas & Produção' apontando para a aba unificada de metas", async () => {
+  it("perfil backoffice expõe link 'Metas' no grupo Equipe apontando para /backoffice/equipe/metas", async () => {
     const { NAV_PROFILES } = await import("@/lib/nav/manifest");
-    const comissionamento = NAV_PROFILES.backoffice.groups.find(
-      (g) => g.title === "Comissionamento",
+    const equipe = NAV_PROFILES.backoffice.groups.find(
+      (g) => g.title === "Equipe",
     );
-    expect(comissionamento).toBeDefined();
-    const link = comissionamento!.links.find((l) => l.label === "Metas & Produção");
+    expect(equipe).toBeDefined();
+    const link = equipe!.links.find((l) => l.label === "Metas");
     expect(link).toBeDefined();
-    expect(link?.href).toBe("/backoffice/comissionamento/equipe?tab=metas");
+    expect(link?.href).toBe("/backoffice/equipe/metas");
     expect(link?.icon).toBe("goals");
+  });
+
+  it("perfil backoffice expõe link 'Regras' no grupo Configurações", async () => {
+    const { NAV_PROFILES } = await import("@/lib/nav/manifest");
+    const configs = NAV_PROFILES.backoffice.groups.find(
+      (g) => g.title === "Configurações",
+    );
+    expect(configs).toBeDefined();
+    const link = configs!.links.find((l) => l.label === "Regras");
+    expect(link).toBeDefined();
+    expect(link?.href).toBe("/backoffice/configuracoes/regras");
+    expect(link?.icon).toBe("rules");
   });
 
   it("perfil liderança rotula como 'Metas & Produção'", async () => {

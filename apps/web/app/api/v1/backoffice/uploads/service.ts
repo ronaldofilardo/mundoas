@@ -345,7 +345,13 @@ export async function processUploadPlanilha(
 
   // Step 6: Batch process pontos (collect all needed data first, then batch create)
   await processarPontosBatch(procedimentos, backofficeId);
-  
+
+  // Step 6b: Sincroniza MetaEquipe / MetaConsultorPf com a produção importada
+  // (incrementa valorAtingido). Garante que telas dependentes de MetaEquipe
+  // (ex.: Relatório de Comissões) reflitam o que foi importado sem depender
+  // de Reprocessar Comissões manual.
+  await sincronizarMetasBatch(vendasPorComercialMes, procedimentos);
+
   // Step 7: Batch process comissões
   await processarComissoesBatch(vendasPorComercialMes);
 
@@ -373,6 +379,101 @@ export async function processUploadPlanilha(
       linhasSemComercial,
     },
   };
+}
+
+function competenciaFromDate(data: Date | string): string {
+  const d = data instanceof Date ? data : new Date(data);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+async function sincronizarMetasBatch(
+  vendasPorComercialMes: Record<string, Record<string, number>>,
+  procedimentos: Prisma.ProcedimentoPFCreateManyInput[],
+): Promise<void> {
+  const promises: Promise<unknown>[] = [];
+
+  // 1) Comerciais: cada (comercialId, YYYY-MM) → upsert MetaEquipe.valorAtingido
+  for (const [comercialId, vendasPorMes] of Object.entries(vendasPorComercialMes)) {
+    for (const [mesRef, totalVendas] of Object.entries(vendasPorMes)) {
+      if (!totalVendas) continue;
+      promises.push(
+        prisma.metaEquipe.upsert({
+          where: { equipeId_mesReferencia: { equipeId: comercialId, mesReferencia: mesRef } },
+          create: {
+            equipeId: comercialId,
+            mesReferencia: mesRef,
+            valorMeta: 0,
+            valorAtingido: totalVendas,
+          },
+          update: {
+            valorAtingido: { increment: totalVendas },
+          },
+        }),
+      );
+    }
+  }
+
+  // 2) Consultores PF: agrega produção por (consultorPfId, YYYY-MM)
+  //    e upsert MetaConsultorPf.valorAtingido (setorId null = meta geral).
+  //    Usa `valorComissao` (onde o upload grava o "Total Pago" da planilha) —
+  //    é o mesmo valor que aparece na Lista de Produção.
+  const producaoPorConsultor: Record<string, Record<string, number>> = {};
+  for (const p of procedimentos) {
+    if (!p.consultorPfId) continue;
+    const valor = Number(p.valorComissao ?? 0) || 0;
+    if (valor <= 0) continue;
+    const dataRef = p.dataReferencia instanceof Date
+      ? p.dataReferencia
+      : new Date(p.dataReferencia as string);
+    const mesRef = competenciaFromDate(dataRef);
+    producaoPorConsultor[p.consultorPfId] ??= {};
+    producaoPorConsultor[p.consultorPfId][mesRef] =
+      (producaoPorConsultor[p.consultorPfId][mesRef] || 0) + valor;
+  }
+
+  for (const [consultorPfId, vendasPorMes] of Object.entries(producaoPorConsultor)) {
+    for (const [mesRef, totalVendas] of Object.entries(vendasPorMes)) {
+      if (!totalVendas) continue;
+      promises.push(
+        (async () => {
+          // Soma valorAtingido em TODAS as metas (uma por setor) daquele
+          // consultor/mês, criando uma meta geral (setorId null) se não
+          // existir nenhuma. O backoffice/metas-vendas grava metas por
+          // (consultor, setor, mês) e a tela de validação soma todas.
+          const existentes = await prisma.metaConsultorPf.findMany({
+            where: { consultorPfId, mesReferencia: mesRef },
+            select: { id: true },
+          });
+          if (existentes.length > 0) {
+            await prisma.metaConsultorPf.updateMany({
+              where: { id: { in: existentes.map((e) => e.id) } },
+              data: { valorAtingido: { increment: totalVendas } },
+            });
+          } else {
+            await prisma.metaConsultorPf.create({
+              data: {
+                consultorPfId,
+                mesReferencia: mesRef,
+                valorMeta: 0,
+                valorAtingido: totalVendas,
+              },
+            });
+          }
+        })().catch((err) => {
+          // Falha aqui não bloqueia o upload: a view de validação usa
+          // ProcedimentoPF direto (vide refactor de validacao/[mesReferencia]/route.ts).
+          if (process.env.NODE_ENV !== "test") {
+            console.warn(
+              "[upload-planilha] Falha ao sincronizar MetaConsultorPf:",
+              err instanceof Error ? err.message : err,
+            );
+          }
+        }),
+      );
+    }
+  }
+
+  await Promise.all(promises);
 }
 
 async function processarPontosBatch(

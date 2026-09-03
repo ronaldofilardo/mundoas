@@ -29,36 +29,25 @@ describe('Regras Comerciais - Validação Prisma', () => {
 
   it('deve usar backoffice_id no upsert create', async () => {
     const { prisma } = await import('@asa/database');
-    
+
     const backofficeId = 'test-uuid-123';
     const upsertSpy = vi.spyOn(prisma.regraComercial, 'upsert');
-    
+
     try {
       await prisma.regraComercial.upsert({
         where: { backofficeId },
-        create: {
-          backofficeId,
-          cartaoAcessoSaude: 10,
-          cireAtivo: 15,
-          cireReceptivo: 12,
-          franchisingAcesso: 8,
-          franchisingCartao: 5,
-          unidade: 20,
-        },
-        update: {
-          cartaoAcessoSaude: 10,
-          cireAtivo: 15,
-        },
+        create: { backofficeId },
+        update: {},
       });
     } catch (e) {
       // Esperado falhar no banco de teste
     }
-    
+
     expect(upsertSpy).toHaveBeenCalledWith(expect.objectContaining({
       where: { backofficeId },
       create: expect.objectContaining({ backofficeId }),
     }));
-    
+
     upsertSpy.mockRestore();
   });
 
@@ -99,16 +88,7 @@ describe('Regras Gestores - Validação Prisma', () => {
     });
     backofficeId = backoffice.id;
     await prisma.regraGestor.create({
-      data: {
-        backofficeId,
-        gerenteCire: 10,
-        supervisorAtivo: 15,
-        supervisorReceptivo: 12,
-        supervisorFranquia: 8,
-        supervisorAtendimento: 5,
-        gerenteAtendimento: 20,
-        supervisorComercial: 18,
-      },
+      data: { backofficeId },
     });
   });
 
@@ -135,37 +115,25 @@ describe('Regras Gestores - Validação Prisma', () => {
 
   it('deve usar backoffice_id no upsert create', async () => {
     const { prisma } = await import('@asa/database');
-    
+
     const backofficeId = 'test-uuid-456';
     const upsertSpy = vi.spyOn(prisma.regraGestor, 'upsert');
-    
+
     try {
       await prisma.regraGestor.upsert({
         where: { backofficeId },
-        create: {
-          backofficeId,
-          gerenteCire: 10,
-          supervisorAtivo: 15,
-          supervisorReceptivo: 12,
-          supervisorFranquia: 8,
-          supervisorAtendimento: 5,
-          gerenteAtendimento: 20,
-          supervisorComercial: 18,
-        },
-        update: {
-          gerenteCire: 10,
-          supervisorAtivo: 15,
-        },
+        create: { backofficeId },
+        update: {},
       });
     } catch (e) {
       // Esperado falhar no banco de teste
     }
-    
+
     expect(upsertSpy).toHaveBeenCalledWith(expect.objectContaining({
       where: { backofficeId },
       create: expect.objectContaining({ backofficeId }),
     }));
-    
+
     upsertSpy.mockRestore();
   });
 

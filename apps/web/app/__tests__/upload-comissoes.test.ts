@@ -186,51 +186,53 @@ describe("Upload de Planilha e Comissões", () => {
     it("deve criar regras comerciais para cálculo de comissões", async () => {
       const regras = await prisma.regraComercial.create({
         data: {
-          backofficeId, cartaoAcessoSaude: 5.0,
-          cireAtivo: 3.0,
-          cireReceptivo: 2.5,
-          franchisingAcesso: 4.0,
-          franchisingCartao: 3.5,
-          unidade: 6.0,
+          backofficeId,
+          itens: {
+            create: [
+              { nome: "Cartão Acesso Saúde", percentual: 5.0, tipo: "CUSTOM", ordem: 0 },
+            ],
+          },
         },
+        include: { itens: true },
       });
 
-      expect(regras).toBeDefined();
-      expect(Number(regras.cartaoAcessoSaude)).toBe(5.0);
+      expect(regras.itens).toHaveLength(1);
+      expect(Number(regras.itens[0].percentual)).toBe(5.0);
     });
 
     it("deve criar regras de gestores para cálculo de comissões", async () => {
       const regras = await prisma.regraGestor.create({
         data: {
-          backofficeId, gerenteCire: 2.0,
-          supervisorAtivo: 1.5,
-          supervisorReceptivo: 1.0,
-          supervisorFranquia: 1.5,
-          supervisorAtendimento: 1.0,
-          gerenteAtendimento: 2.0,
-          supervisorComercial: 2.5,
+          backofficeId,
+          itens: {
+            create: [
+              { nome: "Gerente Cire", percentual: 2.0, tipo: "CUSTOM", ordem: 0 },
+            ],
+          },
         },
+        include: { itens: true },
       });
 
-      expect(regras).toBeDefined();
-      expect(Number(regras.gerenteCire)).toBe(2.0);
+      expect(regras.itens).toHaveLength(1);
+      expect(Number(regras.itens[0].percentual)).toBe(2.0);
     });
 
-    it("deve atualizar regras comerciais existentes", async () => {
+    it("deve atualizar item custom de regras comerciais", async () => {
       const regras = await prisma.regraComercial.findFirst({
         where: { backofficeId },
+        include: { itens: true },
       });
 
-      if (!regras) {
-        throw new Error("Regras não encontradas");
+      if (!regras || regras.itens.length === 0) {
+        throw new Error("Regras ou itens não encontrados");
       }
 
-      const atualizadas = await prisma.regraComercial.update({
-        where: { id: regras.id },
-        data: { cartaoAcessoSaude: 7.0 },
+      const atualizadas = await prisma.regraComercialItem.update({
+        where: { id: regras.itens[0].id },
+        data: { percentual: 7.0 },
       });
 
-      expect(Number(atualizadas.cartaoAcessoSaude)).toBe(7.0);
+      expect(Number(atualizadas.percentual)).toBe(7.0);
     });
   });
 

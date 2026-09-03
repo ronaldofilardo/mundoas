@@ -79,15 +79,17 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Nasce em CORTESIA: a cobrança real (Asaas) só é ativada manualmente
-      // pelo Admin depois, na tela de detalhe da unidade (Fase 5).
+      // Onboarding mundoAS: a unidade nasce PENDENTE_TERMOS e só ganha
+      // acesso ao dashboard depois de aceitar os 3 documentos jurídicos e
+      // ter o primeiro pagamento confirmado pelo Asaas (ver middleware.ts e
+      // /api/webhooks/asaas). Antes dessa mudança, a unidade nascia direto
+      // em CORTESIA (acesso liberado sem cobrança) — comportamento mantido
+      // apenas para quem já usa esse caminho manual em
+      // /api/v1/admin/backoffices/[id]/faturas.
       const assinatura = await tx.assinatura.create({
         data: {
           backofficeId: backoffice.id,
-          statusAssinatura: "CORTESIA",
-          cortesiaDesde: new Date(),
-          cortesiaPorUsuarioId: session!.user.id,
-          motivoCortesia: "Unidade recém-criada — cobrança ainda não ativada",
+          statusAssinatura: "PENDENTE_TERMOS",
         },
       });
 

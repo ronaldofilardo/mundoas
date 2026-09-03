@@ -159,12 +159,32 @@ function authorizeByPapel(
 
 
 // ---------------------------------------------------------------------------
-// Bloqueio por assinatura — consulta rota interna (Node runtime, usa Prisma)
+// Bloqueio por assinatura / onboarding — consulta rota interna (Node runtime,
+// usa Prisma). Além do bloqueio por inadimplência já existente, trata as
+// etapas de onboarding do Plano de Implementação mundoAS (aceite de termos
+// e checkout do plano), redirecionando para a tela certa em vez de barrar.
 // ---------------------------------------------------------------------------
+const ONBOARDING_PATHS = {
+  TERMOS: "/onboarding/termos",
+  PAGAMENTO: "/onboarding/plano-pagamento",
+} as const;
+
+// Rotas que o gestor precisa conseguir acessar mesmo estando "preso" numa
+// etapa de onboarding (a própria etapa, e endpoints de logout/sessão).
+const ONBOARDING_ALLOWLIST = [
+  "/onboarding/",
+  "/acesso-suspenso",
+  "/api/v1/backoffice/onboarding",
+  "/api/auth/",
+];
+
 async function checarAcessoUnidade(
   req: NextRequest,
   backofficeId: string,
 ): Promise<NextResponse | null> {
+  const { pathname } = req.nextUrl;
+  if (ONBOARDING_ALLOWLIST.some((p) => pathname.startsWith(p))) return null;
+
   try {
     const url = req.nextUrl.clone();
     url.pathname = "/api/internal/acesso-unidade";
@@ -176,11 +196,16 @@ async function checarAcessoUnidade(
 
     if (!res.ok) return null; // falha na checagem não deve travar o usuário
 
-    const data = (await res.json()) as { liberado: boolean };
+    const data = (await res.json()) as {
+      liberado: boolean;
+      etapaOnboarding?: "TERMOS" | "PAGAMENTO";
+    };
     if (data.liberado) return null;
 
     const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = "/acesso-suspenso";
+    redirectUrl.pathname = data.etapaOnboarding
+      ? ONBOARDING_PATHS[data.etapaOnboarding]
+      : "/acesso-suspenso";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   } catch {

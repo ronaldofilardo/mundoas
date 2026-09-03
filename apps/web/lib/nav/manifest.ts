@@ -19,23 +19,12 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
         ],
       },
       {
-        title: "Comissionamento",
+        title: "Equipe",
         links: [
-          {
-            label: "Metas & Produção",
-            href: "/backoffice/comissionamento/equipe?tab=metas",
-            icon: "goals",
-          },
-          {
-            label: "Painel Metas de Vendas",
-            href: "/backoffice/metas-vendas",
-            icon: "goals",
-          },
-          {
-            label: "Pagamentos",
-            href: "/backoffice/comissionamento/pagamentos",
-            icon: "payments",
-          },
+          { label: "Metas", href: "/backoffice/equipe/metas", icon: "goals" },
+          { label: "Comissões", href: "/backoffice/equipe/comissoes", icon: "commissions" },
+          { label: "Bônus", href: "/backoffice/equipe/bonus", icon: "points" },
+          { label: "Cadastro", href: "/backoffice/equipe/cadastro", icon: "users" },
         ],
       },
       {
@@ -49,6 +38,13 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
         title: "Pontos",
         links: [
           { label: "Ciclos e prêmios", href: "/backoffice/pontos", icon: "points" },
+        ],
+      },
+      {
+        title: "Configurações",
+        links: [
+          { label: "Regras", href: "/backoffice/configuracoes/regras", icon: "rules" },
+          { label: "Bônus", href: "/backoffice/configuracoes/bonus", icon: "points" },
         ],
       },
       {

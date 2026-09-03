@@ -40,6 +40,17 @@ export function TabMetas({ itens, mesReferencia, onMesChange }: TabMetasProps) {
 
   const [mesSelecionado, setMesSelecionado] = useState(mesReferencia.split("-")[1]);
 
+  // Otimização: guarda o último valorAtingido salvo por linha para a
+  // Projeção atualizar IMEDIATAMENTE após o toast "Produção salva",
+  // sem esperar o refetch (que pode ter delay por causa de outras linhas).
+  const [producaoRecemSalva, setProducaoRecemSalva] = useState<Record<string, number>>({});
+  const keyRecemSalva = (membroId: string, mesRef: string) => `${membroId}__${mesRef}`;
+
+  useEffect(() => {
+    // Limpa ao trocar de mês
+    setProducaoRecemSalva({});
+  }, [mesReferencia]);
+
   useEffect(() => {
     const mesFromUrl = mesReferencia.split("-")[1];
     setMesSelecionado(mesFromUrl);
@@ -144,6 +155,11 @@ export function TabMetas({ itens, mesReferencia, onMesChange }: TabMetasProps) {
         return;
       }
       toast.success("Produção salva");
+      // Atualiza a Projeção IMEDIATAMENTE, sem esperar o refetch
+      setProducaoRecemSalva((prev) => ({
+        ...prev,
+        [keyRecemSalva(membroId, mes)]: num,
+      }));
 
       const pct = getComissaoFromFuncao(
         { regrasComerciais, regrasGestores },
@@ -237,7 +253,7 @@ export function TabMetas({ itens, mesReferencia, onMesChange }: TabMetasProps) {
                 <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[160px]">
                   Produzido
                 </th>
-                <th className="text-center p-3 font-semibold text-gray-50 w-[160px]">
+                <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[160px]">
                   Projeção
                 </th>
               </tr>
@@ -247,21 +263,28 @@ export function TabMetas({ itens, mesReferencia, onMesChange }: TabMetasProps) {
                 const metas = metasPorMembro[m.id] ?? [];
                 const meta = metas.find((mt) => mt.mesReferencia === mesRefSelecionado);
                 const valorMeta = meta ? Number(meta.valorMeta) : 0;
-                const valorAtingido = meta ? Number(meta.valorAtingido) : 0;
-                const valorComissao = meta ? Number(meta.valorComissao ?? 0) : 0;
+                // Prioriza o valor recém-salvo (otimista) sobre o do servidor,
+                // garantindo que a Projeção atualize no mesmo instante do
+                // toast "Produção salva" sem precisar esperar o refetch.
+                const valorRecemSalvo = producaoRecemSalva[keyRecemSalva(m.id, mesRefSelecionado)];
+                const valorAtingido = valorRecemSalvo !== undefined
+                  ? valorRecemSalvo
+                  : (meta ? Number(meta.valorAtingido) : 0);
 
                 const funcao =
                   m.funcao && m.funcao.trim() !== ""
                     ? m.funcao.replace(/_/g, " ")
-                    : "-";
+                    : undefined;
 
                 const pct = getComissaoFromFuncao(
                   { regrasComerciais, regrasGestores },
-                  funcao === "-" ? undefined : funcao,
+                  funcao,
                 );
-                const comissaoCalculada = pct && valorAtingido > 0
+                // Projeção: Produzido × (regra/100). Recalcula após o
+                // "Produção salva" (handleSalvarProducao faz refetch).
+                const projecao = pct && valorAtingido > 0
                   ? calcularValorComissaoNum(String(valorAtingido), pct)
-                  : valorComissao;
+                  : 0;
 
                 const nomeExibicao = m.kind === "comercial"
                   ? m.nome
@@ -277,7 +300,7 @@ export function TabMetas({ itens, mesReferencia, onMesChange }: TabMetasProps) {
                     <td className="p-3">
                       <p className="font-medium text-gray-900 truncate">{nomeExibicao}</p>
                       <p className="text-xs text-gray-500 truncate">{m.email}</p>
-                      <p className="text-xs text-gray-400">{funcao} • {m.status}</p>
+                      <p className="text-xs text-gray-400">{funcao ?? "-"} • {m.status}</p>
                     </td>
                     <td className="p-3 text-center">
                       <div className="flex items-center justify-center gap-1">
@@ -305,10 +328,10 @@ export function TabMetas({ itens, mesReferencia, onMesChange }: TabMetasProps) {
                           step="0.01"
                           min="0"
                           defaultValue={valorAtingido || ""}
-                          key={`producao-${m.id}-${mesSelecionado}`}
+                          key={`producao-${m.id}-${mesSelecionado}-${valorAtingido}`}
                           onBlur={(e) => {
                             const val = e.target.value;
-                            if (val) handleSalvarProducao(m.id, mesRefSelecionado, val, funcao === "-" ? undefined : funcao);
+                            if (val) handleSalvarProducao(m.id, mesRefSelecionado, val, funcao);
                           }}
                           placeholder="0"
                           className="w-[120px] px-2 py-1 border rounded text-xs text-center focus:ring"
@@ -316,14 +339,23 @@ export function TabMetas({ itens, mesReferencia, onMesChange }: TabMetasProps) {
                       </div>
                     </td>
                     <td className="p-3 text-center">
-                      <div className="flex items-center justify-center gap-1">
+                      <div
+                        className="flex items-center justify-center gap-1"
+                        aria-readonly="true"
+                      >
                         <span className="text-xs text-gray-500">R$</span>
-                        <input
-                          type="text"
-                          readOnly
-                          value={comissaoCalculada ? comissaoCalculada.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0,00"}
-                          className="w-[120px] px-2 py-1 border rounded text-xs text-center bg-gray-50 text-gray-600"
-                        />
+                        <span
+                          data-testid={`projecao-${m.id}`}
+                          className="w-[120px] px-2 py-1 text-xs text-center text-emerald-700 font-semibold tabular-nums"
+                          title="Resultado calculado: Produzido × regra do membro"
+                        >
+                          {projecao.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                        {pct > 0 && valorAtingido > 0 && (
+                          <span className="text-[10px] text-gray-400 ml-1">
+                            ({pct}%)
+                          </span>
+                        )}
                       </div>
                     </td>
                   </tr>

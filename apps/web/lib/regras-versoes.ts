@@ -4,22 +4,7 @@ export type VersaoComercial = {
   id: string;
   regraComercialId: string;
   competencia: string;
-  cartaoAcessoSaude: number;
-  cireAtivo: number;
-  cireReceptivo: number;
-  franchisingAcesso: number;
-  franchisingCartao: number;
-  unidade: number;
 };
-
-const camposComerciais = [
-  "cartao_acesso_saude",
-  "cire_ativo",
-  "cire_receptivo",
-  "franchising_acesso",
-  "franchising_cartao",
-  "unidade",
-] as const;
 
 export async function buscarVersaoComercial(
   regraComercialId: string,
@@ -28,13 +13,7 @@ export async function buscarVersaoComercial(
   const rows = await prisma.$queryRawUnsafe<VersaoComercial[]>(
     `SELECT id,
             regra_comercial_id AS "regraComercialId",
-            competencia,
-            cartao_acesso_saude AS "cartaoAcessoSaude",
-            cire_ativo AS "cireAtivo",
-            cire_receptivo AS "cireReceptivo",
-            franchising_acesso AS "franchisingAcesso",
-            franchising_cartao AS "franchisingCartao",
-            unidade
+            competencia
        FROM regras_comerciais_versoes
       WHERE regra_comercial_id = $1::uuid
         AND competencia = $2
@@ -50,35 +29,13 @@ export async function salvarVersaoComercial(params: {
   competencia: string;
   valores: Record<string, number>;
 }) {
-  const { regraComercialId, competencia, valores } = params;
-  const data = Object.fromEntries(
-    camposComerciais.map((campo) => {
-      const nomeCampo = campo.replace(/_([a-z])/g, (_, letra) => letra.toUpperCase());
-      return [nomeCampo, valores[nomeCampo] ?? valores[campo] ?? 0];
-    }),
-  );
-
+  const { regraComercialId, competencia } = params;
   return prisma.$executeRawUnsafe(
-    `INSERT INTO regras_comerciais_versoes
-      (id, regra_comercial_id, competencia, cartao_acesso_saude,
-       cire_ativo, cire_receptivo, franchising_acesso,
-       franchising_cartao, unidade)
-     VALUES (gen_random_uuid(), $1::uuid, $2, $3, $4, $5, $6, $7, $8)
-     ON CONFLICT (regra_comercial_id, competencia)
-     DO UPDATE SET cartao_acesso_saude = EXCLUDED.cartao_acesso_saude,
-                   cire_ativo = EXCLUDED.cire_ativo,
-                   cire_receptivo = EXCLUDED.cire_receptivo,
-                   franchising_acesso = EXCLUDED.franchising_acesso,
-                   franchising_cartao = EXCLUDED.franchising_cartao,
-                   unidade = EXCLUDED.unidade`,
+    `INSERT INTO regras_comerciais_versoes (id, regra_comercial_id, competencia)
+     VALUES (gen_random_uuid(), $1::uuid, $2)
+     ON CONFLICT (regra_comercial_id, competencia) DO NOTHING`,
     regraComercialId,
     competencia,
-    data.cartaoAcessoSaude,
-    data.cireAtivo,
-    data.cireReceptivo,
-    data.franchisingAcesso,
-    data.franchisingCartao,
-    data.unidade,
   );
 }
 
@@ -86,24 +43,7 @@ export type VersaoGestor = {
   id: string;
   regraGestorId: string;
   competencia: string;
-  gerenteCire: number;
-  supervisorAtivo: number;
-  supervisorReceptivo: number;
-  supervisorFranquia: number;
-  supervisorAtendimento: number;
-  gerenteAtendimento: number;
-  supervisorComercial: number;
 };
-
-const camposGestores = [
-  "gerente_cire",
-  "supervisor_ativo",
-  "supervisor_receptivo",
-  "supervisor_franquia",
-  "supervisor_atendimento",
-  "gerente_atendimento",
-  "supervisor_comercial",
-] as const;
 
 export async function buscarVersaoGestor(
   regraGestorId: string,
@@ -112,14 +52,7 @@ export async function buscarVersaoGestor(
   const rows = await prisma.$queryRawUnsafe<VersaoGestor[]>(
     `SELECT id,
             regra_gestor_id AS "regraGestorId",
-            competencia,
-            gerente_cire AS "gerenteCire",
-            supervisor_ativo AS "supervisorAtivo",
-            supervisor_receptivo AS "supervisorReceptivo",
-            supervisor_franquia AS "supervisorFranquia",
-            supervisor_atendimento AS "supervisorAtendimento",
-            gerente_atendimento AS "gerenteAtendimento",
-            supervisor_comercial AS "supervisorComercial"
+            competencia
        FROM regras_gestores_versoes
       WHERE regra_gestor_id = $1::uuid
         AND competencia = $2
@@ -135,36 +68,12 @@ export async function salvarVersaoGestor(params: {
   competencia: string;
   valores: Record<string, number>;
 }) {
-  const { regraGestorId, competencia, valores } = params;
-  const data = Object.fromEntries(
-    camposGestores.map((campo) => {
-      const nomeCampo = campo.replace(/_([a-z])/g, (_, letra) => letra.toUpperCase());
-      return [nomeCampo, valores[nomeCampo] ?? valores[campo] ?? 0];
-    }),
-  );
-
+  const { regraGestorId, competencia } = params;
   return prisma.$executeRawUnsafe(
-    `INSERT INTO regras_gestores_versoes
-      (id, regra_gestor_id, competencia, gerente_cire, supervisor_ativo,
-       supervisor_receptivo, supervisor_franquia, supervisor_atendimento,
-       gerente_atendimento, supervisor_comercial)
-     VALUES (gen_random_uuid(), $1::uuid, $2, $3, $4, $5, $6, $7, $8, $9)
-     ON CONFLICT (regra_gestor_id, competencia)
-     DO UPDATE SET gerente_cire = EXCLUDED.gerente_cire,
-                   supervisor_ativo = EXCLUDED.supervisor_ativo,
-                   supervisor_receptivo = EXCLUDED.supervisor_receptivo,
-                   supervisor_franquia = EXCLUDED.supervisor_franquia,
-                   supervisor_atendimento = EXCLUDED.supervisor_atendimento,
-                   gerente_atendimento = EXCLUDED.gerente_atendimento,
-                   supervisor_comercial = EXCLUDED.supervisor_comercial`,
+    `INSERT INTO regras_gestores_versoes (id, regra_gestor_id, competencia)
+     VALUES (gen_random_uuid(), $1::uuid, $2)
+     ON CONFLICT (regra_gestor_id, competencia) DO NOTHING`,
     regraGestorId,
     competencia,
-    data.gerenteCire,
-    data.supervisorAtivo,
-    data.supervisorReceptivo,
-    data.supervisorFranquia,
-    data.supervisorAtendimento,
-    data.gerenteAtendimento,
-    data.supervisorComercial,
   );
 }

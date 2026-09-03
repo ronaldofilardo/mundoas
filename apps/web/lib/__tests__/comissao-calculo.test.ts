@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   parseMoedaParaNumero,
   getComissaoFromFuncao,
+  getComissaoFromTipoProcedimento,
   calcularValorComissao,
   calcularValorComissaoNum,
 } from "../comissao-calculo";
@@ -10,22 +11,28 @@ import type { RegrasComerciais, RegrasGestores } from "../../app/(dashboard)/bac
 const REGRAS_VAZIAS = { regrasComerciais: null, regrasGestores: null };
 
 const REGRAS_GESTORES: RegrasGestores = {
-  gerenteCire: 0.14,
-  supervisorAtivo: 0.5,
-  supervisorReceptivo: 0.06,
-  supervisorFranquia: 0.28,
-  supervisorAtendimento: 0.05,
-  gerenteAtendimento: 0.05,
-  supervisorComercial: 0.1,
+  id: "g1",
+  itens: [
+    { id: "g2", nome: "Gerente Cire", percentual: 0.14, ordem: 0 },
+    { id: "g3", nome: "Gerente Atendimento", percentual: 0.05, ordem: 1 },
+    { id: "g4", nome: "Supervisor Ativo", percentual: 0.5, ordem: 2 },
+    { id: "g5", nome: "Supervisor Receptivo", percentual: 0.06, ordem: 3 },
+    { id: "g6", nome: "Supervisor Franquia", percentual: 0.28, ordem: 4 },
+    { id: "g7", nome: "Supervisor Atendimento", percentual: 0.05, ordem: 5 },
+    { id: "g8", nome: "Supervisor Comercial", percentual: 0.1, ordem: 6 },
+  ],
 };
 
 const REGRAS_COMERCIAIS: RegrasComerciais = {
-  cartaoAcessoSaude: 6,
-  cireAtivo: 4,
-  cireReceptivo: 1.4,
-  franchisingAcesso: 1.1,
-  franchisingCartao: 0.8,
-  unidade: 0.9,
+  id: "c1",
+  itens: [
+    { id: "c2", nome: "Cartao Acesso Saude", percentual: 6, ordem: 0 },
+    { id: "c3", nome: "Cire Ativo", percentual: 4, ordem: 1 },
+    { id: "c4", nome: "Cire Receptivo", percentual: 1.4, ordem: 2 },
+    { id: "c5", nome: "Franchising Acesso", percentual: 1.1, ordem: 3 },
+    { id: "c6", nome: "Franchising Cartao", percentual: 0.8, ordem: 4 },
+    { id: "c7", nome: "Unidade", percentual: 0.9, ordem: 5 },
+  ],
 };
 
 const REGRAS_FULL = { regrasComerciais: REGRAS_COMERCIAIS, regrasGestores: REGRAS_GESTORES };
@@ -49,37 +56,78 @@ describe("parseMoedaParaNumero", () => {
 
 describe("getComissaoFromFuncao", () => {
   it("deve retornar regra de gestor para GERENTE CIRE", () => {
-    expect(getComissaoFromFuncao(REGRAS_FULL, "GERENTE_CIRE")).toBe(0.14);
-  });
-
-  it("deve retornar regra de gestor para GERENTE ATENDIMENTO", () => {
-    expect(getComissaoFromFuncao(REGRAS_FULL, "GERENTE_ATENDIMENTO")).toBe(0.05);
-  });
-
-  it("deve retornar regra de gestor para SUPERVISOR COMERCIAL", () => {
-    expect(getComissaoFromFuncao(REGRAS_FULL, "SUPERVISOR_COMERCIAL")).toBe(0.1);
-  });
-
-  it("deve retornar regra de gestor para SUPERVISOR ATENDIMENTO", () => {
-    expect(getComissaoFromFuncao(REGRAS_FULL, "SUPERVISOR_ATENDIMENTO")).toBe(0.05);
-  });
-
-  it("deve retornar regra comercial quando função não é de gestor", () => {
-    expect(getComissaoFromFuncao(REGRAS_FULL, "CARTAO_ACESSO_SAUDE")).toBe(6);
-    expect(getComissaoFromFuncao(REGRAS_FULL, "UNIDADE")).toBe(0.9);
-  });
-
-  it("deve aceitar função em texto legível (com espaços)", () => {
     expect(getComissaoFromFuncao(REGRAS_FULL, "Gerente Cire")).toBe(0.14);
   });
 
+  it("deve retornar regra de gestor para GERENTE ATENDIMENTO", () => {
+    expect(getComissaoFromFuncao(REGRAS_FULL, "Gerente Atendimento")).toBe(0.05);
+  });
+
+  it("deve retornar regra de gestor para SUPERVISOR COMERCIAL", () => {
+    expect(getComissaoFromFuncao(REGRAS_FULL, "Supervisor Comercial")).toBe(0.1);
+  });
+
+  it("deve retornar regra de gestor para SUPERVISOR ATENDIMENTO", () => {
+    expect(getComissaoFromFuncao(REGRAS_FULL, "Supervisor Atendimento")).toBe(0.05);
+  });
+
+  it("deve retornar regra comercial quando função casa com item comercial", () => {
+    expect(getComissaoFromFuncao(REGRAS_FULL, "Cartao Acesso Saude")).toBe(6);
+    expect(getComissaoFromFuncao(REGRAS_FULL, "Unidade")).toBe(0.9);
+  });
+
+  it("deve aceitar variações de caixa/underscore", () => {
+    expect(getComissaoFromFuncao(REGRAS_FULL, "gerente_cire")).toBe(0.14);
+    expect(getComissaoFromFuncao(REGRAS_FULL, "GERENTE CIRE")).toBe(0.14);
+  });
+
   it("deve retornar 0 quando regras são nulas", () => {
-    expect(getComissaoFromFuncao(REGRAS_VAZIAS, "GERENTE_CIRE")).toBe(0);
+    expect(getComissaoFromFuncao(REGRAS_VAZIAS, "Gerente Cire")).toBe(0);
   });
 
   it("deve retornar 0 para função desconhecida", () => {
     expect(getComissaoFromFuncao(REGRAS_FULL, "FUNCAO_INEXISTENTE")).toBe(0);
     expect(getComissaoFromFuncao(REGRAS_FULL, undefined)).toBe(0);
+  });
+});
+
+describe("getComissaoFromTipoProcedimento", () => {
+  it("deve retornar percentual do item comercial de mesmo nome", () => {
+    expect(getComissaoFromTipoProcedimento(REGRAS_COMERCIAIS, "Cartao Acesso Saude")).toBe(6);
+  });
+
+  it("deve casar case/acento-insensitive", () => {
+    expect(getComissaoFromTipoProcedimento(REGRAS_COMERCIAIS, "unidade")).toBe(0.9);
+  });
+
+  it("deve retornar 0 se não houver item com o nome", () => {
+    expect(getComissaoFromTipoProcedimento(REGRAS_COMERCIAIS, "Inexistente")).toBe(0);
+  });
+
+  it("deve retornar 0 se regraComercial for null", () => {
+    expect(getComissaoFromTipoProcedimento(null, "Unidade")).toBe(0);
+  });
+});
+
+describe("getComissaoFromFuncao - regras custom (itens)", () => {
+  const regrasGestores: RegrasGestores = {
+    id: "g1",
+    itens: [
+      { id: "i1", nome: "Testes lideres", percentual: 20, ordem: 0 },
+      { id: "i2", nome: "Meta Ldier", percentual: 10, ordem: 1 },
+    ],
+  };
+  const regrasComerciais: RegrasComerciais = {
+    id: "c1",
+    itens: [{ id: "i3", nome: "Teste Coksultor", percentual: 10, ordem: 0 }],
+  };
+
+  it("deve casar funcao 'Meta Ldier' (texto livre) com item custom de mesmo nome em regras_gestores", () => {
+    expect(getComissaoFromFuncao({ regrasComerciais, regrasGestores }, "Meta Ldier")).toBe(10);
+  });
+
+  it("deve casar funcao 'teste cokSULTOR' (case-insensitive) com item custom em regras_comerciais", () => {
+    expect(getComissaoFromFuncao({ regrasComerciais, regrasGestores }, "teste cokSULTOR")).toBe(10);
   });
 });
 

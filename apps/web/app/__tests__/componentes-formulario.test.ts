@@ -227,31 +227,35 @@ describe('Componentes de Formulário - Backoffice', () => {
   describe('TabRegras (Simulação)', () => {
     it('deve exibir regras comerciais', () => {
       const regrasComerciais = {
-        cartaoAcessoSaude: 5,
-        cireAtivo: 10,
-        cireReceptivo: 8,
-        franchisingAcesso: 3,
-        franchisingCartao: 4,
-        unidade: 2,
+        itens: [
+          { id: '1', nome: 'Cartao Acesso Saude', percentual: 5, ordem: 0 },
+          { id: '2', nome: 'Cire Ativo', percentual: 10, ordem: 1 },
+          { id: '3', nome: 'Cire Receptivo', percentual: 8, ordem: 2 },
+          { id: '4', nome: 'Franchising Acesso', percentual: 3, ordem: 3 },
+          { id: '5', nome: 'Franchising Cartao', percentual: 4, ordem: 4 },
+          { id: '6', nome: 'Unidade', percentual: 2, ordem: 5 },
+        ],
       };
 
-      expect(regrasComerciais.cireAtivo).toBe(10);
-      expect(regrasComerciais.unidade).toBe(2);
+      expect(regrasComerciais.itens.find((i) => i.nome === 'Cire Ativo')?.percentual).toBe(10);
+      expect(regrasComerciais.itens.find((i) => i.nome === 'Unidade')?.percentual).toBe(2);
     });
 
     it('deve exibir regras de gestores', () => {
       const regrasGestores = {
-        gerenteCire: 15,
-        supervisorAtivo: 10,
-        supervisorReceptivo: 8,
-        supervisorFranquia: 5,
-        supervisorAtendimento: 7,
-        gerenteAtendimento: 12,
-        supervisorComercial: 20,
+        itens: [
+          { id: '1', nome: 'Gerente Cire', percentual: 15, ordem: 0 },
+          { id: '2', nome: 'Supervisor Ativo', percentual: 10, ordem: 1 },
+          { id: '3', nome: 'Supervisor Receptivo', percentual: 8, ordem: 2 },
+          { id: '4', nome: 'Supervisor Franquia', percentual: 5, ordem: 3 },
+          { id: '5', nome: 'Supervisor Atendimento', percentual: 7, ordem: 4 },
+          { id: '6', nome: 'Gerente Atendimento', percentual: 12, ordem: 5 },
+          { id: '7', nome: 'Supervisor Comercial', percentual: 20, ordem: 6 },
+        ],
       };
 
-      expect(regrasGestores.gerenteCire).toBe(15);
-      expect(regrasGestores.supervisorComercial).toBe(20);
+      expect(regrasGestores.itens.find((i) => i.nome === 'Gerente Cire')?.percentual).toBe(15);
+      expect(regrasGestores.itens.find((i) => i.nome === 'Supervisor Comercial')?.percentual).toBe(20);
     });
 
     it('deve validar percentual de comissão', () => {

@@ -18,6 +18,7 @@ export type NavIconKey =
   | "coupons"
   | "audit"
   | "referrals"
+  | "settings"
   | "logout";
 
 export type NavLink = {
