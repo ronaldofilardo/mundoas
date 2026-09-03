@@ -1,24 +1,5 @@
 import type { RegrasComerciais, RegrasGestores } from "../app/(dashboard)/backoffice/usuarios/comerciais/types";
 
-const REGRAS_GESTOR_MAP: Record<string, keyof RegrasGestores> = {
-  "GERENTE CIRE": "gerenteCire",
-  "SUPERVISOR ATIVO": "supervisorAtivo",
-  "SUPERVISOR RECEPTIVO": "supervisorReceptivo",
-  "SUPERVISOR FRANQUIA": "supervisorFranquia",
-  "SUPERVISOR ATENDIMENTO": "supervisorAtendimento",
-  "GERENTE ATENDIMENTO": "gerenteAtendimento",
-  "SUPERVISOR COMERCIAL": "supervisorComercial",
-};
-
-const REGRAS_COMERCIAL_MAP: Record<string, keyof RegrasComerciais> = {
-  "CARTAO ACESSO SAUDE": "cartaoAcessoSaude",
-  "CIRE ATIVO": "cireAtivo",
-  "CIRE RECEPTIVO": "cireReceptivo",
-  "FRANCHISING ACESSO": "franchisingAcesso",
-  "FRANCHISING CARTAO": "franchisingCartao",
-  "UNIDADE": "unidade",
-};
-
 export function parseMoedaParaNumero(valor: string | undefined): number {
   if (!valor) return 0;
   const semPontos = valor.replace(/\./g, "").replace(",", ".");
@@ -26,24 +7,50 @@ export function parseMoedaParaNumero(valor: string | undefined): number {
   return isNaN(num) ? 0 : num;
 }
 
+function normalizarChave(nome: string): string {
+  return nome
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ");
+}
+
+function buscarPercentualPorNome(
+  regras: { regrasComerciais: RegrasComerciais | null; regrasGestores: RegrasGestores | null },
+  alvo: string,
+): number {
+  const target = normalizarChave(alvo);
+  const matchGestor = regras.regrasGestores?.itens?.find(
+    (i) => normalizarChave(i.nome) === target,
+  );
+  if (matchGestor) return Number(matchGestor.percentual);
+  const matchCom = regras.regrasComerciais?.itens?.find(
+    (i) => normalizarChave(i.nome) === target,
+  );
+  if (matchCom) return Number(matchCom.percentual);
+  return 0;
+}
+
 export function getComissaoFromFuncao(
   regras: { regrasComerciais: RegrasComerciais | null; regrasGestores: RegrasGestores | null },
   funcao: string | undefined,
 ): number {
   if (!funcao) return 0;
-  const upper = funcao.toUpperCase();
-  if (upper.startsWith("LIDER_") || upper.startsWith("LÍDER ")) return 0;
+  return buscarPercentualPorNome(regras, funcao);
+}
 
-  const raw = funcao.toUpperCase().replace(/_/g, " ").trim();
-  const funcaoStripped = raw.replace(/\s*ATIVO\s*$/, "").replace(/\s*RECEPTIVO\s*$/, "").trim();
-
-  const chaveGestor = REGRAS_GESTOR_MAP[funcaoStripped];
-  if (chaveGestor && regras.regrasGestores) return Number(regras.regrasGestores[chaveGestor]);
-
-  const chaveCom = REGRAS_COMERCIAL_MAP[funcaoStripped];
-  if (chaveCom && regras.regrasComerciais) return Number(regras.regrasComerciais[chaveCom]);
-
-  return 0;
+export function getComissaoFromTipoProcedimento(
+  regraComercial: RegrasComerciais | null,
+  tipoProcedimento: string | undefined,
+): number {
+  if (!regraComercial || !tipoProcedimento) return 0;
+  const target = normalizarChave(tipoProcedimento);
+  const match = regraComercial.itens.find(
+    (i) => normalizarChave(i.nome) === target,
+  );
+  return match ? Number(match.percentual) : 0;
 }
 
 /**

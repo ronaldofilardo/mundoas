@@ -1,15 +1,82 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
 import {
-  forbidden,
   notFound,
   ok,
   requireBackofficeWithScope,
 } from "@/lib/api-helpers";
 import { getComissaoFromFuncao, calcularValorComissaoNum } from "@/lib/comissao-calculo";
+import { intervaloMesReferencia } from "@/lib/competencia";
+
+/**
+ * Soma runtime de `ProcedimentoPF.valorTotal` filtrado por `comercialId` (e opcionalmente
+ * por `dataReferencia` dentro do mês de referência) e escopo de backoffice.
+ *
+ * Fonte de verdade única: a tabela `procedimentos_pf` — o que aparece em
+ * "Lista de Produção". Substitui a leitura de `MetaEquipe.valorAtingido`,
+ * que ficava dessincronizada do upload sempre que o `Reprocessar Comissões`
+ * não era disparado manualmente.
+ */
+async function somarProducaoPorComerciais(
+  comercialIds: string[],
+  backofficeId: string,
+  intervalo: { inicio: Date; fim: Date },
+): Promise<Map<string, number>> {
+  const mapa = new Map<string, number>();
+  if (comercialIds.length === 0) return mapa;
+
+  // O upload de planilha grava o "Total Pago" da planilha no campo
+  // `valorComissao` de ProcedimentoPF. Usamos `valorComissao` como fonte
+  // porque é o que a Lista de Produção exibe na coluna "Total Pago".
+  // `valorTotal` pode estar zerado dependendo do caminho de criação.
+  const grupos = await prisma.procedimentoPF.groupBy({
+    by: ["comercialId"],
+    where: {
+      comercialId: { in: comercialIds, not: null },
+      upload: { backofficeId },
+      dataReferencia: { gte: intervalo.inicio, lt: intervalo.fim },
+    },
+    _sum: { valorComissao: true, valorTotal: true },
+  });
+
+  for (const g of grupos) {
+    if (!g.comercialId) continue;
+    const v1 = Number(g._sum.valorComissao ?? 0);
+    const v2 = Number(g._sum.valorTotal ?? 0);
+    mapa.set(g.comercialId, Math.max(v1, v2));
+  }
+  return mapa;
+}
+
+async function somarProducaoPorConsultoresPf(
+  consultorPfIds: string[],
+  backofficeId: string,
+  intervalo: { inicio: Date; fim: Date },
+): Promise<Map<string, number>> {
+  const mapa = new Map<string, number>();
+  if (consultorPfIds.length === 0) return mapa;
+
+  const grupos = await prisma.procedimentoPF.groupBy({
+    by: ["consultorPfId"],
+    where: {
+      consultorPfId: { in: consultorPfIds, not: null },
+      upload: { backofficeId },
+      dataReferencia: { gte: intervalo.inicio, lt: intervalo.fim },
+    },
+    _sum: { valorComissao: true, valorTotal: true },
+  });
+
+  for (const g of grupos) {
+    if (!g.consultorPfId) continue;
+    const v1 = Number(g._sum.valorComissao ?? 0);
+    const v2 = Number(g._sum.valorTotal ?? 0);
+    mapa.set(g.consultorPfId, Math.max(v1, v2));
+  }
+  return mapa;
+}
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { mesReferencia: string } },
 ) {
   const { backofficeId, error } = await requireBackofficeWithScope();
@@ -20,20 +87,28 @@ export async function GET(
     return notFound("mesReferencia inválido. Formato: YYYY-MM");
   }
 
+  const intervalo = intervaloMesReferencia(mesReferencia);
+
+  // O fetch é feito do servidor para o próprio app; repassamos o cookie da
+  // sessão para que os endpoints de regras autentiquem (caso contrário 401).
+  const cookie = req.headers.get("cookie");
+  const fetchHeaders = cookie ? { cookie } : undefined;
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+
   // Buscar regras de comissão
   const [regrasComRes, regrasGesRes] = await Promise.all([
-    fetch(`${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/v1/backoffice/regras-comerciais`),
-    fetch(`${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/v1/backoffice/regras-gestores`),
+    fetch(`${baseUrl}/api/v1/backoffice/regras-comerciais`, {
+      headers: fetchHeaders,
+      cache: "no-store",
+    }),
+    fetch(`${baseUrl}/api/v1/backoffice/regras-gestores`, {
+      headers: fetchHeaders,
+      cache: "no-store",
+    }),
   ]);
 
-  const regrasComerciais = regrasComRes.ok ? await regrasComRes.json() : {
-    cartaoAcessoSaude: 0, cireAtivo: 0, cireReceptivo: 0,
-    franchisingAcesso: 0, franchisingCartao: 0, unidade: 0,
-  };
-  const regrasGestores = regrasGesRes.ok ? await regrasGesRes.json() : {
-    gerenteCire: 0, supervisorAtivo: 0, supervisorReceptivo: 0,
-    supervisorFranquia: 0, supervisorAtendimento: 0, gerenteAtendimento: 0, supervisorComercial: 0,
-  };
+  const regrasComerciais = regrasComRes.ok ? await regrasComRes.json() : { itens: [] };
+  const regrasGestores = regrasGesRes.ok ? await regrasGesRes.json() : { itens: [] };
 
   // Buscar todas as lideranças do backoffice
   const liderancas = await prisma.equipe.findMany({
@@ -67,22 +142,52 @@ export async function GET(
     orderBy: { nome: "asc" },
   });
 
-  // Buscar metas do mês para todos os membros (lideranças + comerciais)
-  const todosMembros = [...liderancas, ...comerciaisDiretos];
-  const membroIds = todosMembros.map((m) => m.id);
+  // Coletar todos os IDs que precisam ter produção agregada
+  const comercialIds: string[] = [];
+  const consultorPfIds: string[] = [];
+  for (const l of liderancas) {
+    comercialIds.push(l.id, ...l.subordinados.map((s) => s.id));
+    consultorPfIds.push(...l.consultorPfs.map((cp) => cp.id));
+  }
+  comercialIds.push(...comerciaisDiretos.map((c) => c.id));
 
-  const [metasEquipe, comissoesEquipe, metasConsultores] = await Promise.all([
-    prisma.metaEquipe.findMany({
-      where: { equipeId: { in: membroIds }, mesReferencia },
-    }),
-    prisma.comissaoEquipe.findMany({
-      where: { equipeId: { in: membroIds }, mesReferencia },
-    }),
-    prisma.metaConsultorPf.findMany({
-      where: { mesReferencia, setorId: null },
-      include: { consultorPf: { select: { id: true, nome: true, liderancaId: true } } },
-    }),
-  ]);
+  // Meta cadastrada e comissões existentes ainda vêm de MetaEquipe/ComissaoEquipe,
+  // mas a PRODUÇÃO agora vem direto de ProcedimentoPF (fonte de verdade).
+  // Inclui metas dos subordinados (comerciais sob uma liderança) — antes
+  // esses membros ficavam fora do `membroIds` e suas metas eram ignoradas.
+  const membroIds: string[] = [];
+  for (const l of liderancas) {
+    membroIds.push(l.id, ...l.subordinados.map((s) => s.id));
+  }
+  membroIds.push(...comerciaisDiretos.map((c) => c.id));
+
+  const [metasEquipe, comissoesEquipe, metasConsultoresBrutas, producaoPorComercial, producaoPorConsultor] =
+    await Promise.all([
+      prisma.metaEquipe.findMany({
+        where: { equipeId: { in: membroIds }, mesReferencia },
+      }),
+      prisma.comissaoEquipe.findMany({
+        where: { equipeId: { in: membroIds }, mesReferencia },
+      }),
+      prisma.metaConsultorPf.findMany({
+        // Inclui metas com e sem setorId: o backoffice/metas-vendas grava
+        // por (consultorPf, setor, mês) e o líder grava sem setorId. A UI
+        // exibe uma única "Meta" por consultor/mês — somamos todas.
+        where: { mesReferencia },
+        select: { consultorPfId: true, valorMeta: true },
+      }),
+      somarProducaoPorComerciais(comercialIds, backofficeId, intervalo),
+      somarProducaoPorConsultoresPf(consultorPfIds, backofficeId, intervalo),
+    ]);
+
+  const metasConsultorMap = new Map<string, number>();
+  for (const m of metasConsultoresBrutas) {
+    if (!consultorPfIds.includes(m.consultorPfId)) continue;
+    metasConsultorMap.set(
+      m.consultorPfId,
+      (metasConsultorMap.get(m.consultorPfId) ?? 0) + Number(m.valorMeta ?? 0),
+    );
+  }
 
   const metasMap = new Map(metasEquipe.map((m) => [`${m.equipeId}-${m.mesReferencia}`, m]));
   const comissoesMap = new Map(comissoesEquipe.map((c) => [`${c.equipeId}-${c.mesReferencia}`, c]));
@@ -124,14 +229,14 @@ export async function GET(
     const comissao = comissoesMap.get(metaKey);
 
     const valorMeta = meta ? Number(meta.valorMeta) : 0;
-    const valorProducao = meta ? Number(meta.valorAtingido) : 0;
-    const valorComissao = meta ? Number(meta.valorComissao ?? 0) : 0;
+    const valorProducao = producaoPorComercial.get(l.id) ?? 0;
+    const valorComissaoPersistida = comissao ? Number(comissao.valorComissao ?? 0) : 0;
 
     const funcaoLideranca = l.funcao || "GERENTE_CIRE";
     const pctLideranca = getComissaoFromFuncao({ regrasComerciais, regrasGestores }, funcaoLideranca);
     const comissaoLiderancaCalculada = pctLideranca && valorProducao > 0
       ? calcularValorComissaoNum(String(valorProducao), pctLideranca)
-      : valorComissao;
+      : valorComissaoPersistida;
 
     // Subordinados comerciais
     const subordinados = [];
@@ -140,13 +245,13 @@ export async function GET(
       const sMeta = metasMap.get(sMetaKey);
       const sComissao = comissoesMap.get(sMetaKey);
       const sValorMeta = sMeta ? Number(sMeta.valorMeta) : 0;
-      const sValorProducao = sMeta ? Number(sMeta.valorAtingido) : 0;
-      const sValorComissao = sMeta ? Number(sMeta.valorComissao ?? 0) : 0;
+      const sValorProducao = producaoPorComercial.get(s.id) ?? 0;
+      const sValorComissaoPersistida = sComissao ? Number(sComissao.valorComissao ?? 0) : 0;
       const sFuncao = s.funcao || "SUPERVISOR_ATIVO";
       const sPct = getComissaoFromFuncao({ regrasComerciais, regrasGestores }, sFuncao);
       const sComissaoCalc = sPct && sValorProducao > 0
         ? calcularValorComissaoNum(String(sValorProducao), sPct)
-        : sValorComissao;
+        : sValorComissaoPersistida;
 
       subordinados.push({
         id: s.id,
@@ -163,9 +268,8 @@ export async function GET(
     // Consultores PF
     const consultoresPf = [];
     for (const cp of l.consultorPfs) {
-      const cpMeta = metasConsultores.find((m) => m.consultorPfId === cp.id);
-      const cpValorMeta = cpMeta ? Number(cpMeta.valorMeta) : 0;
-      const cpValorProducao = cpMeta ? Number(cpMeta.valorAtingido) : 0;
+      const cpValorMeta = metasConsultorMap.get(cp.id) ?? 0;
+      const cpValorProducao = producaoPorConsultor.get(cp.id) ?? 0;
 
       consultoresPf.push({
         id: cp.id,
@@ -198,13 +302,13 @@ export async function GET(
     const comissao = comissoesMap.get(metaKey);
 
     const valorMeta = meta ? Number(meta.valorMeta) : 0;
-    const valorProducao = meta ? Number(meta.valorAtingido) : 0;
-    const valorComissao = meta ? Number(meta.valorComissao ?? 0) : 0;
+    const valorProducao = producaoPorComercial.get(c.id) ?? 0;
+    const valorComissaoPersistida = comissao ? Number(comissao.valorComissao ?? 0) : 0;
     const funcao = c.funcao || "SUPERVISOR_ATIVO";
     const pct = getComissaoFromFuncao({ regrasComerciais, regrasGestores }, funcao);
     const comissaoCalc = pct && valorProducao > 0
       ? calcularValorComissaoNum(String(valorProducao), pct)
-      : valorComissao;
+      : valorComissaoPersistida;
 
     validacao.push({
       empresaSetor: c.nome,
