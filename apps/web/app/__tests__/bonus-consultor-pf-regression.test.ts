@@ -6,6 +6,8 @@ const root = join(__dirname, "../..");
 const read = (...parts: string[]) => readFileSync(join(root, ...parts), "utf8");
 
 const equipeBonusPage = read("app", "(dashboard)", "backoffice", "equipe", "bonus", "page.tsx");
+const bonificacaoGestoresConsultores = read("app", "(dashboard)", "backoffice", "equipe", "bonus", "components", "bonificacao-gestores-consultores.tsx");
+const useBonificacaoGestores = read("app", "(dashboard)", "backoffice", "equipe", "bonus", "hooks", "use-bonificacao-gestores.ts");
 const bonusBackoffice = read("app", "(dashboard)", "backoffice", "metas-vendas", "components", "bonus-consultor-pf.tsx");
 const bonusConsultor = read("app", "(dashboard)", "consultor", "bonus", "page.tsx");
 const navManifest = read("lib", "nav", "manifest.ts");
@@ -31,9 +33,32 @@ const resetMigration = read(
 );
 
 describe("Bônus PF — integração completa", () => {
-  it("expõe o painel de Bônus na área de Equipe e renderiza o componente correto", () => {
-    expect(equipeBonusPage).toContain("BonusConsultorPf");
+  it("expõe o painel de Bonificação na área de Equipe e renderiza o componente correto", () => {
+    expect(equipeBonusPage).toContain("BonificacaoGestoresConsultores");
     expect(equipeBonusPage).toContain("Bonificação");
+  });
+
+  it("mantém o título e subtítulo da página de Bonificação por gestor/consultor", () => {
+    expect(equipeBonusPage).toContain("Bônus por gestor e consultor");
+  });
+
+  it("renderiza filtros e estrutura da Bonificação por gestor/consultor", () => {
+    expect(bonificacaoGestoresConsultores).toContain("Ciclo");
+    expect(bonificacaoGestoresConsultores).toContain("Gestor");
+    expect(bonificacaoGestoresConsultores).toContain("Início");
+    expect(bonificacaoGestoresConsultores).toContain("Fim");
+    expect(bonificacaoGestoresConsultores).toContain("/api/v1/backoffice/equipe/bonus");
+    expect(bonificacaoGestoresConsultores).toContain("/api/v1/backoffice/equipe/bonus/");
+    expect(bonificacaoGestoresConsultores).toContain("Extrato");
+  });
+
+  it("hook de bonificação não entra em loop infinito por refetch instável", () => {
+    expect(useBonificacaoGestores).toContain("useCallback");
+    expect(useBonificacaoGestores).not.toContain("useEffect(() => {\n    fetchBonificacao();\n  }, [fetchBonificacao]);");
+  });
+
+  it("mantém o título e subtítulo da página de Bonificação por gestor/consultor", () => {
+    expect(equipeBonusPage).toContain("Bônus por gestor e consultor");
   });
 
   it("expõe Bônus no menu do Consultor PF", () => {

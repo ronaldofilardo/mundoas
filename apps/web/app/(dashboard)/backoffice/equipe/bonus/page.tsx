@@ -1,10 +1,10 @@
 "use client";
 
 import { Suspense } from "react";
-import { BonusConsultorPf } from "../../metas-vendas/components/bonus-consultor-pf";
+import { BonificacaoGestoresConsultores } from "./components/bonificacao-gestores-consultores";
 
 function BonusContent() {
-  return <BonusConsultorPf />;
+  return <BonificacaoGestoresConsultores />;
 }
 
 export default function EquipeBonusPage() {

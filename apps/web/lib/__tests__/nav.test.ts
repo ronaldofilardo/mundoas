@@ -84,6 +84,20 @@ describe("manifesto — Consultor", () => {
   });
 });
 
+describe("manifesto — Bonificação do Backoffice", () => {
+  it("perfil backoffice expõe link 'Bonificação' no grupo Equipe apontando para /backoffice/equipe/bonus", async () => {
+    const { NAV_PROFILES } = await import("@/lib/nav/manifest");
+    const equipe = NAV_PROFILES.backoffice.groups.find(
+      (g) => g.title === "Equipe",
+    );
+    expect(equipe).toBeDefined();
+    const link = equipe!.links.find((l) => l.label === "Bonificação");
+    expect(link).toBeDefined();
+    expect(link?.href).toBe("/backoffice/equipe/bonus");
+    expect(link?.icon).toBe("points");
+  });
+});
+
 describe("manifesto — Metas & Produção", () => {
   it("perfil backoffice expõe link 'Metas' no grupo Equipe apontando para /backoffice/equipe/metas", async () => {
     const { NAV_PROFILES } = await import("@/lib/nav/manifest");
