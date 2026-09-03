@@ -75,7 +75,7 @@ export function BonificacaoGestoresConsultores() {
 
   const fecharExtrato = useCallback(() => setExtrato(null), []);
 
-  async function handleReset(consultorId: string) {
+   async function handleReset(consultorId: string) {
     const confirmar = window.confirm("Zerar o saldo de Bônus deste Consultor PF? O lançamento ficará preservado no extrato.");
     if (!confirmar) return;
     try {
@@ -95,6 +95,29 @@ export function BonificacaoGestoresConsultores() {
       });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao resetar pontos");
+    }
+  }
+
+  async function handleAjuste(consultorId: string, delta: number) {
+    const confirmar = window.confirm(`Ajustar bônus em ${delta > 0 ? "+" : ""}${delta} ponto(s)?`);
+    if (!confirmar) return;
+    try {
+      const res = await fetch(`/api/v1/backoffice/equipe/bonus/${consultorId}/ajuste`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ delta }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error ?? "Não foi possível ajustar os pontos");
+      toast.success("Ajuste realizado com sucesso.");
+      await refetch({
+        cicloId: filtroCiclo || undefined,
+        gestorId: filtroGestor || undefined,
+        inicio: inicio || undefined,
+        fim: fim || undefined,
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao ajustar pontos");
     }
   }
 
@@ -214,7 +237,23 @@ export function BonificacaoGestoresConsultores() {
                           <p className="font-medium text-gray-900">{c.nome}</p>
                         </td>
                         <td className="p-3 text-gray-700">{c.cpf}</td>
-                        <td className="p-3 text-right font-semibold text-gray-900">{c.saldoPontos.toLocaleString("pt-BR")}</td>
+                        <td className="p-3 text-right font-semibold text-gray-900">
+                          <span className="mr-2 inline-block tabular-nums">{c.saldoPontos.toLocaleString("pt-BR")}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleAjuste(c.id, -1)}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-gray-100"
+                          >
+                            −
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleAjuste(c.id, 1)}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-gray-100"
+                          >
+                            +
+                          </button>
+                        </td>
                         <td className="p-3 text-right text-gray-700">{c.totalResgates}</td>
                         <td className="p-3 text-gray-700">{formatarData(c.ultimaProducao)}</td>
                       </tr>
