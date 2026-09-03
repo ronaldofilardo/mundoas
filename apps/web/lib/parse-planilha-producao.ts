@@ -31,6 +31,7 @@ interface PreviewRow {
   comercialNome?: string;
   gestorNome?: string;
   consultorPfNome?: string;
+  resgatadoPorConsultorPf?: boolean;
 }
 
 interface ParseResult {
@@ -41,6 +42,7 @@ interface ParseResult {
   summary: {
     total: number;
     validos: number;
+    resgatados: number;
     orfaos: number;
     rejeitados: number;
     duplicadas: number;
@@ -219,6 +221,7 @@ const [comerciaisResult, consultoresPfResult, gestoresResult] = await Promise.al
   // Processar linhas (começa do índice 2 para pular título e cabeçalho)
   const previewRows: PreviewRow[] = [];
   let totalValidos = 0;
+  let totalResgatados = 0;
   let totalOrfaos = 0;
   let totalRejeitados = 0;
   let totalDuplicadas = 0;
@@ -319,19 +322,17 @@ const valorTotalRaw =
     let indicadoEncontrado: { id: string; cpf: string } | undefined;
     let consultorPf: PessoaRef | null = null;
     let gestorEncontrado: PessoaRef | null = null;
+    let resgatadoPorConsultorPf = false;
 
-    if (status === "VALIDO") {
+    if (status !== "REJEITADO" && status !== "DUPLICADA") {
       if (!cpfValido) {
-        // Sem CPF válido: marca como órfão sem tentar buscar parceiro
         status = "ORFAO";
         motivo = !cpf ? "CPF ausente" : "CPF inválido";
       } else {
-        // Primeiro tenta achar pelo CPF do parceiro (normaliza CPF para comparar)
         parceiroEncontrado = parceiros.find(
           (p) => normalizarCpf(p.cpf) === cpf,
         );
 
-        // Se não achou, procura entre os indicados de todos os parceiros
         if (!parceiroEncontrado) {
           for (const parceiro of parceiros) {
             indicadoEncontrado = parceiro.indicacoes.find(
@@ -350,30 +351,41 @@ const valorTotalRaw =
         }
       }
 
-if (status === "VALIDO" && usuarioDaConta) {
-         const nomeNormalizado = normalizarNome(usuarioDaConta);
-         consultorPf =
-           consultorPorNome.get(nomeNormalizado) ?? null;
-         gestorEncontrado =
-           gestorPorNome.get(nomeNormalizado) ?? null;
-       }
+      if (usuarioDaConta && !consultorPf) {
+        const nomeNormalizado = normalizarNome(usuarioDaConta);
+        const resgate = consultorPorNome.get(nomeNormalizado) ?? null;
+        if (resgate) {
+          consultorPf = resgate;
+          gestorEncontrado =
+            gestorPorNome.get(nomeNormalizado) ?? null;
+          if (!parceiroEncontrado && !indicadoEncontrado) {
+            resgatadoPorConsultorPf = true;
+            if (status === "ORFAO") {
+              status = "VALIDO";
+              motivo = undefined;
+            }
+          }
+        }
+      }
     }
 
-    if (status === "VALIDO" && dataReferencia && cpfValido && parceiroEncontrado) {
+    if (status === "VALIDO" && dataReferencia && (parceiroEncontrado || resgatadoPorConsultorPf)) {
       const chaveProcedimento = `${dataReferencia}|${cpf}|${procedimento}|${unidade || "NÃO INFORMADA"}`;
       if (chavesExistentes.has(chaveProcedimento)) {
         status = "DUPLICADA";
         motivo = "Produção já existe no banco e será ignorada para evitar duplicidade";
         totalDuplicadas++;
       } else {
-        // Também evita que duas linhas iguais da mesma planilha sejam
-        // apresentadas como novas.
         chavesExistentes.add(chaveProcedimento);
       }
     }
 
     if (status === "VALIDO") {
-      totalValidos++;
+      if (resgatadoPorConsultorPf) {
+        totalResgatados++;
+      } else {
+        totalValidos++;
+      }
     } else if (status === "ORFAO") {
       totalOrfaos++;
     } else if (status === "DUPLICADA") {
@@ -384,6 +396,10 @@ if (status === "VALIDO" && usuarioDaConta) {
 
     if (status === "VALIDO" && usuarioDaConta && !consultorPf) {
       alerta = "Usuário não localizado como Consultor PF; a produção será importada sem esse vínculo.";
+    }
+
+    if (resgatadoPorConsultorPf) {
+      alerta = "Cliente não indicado, mas vinculado ao Consultor PF da conta. A produção será importada com essa comissão.";
     }
 
     // Adicionar ao preview (limitado)
@@ -406,6 +422,7 @@ if (status === "VALIDO" && usuarioDaConta) {
           : undefined,
         gestorNome: gestorEncontrado?.nome,
         consultorPfNome: consultorPf?.nome,
+        resgatadoPorConsultorPf,
         valorComissao: 0,
         valorTotal: valorTotal ?? undefined,
       });
@@ -423,6 +440,7 @@ if (status === "VALIDO" && usuarioDaConta) {
     summary: {
       total: totalLinhasDados,
       validos: totalValidos,
+      resgatados: totalResgatados,
       orfaos: totalOrfaos,
       rejeitados: totalRejeitados,
       duplicadas: totalDuplicadas,
@@ -490,7 +508,8 @@ function normalizarNome(nome: string): string {
 }
 
 function normalizarCpf(cpf: string): string {
-  return cpf.replace(/\D/g, "");
+  const cpfLimpo = cpf.replace(/\D/g, "");
+  return cpfLimpo.padStart(11, "0");
 }
 
 function dataParaChave(data: Date): string {

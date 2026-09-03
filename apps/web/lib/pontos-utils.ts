@@ -220,14 +220,15 @@ export async function cpfExisteEmAcessoSaude(cpf: string): Promise<boolean> {
  * Normaliza CPF removendo máscara
  */
 export function normalizarCPF(cpf: string): string {
-  return cpf.replace(/\D/g, "");
+  const cpfLimpo = cpf.replace(/\D/g, "");
+  return cpfLimpo.padStart(11, "0");
 }
 
 /**
  * Valida CPF
  */
 export function validarCPF(cpf: string): boolean {
-  const cpfLimpo = normalizarCPF(cpf);
+  const cpfLimpo = cpf.replace(/\D/g, "");
 
   if (cpfLimpo.length !== 11) return false;
   if (/^(\d)\1{10}$/.test(cpfLimpo)) return false;
@@ -256,29 +257,26 @@ export function validarCPF(cpf: string): boolean {
 }
 
 /**
- * Mapeia função do comercial para o campo correspondente em RegrasGestores
+ * Normaliza nome de função/tipo de procedimento para lookup case/acento-insensitive.
  */
-function getCampoRegraGestor(funcao: string): string | null {
-  const mapeamento: Record<string, string> = {
-    GERENTE_CIRE: "gerenteCire",
-    SUPERVISOR_ATIVO: "supervisorAtivo",
-    SUPERVISOR_RECEPTIVO: "supervisorReceptivo",
-    SUPERVISOR_FRANQUIA: "supervisorFranquia",
-    SUPERVISOR_ATENDIMENTO: "supervisorAtendimento",
-    GERENTE_ATENDIMENTO: "gerenteAtendimento",
-    SUPERVISOR_COMERCIAL: "supervisorComercial",
-  };
-  return mapeamento[funcao] || null;
+function normalizarChave(nome: string): string {
+  return (nome ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-/**
- * Mapeia função do comercial para o campo correspondente em RegrasComerciais
- * (baseado no tipo de procedimento/unidade)
- */
-function getCampoRegraComercial(tipoProcedimento?: string): string {
-  // Padrão: usa 'unidade' como default
-  // Pode ser expandido para outros tipos no futuro
-  return "unidade";
+function buscarPercentualPorNome(
+  itens: Array<{ nome: string; percentual: unknown }>,
+  alvo: string,
+): number {
+  if (!alvo) return 0;
+  const target = normalizarChave(alvo);
+  const match = itens.find((i) => normalizarChave(i.nome) === target);
+  return match ? Number(match.percentual) || 0 : 0;
 }
 
 function competenciaDaData(dataReferencia: Date): string {
@@ -330,10 +328,12 @@ export async function calcularComissaoComercial(params: {
 
   const regraComercial = await prisma.regraComercial.findUnique({
     where: { backofficeId },
+    include: { itens: { where: { tipo: "CUSTOM" } } },
   });
 
   const regraGestor = await prisma.regraGestor.findUnique({
     where: { backofficeId },
+    include: { itens: { where: { tipo: "CUSTOM" } } },
   });
   const competencia = competenciaDaData(dataReferencia);
   const regraComercialVersao = regraComercial
@@ -357,21 +357,14 @@ export async function calcularComissaoComercial(params: {
     };
   }
 
-  const campoRegraComercial = getCampoRegraComercial(tipoProcedimento);
-  const percentualComercial = Number(
-            regraComercialVigente[campoRegraComercial as keyof typeof regraComercialVigente] || 0,
-
+  const percentualComercial = buscarPercentualPorNome(
+    regraComercial?.itens ?? [],
+    tipoProcedimento ?? "",
   );
 
-  let percentualGestor = 0;
-  if (funcao) {
-    const campoRegraGestor = getCampoRegraGestor(funcao);
-    if (campoRegraGestor) {
-      percentualGestor = Number(
-        regraGestorVigente[campoRegraGestor as keyof typeof regraGestorVigente] || 0,
-      );
-    }
-  }
+  const percentualGestor = funcao
+    ? buscarPercentualPorNome(regraGestor?.itens ?? [], funcao)
+    : 0;
 
   const valorComissao = Number(
     (valorProcedimento * (percentualComercial / 100) * (percentualGestor / 100)).toFixed(2),
@@ -454,14 +447,6 @@ export async function calcularComissaoConsultorPf(params: {
   const valorComissao = calcularValorComissaoPf({
     valorProcedimento,
     tipoProcedimento,
-    regraComercial: {
-      cartaoAcessoSaude: regraComercialVigente.cartaoAcessoSaude,
-      cireAtivo: regraComercialVigente.cireAtivo,
-      cireReceptivo: regraComercialVigente.cireReceptivo,
-      franchisingAcesso: regraComercialVigente.franchisingAcesso,
-      franchisingCartao: regraComercialVigente.franchisingCartao,
-      unidade: regraComercialVigente.unidade,
-    },
     itensCustom: (regraComercial?.itens ?? []).map((i) => ({
       nome: i.nome,
       percentual: Number(i.percentual),
@@ -480,24 +465,6 @@ export async function calcularComissaoConsultorPf(params: {
   };
 }
 
-const CAMPOS_COMISSAO_PF: Record<string, "cartaoAcessoSaude" | "cireAtivo" | "cireReceptivo" | "franchisingAcesso" | "franchisingCartao" | "unidade"> = {
-  "CARTAO ACESSO SAUDE": "cartaoAcessoSaude",
-  "CIRE ATIVO": "cireAtivo",
-  "CIRE RECEPTIVO": "cireReceptivo",
-  "FRANCHISING ACESSO": "franchisingAcesso",
-  "FRANCHISING CARTAO": "franchisingCartao",
-  UNIDADE: "unidade",
-};
-
-function normalizarTipoProcedimento(tipo?: string): string {
-  return (tipo ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toUpperCase()
-    .replace(/_/g, " ")
-    .trim();
-}
-
 export function calcularValorComissaoPf(params: {
   valorProcedimento: number;
   tipoProcedimento?: string;
@@ -505,19 +472,13 @@ export function calcularValorComissaoPf(params: {
   itensCustom?: Array<{ nome: string; percentual: number }>;
 }): number {
   if (!params.valorProcedimento) return 0;
-  const tipoNormalizado = normalizarTipoProcedimento(params.tipoProcedimento);
-  const campo = CAMPOS_COMISSAO_PF[tipoNormalizado];
+  const target = normalizarChave(params.tipoProcedimento ?? "");
   let percentual = 0;
-  if (campo && params.regraComercial) {
-    percentual = Number(params.regraComercial[campo] ?? 0);
-  } else if (tipoNormalizado && params.itensCustom) {
+  if (target && params.itensCustom) {
     const item = params.itensCustom.find(
-      (i) => normalizarTipoProcedimento(i.nome) === tipoNormalizado,
+      (i) => normalizarChave(i.nome) === target,
     );
     if (item) percentual = Number(item.percentual) || 0;
-  }
-  if (!campo && !percentual && params.regraComercial) {
-    percentual = Number(params.regraComercial["unidade"] ?? 0);
   }
   return Number((params.valorProcedimento * (percentual / 100)).toFixed(2));
 }

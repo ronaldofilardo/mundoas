@@ -65,6 +65,7 @@ interface PreviewRow {
   comercialNome?: string;
   gestorNome?: string;
   consultorPfNome?: string;
+  resgatadoPorConsultorPf?: boolean;
 }
 
 interface PreviewData {
@@ -75,6 +76,7 @@ interface PreviewData {
   summary: {
     total: number;
     validos: number;
+    resgatados: number;
     orfaos: number;
     rejeitados: number;
     duplicadas?: number;
@@ -171,7 +173,12 @@ export function UploadPlanilhaPreview({
           throw new Error(errMsg);
         }
 
-        const data = JSON.parse(responseText);
+        let data: PreviewData;
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          throw new Error("Resposta inválida do servidor (status " + res.status + ")");
+        }
         console.log("[Preview] Parsed data:", data);
         setPreviewData(data);
 
@@ -412,6 +419,20 @@ export function UploadPlanilhaPreview({
     }
   };
 
+  const getStatusText = (row: PreviewRow) => {
+    if (row.status === "VALIDO" && row.resgatadoPorConsultorPf) {
+      return "VALIDO (RESGATE PF)";
+    }
+    return row.status;
+  };
+
+  const getStatusBadgeColor = (row: PreviewRow) => {
+    if (row.status === "VALIDO" && row.resgatadoPorConsultorPf) {
+      return "bg-emerald-100 text-emerald-800";
+    }
+    return getStatusColor(row.status);
+  };
+
   const displayedRows = showAllRows
     ? previewData?.previewRows
     : previewData?.previewRows.slice(0, 10);
@@ -515,48 +536,54 @@ export function UploadPlanilhaPreview({
               Resumo do Preview
             </h3>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
-              <div className="text-center p-3 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-500">Total</p>
-                <p className="text-lg font-bold text-gray-900">
-                  {previewData.summary.total}
-                </p>
-              </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <p className="text-xs text-green-600">Válidos</p>
-                <p className="text-lg font-bold text-green-700">
-                  {previewData.summary.validos}
-                </p>
-              </div>
-              <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                <p className="text-xs text-yellow-600">Órfãos</p>
-                <p className="text-lg font-bold text-yellow-700">
-                  {previewData.summary.orfaos}
-                </p>
-              </div>
-              <div className="text-center p-3 bg-red-50 rounded-lg">
-                <p className="text-xs text-red-600">Rejeitados</p>
-                <p className="text-lg font-bold text-red-700">
-                  {previewData.summary.rejeitados}
-                </p>
-              </div>
-              <div className="text-center p-3 bg-amber-50 rounded-lg">
-                <p className="text-xs text-amber-700">Duplicadas</p>
-                <p className="text-lg font-bold text-amber-800">
-                  {previewData.summary.duplicadas ?? 0}
-                </p>
-              </div>
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <p className="text-xs text-blue-600">Total Comissão</p>
-                <p className="text-lg font-bold text-blue-700">
-                  R${" "}
-                  {previewData.summary.totalComissao.toLocaleString("pt-BR", {
-                    minimumFractionDigits: 2,
-                  })}
-                </p>
-                <p className="text-xs text-blue-500 mt-1">A calcular</p>
-              </div>
-            </div>
+             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-4">
+               <div className="text-center p-3 bg-gray-50 rounded-lg">
+                 <p className="text-xs text-gray-500">Total</p>
+                 <p className="text-lg font-bold text-gray-900">
+                   {previewData.summary.total}
+                 </p>
+               </div>
+               <div className="text-center p-3 bg-green-50 rounded-lg">
+                 <p className="text-xs text-green-600">Válidos</p>
+                 <p className="text-lg font-bold text-green-700">
+                   {previewData.summary.validos}
+                 </p>
+               </div>
+               <div className="text-center p-3 bg-emerald-50 rounded-lg">
+                 <p className="text-xs text-emerald-600">Resgatados</p>
+                 <p className="text-lg font-bold text-emerald-700">
+                   {previewData.summary.resgatados ?? 0}
+                 </p>
+               </div>
+               <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                 <p className="text-xs text-yellow-600">Órfãos</p>
+                 <p className="text-lg font-bold text-yellow-700">
+                   {previewData.summary.orfaos}
+                 </p>
+               </div>
+               <div className="text-center p-3 bg-red-50 rounded-lg">
+                 <p className="text-xs text-red-600">Rejeitados</p>
+                 <p className="text-lg font-bold text-red-700">
+                   {previewData.summary.rejeitados}
+                 </p>
+               </div>
+               <div className="text-center p-3 bg-amber-50 rounded-lg">
+                 <p className="text-xs text-amber-700">Duplicadas</p>
+                 <p className="text-lg font-bold text-amber-800">
+                   {previewData.summary.duplicadas ?? 0}
+                 </p>
+               </div>
+               <div className="text-center p-3 bg-blue-50 rounded-lg">
+                 <p className="text-xs text-blue-600">Total Comissão</p>
+                 <p className="text-lg font-bold text-blue-700">
+                   R${" "}
+                   {previewData.summary.totalComissao.toLocaleString("pt-BR", {
+                     minimumFractionDigits: 2,
+                   })}
+                 </p>
+                 <p className="text-xs text-blue-500 mt-1">A calcular</p>
+               </div>
+             </div>
 
             {/* Colunas */}
             <div className="mt-4 pt-4 border-t">
@@ -678,9 +705,9 @@ export function UploadPlanilhaPreview({
                       </td>
                       <td className="p-2 text-center">
                         <span
-                          className={`text-xs px-2 py-0.5 rounded ${getStatusColor(row.status)}`}
+                          className={`text-xs px-2 py-0.5 rounded ${getStatusBadgeColor(row)}`}
                         >
-                          {row.status}
+                          {getStatusText(row)}
                         </span>
                         {row.motivo && (row.status === "REJEITADO" || row.status === "DUPLICADA") && (
                           <div
@@ -693,8 +720,10 @@ export function UploadPlanilhaPreview({
                           </div>
                         )}
                         {row.alerta && (
-                          <div className="mt-1 text-[11px] text-amber-700" title={row.alerta}>
-                            Sem vínculo PF; será importada sem Consultor PF.
+                          <div className="mt-1 text-[11px] text-emerald-700" title={row.alerta}>
+                            {row.resgatadoPorConsultorPf
+                              ? "Cliente não indicado, mas vinculado ao Consultor PF da conta. A produção será importada com essa comissão."
+                              : "Sem vínculo PF; será importada sem Consultor PF."}
                           </div>
                         )}
                       </td>
@@ -712,13 +741,13 @@ export function UploadPlanilhaPreview({
               disabled={
                 uploading ||
                 !mesReferencia ||
-                previewData.summary.validos === 0
+                (previewData.summary.validos === 0 && previewData.summary.resgatados === 0)
               }
               className="flex-1 bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploading
                 ? "Processando..."
-                : `Confirmar Upload (${previewData.summary.validos} válidos)`}
+                : `Confirmar Upload (${(previewData.summary.validos || 0) + (previewData.summary.resgatados || 0)} válidos)`}
             </button>
             <button
               onClick={() => {
@@ -795,7 +824,6 @@ export function UploadPlanilhaPreview({
               </div>
               <button
                 type="button"
-                autoFocus
                 onClick={() => setFeedback(null)}
                 className="mt-4 w-full rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
               >

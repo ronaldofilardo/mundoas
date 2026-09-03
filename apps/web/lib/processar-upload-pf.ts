@@ -11,7 +11,8 @@ type PlanilhaCell = string | number | boolean | Date | null;
 const UPLOAD_DIR = join(process.cwd(), "uploads", "backoffice");
 
 function normalizarCpf(cpf: string): string {
-  return cpf.replace(/\D/g, "");
+  const cpfLimpo = cpf.replace(/\D/g, "");
+  return cpfLimpo.padStart(11, "0");
 }
 
 function dataParaChave(data: Date): string {
@@ -332,16 +333,17 @@ const [comerciais, consultoresPf, gestores] = await Promise.all([
         }
       }
 
-if (usuarioDaConta) {
+      if (usuarioDaConta) {
           const nomeNormalizado = normalizarNome(usuarioDaConta);
           consultorPfId = consultorPorNome.get(nomeNormalizado) ?? null;
           comercialId = comercialPorNome.get(nomeNormalizado) ?? null;
           gestorIdFromNome = gestorPorNome.get(nomeNormalizado) ?? null;
-          if (gestorIdFromNome) {
-            // Prioritize gestor from usuario da conta if available
-            // We'll assign later when building procedimento record
-          }
         }
+
+      if (orfao && consultorPfId) {
+        orfao = false;
+        motivosOrfao.length = 0;
+      }
 
       const valorComissao = 0;
       // Linha válida (passou nas validações) — sempre grava em raw para auditoria
@@ -355,7 +357,7 @@ if (usuarioDaConta) {
         motivoOrfao: orfao ? motivosOrfao.join(",") : null,
       });
 
-      if (orfao || !parceiroEncontrado) {
+      if (orfao || (!parceiroEncontrado && !consultorPfId)) {
         orphanedRows++;
         continue;
       }
@@ -382,12 +384,12 @@ if (usuarioDaConta) {
         tipoProcedimento,
         unidade,
         indicadoId,
-        parceiroId: parceiroEncontrado.id,
+        parceiroId: parceiroEncontrado?.id ?? null,
         uploadId,
         valorComissao,
         valorTotal,
-        comercialId: comercialId ?? parceiroEncontrado.comercialId,
-        gestorId: gestorIdFromNome ?? parceiroEncontrado.gestorId,
+        comercialId: comercialId ?? parceiroEncontrado?.comercialId ?? null,
+        gestorId: gestorIdFromNome ?? parceiroEncontrado?.gestorId ?? null,
         consultorPfId,
       });
 
@@ -404,7 +406,7 @@ if (usuarioDaConta) {
       }
     }
 
-    // Persistir apenas procedimentos válidos com parceiro em procedimentos_pf
+    // Persistir procedimentos válidos (com parceiro OU resgatados por consultor PF)
     if (procedimentosToCreate.length > 0) {
       const BATCH_SIZE = 100;
       for (let i = 0; i < procedimentosToCreate.length; i += BATCH_SIZE) {
