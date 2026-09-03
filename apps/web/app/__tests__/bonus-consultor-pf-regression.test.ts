@@ -5,7 +5,7 @@ import { join } from "node:path";
 const root = join(__dirname, "../..");
 const read = (...parts: string[]) => readFileSync(join(root, ...parts), "utf8");
 
-const equipePage = read("app", "(dashboard)", "backoffice", "comissionamento", "equipe", "page.tsx");
+const equipeBonusPage = read("app", "(dashboard)", "backoffice", "equipe", "bonus", "page.tsx");
 const bonusBackoffice = read("app", "(dashboard)", "backoffice", "metas-vendas", "components", "bonus-consultor-pf.tsx");
 const bonusConsultor = read("app", "(dashboard)", "consultor", "bonus", "page.tsx");
 const navManifest = read("lib", "nav", "manifest.ts");
@@ -31,11 +31,9 @@ const resetMigration = read(
 );
 
 describe("Bônus PF — integração completa", () => {
-  it("expõe a aba Bônus em Comissionamento/Equipe e renderiza o painel correto", () => {
-    expect(equipePage).toContain('id: "bonus"');
-    expect(equipePage).toContain('label: "Bônus"');
-    expect(equipePage).toContain('activeTab === "bonus" && <BonusConsultorPf />');
-    expect(equipePage).toContain('"/backoffice/comissionamento/equipe?tab=');
+  it("expõe o painel de Bônus na área de Equipe e renderiza o componente correto", () => {
+    expect(equipeBonusPage).toContain("BonusConsultorPf");
+    expect(equipeBonusPage).toContain("Bonificação");
   });
 
   it("expõe Bônus no menu do Consultor PF", () => {

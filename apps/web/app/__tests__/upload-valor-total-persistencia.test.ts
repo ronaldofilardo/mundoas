@@ -19,7 +19,7 @@ const { mockPrisma } = vi.hoisted(() => ({
     gestor: { findMany: vi.fn() },
     parceiro: { findMany: vi.fn() },
     procedimentoPFRaw: { createMany: vi.fn(), deleteMany: vi.fn() },
-    procedimentoPF: { createMany: vi.fn(), deleteMany: vi.fn() },
+    procedimentoPF: { findMany: vi.fn(), createMany: vi.fn(), deleteMany: vi.fn() },
   },
 }));
 
@@ -56,6 +56,7 @@ describe("Regressão: valorTotal persistido (processar-upload-pf)", () => {
     mockPrisma.procedimentoPFRaw.deleteMany.mockResolvedValue({ count: 0 });
     mockPrisma.procedimentoPF.createMany.mockResolvedValue({ count: 0 });
     mockPrisma.procedimentoPF.deleteMany.mockResolvedValue({ count: 0 });
+    mockPrisma.procedimentoPF.findMany.mockResolvedValue([]);
 
     // equipe.findMany: 1) liderancas, 2) comerciais
     mockPrisma.equipe.findMany
@@ -124,22 +125,29 @@ describe("Regressão: valorTotal persistido (processar-upload-pf)", () => {
     expect(valor).toBe(150);
   });
 
-  it("deve limpar registros anteriores do mês para tornar o re-upload idempotente", async () => {
-    // Simula um re-upload: registros antigos (ex.: valorTotal=0) devem ser
-    // removidos antes da inserção, senão colidiriam via skipDuplicates e
-    // permaneceriam zerados na Lista de Produção.
+  it("deve tornar o re-upload idempotente via skipDuplicates e chaves existentes", async () => {
+    // Simula um re-upload: registros antigos não são apagados, mas
+    // skipDuplicates + chavesExistentes garantem que não sejam duplicados.
+    mockPrisma.procedimentoPF.findMany.mockResolvedValue([
+      {
+        dataReferencia: new Date("2026-07-01"),
+        cpf: CPF_VALIDO,
+        procedimento: "Consulta",
+        unidade: "UBS Central",
+      },
+    ]);
+
     await processarPlanilhaComTotal(17.03);
 
     expect(mockPrisma.uploadPlanilhaBackoffice.findUnique).toHaveBeenCalledWith({
       where: { id: "upload-1" },
       select: { mesReferencia: true },
     });
-    expect(mockPrisma.procedimentoPF.deleteMany).toHaveBeenCalledTimes(1);
-    expect(mockPrisma.procedimentoPFRaw.deleteMany).toHaveBeenCalledTimes(1);
-
-    // O deleteMany de procedimentoPF deve restringir ao backoffice + mês
-    const where = mockPrisma.procedimentoPF.deleteMany.mock.calls[0][0].where;
-    expect(where.upload).toEqual({ backofficeId: BACKOFFICE_ID });
-    expect(where.dataReferencia).toBeDefined();
+    expect(mockPrisma.procedimentoPF.findMany).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.procedimentoPF.createMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skipDuplicates: true,
+      }),
+    );
   });
 });

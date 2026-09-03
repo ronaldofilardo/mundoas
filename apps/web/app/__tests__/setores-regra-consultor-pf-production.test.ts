@@ -54,7 +54,7 @@ describe("Setores de Regras: Consultores no cadastro de Consultor PF", () => {
   });
 
   it("materializa setor legado no POST antes de criar o vínculo", () => {
-    expect(createRouteSource).toContain("prisma.setor.upsert");
+    expect(createRouteSource).toContain("tx.setor.upsert");
     expect(createRouteSource).toContain("backofficeId_nome");
     expect(createRouteSource).toContain("update: { ativo: true }");
   });

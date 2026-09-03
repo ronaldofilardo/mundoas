@@ -76,7 +76,8 @@ describe("GET /api/v1/setores", () => {
       select: {
         itens: {
           where: { tipo: "CUSTOM" },
-          select: { nome: true },
+          select: { nome: true, ordem: true },
+          orderBy: { ordem: "asc" },
         },
       },
     });

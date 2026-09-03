@@ -123,15 +123,15 @@ export async function POST(req: NextRequest) {
   // Bases antigas podem ter o item CUSTOM na regra, mas ainda não ter
   // materializado a linha correspondente em setores. Como os nomes foram
   // validados contra a regra do próprio Backoffice, a materialização é segura.
-  await prisma.$transaction(
-    nomesParaPersistir.map((nome) =>
-      prisma.setor.upsert({
+  await prisma.$transaction(async (tx) => {
+    for (const nome of nomesParaPersistir) {
+      await tx.setor.upsert({
         where: { backofficeId_nome: { backofficeId, nome } },
         create: { backofficeId, nome, ativo: true },
         update: { ativo: true },
-      }),
-    ),
-  );
+      });
+    }
+  });
 
   const setoresEncontrados = await prisma.setor.findMany({
     where: {

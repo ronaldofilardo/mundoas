@@ -124,6 +124,7 @@ describe("API lideranca/consultores-pf — contrato funcional", () => {
       usuario: { create: vi.fn().mockResolvedValue({ id: "usuario-1" }) },
       consultorPf: { create: vi.fn().mockResolvedValue({ id: "consultor-1" }) },
       consultorPfSetor: { createMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      setor: { upsert: vi.fn().mockResolvedValue({}) },
     };
     prismaMock.$transaction.mockImplementation(async (callback) => callback(transactionClient));
 

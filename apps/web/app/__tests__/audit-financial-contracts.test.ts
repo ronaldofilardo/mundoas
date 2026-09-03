@@ -32,7 +32,7 @@ describe("contratos críticos da auditoria", () => {
   });
 
   it("restringe a criação de setores ao Backoffice da liderança autenticada", () => {
-    expect(consultorPfCreateRoute).toContain("backofficeId: lideranca.backofficeId");
+    expect(consultorPfCreateRoute).toContain("const backofficeId = lideranca.backofficeId");
   });
 
   it("usa placeholders neutros no modelo de planilha", () => {

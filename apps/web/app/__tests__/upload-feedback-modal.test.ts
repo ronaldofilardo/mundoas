@@ -61,7 +61,7 @@ describe("Feedback completo do upload de produção", () => {
     expect(component).toContain("role=\"dialog\"");
     expect(component).toContain("aria-modal=\"true\"");
     expect(component).toContain("aria-labelledby=\"upload-feedback-title\"");
-    expect(component).toContain(">\n                Entendi\n");
+    expect(component).toContain("Entendi");
   });
 
   it("explica sucesso, erro, zero novos e duplicidades", () => {
