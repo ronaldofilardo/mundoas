@@ -105,6 +105,7 @@ describe("GET /api/v1/backoffice/equipe/bonus", () => {
     expect(body.gestores).toHaveLength(1);
     expect(body.gestores[0].consultores[0].saldoPontos).toBe(8);
     expect(body.resumo.totalConsultores).toBe(1);
+    expect(body.ciclo).toEqual({ id: "ciclo-vigente", nome: "Ciclo 2026", status: "EM_ANDAMENTO" });
   });
 
   it("usa ciclo informado quando cicloId é enviado", async () => {

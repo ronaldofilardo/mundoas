@@ -26,6 +26,7 @@ type Consultor = {
 };
 
 type Response = {
+  ciclo: { id: string; nome: string; status: string } | null;
   gestores: Gestor[];
   resumo: {
     totalGestores: number;
@@ -185,6 +186,9 @@ export async function GET(req: NextRequest) {
   });
 
   return ok<Response>({
+    ciclo: ciclo
+      ? { id: ciclo.id, nome: ciclo.nome, status: ciclo.status }
+      : null,
     gestores: gestoresResponse,
     resumo: {
       totalGestores: gestoresResponse.length,

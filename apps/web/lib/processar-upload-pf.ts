@@ -5,6 +5,7 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 import { read, utils } from "xlsx";
+import { processarBonusPfPosUpload } from "./bonus-pf-pos-upload";
 
 type PlanilhaCell = string | number | boolean | Date | null;
 
@@ -32,7 +33,12 @@ export async function processarUploadPlanilhaPF(
   uploadId: string,
   file: File,
   backofficeId: string,
-): Promise<void> {
+): Promise<{
+  bonusPfDistribuidos: number;
+  bonusPfIgnorados: number;
+  bonusPfIgnoradosExistente: number;
+  bonusPfErros: number;
+}> {
   try {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
@@ -418,6 +424,8 @@ const [comerciais, consultoresPf, gestores] = await Promise.all([
       }
     }
 
+    const bonusPf = await processarBonusPfPosUpload(uploadId, backofficeId);
+
     await prisma.uploadPlanilhaBackoffice.update({
       where: { id: uploadId },
       data: {
@@ -429,6 +437,8 @@ const [comerciais, consultoresPf, gestores] = await Promise.all([
         orphanedRows,
       },
     });
+
+    return bonusPf;
   } catch (error) {
     console.error("[processarUploadPlanilhaPF] Erro:", error);
     await prisma.uploadPlanilhaBackoffice.update({

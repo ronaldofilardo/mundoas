@@ -136,7 +136,7 @@ export async function requireConsultorPfWithScope() {
   if (!session?.user) {
     return { session: null, consultorPfId: null, backofficeId: null, error: unauthorized() };
   }
-  if (session.user.tipo !== "CONSULTOR") {
+  if (!["CONSULTOR", "CONSULTOR_PF"].includes(session.user.tipo)) {
     return { session: null, consultorPfId: null, backofficeId: null, error: forbidden() };
   }
   const consultor = await prisma.consultorPf.findUnique({

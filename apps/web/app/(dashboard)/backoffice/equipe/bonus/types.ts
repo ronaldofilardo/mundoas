@@ -14,6 +14,7 @@ export interface Gestor {
 }
 
 export interface BonificacaoResponse {
+  ciclo: { id: string; nome: string; status: string } | null;
   gestores: Gestor[];
   resumo: {
     totalGestores: number;

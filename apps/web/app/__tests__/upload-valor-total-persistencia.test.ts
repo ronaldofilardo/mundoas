@@ -27,6 +27,15 @@ vi.mock("@asa/database", () => ({
   prisma: mockPrisma,
 }));
 
+vi.mock("@/lib/bonus-pf-pos-upload", async () => ({
+  processarBonusPfPosUpload: vi.fn().mockResolvedValue({
+    bonusPfDistribuidos: 0,
+    bonusPfIgnorados: 0,
+    bonusPfIgnoradosExistente: 0,
+    bonusPfErros: 0,
+  }),
+}));
+
 const { utils, write } = require("xlsx");
 
 const createMockExcel = (data: any[][], fileName = "test.xlsx"): File => {

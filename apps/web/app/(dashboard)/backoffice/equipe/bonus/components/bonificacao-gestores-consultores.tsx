@@ -111,9 +111,16 @@ export function BonificacaoGestoresConsultores() {
     : data?.gestores ?? [];
 
   const cicloSelecionado = ciclos.find((c) => c.id === filtroCiclo);
+  const cicloVigente = !filtroCiclo ? data?.ciclo : null;
 
   return (
     <div className="space-y-6">
+      {cicloVigente && (
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <p className="text-xs text-gray-500">Ciclo vigente</p>
+          <p className="text-sm font-semibold text-gray-900">{cicloVigente.nome} <span className="text-xs text-gray-500">({cicloVigente.status})</span></p>
+        </div>
+      )}
       <div className="flex flex-wrap items-end gap-4">
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-600">Ciclo</label>
