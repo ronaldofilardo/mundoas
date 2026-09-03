@@ -46,6 +46,7 @@ describe('API - Backoffice Pontos Ranking', () => {
         inicioAcumuloEm: new Date(),
         fimAcumuloEm: new Date(Date.now() + 90 * 86400 * 1000),
         fimResgateEm: new Date(Date.now() + 180 * 86400 * 1000),
+        inicioResgateEm: new Date(),
         status: 'EM_ANDAMENTO',
         periodicidade: 'ANUAL',
       },

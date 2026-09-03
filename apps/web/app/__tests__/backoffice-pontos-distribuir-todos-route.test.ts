@@ -67,6 +67,7 @@ describe('API - Backoffice Pontos Distribuir Todos', () => {
         inicioAcumuloEm: new Date('2026-01-01'),
         fimAcumuloEm: new Date('2026-12-31'),
         fimResgateEm: new Date('2027-06-30'),
+        inicioResgateEm: new Date('2026-01-01'),
         status: 'EM_ANDAMENTO',
         periodicidade: 'ANUAL',
       },
@@ -119,8 +120,8 @@ describe('API - Backoffice Pontos Distribuir Todos', () => {
   });
 
   afterEach(async () => {
-    await prisma.procedimentoPF.deleteMany({ where: { parceiroId } }).catch(() => {});
-    await prisma.movimentacaoPontos.deleteMany({ where: { parceiroId } }).catch(() => {});
+    await prisma.movimentacaoPontos.deleteMany({ where: { cicloPontosId: cicloId } }).catch(() => {});
+    await prisma.procedimentoPF.deleteMany({ where: { uploadId } }).catch(() => {});
     await prisma.uploadPlanilhaBackoffice.deleteMany({ where: { id: uploadId } }).catch(() => {});
     await prisma.parceiro.deleteMany({ where: { id: parceiroId } }).catch(() => {});
     await prisma.cicloPontos.deleteMany({ where: { id: cicloId } }).catch(() => {});

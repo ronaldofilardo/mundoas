@@ -112,10 +112,10 @@ describe('UploadPlanilhaPreview - equivalência com função exportada pelo comp
     expect(source).toMatch(/title:\s*consultorPfNome/);
   });
 
-  it('a função no componente deve retornar "✗" vermelho quando não bate', () => {
-    expect(source).toMatch(/text:\s*"✗"/);
-    expect(source).toMatch(/className:\s*"text-red-600"/);
-    expect(source).toMatch(/title:\s*"Não bate com consultor PF"/);
+  it('a função no componente deve retornar "!" âmbar quando não bate', () => {
+    expect(source).toMatch(/text:\s*"!"/);
+    expect(source).toMatch(/className:\s*"text-amber-600"/);
+    expect(source).toMatch(/title:\s*"Usuário da conta não foi localizado como Consultor PF/);
   });
 });
 

@@ -11,9 +11,9 @@ export default function EquipeBonusPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Bônus</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Bonificação</h1>
         <p className="text-gray-500 text-sm">
-          Ciclos de Bônus do Consultor PF
+          Bônus por gestor e consultor
         </p>
       </div>
 

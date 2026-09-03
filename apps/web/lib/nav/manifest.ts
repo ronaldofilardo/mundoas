@@ -23,7 +23,7 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
         links: [
           { label: "Metas", href: "/backoffice/equipe/metas", icon: "goals" },
           { label: "Comissões", href: "/backoffice/equipe/comissoes", icon: "commissions" },
-          { label: "Bônus", href: "/backoffice/equipe/bonus", icon: "points" },
+          { label: "Bonificação", href: "/backoffice/equipe/bonus", icon: "points" },
           { label: "Cadastro", href: "/backoffice/equipe/cadastro", icon: "users" },
         ],
       },

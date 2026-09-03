@@ -70,8 +70,8 @@ describe("upload-planilha-preview - correções desta conversa", () => {
       expect(SOURCE).not.toMatch(/disabled\s*=\s*\{[^}]*previewData\.summary\.rejeitados\s*>\s*0/);
     });
 
-    it("deve ter disabled = uploading || !mesReferencia || validos === 0", () => {
-      expect(SOURCE).toMatch(/disabled\s*=\s*\{\s*uploading\s*\|\|\s*!mesReferencia\s*\|\|\s*previewData\.summary\.validos\s*===\s*0\s*\}/);
+    it("deve ter disabled = uploading || !mesReferencia || (validos === 0 && resgatados === 0)", () => {
+      expect(SOURCE).toMatch(/disabled\s*=\s*\{\s*uploading\s*\|\|\s*!mesReferencia\s*\|\|\s*\(\s*previewData\.summary\.validos\s*===\s*0\s*&&\s*previewData\.summary\.resgatados\s*===\s*0\s*\)\s*\}/);
     });
   });
 

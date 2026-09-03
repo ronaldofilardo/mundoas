@@ -94,7 +94,7 @@ export function BonusConsultorPf() {
 
   return (
     <div>
-      <h2 className="mb-4 text-xl font-bold text-gray-900">Bônus do Consultor PF</h2>
+      <h2 className="mb-4 text-xl font-bold text-gray-900">Bonificação do Consultor PF</h2>
       <p className="mb-6 text-sm text-gray-600">
         Modalidade adicional à comissão, usando a mesma regra de pontos do Parceiro e carteira separada.
       </p>

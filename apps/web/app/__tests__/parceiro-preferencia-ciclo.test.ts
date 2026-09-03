@@ -111,6 +111,7 @@ describe("Parceiro - Preferência de Ciclo (Periodicidade)", () => {
           inicioAcumuloEm: new Date(),
           fimAcumuloEm: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           fimResgateEm: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+          inicioResgateEm: new Date(),
         },
       });
       cicloId = ciclo.id;
@@ -128,7 +129,7 @@ describe("Parceiro - Preferência de Ciclo (Periodicidade)", () => {
 
     afterAll(async () => {
       await prisma.movimentacaoPontos
-        .deleteMany({ where: { parceiroId } })
+        .deleteMany({ where: { cicloPontosId: cicloId } })
         .catch(() => {});
       await prisma.cicloPontos
         .deleteMany({ where: { id: cicloId } })
@@ -182,6 +183,7 @@ describe("Parceiro - Coexistência de ciclo SEMESTRAL e ANUAL", () => {
         inicioAcumuloEm: new Date("2026-01-01"),
         fimAcumuloEm: new Date("2026-06-30"),
         fimResgateEm: new Date("2026-08-31"),
+        inicioResgateEm: new Date("2026-01-01"),
         status: "EM_ANDAMENTO",
       },
     });
@@ -193,6 +195,7 @@ describe("Parceiro - Coexistência de ciclo SEMESTRAL e ANUAL", () => {
         inicioAcumuloEm: new Date("2027-01-01"),
         fimAcumuloEm: new Date("2027-12-31"),
         fimResgateEm: new Date("2028-02-28"),
+        inicioResgateEm: new Date("2027-01-01"),
         status: "EM_ANDAMENTO",
       },
     });

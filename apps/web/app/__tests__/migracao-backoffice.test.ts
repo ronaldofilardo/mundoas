@@ -249,6 +249,7 @@ describe('Migração BACKOFFICE - Validação do Prisma Client', () => {
         inicioAcumuloEm: new Date(),
         fimAcumuloEm: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         fimResgateEm: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
+        inicioResgateEm: new Date(),
         status: 'EM_ANDAMENTO',
         periodicidade: 'ANUAL',
       },
