@@ -67,6 +67,23 @@ describe("isLinkActive", () => {
   });
 });
 
+describe("manifesto — Consultor", () => {
+  it("não expõe 'Comissões', 'Produtividade' nem 'Dados pessoais'", async () => {
+    const { NAV_PROFILES } = await import("@/lib/nav/manifest");
+    const links = NAV_PROFILES.consultor.groups.flatMap((g) => g.links);
+    const labels = links.map((l) => l.label);
+    expect(labels).not.toContain("Comissões");
+    expect(labels).not.toContain("Produtividade");
+    expect(labels).not.toContain("Dados pessoais");
+    expect(labels).toContain("Bônus");
+  });
+
+  it("home aponta para /consultor/bonus", async () => {
+    const { NAV_PROFILES } = await import("@/lib/nav/manifest");
+    expect(NAV_PROFILES.consultor.home).toBe("/consultor/bonus");
+  });
+});
+
 describe("manifesto — Metas & Produção", () => {
   it("perfil backoffice expõe link 'Metas & Produção' apontando para a aba unificada de metas", async () => {
     const { NAV_PROFILES } = await import("@/lib/nav/manifest");

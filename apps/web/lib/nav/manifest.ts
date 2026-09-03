@@ -123,20 +123,12 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
     id: "consultor",
     label: "Consultor",
     description: "Acesso Saúde",
-    home: "/consultor/comissoes",
+    home: "/consultor/bonus",
     groups: [
       {
         title: "Operação",
         links: [
-          { label: "Comissões", href: "/consultor/comissoes", icon: "commissions" },
-          { label: "Produtividade", href: "/consultor/produtividade", icon: "productivity" },
           { label: "Bônus", href: "/consultor/bonus", icon: "points" },
-        ],
-      },
-      {
-        title: "Conta",
-        links: [
-          { label: "Dados pessoais", href: "/consultor/dados-pessoais", icon: "profile" },
         ],
       },
     ],
