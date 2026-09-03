@@ -235,7 +235,7 @@ export function UploadPlanilhaPreview({
       return;
     }
 
-    if (previewData.summary.validos === 0) {
+    if (previewData.summary.validos === 0 && previewData.summary.resgatados === 0) {
       abrirFeedback({
         tone: "warning",
         title: "Nenhuma linha válida para enviar",

@@ -86,9 +86,13 @@ describe("upload-planilha-preview - correções desta conversa", () => {
       expect(SOURCE).toMatch(/return;/);
     });
 
-    it("handleUpload deve bloquear com toast quando validos === 0", () => {
-      expect(SOURCE).toMatch(/if\s*\(\s*previewData\.summary\.validos\s*===\s*0\s*\)\s*\{/);
+    it("handleUpload deve bloquear com toast quando validos === 0 E resgatados === 0", () => {
+      expect(SOURCE).toMatch(/if\s*\(\s*previewData\.summary\.validos\s*===\s*0\s*&&\s*previewData\.summary\.resgatados\s*===\s*0\s*\)\s*\{/);
       expect(SOURCE).toMatch(/Nenhuma linha válida para enviar/);
+    });
+
+    it("deve permitir upload quando validos === 0 mas resgatados > 0", () => {
+      expect(SOURCE).not.toMatch(/if\s*\(\s*previewData\.summary\.validos\s*===\s*0\s*\)\s*\{/);
     });
 
     it("executarUpload deve ser função separada chamada após confirmação", () => {
