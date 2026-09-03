@@ -164,6 +164,7 @@ export const NAV_PROFILES: Record<string, NavProfile> = {
           { label: "Visão geral", href: "/lideranca", icon: "dashboard" },
           { label: "Produção", href: "/lideranca/consultores-pf/producao", icon: "production" },
           { label: "Metas & Produção", href: "/lideranca/metas", icon: "goals" },
+          { label: "Bonificação", href: "/lideranca/bonificacao", icon: "points" },
         ],
       },
     ],
