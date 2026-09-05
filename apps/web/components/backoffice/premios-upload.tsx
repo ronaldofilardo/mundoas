@@ -362,14 +362,14 @@ export function PremiosUpload({
       </div>
 
       {loading && (
-        <div className="flex items-center justify-center py-12">
+        <div className="lg:col-span-2 flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
           <span className="ml-3 text-gray-600">Processando planilha...</span>
         </div>
       )}
 
       {preview && !loading && summary && (
-        <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-gray-900">Preview do upload</h3>
             <span className="text-xs text-gray-500">
