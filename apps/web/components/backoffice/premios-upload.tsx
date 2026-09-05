@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 import {
   criarFeedbackResultado,
   mensagemUploadAmigavel,
@@ -229,28 +230,28 @@ export function PremiosUpload({
       ["PDT001", "PRODUTO", 200, 30, "Cafeteira Inox de 0,75L - Oster"],
     ];
 
-    const csvContent = [
-      headers.join(","),
-      ...exampleRows.map((row) =>
-        row
-          .map((cell) => {
-            const value = String(cell);
-            if (value.includes(",") || value.includes('"')) {
-              return `"${value.replace(/"/g, '""')}"`;
-            }
-            return value;
-          })
-          .join(","),
-      ),
-    ].join("\n");
+    const worksheet = [headers, ...exampleRows];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(worksheet);
 
-    const blob = new Blob(["\uFEFF" + csvContent], {
-      type: "text/csv;charset=utf-8;",
+    ws["!cols"] = [
+      { wch: 14 },
+      { wch: 14 },
+      { wch: 12 },
+      { wch: 10 },
+      { wch: 50 },
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Prêmios");
+
+    const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "modelo-premios.csv";
+    link.download = "modelo-premios.xlsx";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
