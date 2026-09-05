@@ -91,7 +91,13 @@ export function PremiosUpload({
         throw new Error(errMsg);
       }
 
-      const data = await res.json();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error("Resposta inválida do servidor (status " + res.status + ")");
+      }
+
       setPreview(data.previewRows ?? []);
       setSummary({
         totalRows: data.totalRows ?? 0,
