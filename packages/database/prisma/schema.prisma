@@ -91,6 +91,7 @@ model Backoffice {
   telefone                  String?              @db.VarChar(20)
   percentualComissaoDefault Decimal              @default(5.00) @map("percentual_comissao_default") @db.Decimal(5, 2)
   percentualComissaoMax     Decimal              @default(100.00) @map("percentual_comissao_max") @db.Decimal(5, 2)
+  catalogoUrl               String?              @map("catalogo_url")
   createdAt                 DateTime             @default(now()) @map("created_at")
   updatedAt                 DateTime             @updatedAt @map("updated_at")
   assinatura                Assinatura?

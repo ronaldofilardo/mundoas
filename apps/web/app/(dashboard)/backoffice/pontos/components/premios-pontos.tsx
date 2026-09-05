@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PremiosUpload } from "@/components/backoffice/premios-upload";
 
 interface Premio {
   id: string;
@@ -28,6 +29,7 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const limparFormulario = () => {
     setCodigo("");
@@ -113,12 +115,19 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
     }
   };
 
+  const handleUploadSuccess = () => {
+    setReloadKey((prev) => prev + 1);
+    window.location.reload();
+  };
+
   return (
     <section aria-labelledby="premios-title" className="space-y-6">
       <div>
         <h2 id="premios-title" className="text-2xl font-bold text-gray-900">Prêmios</h2>
         <p className="mt-1 text-sm text-gray-500">Cadastre os prêmios disponíveis para troca de pontos.</p>
       </div>
+
+      <PremiosUpload onSuccess={handleUploadSuccess} />
 
       <form onSubmit={handleSubmit} className="rounded-xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
         <div className="mb-5 flex items-center justify-between gap-3">

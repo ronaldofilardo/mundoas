@@ -30,6 +30,7 @@ type Carteira = {
 export default function BonusConsultorPfPage() {
   const [carteira, setCarteira] = useState<Carteira | null>(null);
   const [premios, setPremios] = useState<Premio[]>([]);
+  const [catalogoUrl, setCatalogoUrl] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -51,8 +52,11 @@ export default function BonusConsultorPfPage() {
         throw new Error(body.error ?? "Falha ao carregar prêmios");
       }
 
-      setCarteira(await carteiraResponse.json());
-      setPremios((await premiosResponse.json()).premios ?? []);
+      const carteiraJson = await carteiraResponse.json();
+      const premiosJson = await premiosResponse.json();
+      setCarteira(carteiraJson);
+      setPremios(premiosJson.premios ?? []);
+      setCatalogoUrl(premiosJson.catalogoUrl ?? null);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Erro ao carregar bônus";
       setError(msg);
@@ -167,10 +171,27 @@ export default function BonusConsultorPfPage() {
 
       <div className="space-y-6">
         <div>
-          <h2 className="mb-3 text-lg font-semibold text-gray-900">
-            Catálogo de prêmios
-          </h2>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="mb-1 text-lg font-semibold text-gray-900">
+                Catálogo de prêmios
+              </h2>
+              <p className="text-xs text-gray-500">
+                Consulte as opções disponíveis para resgate.
+              </p>
+            </div>
+            {catalogoUrl && (
+              <a
+                href={catalogoUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-700"
+              >
+                Abrir catálogo externo
+              </a>
+            )}
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
             {premios.map((premio) => (
               <article
                 key={premio.id}
