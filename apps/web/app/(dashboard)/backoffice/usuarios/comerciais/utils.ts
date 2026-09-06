@@ -12,3 +12,13 @@ export function formatBRL(v: string | number) {
     minimumFractionDigits: 2,
   }).format(typeof v === "string" ? parseFloat(v) : v);
 }
+
+export function formatarMoeda(valor: string): string {
+  const numeros = valor.replace(/\D/g, "");
+  const numero = Number(numeros) / 100;
+  return numero.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+export function parseMoeda(valor: string): string {
+  return valor.replace(/\./g, "").replace(",", ".");
+}

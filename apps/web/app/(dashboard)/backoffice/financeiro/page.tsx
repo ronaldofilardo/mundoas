@@ -15,6 +15,8 @@ interface Fatura {
 interface AssinaturaData {
   semAssinatura: boolean;
   statusAssinatura?: "ATIVA" | "INADIMPLENTE" | "BLOQUEADA_MANUAL" | "CORTESIA" | "CANCELADA";
+  planoAssinatura?: "MENSAL" | "ANUAL" | null;
+  metodoPagamento?: "PIX" | "BOLETO" | "CREDITO" | null;
   motivoBloqueio?: string;
   cortesiaExpiraEm?: string | null;
   faturas?: Fatura[];
@@ -34,6 +36,17 @@ const STATUS_COLOR: Record<string, string> = {
   BLOQUEADA_MANUAL: "bg-neutral-200 text-neutral-800",
   CORTESIA: "bg-blue-100 text-blue-800",
   CANCELADA: "bg-neutral-200 text-neutral-600",
+};
+
+const PLANO_LABEL: Record<string, string> = {
+  MENSAL: "Mensal",
+  ANUAL: "Anual",
+};
+
+const PAGAMENTO_LABEL: Record<string, string> = {
+  PIX: "PIX",
+  BOLETO: "Boleto",
+  CREDITO: "Cartão de crédito",
 };
 
 function formatarMoeda(valor: number) {
@@ -107,6 +120,21 @@ export default function BackofficeFinanceiroPage() {
             {STATUS_LABEL[status]}
           </span>
         </div>
+
+        {(data.planoAssinatura || data.metodoPagamento) && (
+          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
+            {data.planoAssinatura && (
+              <span className="px-2 py-1 rounded bg-gray-100">
+                Plano: {PLANO_LABEL[data.planoAssinatura]}
+              </span>
+            )}
+            {data.metodoPagamento && (
+              <span className="px-2 py-1 rounded bg-gray-100">
+                Pagamento: {PAGAMENTO_LABEL[data.metodoPagamento]}
+              </span>
+            )}
+          </div>
+        )}
 
         {status === "BLOQUEADA_MANUAL" && data.motivoBloqueio && (
           <div className="text-xs text-red-600 border-l-2 border-red-300 pl-3">

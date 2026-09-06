@@ -64,6 +64,7 @@ describe("API backoffice/assinatura — contrato funcional", () => {
     authenticate();
     prismaMock.assinatura.findUnique.mockResolvedValue({
       statusAssinatura: "BLOQUEADA_MANUAL",
+      planoAssinatura: "MENSAL",
       motivoBloqueio: "Pendência",
       cortesiaExpiraEm: null,
       faturas: [
@@ -72,6 +73,7 @@ describe("API backoffice/assinatura — contrato funcional", () => {
           valor: 150,
           vencimento: new Date("2026-09-01"),
           statusPagamento: "PENDING",
+          formaPagamento: "PIX",
           pagoManualmente: false,
           pagoEm: null,
           asaasPaymentId: "interno-nao-expor",
@@ -84,6 +86,8 @@ describe("API backoffice/assinatura — contrato funcional", () => {
     const body = (await response.json()) as {
       semAssinatura: boolean;
       statusAssinatura: string;
+      planoAssinatura: string | null;
+      metodoPagamento: string | null;
       motivoBloqueio: string;
       faturas: Array<Record<string, unknown>>;
     };
@@ -91,6 +95,8 @@ describe("API backoffice/assinatura — contrato funcional", () => {
     expect(response.status).toBe(200);
     expect(body.semAssinatura).toBe(false);
     expect(body.statusAssinatura).toBe("BLOQUEADA_MANUAL");
+    expect(body.planoAssinatura).toBe("MENSAL");
+    expect(body.metodoPagamento).toBe("PIX");
     expect(body.motivoBloqueio).toBe("Pendência");
     expect(body.faturas[0]).toEqual(
       expect.objectContaining({ id: "fatura-1", pago: false, statusPagamento: "PENDING" }),

@@ -347,7 +347,6 @@ export default function PrimeiroAcessoPage() {
           <p className="mb-6 text-gray-600" role="alert">{errorModal}</p>
           <button
             type="button"
-            autoFocus
             onClick={() => setErrorModal(null)}
             className="w-full rounded-xl bg-primary-600 py-3 text-sm font-bold text-white shadow-sm transition-smooth hover:bg-primary-700 focus-ring"
           >

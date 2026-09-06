@@ -14,13 +14,23 @@ vi.mock("@/lib/api-helpers", () => ({
   ok: (data: unknown) => Response.json(data),
 }));
 
-vi.mock("@asa/database", () => ({
-  prisma: {
-    assinatura: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
-    faturaAsaas: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn() },
-    $transaction: vi.fn(),
-  },
-}));
+vi.mock("@asa/database", () => {
+  const faturaCreate = vi.fn();
+  const assinaturaUpdate = vi.fn();
+
+  const tx = {
+    faturaAsaas: { create: faturaCreate },
+    assinatura: { update: assinaturaUpdate },
+  };
+
+  return {
+    prisma: {
+      assinatura: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
+      faturaAsaas: { findUnique: vi.fn(), findMany: vi.fn(), create: faturaCreate },
+      $transaction: vi.fn(async (cb: (client: typeof tx) => Promise<unknown>) => cb(tx)),
+    },
+  };
+});
 
 vi.mock("@/lib/audit", () => ({ criarAuditLog: vi.fn().mockResolvedValue(undefined) }));
 

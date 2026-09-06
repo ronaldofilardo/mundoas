@@ -83,7 +83,11 @@ export function BonusConsultorPf() {
     const body = await response.json().catch(() => ({}));
     const resultado = response.ok ? `${body.pontosResetados ?? 0} pontos resetados com sucesso.` : body.error ?? "Não foi possível resetar os pontos.";
     setMensagem(resultado);
-    response.ok ? toast.success(resultado) : toast.error(resultado);
+    if (response.ok) {
+      toast.success(resultado);
+    } else {
+      toast.error(resultado);
+    }
     setResetando(false);
   }
 

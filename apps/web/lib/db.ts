@@ -48,12 +48,13 @@ function loadPrisma(): PrismaModule {
   try {
     mod = requireFromMonorepo("@prisma/client") as PrismaModule;
     resolvedPath = requireFromMonorepo.resolve("@prisma/client");
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const err = e as { message?: string; stack?: string };
     console.error(
       "[db.ts] Erro real ao resolver @prisma/client:",
-      e.message || e,
+      err.message || err,
     );
-    console.error("[db.ts] Erro stack:", e.stack);
+    console.error("[db.ts] Erro stack:", err.stack);
     throw e; // Lançar o erro original para ver o que é
   }
 

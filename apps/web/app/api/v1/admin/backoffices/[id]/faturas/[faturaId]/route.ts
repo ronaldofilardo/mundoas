@@ -38,13 +38,17 @@ export async function PATCH(
         },
       });
 
-      // Se marcou como paga e a unidade estava inadimplente por essa fatura,
-      // volta pra ATIVA (sem sobrescrever bloqueio manual nem cortesia).
+      // Baixa manual dá acesso tanto na ativação inicial (onboarding sem
+      // passar pelo Asaas) quanto na regularização de quem ficou
+      // inadimplente numa mensalidade.
       if (pago) {
         const assinatura = await tx.assinatura.findUnique({
           where: { id: fatura.assinaturaId },
         });
-        if (assinatura?.statusAssinatura === "INADIMPLENTE") {
+        if (
+          assinatura &&
+          ["PENDENTE_PAGAMENTO", "INADIMPLENTE"].includes(assinatura.statusAssinatura)
+        ) {
           await tx.assinatura.update({
             where: { id: fatura.assinaturaId },
             data: { statusAssinatura: "ATIVA" },

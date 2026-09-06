@@ -92,16 +92,20 @@ export function NovoConsultorPfModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="novo-consultor-pf-modal-title"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget && !loading) onClose();
-      }}
-    >
-      <div className="w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div
+        className="absolute inset-0"
+        aria-hidden="true"
+        onMouseDown={(event) => {
+          if (event.target === event.currentTarget && !loading) onClose();
+        }}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="novo-consultor-pf-modal-title"
+        className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
+      >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h2 id="novo-consultor-pf-modal-title" className="text-xl font-semibold text-gray-900">

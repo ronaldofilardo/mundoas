@@ -2,6 +2,8 @@
 // Mantido separado do vitest.config.ts para que o Next.js não faça
 // type-check deste código durante o build.
 
+import 'vitest';
+import '@testing-library/jest-dom/vitest';
 import path from "node:path";
 import dotenv from "dotenv";
 

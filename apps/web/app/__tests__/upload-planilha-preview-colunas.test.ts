@@ -120,11 +120,11 @@ describe('UploadPlanilhaPreview - equivalência com função exportada pelo comp
 });
 
 describe('UploadPlanilhaPreview - estrutura da tabela de preview', () => {
-  const componentPath = join(
+  const tablePath = join(
     __dirname,
-    '../../components/backoffice/upload-planilha-preview.tsx',
+    '../../components/backoffice/upload-planilha-preview.preview-table.tsx',
   );
-  const source = readFileSync(componentPath, 'utf-8');
+  const source = readFileSync(tablePath, 'utf-8');
 
   function extractTableSection(content: string): string {
     const start = content.indexOf('<thead className="bg-gray-50 sticky top-0">');

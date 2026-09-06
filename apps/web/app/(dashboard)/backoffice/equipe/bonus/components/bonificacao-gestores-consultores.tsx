@@ -146,8 +146,9 @@ export function BonificacaoGestoresConsultores() {
       )}
       <div className="flex flex-wrap items-end gap-4">
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Ciclo</label>
+          <label htmlFor="filtro-ciclo" className="mb-1 block text-xs font-medium text-gray-600">Ciclo</label>
           <select
+            id="filtro-ciclo"
             value={filtroCiclo}
             onChange={(e) => setFiltroCiclo(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -161,8 +162,9 @@ export function BonificacaoGestoresConsultores() {
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Gestor</label>
+          <label htmlFor="filtro-gestor" className="mb-1 block text-xs font-medium text-gray-600">Gestor</label>
           <select
+            id="filtro-gestor"
             value={filtroGestor}
             onChange={(e) => setFiltroGestor(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -176,12 +178,12 @@ export function BonificacaoGestoresConsultores() {
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Início</label>
-          <input type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+          <label htmlFor="filtro-inicio" className="mb-1 block text-xs font-medium text-gray-600">Início</label>
+          <input id="filtro-inicio" type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Fim</label>
-          <input type="date" value={fim} onChange={(e) => setFim(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+          <label htmlFor="filtro-fim" className="mb-1 block text-xs font-medium text-gray-600">Fim</label>
+          <input id="filtro-fim" type="date" value={fim} onChange={(e) => setFim(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />
         </div>
       </div>
 

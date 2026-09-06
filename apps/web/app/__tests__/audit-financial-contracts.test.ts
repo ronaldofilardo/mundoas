@@ -9,7 +9,7 @@ const uploadProcessor = readFileSync(
 const consultorUpload = readFileSync(
   join(
     __dirname,
-    "../(dashboard)/lideranca/equipe/consultores-pf/_components/upload-planilha-consultores-pf.tsx",
+    "../(dashboard)/lideranca/equipe/consultores-pf/hooks/use-upload-consultores-pf.ts",
   ),
   "utf8",
 );

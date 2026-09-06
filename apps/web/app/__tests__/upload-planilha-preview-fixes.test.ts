@@ -3,10 +3,35 @@ import fs from "fs";
 import path from "path";
 
 const COMPONENT_PATH = path.join(
-  process.cwd(),
-  "components/backoffice/upload-planilha-preview.tsx"
+  __dirname,
+  "../../components/backoffice/upload-planilha-preview.tsx"
+);
+const UPLOAD_PATH = path.join(
+  __dirname,
+  "../../components/backoffice/upload-planilha-preview.upload.ts"
+);
+const HANDLERS_PATH = path.join(
+  __dirname,
+  "../../components/backoffice/upload-planilha-preview.handlers.ts"
+);
+const MODALS_PATH = path.join(
+  __dirname,
+  "../../components/backoffice/upload-planilha-preview.modals.tsx"
+);
+const ACTIONS_PATH = path.join(
+  __dirname,
+  "../../components/backoffice/upload-planilha-preview.actions.tsx"
+);
+const TABLE_PATH = path.join(
+  __dirname,
+  "../../components/backoffice/upload-planilha-preview.preview-table.tsx"
 );
 const SOURCE = fs.readFileSync(COMPONENT_PATH, "utf-8");
+const UPLOAD_SOURCE = fs.readFileSync(UPLOAD_PATH, "utf-8");
+const HANDLERS_SOURCE = fs.readFileSync(HANDLERS_PATH, "utf-8");
+const MODALS_SOURCE = fs.readFileSync(MODALS_PATH, "utf-8");
+const ACTIONS_SOURCE = fs.readFileSync(ACTIONS_PATH, "utf-8");
+const TABLE_SOURCE = fs.readFileSync(TABLE_PATH, "utf-8");
 
 describe("upload-planilha-preview - correções desta conversa", () => {
   describe("auto-detecção de mesReferencia (linha ~140)", () => {
@@ -67,11 +92,11 @@ describe("upload-planilha-preview - correções desta conversa", () => {
 
   describe("regra de habilitação do botão Confirmar Upload", () => {
     it("não deve ter 'rejeitados > 0' na condição disabled", () => {
-      expect(SOURCE).not.toMatch(/disabled\s*=\s*\{[^}]*previewData\.summary\.rejeitados\s*>\s*0/);
+      expect(ACTIONS_SOURCE).not.toMatch(/disabled\s*=\s*\{[^}]*previewData\.summary\.rejeitados\s*>\s*0/);
     });
 
     it("deve ter disabled = uploading || !mesReferencia || (validos === 0 && resgatados === 0)", () => {
-      expect(SOURCE).toMatch(/disabled\s*=\s*\{\s*uploading\s*\|\|\s*!mesReferencia\s*\|\|\s*\(\s*previewData\.summary\.validos\s*===\s*0\s*&&\s*previewData\.summary\.resgatados\s*===\s*0\s*\)\s*\}/);
+      expect(ACTIONS_SOURCE).toMatch(/disabled\s*=\s*\{\s*uploading\s*\|\|\s*!mesReferencia\s*\|\|\s*\(\s*validos\s*===\s*0\s*&&\s*resgatados\s*===\s*0\s*\)\s*\}/);
     });
   });
 
@@ -96,37 +121,38 @@ describe("upload-planilha-preview - correções desta conversa", () => {
     });
 
     it("executarUpload deve ser função separada chamada após confirmação", () => {
-      expect(SOURCE).toMatch(/const\s+executarUpload\s*=\s*async\s*\(\)\s*=>\s*\{/);
-      expect(SOURCE).toMatch(/await\s+executarUpload\(\)/);
+      expect(UPLOAD_SOURCE).toMatch(/export\s+async\s+function\s+executarUpload/);
+      expect(SOURCE).toMatch(/await\s+executarUpload\(/);
     });
   });
 
   describe("a11y do modal - backdrop como botão", () => {
     it("modal backdrop deve ser <button> não <div> com onClick", () => {
-      expect(SOURCE).toMatch(/<button[^>]*type="button"[^>]*aria-label="Fechar modal"[^>]*onClick/);
-      expect(SOURCE).not.toMatch(/<div[^>]*role="dialog"[^>]*onClick/);
+      expect(MODALS_SOURCE).toMatch(/<button[^>]*type="button"[^>]*aria-label="Fechar modal"[^>]*onClick/);
+      expect(MODALS_SOURCE).not.toMatch(/<div[^>]*role="dialog"[^>]*onClick/);
     });
 
     it("modal content deve ter role=dialog e aria-modal=true", () => {
-      expect(SOURCE).toMatch(/<div[^>]*role="dialog"[^>]*aria-modal="true"/);
+      expect(MODALS_SOURCE).toMatch(/<div[^>]*role="dialog"[^>]*aria-modal="true"/);
     });
 
     it("botão de fechar deve ter disabled={uploading}", () => {
-      expect(SOURCE).toMatch(/<button[^>]*onClick\s*=\s*\{[^}]*setConfirmOpen\(false\)[^}]*\}\s*disabled\s*=\s*\{uploading\}/);
+      expect(MODALS_SOURCE).toMatch(/<button[^>]*onClick\s*=\s*\{[\s\S]*?onCancel\(\)[\s\S]*?\}\s*disabled\s*=\s*\{uploading\}/);
     });
 
     it("botão de confirmar deve chamar executarUpload e fechar modal", () => {
-      expect(SOURCE).toMatch(/onClick\s*=\s*\{\s*async\s*\(\)\s*=>\s*\{\s*setConfirmOpen\(false\);\s*await\s+executarUpload\(\);\s*\}\s*\}/);
+      expect(SOURCE).toMatch(/onConfirm=\{\s*async\s*\(\)\s*=>\s*\{\s*setConfirmOpen\(false\);\s*await\s+executarUpload/);
     });
   });
 
   describe("aviso visual atualizado", () => {
     it("deve mostrar mensagem que rejeições serão ignoradas", () => {
-      expect(SOURCE).toMatch(/Apenas as linhas válidas serão processadas; as[\s\S]*?rejeitadas serão ignoradas/);
+      expect(MODALS_SOURCE).toMatch(/Apenas as linhas válidas serão processadas; as[\s\S]*?rejeitadas serão ignoradas/);
     });
 
     it("não deve mais dizer 'Corrija os erros na planilha antes de confirmar o upload'", () => {
       expect(SOURCE).not.toMatch(/Corrija os erros na planilha antes de confirmar o upload/);
+      expect(MODALS_SOURCE).not.toMatch(/Corrija os erros na planilha antes de confirmar o upload/);
     });
   });
 });

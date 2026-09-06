@@ -28,7 +28,32 @@ const componentPath = join(
   __dirname,
   "../../components/backoffice/upload-planilha-preview.tsx",
 );
+const uploadPath = join(
+  __dirname,
+  "../../components/backoffice/upload-planilha-preview.upload.ts",
+);
+const handlersPath = join(
+  __dirname,
+  "../../components/backoffice/upload-planilha-preview.handlers.ts",
+);
+const modalsPath = join(
+  __dirname,
+  "../../components/backoffice/upload-planilha-preview.modals.tsx",
+);
+const actionsPath = join(
+  __dirname,
+  "../../components/backoffice/upload-planilha-preview.actions.tsx",
+);
+const tablePath = join(
+  __dirname,
+  "../../components/backoffice/upload-planilha-preview.preview-table.tsx",
+);
 const source = readFileSync(componentPath, "utf-8");
+const uploadSource = readFileSync(uploadPath, "utf-8");
+const handlersSource = readFileSync(handlersPath, "utf-8");
+const modalsSource = readFileSync(modalsPath, "utf-8");
+const actionsSource = readFileSync(actionsPath, "utf-8");
+const tableSource = readFileSync(tablePath, "utf-8");
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* 1. Auto-detecção de mesReferencia (fallback para qualquer linha com data)  */
@@ -91,9 +116,8 @@ describe("UploadPlanilhaPreview — auto-detecção de mesReferencia (fallback)"
   });
 
   it("o componente deve usar regex /^\\d{4}-\\d{2}/ (aceita qualquer status)", () => {
-    expect(source).toMatch(/\/\^\\d\{4\}-\\d\{2\}\//);
-    // Não deve mais restringir a busca a status === "VALIDO"
-    expect(source).not.toMatch(
+    expect(handlersSource).toMatch(/\/\^\\d\{4\}-\\d\{2\}\//);
+    expect(handlersSource).not.toMatch(
       /previewRows\.find\(\s*\([^)]*r\.status\s*===\s*["']VALIDO["']/,
     );
   });
@@ -148,20 +172,11 @@ describe("UploadPlanilhaPreview — regra de habilitação do botão", () => {
   });
 
   it("o componente NÃO deve mais usar 'rejeitados > 0' no disabled do botão", () => {
-    // Procura o atributo disabled do botão "Confirmar Upload" e garante que
-    // ele não referencie summary.rejeitados.
-    const buttonMatch = source.match(
-      /disabled=\{[^}]*previewData\.summary\.validos[^}]*\}/,
-    );
-    expect(buttonMatch).not.toBeNull();
-    expect(buttonMatch?.[0]).not.toContain("rejeitados");
+    expect(actionsSource).not.toMatch(/disabled=\s*\{[^}]*rejeitados\s*>\s*0[^}]*\}/);
   });
 
   it("o componente deve referenciar validos === 0 no disabled", () => {
-    // O disabled do Confirmar Upload é multilinha; pega o bloco inteiro
-    // entre "onClick={handleUpload}" e a className do botão.
-    const m = source.match(/onClick=\{handleUpload\}([\s\S]*?)className="flex-1/);
-    expect(m?.[1]).toMatch(/validos\s*===\s*0/);
+    expect(actionsSource).toMatch(/validos\s*===\s*0/);
   });
 });
 
@@ -228,14 +243,13 @@ describe("UploadPlanilhaPreview — modal de confirmação e bloqueio", () => {
   });
 
   it("o componente deve ter função executarUpload separada de handleUpload", () => {
-    expect(source).toMatch(/const\s+executarUpload\s*=\s*async/);
+    expect(uploadSource).toMatch(/export\s+async\s+function\s+executarUpload/);
     expect(source).toMatch(/const\s+handleUpload\s*=\s*async/);
-    // handleUpload chama executarUpload (envio direto) e seta confirmOpen (modal)
-    expect(source).toMatch(/await\s+executarUpload\(\)/);
+    expect(source).toMatch(/await\s+executarUpload\(/);
   });
 
   it("o botão do modal deve chamar executarUpload ao confirmar", () => {
-    expect(source).toMatch(/setConfirmOpen\(false\);\s*await\s+executarUpload\(\)/);
+    expect(source).toMatch(/setConfirmOpen\(false\);\s*await\s+executarUpload/);
   });
 });
 
@@ -245,15 +259,15 @@ describe("UploadPlanilhaPreview — modal de confirmação e bloqueio", () => {
 
 describe("UploadPlanilhaPreview — backdrop do modal (a11y)", () => {
   function extractModalSection(content: string): string {
-    const start = content.indexOf("{/* Modal de confirmação");
-    if (start === -1) return "";
-    // Pega do início do comentário até o fechamento do bloco condicional
-    // ({confirmOpen && ... }). Vamos pegar uma janela grande e garantir que
-    // inclui role="dialog" e aria-modal.
-    return content.substring(start, start + 2500);
+    const firstIdx = content.indexOf('role="presentation"');
+    const secondIdx = content.indexOf('role="presentation"', firstIdx + 1);
+    const roleIdx = secondIdx !== -1 ? secondIdx : firstIdx;
+    if (roleIdx === -1) return "";
+    const divStart = content.lastIndexOf("<div", roleIdx);
+    return content.substring(divStart, divStart + 3000);
   }
 
-  const modal = extractModalSection(source);
+  const modal = extractModalSection(modalsSource);
 
   it("modal deve existir no componente", () => {
     expect(modal.length).toBeGreaterThan(0);
@@ -277,13 +291,11 @@ describe("UploadPlanilhaPreview — backdrop do modal (a11y)", () => {
     expect(modal).toContain("tabIndex={-1}");
   });
 
-  it("o container externo NÃO deve ter onClick (delegação para o <button>)", () => {
-    // O div mais externo (fixed inset-0) deve usar role="presentation" e
-    // não ter onClick.
-    const openingDiv = modal.match(/<div[\s\S]*?role="presentation"[\s\S]*?>/);
-    expect(openingDiv).not.toBeNull();
-    expect(openingDiv?.[0]).not.toContain("onClick");
-  });
+    it("o container externo NÃO deve ter onClick (delegação para o <button>)", () => {
+      const openingDiv = modal.match(/<div[^>]*role="presentation"[^>]*>/);
+      expect(openingDiv).not.toBeNull();
+      expect(openingDiv?.[0]).not.toContain("onClick");
+    });
 
   it("o diálogo interno deve ter role=\"dialog\" e aria-modal=\"true\"", () => {
     expect(modal).toContain('role="dialog"');
@@ -316,18 +328,18 @@ describe("UploadPlanilhaPreview — backdrop do modal (a11y)", () => {
 
 describe("UploadPlanilhaPreview — duplicidades e vínculo PF informativo", () => {
   it("expõe a classificação DUPLICADA no contrato do preview", () => {
-    expect(source).toContain('"DUPLICADA"');
-    expect(source).toContain("summary.duplicadas");
-    expect(source).toContain("criarFeedbackDuplicidadesPreview");
+    expect(handlersSource).toMatch(/duplicadas\s*>\s*0/);
+    expect(handlersSource).toMatch(/summary\?\.duplicadas/);
+    expect(tableSource).toContain('"DUPLICADA"');
   });
 
   it("abre feedback quando o preview detecta produção repetida", () => {
-    expect(source).toMatch(/const\s+duplicadas\s*=\s*data\.summary\?\.duplicadas\s*\?\?\s*0/);
-    expect(source).toMatch(/if\s*\(duplicadas\s*>\s*0\)/);
+    expect(handlersSource).toMatch(/const\s+duplicadas\s*=\s*data\.summary\?\.duplicadas\s*\?\?\s*0/);
+    expect(handlersSource).toMatch(/if\s*\(duplicadas\s*>\s*0\)/);
   });
 
   it("não trata Consultor PF ausente como rejeição de uma produção válida", () => {
     expect(source).toContain("a produção será importada sem vínculo PF");
-    expect(source).toContain("Sem vínculo PF; será importada sem Consultor PF.");
+    expect(tableSource).toContain("Sem vínculo PF; será importada sem Consultor PF.");
   });
 });

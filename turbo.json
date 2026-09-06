@@ -6,7 +6,10 @@
     "NEXTAUTH_SECRET",
     "NEXTAUTH_URL",
     "AUTH_SECRET",
-    "NODE_ENV"
+    "NODE_ENV",
+    "ASAAS_API_KEY",
+    "ASAAS_SANDBOX",
+    "ASAAS_WEBHOOK_TOKEN"
   ],
   "tasks": {
     "build": {

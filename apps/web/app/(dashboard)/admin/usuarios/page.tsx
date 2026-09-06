@@ -52,7 +52,10 @@ export default function UsuariosPage() {
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteInfo, setDeleteInfo] = useState<any>(null);
+  const [deleteInfo, setDeleteInfo] = useState<{
+    usuario: Usuario;
+    info: { comissoesCount: number };
+  } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -425,10 +428,11 @@ export default function UsuariosPage() {
             <div className="space-y-4 py-2">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label htmlFor="edit-nome" className="block text-xs font-medium text-gray-700 mb-1">
                     Nome
                   </label>
                   <Input
+                    id="edit-nome"
                     value={editForm.nome}
                     onChange={(e) =>
                       setEditForm({ ...editForm, nome: e.target.value })
@@ -436,10 +440,11 @@ export default function UsuariosPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label htmlFor="edit-email" className="block text-xs font-medium text-gray-700 mb-1">
                     Email
                   </label>
                   <Input
+                    id="edit-email"
                     type="email"
                     value={editForm.email}
                     onChange={(e) =>
@@ -451,10 +456,11 @@ export default function UsuariosPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label htmlFor="edit-telefone" className="block text-xs font-medium text-gray-700 mb-1">
                     Telefone
                   </label>
                   <Input
+                    id="edit-telefone"
                     value={editForm.telefone}
                     onChange={(e) =>
                       setEditForm({ ...editForm, telefone: e.target.value })
@@ -463,10 +469,10 @@ export default function UsuariosPage() {
                 </div>
                 {editUsuario.tipo === "BACKOFFICE" && (
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label htmlFor="edit-cpf" className="block text-xs font-medium text-gray-700 mb-1">
                       CPF
                     </label>
-                    <Input value={editUsuario.cpf || ""} disabled />
+                    <Input id="edit-cpf" value={editUsuario.cpf || ""} disabled />
                   </div>
                 )}
               </div>
@@ -479,10 +485,11 @@ export default function UsuariosPage() {
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label htmlFor="edit-razao-social" className="block text-xs font-medium text-gray-700 mb-1">
                           Razão Social
                         </label>
                         <Input
+                          id="edit-razao-social"
                           value={editForm.razaoSocial}
                           onChange={(e) =>
                             setEditForm({
@@ -493,10 +500,11 @@ export default function UsuariosPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label htmlFor="edit-cnpj" className="block text-xs font-medium text-gray-700 mb-1">
                           CNPJ
                         </label>
                         <Input
+                          id="edit-cnpj"
                           value={editForm.cnpj}
                           onChange={(e) =>
                             setEditForm({ ...editForm, cnpj: e.target.value })
@@ -512,10 +520,11 @@ export default function UsuariosPage() {
                     </h3>
                     <div className="grid grid-cols-3 gap-4">
                       <div className="col-span-2">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label htmlFor="edit-logradouro" className="block text-xs font-medium text-gray-700 mb-1">
                           Logradouro
                         </label>
                         <Input
+                          id="edit-logradouro"
                           value={editForm.logradouro}
                           onChange={(e) =>
                             setEditForm({
@@ -526,10 +535,11 @@ export default function UsuariosPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label htmlFor="edit-numero" className="block text-xs font-medium text-gray-700 mb-1">
                           Número
                         </label>
                         <Input
+                          id="edit-numero"
                           value={editForm.numero}
                           onChange={(e) =>
                             setEditForm({ ...editForm, numero: e.target.value })
@@ -539,10 +549,11 @@ export default function UsuariosPage() {
                     </div>
                     <div className="grid grid-cols-3 gap-4 mt-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label htmlFor="edit-complemento" className="block text-xs font-medium text-gray-700 mb-1">
                           Complemento
                         </label>
                         <Input
+                          id="edit-complemento"
                           value={editForm.complemento}
                           onChange={(e) =>
                             setEditForm({
@@ -553,10 +564,11 @@ export default function UsuariosPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label htmlFor="edit-bairro" className="block text-xs font-medium text-gray-700 mb-1">
                           Bairro
                         </label>
                         <Input
+                          id="edit-bairro"
                           value={editForm.bairro}
                           onChange={(e) =>
                             setEditForm({ ...editForm, bairro: e.target.value })
@@ -564,10 +576,11 @@ export default function UsuariosPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label htmlFor="edit-cep" className="block text-xs font-medium text-gray-700 mb-1">
                           CEP
                         </label>
                         <Input
+                          id="edit-cep"
                           value={editForm.cep}
                           onChange={(e) =>
                             setEditForm({ ...editForm, cep: e.target.value })
@@ -577,10 +590,11 @@ export default function UsuariosPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4 mt-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label htmlFor="edit-cidade" className="block text-xs font-medium text-gray-700 mb-1">
                           Cidade
                         </label>
                         <Input
+                          id="edit-cidade"
                           value={editForm.cidade}
                           onChange={(e) =>
                             setEditForm({ ...editForm, cidade: e.target.value })
@@ -588,10 +602,11 @@ export default function UsuariosPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label htmlFor="edit-uf" className="block text-xs font-medium text-gray-700 mb-1">
                           UF
                         </label>
                         <Input
+                          id="edit-uf"
                           value={editForm.uf}
                           maxLength={2}
                           onChange={(e) =>

@@ -31,15 +31,20 @@
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.7",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.14.0",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@types/xlsx": "^0.0.36",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@vitest/coverage-istanbul": "4.1.11",
     "cypress": "^15.12.0",
     "dotenv": "^17.4.2",
-    "jsdom": "^30.0.1"
+    "jsdom": "^30.0.1",
+    "ts-complexity": "^0.0.3"
   }
 }

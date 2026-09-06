@@ -213,8 +213,9 @@ export async function PUT(req: NextRequest) {
         },
       });
     });
-  } catch (err: any) {
-    if (err?.code === "P2002") {
+  } catch (err: unknown) {
+    const prismaError = err as { code?: string };
+    if (prismaError?.code === "P2002") {
       return badRequest("E-mail já cadastrado");
     }
     throw err;

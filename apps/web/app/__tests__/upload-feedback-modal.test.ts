@@ -10,8 +10,12 @@ import {
 const root = join(__dirname, "../..");
 const read = (...parts: string[]) => readFileSync(join(root, ...parts), "utf8");
 const component = read("components", "backoffice", "upload-planilha-preview.tsx");
+const handlers = read("components", "backoffice", "upload-planilha-preview.handlers.ts");
+const upload = read("components", "backoffice", "upload-planilha-preview.upload.ts");
+const modals = read("components", "backoffice", "upload-planilha-preview.modals.tsx");
 const feedback = read("lib", "upload-feedback.ts");
 const processor = read("lib", "processar-upload-pf.ts");
+const types = read("components", "backoffice", "upload-planilha-preview.types.ts");
 const uploadRoute = read("app", "api", "v1", "backoffice", "uploads", "route.ts");
 const statusRoute = read("app", "api", "v1", "backoffice", "uploads", "[id]", "route.ts");
 const polling = read("lib", "upload-status-poll.ts");
@@ -52,16 +56,16 @@ describe("Feedback completo do upload de produção", () => {
     expect(resultado.title).toContain("já existe");
     expect(resultado.message).toContain("ignoradas");
     expect(resultado.details).toContain("Produções repetidas: 1.");
-    expect(component).toContain("if (duplicadas > 0)");
+    expect(handlers).toContain("if (duplicadas > 0)");
   });
 
   it("exibe popup acessível com botão Entendi", () => {
-    expect(component).toContain("type UploadFeedback");
+    expect(handlers).toContain("type UploadFeedback");
     expect(feedback).toContain("interface UploadFeedback");
-    expect(component).toContain("role=\"dialog\"");
-    expect(component).toContain("aria-modal=\"true\"");
-    expect(component).toContain("aria-labelledby=\"upload-feedback-title\"");
-    expect(component).toContain("Entendi");
+    expect(modals).toContain("role=\"dialog\"");
+    expect(modals).toContain("aria-modal=\"true\"");
+    expect(modals).toContain("aria-labelledby=\"upload-feedback-title\"");
+    expect(modals).toContain("Entendi");
   });
 
   it("explica sucesso, erro, zero novos e duplicidades", () => {
@@ -74,9 +78,9 @@ describe("Feedback completo do upload de produção", () => {
   });
 
   it("não usa somente o resumo aninhado da resposta síncrona", () => {
-    expect(component).toContain("responseData.summary ??");
-    expect(component).toContain("responseData.processedRows");
-    expect(component).toContain("responseData.duplicatedRows");
+    expect(upload).toContain("responseData.summary ??");
+    expect(upload).toContain("responseData.processedRows");
+    expect(upload).toContain("responseData.duplicatedRows");
   });
 
   it("persiste e retorna o contador de duplicidades", () => {
@@ -87,7 +91,7 @@ describe("Feedback completo do upload de produção", () => {
     expect(processor).toContain("const chavesExistentes = new Set<string>()");
     expect(processor).toContain("duplicatedRows++");
     expect(processor).toContain("dataParaChave(dataReferencia)");
-    expect(component).toContain('status: "VALIDO" | "ORFAO" | "REJEITADO" | "DUPLICADA"');
+    expect(types).toContain('status: "VALIDO" | "ORFAO" | "REJEITADO" | "DUPLICADA"');
     expect(processor).not.toContain("procedimentoPF.deleteMany");
     expect(migration).toContain("ADD COLUMN IF NOT EXISTS \"duplicated_rows\"");
   });
@@ -95,6 +99,6 @@ describe("Feedback completo do upload de produção", () => {
   it("mantém duplicidades no polling", () => {
     expect(polling).toContain("duplicatedRows?: number");
     expect(polling).toContain("duplicatedRows: json?.duplicatedRows");
-    expect(component).toContain("resultado.summary?.duplicatedRows");
+    expect(upload).toContain("resultado.summary?.duplicatedRows");
   });
 });

@@ -47,8 +47,9 @@ export async function POST(req: NextRequest) {
     });
 
     // Processar planilha de forma síncrona para garantir persistência em serverless (Vercel)
+    let bonusPf: { bonusPfDistribuidos: number; bonusPfIgnorados: number; bonusPfIgnoradosExistente: number; bonusPfErros: number };
     try {
-      await processarUploadPlanilhaPF(upload.id, file, backofficeId);
+      bonusPf = await processarUploadPlanilhaPF(upload.id, file, backofficeId);
     } catch (processError) {
       console.error("[processarUploadPlanilhaPF] Erro:", processError);
       await prisma.uploadPlanilhaBackoffice.update({
@@ -74,7 +75,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return created(uploadFinal);
+    return created({
+      ...uploadFinal,
+      bonusPfDistribuidos: bonusPf.bonusPfDistribuidos,
+      bonusPfIgnorados: bonusPf.bonusPfIgnorados,
+      bonusPfIgnoradosExistente: bonusPf.bonusPfIgnoradosExistente,
+      bonusPfErros: bonusPf.bonusPfErros,
+    });
   } catch (e: unknown) {
     console.error("[upload POST] Erro:", e);
     return badRequest(mensagemUploadAmigavel(e));

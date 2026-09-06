@@ -29,6 +29,8 @@ export async function GET() {
   return ok({
     semAssinatura: false,
     statusAssinatura: assinatura.statusAssinatura,
+    planoAssinatura: assinatura.planoAssinatura,
+    metodoPagamento: assinatura.faturas[0]?.formaPagamento ?? null,
     motivoBloqueio:
       assinatura.statusAssinatura === "BLOQUEADA_MANUAL"
         ? assinatura.motivoBloqueio

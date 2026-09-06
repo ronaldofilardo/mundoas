@@ -1,0 +1,598 @@
+﻿◇ injected env (4) from .env.test // tip: ◈ encrypted .env [www.dotenvx.com]
+node.exe : [33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be 
+ignored.[39m The following esbuild options were set: `{ jsx: 'react-jsx', jsxImportSource: 'react' }`
+No C:\Users\ronal\AppData\Roaming\npm\pnpm.ps1:24 caractere:5
++     & "node$exe"  "$basedir/node_modules/pnpm/bin/pnpm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([33mBoth esbui...rce: 'react' }`:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[33mLoaded [7m[33m vitest@4.1.1 [33m[27m and [7m[33m @vitest/coverage-v8@4.1.11 [33m[27m.
+Running mixed versions is not supported and may lead into bugs
+Update your dependencies and make sure the versions match.[39m
+
+[1m[46m RUN [49m[22m [36mv4.1.1 [39m[90mC:/apps/mundoas/apps/web[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+Failed to parse file:///C:/apps/mundoas/apps/web/__tests__/e2e-calculo-comissao.ts. Excluding it from coverage.
+ Error [RolldownError]: Parse failed with 1 error:
+Expected function body
+13: const unique = () => `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
+14: 
+15: function gerarCPFValido(): string {
+    ^
+16:   const rand = (n: number) => Math.floor(Math.random() * n);
+17:   const n1 = rand(10), n2 = rand(10), n3 = rand(10);
+    at error (file:///C:/apps/mundoas/node_modules/.pnpm/rolldown@1.0.0-rc.11_@emnapi+core@1.10.0_@emnapi+runtime@1.10.
+0/node_modules/rolldown/dist/shared/logs-D80CXhvg.mjs:147:24)
+    at normalizeParseError (file:///C:/apps/mundoas/node_modules/.pnpm/rolldown@1.0.0-rc.11_@emnapi+core@1.10.0_@emnapi
++runtime@1.10.0/node_modules/rolldown/dist/parse-ast-index.mjs:25:9)
+    at wrap (file:///C:/apps/mundoas/node_modules/.pnpm/rolldown@1.0.0-rc.11_@emnapi+core@1.10.0_@emnapi+runtime@1.10.0
+/node_modules/rolldown/dist/parse-ast-index.mjs:5:39)
+    at parseAstAsync (file:///C:/apps/mundoas/node_modules/.pnpm/rolldown@1.0.0-rc.11_@emnapi+core@1.10.0_@emnapi+runti
+me@1.10.0/node_modules/rolldown/dist/parse-ast-index.mjs:54:9)
+    at V8CoverageProvider.remapCoverage (file:///C:/apps/mundoas/node_modules/.pnpm/@vitest+coverage-v8@4.1.11_vitest@4
+.1.1_@types+node@20.19.37_jsdom@30.0.1_vite@8.0.2_@emnapi+_r2agze3uutzheqgpcosidl3rpy/node_modules/@vitest/coverage-v8/
+dist/provider.js:133:10)
+    at file:///C:/apps/mundoas/node_modules/.pnpm/@vitest+coverage-v8@4.1.11_vitest@4.1.1_@types+node@20.19.37_jsdom@30
+.0.1_vite@8.0.2_@emnapi+_r2agze3uutzheqgpcosidl3rpy/node_modules/@vitest/coverage-v8/dist/provider.js:119:23
+    at async Promise.all (index 3)
+    at V8CoverageProvider.getCoverageMapForUncoveredFiles (file:///C:/apps/mundoas/node_modules/.pnpm/@vitest+coverage-
+v8@4.1.11_vitest@4.1.1_@types+node@20.19.37_jsdom@30.0.1_vite@8.0.2_@emnapi+_r2agze3uutzheqgpcosidl3rpy/node_modules/@v
+itest/coverage-v8/dist/provider.js:109:4)
+    at V8CoverageProvider.generateCoverage (file:///C:/apps/mundoas/node_modules/.pnpm/@vitest+coverage-v8@4.1.11_vites
+t@4.1.1_@types+node@20.19.37_jsdom@30.0.1_vite@8.0.2_@emnapi+_r2agze3uutzheqgpcosidl3rpy/node_modules/@vitest/coverage-
+v8/dist/provider.js:56:29)
+    at file:///C:/apps/mundoas/node_modules/.pnpm/vitest@4.1.1_@types+node@20.19.37_jsdom@30.0.1_vite@8.0.2_@emnapi+cor
+e@1.10.0_@emnapi+runtime_qbchxb55iqwt2rdyzaj7z2wcny/node_modules/vitest/dist/chunks/cli-api.BUXBO6jS.js:13567:23 {
+  code: 'PARSE_ERROR',
+  id: undefined,
+  pos: 436
+}
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m21 passed[39m[22m[90m (21)[39m
+[2m   Start at [22m 09:58:00
+[2m   Duration [22m 42.83s[2m (transform 1.47s, setup 5.46s, import 1.56s, tests 4.09s, environment 18.83s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |    1.33 |     1.55 |    1.16 |    1.43 |                   
+ web               |       0 |        0 |       0 |       0 |                   
+  ...ess.config.ts |       0 |        0 |       0 |       0 |                   
+  middleware.ts    |       0 |        0 |       0 |       0 | 9-323             
+  next-env.d.ts    |       0 |        0 |       0 |       0 |                   
+ web/__tests__     |       0 |        0 |       0 |       0 |                   
+  ...o-e-regras.ts |       0 |        0 |       0 |       0 | 10-178            
+ web/app           |       0 |      100 |       0 |       0 |                   
+  layout.tsx       |       0 |      100 |       0 |       0 | 4-15              
+  page.tsx         |       0 |      100 |       0 |       0 | 4-62              
+ ...p/(auth)/login |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-492             
+ ...rimeiro-acesso |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-351             
+ ...pp/(dashboard) |       0 |      100 |       0 |       0 |                   
+  layout.tsx       |       0 |      100 |       0 |       0 | 9                 
+ ...in/backoffices |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-160             
+ ...ckoffices/[id] |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-622             
+ ...ckoffices/novo |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-72              
+ ...min/financeiro |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-161             
+ ...admin/usuarios |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-615             
+ ...consultores-pf |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-213             
+ ...omissionamento |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-70              
+ ...nto/components |       0 |        0 |       0 |       0 |                   
+  ...omerciais.tsx |       0 |        0 |       0 |       0 | 1-688             
+  tab-equipes.tsx  |       0 |        0 |       0 |       0 | 1-165             
+  tab-regras.tsx   |       0 |        0 |       0 |       0 | 1-301             
+ ...namento/equipe |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 4                 
+  types.ts         |       0 |        0 |       0 |       0 |                   
+ ...ipe/components |       0 |        0 |       0 |       0 |                   
+  ...r-pf-form.tsx |       0 |        0 |       0 |       0 | 1-324             
+  ...comissoes.tsx |       0 |        0 |       0 |       0 | 1-417             
+  ...nsultores.tsx |       0 |        0 |       0 |       0 | 1-304             
+  tab-equipe.tsx   |       0 |        0 |       0 |       0 | 1-472             
+  tab-metas.tsx    |       0 |        0 |       0 |       0 | 1-334             
+ ...o/equipe/hooks |       0 |        0 |       0 |       0 |                   
+  ...-comissoes.ts |       0 |        0 |       0 |       0 | 1-128             
+  ...uipe-metas.ts |       0 |        0 |       0 |       0 | 15-77             
+  use-equipe.ts    |       0 |        0 |       0 |       0 | 42-99             
+ ...nto/pagamentos |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-299             
+ .../configuracoes |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 1-11              
+ ...guracoes/bonus |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 1-16              
+ ...nus/components |       0 |        0 |       0 |       0 |                   
+  ...cao-bonus.tsx |       0 |        0 |       0 |       0 | 1-171             
+ ...uracoes/regras |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 1-11              
+ ...fice/dashboard |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-172             
+ ...e/equipe/bonus |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 1-11              
+  types.ts         |       0 |        0 |       0 |       0 |                   
+ ...nus/components |       0 |        0 |       0 |       0 |                   
+  ...nsultores.tsx |       0 |        0 |       0 |       0 | 1-295             
+ ...pe/bonus/hooks |       0 |        0 |       0 |       0 |                   
+  ...o-gestores.ts |       0 |        0 |       0 |       0 | 5-38              
+ ...quipe/cadastro |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-94              
+ ...uipe/comissoes |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-54              
+ ...e/equipe/metas |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-213             
+ ...as/_components |       0 |        0 |       0 |       0 |                   
+  ...nsultores.tsx |       0 |        0 |       0 |       0 | 9-200             
+ ...ice/financeiro |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-175             
+ ...das/components |       0 |        0 |       0 |       0 |                   
+  ...progresso.tsx |       0 |        0 |       0 |       0 | 2-17              
+  ...sultor-pf.tsx |       0 |        0 |       0 |       0 | 1-160             
+  card-setor.tsx   |       0 |        0 |       0 |       0 | 32-54             
+  ...consultor.tsx |       0 |        0 |       0 |       0 | 1-79              
+  ordenacao.ts     |       0 |        0 |       0 |       0 | 7-32              
+  ...as-client.tsx |       0 |        0 |       0 |       0 | 1-319             
+  types.ts         |       0 |        0 |       0 |       0 |                   
+ ...s-vendas/hooks |       0 |        0 |       0 |       0 |                   
+  ...alvar-meta.ts |       0 |        0 |       0 |       0 | 1-45              
+ ...koffice/pontos |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-97              
+  pontos-types.ts  |       0 |        0 |       0 |       0 |                   
+ ...tos/components |       0 |        0 |       0 |       0 |                   
+  ...os-pontos.tsx |       0 |        0 |       0 |       0 | 1-101             
+  ...ao-pontos.tsx |       0 |        0 |       0 |       0 | 1-127             
+  ...iclo-form.tsx |       0 |        0 |       0 |       0 | 1-105             
+  ...ir-pontos.tsx |       0 |        0 |       0 |       0 | 1-34              
+  ...iro-modal.tsx |       0 |        0 |       0 |       0 | 27-92             
+  ...os-pontos.tsx |       0 |        0 |       0 |       0 | 1-138             
+  ...ntos.types.ts |       0 |        0 |       0 |       0 |                   
+  ...ntos.utils.ts |       0 |        0 |       0 |       0 | 25-164            
+  ...ros-table.tsx |       0 |        0 |       0 |       0 | 26-151            
+  ...os-pontos.tsx |       0 |        0 |       0 |       0 | 1-288             
+  ...ng-pontos.tsx |       0 |        0 |       0 |       0 | 1-23              
+  ...te-pontos.tsx |       0 |        0 |       0 |       0 | 1-162             
+  ...tribuicao.tsx |       0 |        0 |       0 |       0 | 1-347             
+  upload-modal.tsx |       0 |        0 |       0 |       0 | 45-146            
+  ...d-preview.tsx |       0 |        0 |       0 |       0 | 8-73              
+  ...ad-result.tsx |       0 |        0 |       0 |       0 | 21-56             
+ ...e/pontos/hooks |       0 |        0 |       0 |       0 |                   
+  ...ceiro-form.ts |       0 |        0 |       0 |       0 | 26-123            
+  ...eiros-data.ts |       0 |        0 |       0 |       0 | 6-80              
+  ...ontos-data.ts |       0 |        0 |       0 |       0 | 7-59              
+  use-upload.ts    |       0 |        0 |       0 |       0 | 38-162            
+ ...ffice/producao |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-382             
+ ...cao/pagamentos |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-299             
+ .../procedimentos |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-317             
+ ...cao/relatorios |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-365             
+  utils.ts         |       0 |        0 |       0 |       0 | 2-32              
+ ...ios/components |       0 |        0 |       0 |       0 |                   
+  ...relatorio.tsx |       0 |        0 |       0 |       0 | 1-97              
+  ...relatorio.tsx |       0 |        0 |       0 |       0 | 1-100             
+ ...latorios/hooks |       0 |        0 |       0 |       0 |                   
+  ...-relatorio.ts |       0 |        0 |       0 |       0 | 1-230             
+  ...-comissoes.ts |       0 |        0 |       0 |       0 | 55-116            
+ ...rios/comissoes |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-249             
+ ...office/uploads |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-472             
+ ...ios/comerciais |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 4                 
+  types.ts         |       0 |        0 |       0 |       0 |                   
+  utils.ts         |       0 |        0 |       0 |       0 | 2-9               
+ ...ais/components |       0 |        0 |       0 |       0 |                   
+  ...ial-modal.tsx |       0 |        0 |       0 |       0 | 1-230             
+  ...cial-form.tsx |       0 |        0 |       0 |       0 | 1-202             
+  tab-cadastro.tsx |       0 |        0 |       0 |       0 | 1-129             
+  ...comissoes.tsx |       0 |        0 |       0 |       0 | 1-125             
+ ...merciais/hooks |       0 |        0 |       0 |       0 |                   
+  ...comerciais.ts |       0 |        0 |       0 |       0 | 6-34              
+  use-comissoes.ts |       0 |        0 |       0 |       0 | 6-30              
+  use-metas.ts     |       0 |        0 |       0 |       0 | 6-59              
+  use-regras.ts    |       0 |        0 |       0 |       0 | 6-30              
+ ...ard)/comercial |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-171             
+ ...dados-pessoais |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 1-7               
+ ...minha-comissao |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-147             
+ ...l/minhas-metas |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-150             
+ ...cial/parceiros |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-105             
+ ...parceiros/novo |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-72              
+ ...onsultor/bonus |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-245             
+ ...dados-pessoais |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-263             
+ ...hboard)/gestor |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-158             
+ ...stor/auditoria |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-100             
+ ...stor/comissoes |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-42              
+ ...stor/dashboard |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-48              
+ ...stor/parceiros |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-105             
+ ...parceiros/novo |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-72              
+ ...ard)/lideranca |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-83              
+ ...ca/bonificacao |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-167             
+ ...s-pf/comissoes |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-90              
+ ...ltores-pf/novo |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-82              
+ ...es-pf/producao |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-286             
+ ...deranca/equipe |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-46              
+ ...consultores-pf |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-470             
+  utils.ts         |       0 |        0 |       0 |       0 | 6-163             
+ ...pf/_components |       0 |        0 |       0 |       0 |                   
+  ...-pf-modal.tsx |       0 |        0 |       0 |       0 | 1-181             
+  ...ltores-pf.tsx |       0 |        0 |       0 |       0 | 1-616             
+ ...ltores-pf/novo |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 |                   
+ ...ideranca/metas |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-360             
+ ...dados-pessoais |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-174             
+ ...eiro/indicados |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-329             
+ ...arceiro/pontos |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-195             
+ ...tos/components |       0 |        0 |       0 |       0 |                   
+  premios-tab.tsx  |       0 |        0 |       0 |       0 | 1-91              
+  resgates-tab.tsx |       0 |        0 |       0 |       0 | 1-134             
+ web/app/__tests__ |       0 |        0 |       0 |       0 |                   
+  ...st-helpers.ts |       0 |        0 |       0 |       0 | 22-294            
+  test-helpers.ts  |       0 |      100 |       0 |       0 | 14-108            
+ ...sso-pf/[token] |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-153             
+ ...cesso-suspenso |       0 |      100 |       0 |       0 |                   
+  page.tsx         |       0 |      100 |       0 |       0 | 2                 
+ .../[...nextauth] |       0 |      100 |     100 |       0 |                   
+  route.ts         |       0 |      100 |     100 |       0 | 2                 
+ ...acesso/[token] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 8-144             
+ ...acesso-unidade |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-66              
+ ...in/backoffices |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-134             
+ ...id]/assinatura |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 12-139            
+ ...cronizar-asaas |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 13-78             
+ ...s/[id]/faturas |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 10-129            
+ ...ras/[faturaId] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 10-73             
+ ...min/financeiro |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-76              
+ ...admin/usuarios |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-140             
+ .../usuarios/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 10-253            
+ ...d]/delete-info |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-23              
+ ...reset-password |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 2-77              
+ ...rimeiro-acesso |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-90              
+ ...ice/assinatura |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-39              
+ ...ice/comerciais |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 18-113            
+ ...omerciais/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 21-99             
+ ...[id]/comissoes |       0 |      100 |       0 |       0 |                   
+  route.ts         |       0 |      100 |       0 |       0 | 8-11              
+ ...ais/[id]/metas |       0 |      100 |       0 |       0 |                   
+  route.ts         |       0 |      100 |       0 |       0 | 9-22              
+ ...cular-comissao |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 31-71             
+ ...nto/pagamentos |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-224             
+ ...mesReferencia] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 25-326            
+ ...guracoes/bonus |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 12-149            
+ ...consultores-pf |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 13-194            
+ ...ltores-pf/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-201             
+ ...-pf/[id]/metas |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 18-36             
+ ...s-pf/comissoes |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 8-116             
+ ...nsultores/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 11-87             
+ ...koffice/equipe |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 16-289            
+ ...ce/equipe/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 17-307            
+ ...[id]/comissoes |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 20-107            
+ ...pe/[id]/equipe |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 14-95             
+ ...ipe/[id]/metas |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 14-220            
+ ...e/equipe/bonus |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-191             
+ ...orPfId]/ajuste |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 8-61              
+ ...rPfId]/extrato |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-83              
+ ...office/equipes |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-72              
+ ...ete-financeiro |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-33              
+ ...ice/liderancas |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 19-87             
+ ...iderancas/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 22-123            
+ ...as/[id]/equipe |       0 |      100 |       0 |       0 |                   
+  route.ts         |       0 |      100 |       0 |       0 | 9-12              
+ ...e/metas-vendas |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-199             
+ ...rId]/[setorId] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-88              
+ ...oria-realizado |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-238             
+ ...rding/checkout |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 14-140            
+ ...boarding/plano |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 8-84              
+ ...oarding/termos |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-76              
+ ...fice/parceiros |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 18-274            
+ ...iros/check-cpf |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-51              
+ ...ros/reactivate |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 13-52             
+ ...rceiros/upload |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 15-301            
+ ...s/bonus/ciclos |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-59              
+ ...us/ciclos/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-42              
+ ...nus/distribuir |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 8-77              
+ ...os/bonus/reset |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 8-51              
+ .../pontos/ciclos |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 11-130            
+ ...os/ciclos/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-154             
+ ...s/configuracao |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 14-155            
+ ...tos/distribuir |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 20-353            
+ ...stribuir-todos |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 16-172            
+ ...pontos/premios |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 12-207            
+ ...s/catalogo-url |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-38              
+ ...premios/upload |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-108             
+ ...upload/preview |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-196             
+ ...pontos/ranking |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 26-225            
+ ...ontos/resgates |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-143             
+ .../resgates/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 11-125            
+ ...ffice/producao |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-97              
+ ...ras-comerciais |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 13-211            
+ .../regras-faltas |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 13-198            
+ ...egras-gestores |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 13-201            
+ ...orio-comissoes |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-252             
+ ...ssar-comissoes |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 18-228            
+ ...office/setores |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-20              
+ ...office/uploads |       0 |        0 |       0 |       0 |                   
+  parser.ts        |       0 |        0 |       0 |       0 | 4-30              
+  route.ts         |       0 |        0 |       0 |       0 | 12-87             
+  service.ts       |       0 |        0 |       0 |       0 | 41-587            
+ ...e/uploads/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-37              
+ ...s/[id]/arquivo |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-34              
+ ...ploads/preview |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 10-45             
+ ...minha-comissao |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 10-48             
+ ...ssao/comissoes |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 11-32             
+ ...l/minhas-metas |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-19              
+ ...cial/parceiros |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 17-172            
+ ...mercial/resumo |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-36              
+ ...bonus/carteira |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-58              
+ .../bonus/premios |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-27              
+ ...bonus/resgates |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-70              
+ ...dados-pessoais |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-78              
+ ...stor/auditoria |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-31              
+ ...stor/comissoes |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-45              
+ ...stor/parceiros |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 17-181            
+ .../gestor/resumo |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-36              
+ ...anca/comissoes |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-35              
+ ...consultores-pf |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 15-205            
+ ...ltores-pf/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-146             
+ ...[id]/comissoes |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 9-33              
+ ...-pf/[id]/metas |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-83              
+ ...es-pf/producao |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-191             
+ .../procedimentos |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-78              
+ ...deranca/equipe |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-35              
+ ...a/equipe/bonus |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-191             
+ ...es-pf/importar |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 16-368            
+ ...quipe/importar |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 10-272            
+ ...ideranca/metas |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-160             
+ ...dados-pessoais |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 8-90              
+ ...eiro/indicados |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 14-149            
+ ...ados/check-cpf |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-51              
+ ...ontos/carteira |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-161             
+ ...pontos/extrato |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-122             
+ ...ferencia-ciclo |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 10-72             
+ ...pontos/premios |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-103             
+ ...pontos/ranking |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 5-132             
+ ...ontos/resgates |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 12-201            
+ .../resgates/[id] |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 11-88             
+ ...public/indicar |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 7-141             
+ ...ic/validar-cpf |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 6-56              
+ ...api/v1/setores |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 13-43             
+ ...webhooks/asaas |       0 |        0 |       0 |       0 |                   
+  route.ts         |       0 |        0 |       0 |       0 | 36-186            
+ ...lano-pagamento |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-228             
+ ...oarding/termos |       0 |        0 |       0 |       0 |                   
+  page.tsx         |       0 |        0 |       0 |       0 | 1-97              
+ web/components    |       0 |        0 |       0 |       0 |                   
+  ...ate-badge.tsx |       0 |        0 |       0 |       0 | 1-55              
+  ...set-modal.tsx |       0 |        0 |       0 |       0 | 1-152             
+  providers.tsx    |       0 |      100 |       0 |       0 | 1-7               
+  sidebar.tsx      |       0 |        0 |       0 |       0 |                   
+ ...nts/backoffice |   27.13 |    27.12 |   23.85 |   27.53 |                   
+  ...-resgates.tsx |       0 |        0 |       0 |       0 | 1-288             
+  ...os-pontos.tsx |       0 |        0 |       0 |       0 | 1-300             
+  ...r-premios.tsx |       0 |        0 |       0 |       0 | 1-300             
+  ...os-upload.tsx |       0 |        0 |       0 |       0 | 1-548             
+  ...ng-gestor.tsx |       0 |        0 |       0 |       0 | 1-156             
+  ...w.actions.tsx |     100 |    92.85 |     100 |     100 | 28                
+  ...ile-input.tsx |     100 |      100 |     100 |     100 |                   
+  ...w.handlers.ts |   93.02 |    81.81 |     100 |   95.23 | 67,74             
+  ...ew.helpers.ts |   71.42 |    53.84 |     100 |      70 | 6-12,18,25        
+  ...es-select.tsx |   66.66 |      100 |   66.66 |   66.66 | 22                
+  ...ew.modals.tsx |   83.33 |    66.66 |      75 |      80 | 94                
+  ...iew-table.tsx |     100 |       30 |     100 |     100 | 24-29,99-121      
+  ...w.summary.tsx |     100 |    66.66 |     100 |     100 | 30,78             
+  ...a-preview.tsx |   73.17 |    82.14 |   55.55 |   73.17 | ...92,148,167-177 
+  ...view.types.ts |       0 |        0 |       0 |       0 |                   
+  ...iew.upload.ts |    87.5 |    86.36 |     100 |    87.5 | ...,65-66,162-163 
+ ...nents/parceiro |       0 |        0 |       0 |       0 |                   
+  ...o-premios.tsx |       0 |        0 |       0 |       0 | 1-152             
+  ...mentacoes.tsx |       0 |        0 |       0 |       0 | 1-119             
+  meu-ranking.tsx  |       0 |        0 |       0 |       0 | 1-137             
+  ...-carteira.tsx |       0 |        0 |       0 |       0 | 1-58              
+  ...s-resgate.tsx |       0 |        0 |       0 |       0 | 1-199             
+ ...onents/sidebar |       0 |        0 |       0 |       0 |                   
+  app-sidebar.tsx  |       0 |        0 |       0 |       0 | 1-263             
+  index.ts         |       0 |      100 |     100 |       0 | 1                 
+  nav-icon.tsx     |       0 |        0 |       0 |       0 | 4-185             
+ web/components/ui |       0 |        0 |       0 |       0 |                   
+  button.tsx       |       0 |        0 |       0 |       0 | 9-40              
+  dialog.tsx       |       0 |        0 |       0 |       0 | 1-107             
+  input.tsx        |       0 |      100 |       0 |       0 | 6-21              
+  table.tsx        |       0 |      100 |       0 |       0 | 7-95              
+ ...ypress/support |       0 |      100 |       0 |       0 |                   
+  e2e.ts           |       0 |      100 |       0 |       0 | 2                 
+ web/lib           |    1.66 |     4.45 |    1.37 |    1.75 |                   
+  api-helpers.ts   |       0 |        0 |       0 |       0 | 6-280             
+  audit.ts         |       0 |        0 |       0 |       0 | 10-21             
+  auth-config.ts   |       0 |        0 |       0 |       0 | 6-28              
+  auth.ts          |       0 |        0 |       0 |       0 | 7-126             
+  ...pos-upload.ts |       0 |        0 |       0 |       0 | 15-87             
+  ...ao-calculo.ts |       0 |        0 |       0 |       0 | 4-76              
+  competencia.ts   |       0 |        0 |       0 |       0 | 2-7               
+  db.ts            |       0 |        0 |       0 |       0 | 20-100            
+  ...s-producao.ts |       0 |        0 |       0 |       0 | 6-14              
+  ...referencia.ts |       0 |        0 |       0 |       0 | 1-9               
+  ...tos-regras.ts |       0 |        0 |       0 |       0 | 4-23              
+  ...a-producao.ts |       0 |        0 |       0 |       0 | 56-516            
+  ...word-reset.ts |       0 |        0 |       0 |       0 | 7-63              
+  pontos-utils.ts  |       0 |        0 |       0 |       0 | 14-483            
+  ...-upload-pf.ts |       0 |        0 |       0 |       0 | 4-492             
+  ...backoffice.ts |       0 |        0 |       0 |       0 | 22-64             
+  rate-limit.ts    |       0 |        0 |       0 |       0 | 13-195            
+  ...as-versoes.ts |       0 |        0 |       0 |       0 | 13-72             
+  ...res-regras.ts |       0 |        0 |       0 |       0 | 4-48              
+  ...d-feedback.ts |   65.38 |    57.14 |   66.66 |   65.38 | ...4,61-67,76,102 
+  ...tatus-poll.ts |       0 |        0 |       0 |       0 | 1-50              
+  upload.ts        |       0 |        0 |       0 |       0 | 1-44              
+  url.ts           |       0 |        0 |       0 |       0 | 2-7               
+  utils.ts         |       0 |        0 |       0 |       0 | 2-44              
+  ...te-secrets.ts |       0 |        0 |       0 |       0 | 6-55              
+ web/lib/asaas     |       0 |        0 |       0 |       0 |                   
+  client.ts        |       0 |        0 |       0 |       0 | 8-140             
+ web/lib/legal     |       0 |      100 |     100 |       0 |                   
+  ...oas-termos.ts |       0 |      100 |     100 |       0 | 14-96             
+ web/lib/nav       |       0 |        0 |       0 |       0 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  manifest.ts      |       0 |      100 |     100 |       0 | 8-194             
+  resolve.ts       |       0 |        0 |       0 |       0 | 9-65              
+  types.ts         |       0 |        0 |       0 |       0 |                   
+ web/scripts       |       0 |        0 |       0 |       0 |                   
+  ...fig-pontos.ts |       0 |      100 |       0 |       0 | 4-33              
+  ...ontos-auto.ts |       0 |        0 |       0 |       0 | 5-122             
+  ...distribuir.ts |       0 |        0 |       0 |       0 | 5-121             
+  ...distribuir.ts |       0 |        0 |       0 |       0 | 4-106             
+  ...stribuicao.ts |       0 |        0 |       0 |       0 | 4-95              
+  ...tos-config.ts |       0 |        0 |       0 |       0 | 4-73              
+  ...cedimentos.ts |       0 |        0 |       0 |       0 | 4-64              
+  ...ar-ranking.ts |       0 |        0 |       0 |       0 | 4-100             
+  ...-parceiros.ts |       0 |        0 |       0 |       0 | 8-66              
+ web/types         |       0 |        0 |       0 |       0 |                   
+  next-auth.d.ts   |       0 |        0 |       0 |       0 |                   
+-------------------|---------|----------|---------|---------|-------------------
