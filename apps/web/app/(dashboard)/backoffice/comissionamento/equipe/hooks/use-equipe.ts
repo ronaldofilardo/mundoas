@@ -72,6 +72,81 @@ function mapMembro(m: EquipeApiMembro): EquipeItem {
   };
 }
 
+export function buildEquipeItens(
+  comerciais: EquipeApiComercial[],
+  liderancas: EquipeApiMembro[],
+  consultorPfs: Map<string, any[]>,
+): EquipeItem[] {
+  const liderancaIds = new Set(liderancas.map((m) => m.id))
+
+  const processedLiderancas: EquipeItem[] = liderancas.map((m) => ({
+    id: m.id,
+    nome: m.nome,
+    cpf: m.cpf,
+    email: m.email,
+    status: m.status,
+    tipo: m.tipo,
+    funcao: m.funcao ?? null,
+    tipoLideranca: m.tipoLideranca ?? null,
+    percentualComissao: m.percentualComissao ?? 0,
+    liderancaId: m.liderancaId ?? null,
+    kind: "lideranca",
+    consultorPfs: (consultorPfs.get(m.id) ?? []).map((cp: any) => ({
+      id: cp.id ?? cp.nome,
+      nome: cp.nome ?? cp.name ?? "Unknown",
+      cpf: cp.cpf ?? "",
+      email: cp.email ?? "",
+      telefone: cp.telefone ?? null,
+      status: cp.status ?? "ATIVO",
+      setores: cp.setores ?? [],
+    })),
+    comerciais: (m.comerciais ?? []).map((c: EquipeApiComercial) => ({
+      id: c.id,
+      nome: c.nome,
+      cpf: c.cpf,
+      email: c.email,
+      funcao: c.funcao ?? null,
+      percentualComissao: c.percentualComissao ?? 0,
+      status: c.status,
+    })),
+  }))
+
+  const processedComerciais: EquipeItem[] = comerciais
+    .filter((m) => !liderancaIds.has(m.id))
+    .map((m) => ({
+      id: m.id,
+      nome: m.nome,
+      cpf: m.cpf,
+      email: m.email,
+      status: m.status,
+      tipo: m.tipo,
+      funcao: m.funcao ?? null,
+      tipoLideranca: m.tipoLideranca ?? null,
+      percentualComissao: m.percentualComissao ?? 0,
+      liderancaId: m.liderancaId ?? null,
+      kind: "comercial",
+      consultorPfs: [],
+      comerciais: (m.comerciais ?? []).map((c: EquipeApiComercial) => ({
+        id: c.id,
+        nome: c.nome,
+        cpf: c.cpf,
+        email: c.email,
+        funcao: c.funcao ?? null,
+        percentualComissao: c.percentualComissao ?? 0,
+        status: c.status,
+      })),
+    }))
+
+  const all = [...processedLiderancas, ...processedComerciais]
+
+  const seen = new Set<string>()
+  return all.filter((item) => {
+    if (seen.has(item.id)) return false
+    seen.add(item.id)
+    return true
+  })
+}
+
 export function useEquipe() {
   const [itens, setItens] = useState<EquipeItem[]>([]);
   const [loading, setLoading] = useState(true);
