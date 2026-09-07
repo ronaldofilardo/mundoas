@@ -3,6 +3,9 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import type { CicloPontosItem, DistribuicaoPontosItem } from "../pontos-types";
+import { TabelaDistribuicaoFiltros } from "./tabela-distribuicao-filtros";
+import { TabelaDistribuicaoTable } from "./tabela-distribuicao-table";
+import { TabelaDistribuicaoAcoes } from "./tabela-distribuicao-acoes";
 
 interface TabelaDistribuicaoProps {
   data?: DistribuicaoPontosItem[];
@@ -34,9 +37,9 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
 
     return data.filter((producao: DistribuicaoPontosItem) => {
       const parceiroMatch = !filtroParceiro || producao.parceiro?.nome === filtroParceiro;
-      const indicadoMatch = !filtroIndicado || 
+      const indicadoMatch = !filtroIndicado ||
         producao.paciente?.toLowerCase().includes(filtroIndicado.toLowerCase());
-      
+
       const dataTexto = producao.dataReferencia || producao.dataProcedimento;
       if (!dataTexto) return false;
       const dataProc = new Date(dataTexto);
@@ -46,6 +49,11 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
       return parceiroMatch && indicadoMatch && dataInicioMatch && dataFimMatch;
     });
   }, [data, filtroParceiro, filtroIndicado, filtroDataInicio, filtroDataFim]);
+
+  const pendentes = useMemo(
+    () => (data || []).filter((p) => !p.pontosDistribuidos).length,
+    [data],
+  );
 
   const handleDistribuir = async (producaoId: string) => {
     try {
@@ -71,18 +79,6 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
       toast.error("Erro ao distribuir pontos");
     }
   };
-
-  const limparFiltros = () => {
-    setFiltroParceiro("");
-    setFiltroIndicado("");
-    setFiltroDataInicio("");
-    setFiltroDataFim("");
-  };
-
-  const pendentes = useMemo(
-    () => (data || []).filter((p) => !p.pontosDistribuidos).length,
-    [data],
-  );
 
   const handleDistribuirTodos = async () => {
     if (!pendentes) return;
@@ -132,51 +128,14 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900">
-          Distribuir Pontos por Produção
-        </h2>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleDistribuirTodos}
-            disabled={distribuindoTodos || pendentes === 0}
-            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {distribuindoTodos ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                Distribuindo...
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Distribuir Todos
-              </>
-            )}
-          </button>
-          <button
-            onClick={handleAtualizar}
-            disabled={atualizando}
-            className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {atualizando ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                Atualizando...
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Atualizar
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+      <TabelaDistribuicaoAcoes
+        distribuindoTodos={distribuindoTodos}
+        setDistribuindoTodos={setDistribuindoTodos}
+        pendentes={pendentes}
+        onDistribuirTodos={handleDistribuirTodos}
+        onAtualizar={handleAtualizar}
+        setAtualizando={setAtualizando}
+      />
 
       {ciclo && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
@@ -191,172 +150,28 @@ export function TabelaDistribuicao({ data, ciclo, onDistribuir, onAtualizar }: T
         </div>
       )}
 
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div>
-            <label htmlFor="filtro-indicado" className="block text-xs font-medium text-gray-700 mb-1">
-              Indicado
-            </label>
-            <input
-              id="filtro-indicado"
-              type="text"
-              value={filtroIndicado}
-              onChange={(e) => setFiltroIndicado(e.target.value)}
-              placeholder="Buscar por nome..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
+      <TabelaDistribuicaoFiltros
+        filtroParceiro={filtroParceiro}
+        setFiltroParceiro={setFiltroParceiro}
+        filtroIndicado={filtroIndicado}
+        setFiltroIndicado={setFiltroIndicado}
+        filtroDataInicio={filtroDataInicio}
+        setFiltroDataInicio={setFiltroDataInicio}
+        filtroDataFim={filtroDataFim}
+        setFiltroDataFim={setFiltroDataFim}
+        producoesFiltradas={producoesFiltradas}
+        data={data}
+        limparFiltros={() => {
+          setFiltroParceiro("");
+          setFiltroIndicado("");
+          setFiltroDataInicio("");
+          setFiltroDataFim("");
+        }}
+      />
 
-          <div>
-            <label htmlFor="filtro-parceiro" className="block text-xs font-medium text-gray-700 mb-1">
-              Parceiro
-            </label>
-            <select
-              id="filtro-parceiro"
-              value={filtroParceiro}
-              onChange={(e) => setFiltroParceiro(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-            >
-              <option value="">Todos</option>
-              {parceiros.map((parceiro) => (
-                <option key={parceiro.nome ?? ""} value={parceiro.nome ?? ""}>
-                  {parceiro.nome}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="filtro-data-inicio" className="block text-xs font-medium text-gray-700 mb-1">
-              Data Início
-            </label>
-            <input
-              id="filtro-data-inicio"
-              type="date"
-              value={filtroDataInicio}
-              onChange={(e) => setFiltroDataInicio(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="filtro-data-fim" className="block text-xs font-medium text-gray-700 mb-1">
-              Data Fim
-            </label>
-            <input
-              id="filtro-data-fim"
-              type="date"
-              value={filtroDataFim}
-              onChange={(e) => setFiltroDataFim(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-between items-center mt-3">
-          <p className="text-xs text-gray-500">
-            {producoesFiltradas.length} de {data?.length || 0} produções
-          </p>
-          {(filtroParceiro || filtroIndicado || filtroDataInicio || filtroDataFim) && (
-            <button
-              onClick={limparFiltros}
-              className="text-xs text-primary-600 hover:text-primary-700 font-medium"
-            >
-              Limpar filtros
-            </button>
-          )}
-        </div>
-      </div>
-
-      {!producoesFiltradas || producoesFiltradas.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          Nenhuma produção encontrada
-        </div>
-      ) : (
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Indicado
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Procedimento
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Parceiro
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Total
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  R$/ponto
-                </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Data
-                </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  pts
-                </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {producoesFiltradas.map((producao: DistribuicaoPontosItem) => (
-                <tr key={producao.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-semibold text-gray-900">
-                    {producao.paciente}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">
-                    {producao.procedimento}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {producao.parceiro?.nome}
-                  </td>
-                  <td className="px-4 py-3 text-sm font-semibold text-green-600 text-right">
-                    R$ {Number(producao.valorTotal ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </td>
-                  <td className="px-4 py-3 text-sm font-semibold text-blue-700 text-right">
-                    R$ {Number(producao.valorPorPonto ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 text-center">
-                    {new Date(producao.dataReferencia || producao.dataProcedimento || "").toLocaleDateString(
-                      "pt-BR",
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {producao.pontosDistribuidos ? (
-                      <span className="text-sm font-bold text-green-600">
-                        {producao.pontosDistribuidos.pontos} pts
-                      </span>
-                    ) : (
-                      <span className="text-sm font-bold text-yellow-600">
-                        {producao.pontosPotenciais || 0} pts
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {producao.pontosDistribuidos ? (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-medium">
-                        Distribuído
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => handleDistribuir(producao.id)}
-                        className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-primary-700 transition"
-                      >
-                        Distribuir
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <TabelaDistribuicaoTable
+        producoesFiltradas={producoesFiltradas}
+      />
     </div>
   );
 }
