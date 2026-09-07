@@ -3,7 +3,7 @@
 import { Fragment, useState } from "react";
 import type { EquipeItem } from "../types";
 import { toast } from "sonner";
-import LiderancaExpanded from "./lideranca-expanded";
+import { LiderancaExpanded } from "./lideranca-expanded";
 
 interface EquipeTabelaProps {
   itens: EquipeItem[];

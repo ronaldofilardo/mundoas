@@ -1,7 +1,8 @@
 "use client";
 
 import { toast } from "sonner";
-import type { EquipeItem, Comercial } from "../types";
+import type { EquipeItem } from "../types";
+import type { Comercial } from "../../../usuarios/comerciais/types";
 
 export function useEquipeMutations(
   refetch: () => Promise<void>,
@@ -10,31 +11,26 @@ export function useEquipeMutations(
   setShowModal: (show: boolean) => void,
   setComercialEditando: (comercial: Comercial | null) => void,
 ) {
-  async function handleDeletarComercial(comercialId: string) {
-    const itemFind = itensFind => itensFind.id === comercialId && itensFind.kind === "comercial";
-    // The itens are accessed via the closure from TabEquipe
-    // This function signature needs the itens array - we'll handle this differently
-    return async (itens: EquipeItem[]) => {
-      const item = itensFind(itens);
-      if (!item) return;
+  async function handleDeletarComercial(comercialId: string, itens: EquipeItem[]) {
+    const item = itens.find((i) => i.id === comercialId && i.kind === "comercial");
+    if (!item) return;
 
-      if (!confirm(`Tem certeza que deseja deletar "${item.nome}"?`)) return;
+    if (!confirm(`Tem certeza que deseja deletar "${item.nome}"?`)) return;
 
-      try {
-        const res = await fetch(`/api/v1/backoffice/comerciais/${comercialId}`, {
-          method: "DELETE",
-        });
-        if (!res.ok) {
-          const err = await res.json();
-          toast.error(err.error || "Erro ao deletar");
-          return;
-        }
-        toast.success("Comercial deletado");
-        await refetch();
-      } catch {
-        toast.error("Erro ao deletar");
+    try {
+      const res = await fetch(`/api/v1/backoffice/comerciais/${comercialId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.error || "Erro ao deletar");
+        return;
       }
-    };
+      toast.success("Comercial deletado");
+      await refetch();
+    } catch {
+      toast.error("Erro ao deletar");
+    }
   }
 
   function handleEditarComercial(item: EquipeItem) {
@@ -53,6 +49,25 @@ export function useEquipeMutations(
       percentualComissao: item.percentualComissao ?? 0,
     });
     setEditandoKind("comercial");
+    setShowModal(true);
+  }
+
+  function handleEditarLideranca(item: EquipeItem) {
+    if (item.kind !== "lideranca") return;
+    setComercialEditando({
+      id: item.id,
+      nome: item.nome,
+      cpf: item.cpf,
+      email: item.email,
+      telefone: "",
+      funcao: item.funcao ?? undefined,
+      lideranca: undefined,
+      tipoLideranca: item.tipoLideranca as "COMERCIAL" | "GESTOR" | undefined,
+      tipo: item.tipo as "COMERCIAL" | "LIDERANCA" | undefined,
+      status: item.status,
+      percentualComissao: item.percentualComissao ?? 0,
+    });
+    setEditandoKind("lideranca");
     setShowModal(true);
   }
 
@@ -145,6 +160,7 @@ export function useEquipeMutations(
   return {
     handleDeletarComercial,
     handleEditarComercial,
+    handleEditarLideranca,
     handleDeletarLideranca,
     handleSalvarEdicao,
     handleToggleStatusLideranca,

@@ -21,6 +21,10 @@ type EquipeApiComercial = {
   funcao?: string | null;
   percentualComissao?: number;
   status: string;
+  tipo?: string;
+  tipoLideranca?: string | null;
+  liderancaId?: string | null;
+  comerciais?: EquipeApiComercial[];
 };
 
 type EquipeApiMembro = {

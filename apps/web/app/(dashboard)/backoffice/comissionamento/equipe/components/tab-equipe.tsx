@@ -7,7 +7,7 @@ import { ComercialModal } from "../../../usuarios/comerciais/components/comercia
 import type { Comercial } from "../../../usuarios/comerciais/types";
 import type { EquipeItem } from "../types";
 import { useEquipeMutations } from "../hooks/use-equipe-mutations";
-import EquipeTabela from "./equipe-tabela";
+import { EquipeTabela } from "./equipe-tabela";
 
 interface TabEquipeProps {
   itens: EquipeItem[];
@@ -71,13 +71,13 @@ export function TabEquipe({ itens: propsItens, refetch }: TabEquipeProps) {
                 }
               }}
               onDeletarComercial={comercialId =>
-                handleDeletarComercial(comercialId),
+                handleDeletarComercial(comercialId, itensEffective)
               }
               onDeletarLideranca={id =>
-                handleDeletarLideranca(id),
+                handleDeletarLideranca(id, itensEffective)
               }
               onToggleStatusLideranca={(id, statusAtual) =>
-                handleToggleStatusLideranca(id, statusAtual),
+                handleToggleStatusLideranca(id, statusAtual)
               }
             />
           </div>

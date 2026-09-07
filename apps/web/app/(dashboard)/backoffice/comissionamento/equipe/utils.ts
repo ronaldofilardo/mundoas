@@ -1,3 +1,6 @@
+import type { EquipeItem } from "./types";
+import type { Comercial } from "../../usuarios/comerciais/types";
+
 export function mapEquipeItemToComercial(item: EquipeItem): Comercial {
   const lideranca = item.tipoLideranca
     ? (item.tipoLideranca as "GESTOR" | "COMERCIAL")
