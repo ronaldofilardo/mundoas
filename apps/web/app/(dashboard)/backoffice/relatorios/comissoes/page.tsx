@@ -1,65 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
-
-interface Comissao {
-  id: string;
-  mesReferencia: string;
-  comercial: {
-    id: string;
-    nome: string;
-    email: string;
-    funcao?: string;
-  };
-  valorVendas: number;
-  valorComissao: number;
-  status: string;
-  dataPagamento?: string | null;
-}
-
-interface Resumo {
-  porMes: Array<{
-    mes: string;
-    totalVendas: number;
-    totalComissao: number;
-    quantidade: number;
-  }>;
-  totalGeral: {
-    totalVendas: number;
-    totalComissao: number;
-    quantidade: number;
-  };
-}
-
-function formatBRL(v: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  }).format(v);
-}
-
-function formatMonth(mes: string) {
-  const [ano, mesNum] = mes.split("-");
-  const meses = [
-    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-    "Jul", "Ago", "Set", "Out", "Nov", "Dez"
-  ];
-  return `${meses[parseInt(mesNum) - 1]}/${ano}`;
-}
+import { formatBRL, formatMonth } from "@/util/format-brl";
+import { useRelatorioComissoes } from "@/util/use-relatorio-comissoes";
 
 export default function RelatorioComissoesPage() {
-  const [comissoes, setComissoes] = useState<Comissao[]>([]);
-  const [resumo, setResumo] = useState<Resumo | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [inicio, setInicio] = useState("");
-  const [fim, setFim] = useState("");
-  const [comercialId, setComercialId] = useState("");
-  const [comerciais, setComerciais] = useState<Array<{ id: string; nome: string }>>([]);
+  const {
+    comissoes,
+    resumo,
+    loading,
+    inicio,
+    setInicio,
+    fim,
+    setFim,
+    comercialId,
+    setComercialId,
+    comerciais,
+    buscarRelatorio,
+    exportarCSV,
+  } = useRelatorioComissoes();
 
   useEffect(() => {
-    // Buscar membros da equipe para o filtro
     fetch("/api/v1/backoffice/equipe")
       .then((res) => res.json())
       .then((data) => {
@@ -72,57 +34,12 @@ export default function RelatorioComissoesPage() {
       .catch(() => {});
   }, []);
 
-  async function buscarRelatorio() {
-    if (!inicio || !fim) {
-      toast.error("Selecione o período inicial e final");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        inicio,
-        fim,
-        ...(comercialId && { comercialId }),
-      });
-      const res = await fetch(`/api/v1/backoffice/relatorio-comissoes?${params}`);
-      if (!res.ok) {
-        const err = await res.json();
-        toast.error(err.error || "Erro ao buscar relatório");
-        return;
-      }
-      const data = await res.json();
-      setComissoes(data.comissoes);
-      setResumo(data.resumo);
-      toast.success("Relatório carregado com sucesso!");
-    } catch {
-      toast.error("Erro ao buscar relatório");
-    } finally {
-      setLoading(false);
-    }
+  async function handleBuscar() {
+    await buscarRelatorio();
   }
 
-  function exportarCSV() {
-    const headers = ["Mês", "Comercial", "Função", "Vendas", "Comissão", "Status", "Pagamento"];
-    const rows = comissoes.map((c) => [
-      c.mesReferencia,
-      c.comercial.nome,
-      c.comercial.funcao || "-",
-      c.valorVendas.toFixed(2),
-      c.valorComissao.toFixed(2),
-      c.status,
-      c.dataPagamento || "-",
-    ]);
-
-    const csv = [headers, ...rows].map((row) => row.join(";")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `relatorio-comissoes-${inicio}-a-${fim}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-    toast.success("Relatório exportado!");
+  function handleExportarCSV() {
+    exportarCSV();
   }
 
   return (
@@ -176,7 +93,7 @@ export default function RelatorioComissoesPage() {
           </div>
           <div className="flex items-end gap-2">
             <button
-              onClick={buscarRelatorio}
+              onClick={handleBuscar}
               disabled={loading}
               className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
             >
@@ -184,7 +101,7 @@ export default function RelatorioComissoesPage() {
             </button>
             {comissoes.length > 0 && (
               <button
-                onClick={exportarCSV}
+                onClick={handleExportarCSV}
                 className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
               >
                 📥 Exportar

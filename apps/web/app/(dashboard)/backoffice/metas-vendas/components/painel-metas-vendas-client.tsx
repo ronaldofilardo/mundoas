@@ -1,104 +1,35 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
 import { CardSetor } from "./card-setor";
 import { BarraProgresso } from "./barra-progresso";
-import type {
-  ConsultorResumo,
-  ModoVisualizacao,
-  PainelResponse,
-  SetorResumo,
-  SortKey,
-} from "./types";
-
-const MESES = [
-  { value: "01", label: "Jan" },
-  { value: "02", label: "Fev" },
-  { value: "03", label: "Mar" },
-  { value: "04", label: "Abr" },
-  { value: "05", label: "Mai" },
-  { value: "06", label: "Jun" },
-  { value: "07", label: "Jul" },
-  { value: "08", label: "Ago" },
-  { value: "09", label: "Set" },
-  { value: "10", label: "Out" },
-  { value: "11", label: "Nov" },
-  { value: "12", label: "Dez" },
-];
-
-const ANOS_DISPONIVEIS = (() => {
-  const now = new Date().getFullYear();
-  return [now - 1, now, now + 1];
-})();
-
-const ORDENACOES: { value: SortKey; label: string }[] = [
-  { value: "nome", label: "Nome (A–Z)" },
-  { value: "atingimento", label: "% Atingimento" },
-  { value: "realizado", label: "Realizado" },
-  { value: "meta", label: "Meta" },
-];
+import { useMetasVendas } from "@/util/use-metavendas";
+import { formatarMoeda } from "@/util/format-moeda";
 
 export function PainelMetasVendasClient() {
-  const now = new Date();
-  const [ano, setAno] = useState<number>(now.getFullYear());
-  const [mesSelecionado, setMesSelecionado] = useState<string>(
-    String(now.getMonth() + 1).padStart(2, "0"),
-  );
-  const [modo, setModo] = useState<ModoVisualizacao>("anual");
-  const [filtroSetor, setFiltroSetor] = useState<string>("TODOS");
-  const [sort, setSort] = useState<SortKey>("nome");
-  const [diasUteis, setDiasUteis] = useState<number>(22);
-  const [busca, setBusca] = useState<string>("");
-
-  const [data, setData] = useState<PainelResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  const carregar = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ ano: String(ano) });
-      if (modo === "mensal") params.set("mes", String(Number(mesSelecionado)));
-      const res = await fetch(`/api/v1/backoffice/metas-vendas?${params.toString()}`);
-      if (!res.ok) throw new Error("Falha ao carregar painel");
-      const json: PainelResponse = await res.json();
-      setData(json);
-    } catch (err: unknown) {
-      const mensagem = err instanceof Error ? err.message : "Erro ao carregar painel";
-      toast.error(mensagem);
-    } finally {
-      setLoading(false);
-    }
-  }, [ano, modo, mesSelecionado]);
-
-  useEffect(() => {
-    void carregar();
-  }, [carregar]);
-
-  const setoresFiltrados: SetorResumo[] = useMemo(() => {
-    if (!data) return [];
-    if (filtroSetor === "TODOS") return data.setores;
-    return data.setores.filter((s) => s.setorId === filtroSetor);
-  }, [data, filtroSetor]);
-
-  const todosConsultores: ConsultorResumo[] = useMemo(
-    () => setoresFiltrados.flatMap((s) => s.consultores),
-    [setoresFiltrados],
-  );
-
-  const destaques = useMemo(() => {
-    return [...todosConsultores]
-      .filter((c) => c.atingimento >= 100)
-      .sort((a, b) => b.atingimento - a.atingimento)
-      .slice(0, 4);
-  }, [todosConsultores]);
-
-  function formatarMoeda(valor: number): string {
-    return valor.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  }
+  const {
+    ano,
+    setAno,
+    mesSelecionado,
+    setMesSelecionado,
+    modo,
+    setModo,
+    filtroSetor,
+    setFiltroSetor,
+    sort,
+    setSort,
+    diasUteis,
+    setDiasUteis,
+    busca,
+    setBusca,
+    data,
+    loading,
+    carregar,
+    MESES,
+    ANOS_DISPONIVEIS,
+    ORDENACOES,
+    setoresFiltrados,
+    destaques,
+  } = useMetasVendas();
 
   return (
     <div className="space-y-5">
@@ -162,10 +93,7 @@ export function PainelMetasVendasClient() {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div>
-            <label
-              htmlFor="filtro-setor"
-              className="block text-xs font-semibold text-gray-700 mb-1"
-            >
+            <label htmlFor="filtro-setor" className="block text-xs font-semibold text-gray-700 mb-1">
               Filtrar por Setor:
             </label>
             <select
@@ -184,10 +112,7 @@ export function PainelMetasVendasClient() {
           </div>
 
           <div>
-            <label
-              htmlFor="ordenacao"
-              className="block text-xs font-semibold text-gray-700 mb-1"
-            >
+            <label htmlFor="ordenacao" className="block text-xs font-semibold text-gray-700 mb-1">
               Ordenar por:
             </label>
             <select
@@ -205,10 +130,7 @@ export function PainelMetasVendasClient() {
           </div>
 
           <div>
-            <label
-              htmlFor="dias-uteis"
-              className="block text-xs font-semibold text-gray-700 mb-1"
-            >
+            <label htmlFor="dias-uteis" className="block text-xs font-semibold text-gray-700 mb-1">
               Dias Úteis do Mês:
             </label>
             <input
@@ -225,10 +147,7 @@ export function PainelMetasVendasClient() {
           </div>
 
           <div>
-            <label
-              htmlFor="busca"
-              className="block text-xs font-semibold text-gray-700 mb-1"
-            >
+            <label htmlFor="busca" className="block text-xs font-semibold text-gray-700 mb-1">
               Buscar consultor:
             </label>
             <input

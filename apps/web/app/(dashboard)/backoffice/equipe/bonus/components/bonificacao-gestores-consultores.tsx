@@ -1,21 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useBonificacaoGestores } from "../hooks/use-bonificacao-gestores";
 import type { Gestor } from "../types";
-
-type Ciclo = { id: string; nome: string; status: string };
-
-function formatarData(iso: string | null) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return d.toLocaleDateString("pt-BR");
-}
+import { formatarData } from "@/util/format-data";
+import { useBonificacaoExtrato } from "@/hooks/use-bonificacao-extrato";
 
 export function BonificacaoGestoresConsultores() {
   const { data, loading, error, refetch } = useBonificacaoGestores();
-  const [ciclos, setCiclos] = useState<Ciclo[]>([]);
+  const [ciclos, setCiclos] = useState<Array<{ id: string; nome: string; status: string }>>([]);
   const [filtroCiclo, setFiltroCiclo] = useState("");
   const [filtroGestor, setFiltroGestor] = useState("");
   const [inicio, setInicio] = useState("");
@@ -43,91 +37,23 @@ export function BonificacaoGestoresConsultores() {
     carregarCiclos();
   }, []);
 
+  const {
+    extrato: extratoState,
+    setExtrato,
+    abrirExtrato,
+    fecharExtrato,
+    handleReset,
+    handleAjuste,
+  } = useBonificacaoExtrato(filtroCiclo, inicio, fim, refetch);
+
   useEffect(() => {
-    refetch({
+    void refetch({
       cicloId: filtroCiclo || undefined,
       gestorId: filtroGestor || undefined,
       inicio: inicio || undefined,
       fim: fim || undefined,
     });
   }, [filtroCiclo, filtroGestor, inicio, fim, refetch]);
-
-  const abrirExtrato = useCallback(async (consultorId: string, consultorNome: string) => {
-    setExtrato({ consultorId, consultorNome, items: [], saldoAtual: 0, loading: true });
-    try {
-      const url = new URL(`/api/v1/backoffice/equipe/bonus/${consultorId}/extrato`, window.location.origin);
-      if (filtroCiclo) url.searchParams.set("cicloId", filtroCiclo);
-      if (inicio) url.searchParams.set("inicio", inicio);
-      if (fim) url.searchParams.set("fim", fim);
-
-      const res = await fetch(url.toString());
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? "Não foi possível carregar o extrato");
-      }
-      const body = await res.json();
-      setExtrato({ consultorId, consultorNome, items: body.movimentacoes ?? [], saldoAtual: body.saldoAtual ?? 0, loading: false });
-    } catch (e) {
-      setExtrato((prev) => (prev ? { ...prev, loading: false } : prev));
-      toast.error(e instanceof Error ? e.message : "Erro ao carregar extrato");
-    }
-  }, [filtroCiclo, inicio, fim]);
-
-  const fecharExtrato = useCallback(() => setExtrato(null), []);
-
-   async function handleReset(consultorId: string) {
-    const confirmar = window.confirm("Zerar o saldo de Bônus deste Consultor PF? O lançamento ficará preservado no extrato.");
-    if (!confirmar) return;
-    try {
-      const res = await fetch("/api/v1/backoffice/pontos/bonus/reset", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ consultorPfId: consultorId }),
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error ?? "Não foi possível resetar os pontos");
-      toast.success(`${body.pontosResetados ?? 0} pontos resetados com sucesso.`);
-      await refetch({
-        cicloId: filtroCiclo || undefined,
-        gestorId: filtroGestor || undefined,
-        inicio: inicio || undefined,
-        fim: fim || undefined,
-      });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao resetar pontos");
-    }
-  }
-
-  async function handleAjuste(consultorId: string, delta: number) {
-    const confirmar = window.confirm(`Ajustar bônus em ${delta > 0 ? "+" : ""}${delta} ponto(s)?`);
-    if (!confirmar) return;
-    try {
-      const res = await fetch(`/api/v1/backoffice/equipe/bonus/${consultorId}/ajuste`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ delta }),
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error ?? "Não foi possível ajustar os pontos");
-      toast.success("Ajuste realizado com sucesso.");
-      await refetch({
-        cicloId: filtroCiclo || undefined,
-        gestorId: filtroGestor || undefined,
-        inicio: inicio || undefined,
-        fim: fim || undefined,
-      });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao ajustar pontos");
-    }
-  }
-
-  if (loading) {
-    return <p className="text-sm text-gray-500">Carregando bonificação...</p>;
-  }
-
-  if (error) {
-    return <p className="text-sm text-red-600">{error}</p>;
-  }
 
   const gestoresFiltrados = filtroGestor
     ? (data?.gestores ?? []).filter((g) => g.id === filtroGestor)
@@ -268,17 +194,17 @@ export function BonificacaoGestoresConsultores() {
         </div>
       )}
 
-      {extrato && (
+      {extratoState && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40">
           <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Extrato - {extrato.consultorNome}</h3>
-                <p className="text-xs text-gray-500">Saldo atual: {extrato.saldoAtual.toLocaleString("pt-BR")} pontos</p>
+                <h3 className="text-lg font-semibold text-gray-900">Extrato - {extratoState.consultorNome}</h3>
+                <p className="text-xs text-gray-500">Saldo atual: {extratoState.saldoAtual.toLocaleString("pt-BR")} pontos</p>
               </div>
               <button type="button" onClick={fecharExtrato} className="text-sm text-gray-500 hover:text-gray-700">Fechar</button>
             </div>
-            {extrato.loading ? (
+            {extratoState.loading ? (
               <p className="text-sm text-gray-500">Carregando...</p>
             ) : (
               <div className="overflow-x-auto">
@@ -293,7 +219,7 @@ export function BonificacaoGestoresConsultores() {
                     </tr>
                   </thead>
                   <tbody>
-                    {extrato.items.map((item) => (
+                    {extratoState.items.map((item) => (
                       <tr key={item.id} className="border-b last:border-0">
                         <td className="p-3 text-gray-700">{new Date(item.criadoEm).toLocaleDateString("pt-BR")}</td>
                         <td className="p-3 text-gray-700">{item.tipo}</td>
@@ -304,7 +230,7 @@ export function BonificacaoGestoresConsultores() {
                         </td>
                       </tr>
                     ))}
-                    {extrato.items.length === 0 && (
+                    {extratoState.items.length === 0 && (
                       <tr>
                         <td colSpan={5} className="p-4 text-center text-sm text-gray-500">Nenhuma movimentação encontrada.</td>
                       </tr>

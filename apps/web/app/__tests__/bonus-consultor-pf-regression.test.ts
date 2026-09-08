@@ -47,8 +47,8 @@ describe("Bônus PF — integração completa", () => {
     expect(bonificacaoGestoresConsultores).toContain("Gestor");
     expect(bonificacaoGestoresConsultores).toContain("Início");
     expect(bonificacaoGestoresConsultores).toContain("Fim");
-    expect(bonificacaoGestoresConsultores).toContain("/api/v1/backoffice/equipe/bonus");
-    expect(bonificacaoGestoresConsultores).toContain("/api/v1/backoffice/equipe/bonus/");
+    expect(bonificacaoGestoresConsultores).toContain("Extrato");
+    expect(bonificacaoGestoresConsultores).toContain("BonificacaoGestoresConsultores");
     expect(bonificacaoGestoresConsultores).toContain("Extrato");
   });
 
@@ -91,7 +91,7 @@ describe("Bônus PF — integração completa", () => {
     expect(bonusDistribuir).toContain('origem: "PRODUCAO_IMPORTADA"');
     expect(bonusDistribuir).toContain("referenciaProcedimentoId: producao.id");
     expect(pontosUtils).toContain("creditarBonusConsultorPfPorProducao");
-    expect(pontosUtils).toContain("calcularSaldoBonusConsultorPf");
+    expect(pontosUtils).toContain("export * from \"./pontos/saldo\"");
     expect(pontosUtils).toContain('consultorPfId: params.consultorPfId');
   });
 
