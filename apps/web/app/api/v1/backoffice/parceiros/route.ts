@@ -13,74 +13,20 @@ import {
 import { criarParceiroSchema, atualizarParceiroSchema } from "@asa/shared";
 import { criarAuditLog } from "@/lib/audit";
 import { criarEscopoParceiro } from "@/lib/parceiros-pontos-regras";
+import {
+  criarParceiroService,
+  atualizarParceiroService,
+  excluirParceiroService,
+  listarParceirosService,
+} from "@/app/api/v1/backoffice/parceiros/service";
 
 export async function GET(req: NextRequest) {
   const { session, backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  // Buscar todas as lideranças deste Gestor PF
-  const liderancas = await prisma.equipe.findMany({
-    where: { backofficeId, tipo: "LIDERANCA" },
-    include: {
-      subordinados: { where: { tipo: "COMERCIAL" }, select: { id: true } },
-      gestores: { select: { id: true } },
-    },
-  });
-
-  // Coletar todos os IDs de comerciais e gestores
-  const comercialIds = liderancas.flatMap(l => l.subordinados.map(c => c.id));
-  const gestorIds = liderancas.flatMap(l => l.gestores.map(g => g.id));
-
-  // Buscar TODOS os parceiros: vinculados a comerciais/gestores OU sem vínculo (órfãos)
-  const parceiros = await prisma.parceiro.findMany({
-    where: {
-      ...criarEscopoParceiro(backofficeId),
-      OR: [
-        { comercialId: { in: comercialIds } },
-        { gestorId: { in: gestorIds } },
-        { comercialId: null, gestorId: null }, // Parceiros órfãos
-      ],
-    },
-    include: {
-      usuario: {
-        select: {
-          id: true,
-          email: true,
-          status: true,
-        },
-      },
-      indicacoes: {
-        orderBy: { createdAt: "desc" },
-      },
-      _count: {
-        select: { indicacoes: true },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const result = parceiros.map((p) => ({
-    id: p.id,
-    nome: p.nome,
-    cpf: p.cpf,
-    email: p.usuario.email,
-    pixChave: p.pixChave,
-    periodicidadeCicloEscolhida: p.periodicidadeCicloEscolhida,
-    status: p.status,
-    totalIndicados: p._count.indicacoes,
-    desligadoEm: p.desligadoEm,
-    createdAt: p.createdAt,
-    indicacoes: p.indicacoes.map((i) => ({
-      id: i.id,
-      nome: i.nome,
-      cpf: i.cpf,
-      telefone: i.telefone,
-      status: i.status,
-      createdAt: i.createdAt,
-    })),
-  }));
-
-  return ok(result);
+  const result = await listarParceirosService(backofficeId);
+  if (!result.success) return badRequest(result.error);
+  return ok(result.data);
 }
 
 export async function POST(req: NextRequest) {
@@ -94,56 +40,10 @@ export async function POST(req: NextRequest) {
   }
 
   const { nome, email, cpf } = validation.data;
+  const result = await criarParceiroService(nome, email, cpf, backofficeId, session);
+  if (!result.success) return badRequest(result.error);
 
-  const cpfUnmasked = cpf.replace(/\D/g, "");
-
-  const existingParceiro = await prisma.parceiro.findFirst({
-    where: { cpf: cpfUnmasked },
-  });
-
-  if (existingParceiro) {
-    return badRequest("CPF já cadastrado");
-  }
-
-  const existingUser = await prisma.usuario.findUnique({
-    where: { email },
-  });
-
-  if (existingUser) {
-    return badRequest("E-mail já cadastrado");
-  }
-
-  const passwordHash = await hash(cpfUnmasked, 10);
-
-  const usuario = await prisma.usuario.create({
-    data: {
-      nome,
-      email,
-      senhaHash: passwordHash,
-      tipo: "PARCEIRO",
-      senhaTemporaria: true,
-    },
-  });
-
-  const parceiro = await prisma.parceiro.create({
-    data: {
-      nome,
-      cpf: cpfUnmasked,
-      usuarioId: usuario.id,
-      backofficeId,
-      status: "ATIVO",
-    },
-  });
-
-  await criarAuditLog({
-    usuarioId: session.user.id,
-    acao: "CRIAR",
-    entidade: "PARCEIRO",
-    entidadeId: parceiro.id,
-    detalhes: { nome, email, cpf: cpfUnmasked },
-  });
-
-  return created({ id: parceiro.id, nome, email });
+  return created({ id: result.data.id, nome, email });
 }
 
 export async function PUT(req: NextRequest) {
@@ -157,77 +57,8 @@ export async function PUT(req: NextRequest) {
   }
 
   const { id, nome, email, cpf } = validation.data;
-
-  const parceiro = await prisma.parceiro.findFirst({
-    where: { id, ...criarEscopoParceiro(backofficeId) },
-    include: { usuario: true },
-  });
-
-  if (!parceiro) {
-    return notFound("Parceiro não encontrado");
-  }
-
-  const cpfUnmasked = cpf ? cpf.replace(/\D/g, "") : parceiro.cpf;
-
-  if (cpf && cpfUnmasked !== parceiro.cpf) {
-    const existingParceiro = await prisma.parceiro.findFirst({
-      where: {
-        cpf: cpfUnmasked,
-        id: { not: id },
-      },
-    });
-
-    if (existingParceiro) {
-      return badRequest("CPF já cadastrado");
-    }
-  }
-
-  const normalizedEmail = (email ?? parceiro.usuario.email).toLowerCase().trim();
-  const currentEmail = parceiro.usuario.email.toLowerCase().trim();
-
-  const existingUser = await prisma.usuario.findFirst({
-    where: {
-      email: { equals: normalizedEmail, mode: "insensitive" },
-      id: { not: parceiro.usuarioId },
-    },
-  });
-
-  if (existingUser) {
-    return badRequest("E-mail já cadastrado");
-  }
-
-  try {
-    await prisma.$transaction(async (tx) => {
-      if (normalizedEmail !== currentEmail) {
-        await tx.usuario.update({
-          where: { id: parceiro.usuarioId },
-          data: { email: normalizedEmail },
-        });
-      }
-
-      await tx.parceiro.update({
-        where: { id },
-        data: {
-          nome,
-          cpf: cpfUnmasked,
-        },
-      });
-    });
-  } catch (err: unknown) {
-    const prismaError = err as { code?: string };
-    if (prismaError?.code === "P2002") {
-      return badRequest("E-mail já cadastrado");
-    }
-    throw err;
-  }
-
-  await criarAuditLog({
-    usuarioId: session.user.id,
-    acao: "ATUALIZAR",
-    entidade: "PARCEIRO",
-    entidadeId: id,
-    detalhes: { nome, email: normalizedEmail, cpf: cpfUnmasked },
-  });
+  const result = await atualizarParceiroService(id, nome, email, cpf, backofficeId, session);
+  if (!result.success) return badRequest(result.error);
 
   return ok({ success: true });
 }
@@ -243,35 +74,8 @@ export async function DELETE(req: NextRequest) {
     return badRequest("ID do parceiro não informado");
   }
 
-  const parceiro = await prisma.parceiro.findFirst({
-    where: { id, ...criarEscopoParceiro(backofficeId) },
-  });
-
-  if (!parceiro) {
-    return notFound("Parceiro não encontrado");
-  }
-
-  await prisma.parceiro.update({
-    where: { id },
-    data: {
-      status: "DESLIGADO",
-      desligadoEm: new Date(),
-    },
-  });
-
-  await prisma.usuario.update({
-    where: { id: parceiro.usuarioId },
-    data: { status: "INATIVO" },
-  });
-
-  await criarAuditLog({
-    usuarioId: session.user.id,
-    acao: "DESATIVAR",
-    entidade: "PARCEIRO",
-    entidadeId: id,
-    detalhes: { nome: parceiro.nome },
-  });
+  const result = await excluirParceiroService(id, backofficeId, session);
+  if (!result.success) return badRequest(result.error);
 
   return ok({ success: true });
 }
-

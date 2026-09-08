@@ -5,75 +5,17 @@ import {
   ok,
   requireBackofficeWithScope,
 } from "@/lib/api-helpers";
-import { getComissaoFromFuncao, calcularValorComissaoNum } from "@/lib/comissao-calculo";
-import { intervaloMesReferencia } from "@/lib/competencia";
-
-/**
- * Soma runtime de `ProcedimentoPF.valorTotal` filtrado por `comercialId` (e opcionalmente
- * por `dataReferencia` dentro do mês de referência) e escopo de backoffice.
- *
- * Fonte de verdade única: a tabela `procedimentos_pf` — o que aparece em
- * "Lista de Produção". Substitui a leitura de `MetaEquipe.valorAtingido`,
- * que ficava dessincronizada do upload sempre que o `Reprocessar Comissões`
- * não era disparado manualmente.
- */
-async function somarProducaoPorComerciais(
-  comercialIds: string[],
-  backofficeId: string,
-  intervalo: { inicio: Date; fim: Date },
-): Promise<Map<string, number>> {
-  const mapa = new Map<string, number>();
-  if (comercialIds.length === 0) return mapa;
-
-  // O upload de planilha grava o "Total Pago" da planilha no campo
-  // `valorComissao` de ProcedimentoPF. Usamos `valorComissao` como fonte
-  // porque é o que a Lista de Produção exibe na coluna "Total Pago".
-  // `valorTotal` pode estar zerado dependendo do caminho de criação.
-  const grupos = await prisma.procedimentoPF.groupBy({
-    by: ["comercialId"],
-    where: {
-      comercialId: { in: comercialIds, not: null },
-      upload: { backofficeId },
-      dataReferencia: { gte: intervalo.inicio, lt: intervalo.fim },
-    },
-    _sum: { valorComissao: true, valorTotal: true },
-  });
-
-  for (const g of grupos) {
-    if (!g.comercialId) continue;
-    const v1 = Number(g._sum.valorComissao ?? 0);
-    const v2 = Number(g._sum.valorTotal ?? 0);
-    mapa.set(g.comercialId, Math.max(v1, v2));
-  }
-  return mapa;
-}
-
-async function somarProducaoPorConsultoresPf(
-  consultorPfIds: string[],
-  backofficeId: string,
-  intervalo: { inicio: Date; fim: Date },
-): Promise<Map<string, number>> {
-  const mapa = new Map<string, number>();
-  if (consultorPfIds.length === 0) return mapa;
-
-  const grupos = await prisma.procedimentoPF.groupBy({
-    by: ["consultorPfId"],
-    where: {
-      consultorPfId: { in: consultorPfIds, not: null },
-      upload: { backofficeId },
-      dataReferencia: { gte: intervalo.inicio, lt: intervalo.fim },
-    },
-    _sum: { valorComissao: true, valorTotal: true },
-  });
-
-  for (const g of grupos) {
-    if (!g.consultorPfId) continue;
-    const v1 = Number(g._sum.valorComissao ?? 0);
-    const v2 = Number(g._sum.valorTotal ?? 0);
-    mapa.set(g.consultorPfId, Math.max(v1, v2));
-  }
-  return mapa;
-}
+import {
+  getComissaoFromFuncao,
+  calcularValorComissaoNum,
+  intervaloMesReferencia,
+} from "@/lib/comissao-calculo";
+import {
+  somarProducaoPorComerciais,
+  somarProducaoPorConsultoresPf,
+  calcularPctComissaoLideranca,
+  calcularValorComissao,
+} from "@/lib/comissao-calculo";
 
 export async function GET(
   req: NextRequest,
@@ -89,13 +31,11 @@ export async function GET(
 
   const intervalo = intervaloMesReferencia(mesReferencia);
 
-  // O fetch é feito do servidor para o próprio app; repassamos o cookie da
-  // sessão para que os endpoints de regras autentiquem (caso contrário 401).
+  // Buscar regras de comissão
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const cookie = req.headers.get("cookie");
   const fetchHeaders = cookie ? { cookie } : undefined;
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
-  // Buscar regras de comissão
   const [regrasComRes, regrasGesRes] = await Promise.all([
     fetch(`${baseUrl}/api/v1/backoffice/regras-comerciais`, {
       headers: fetchHeaders,
@@ -170,9 +110,6 @@ export async function GET(
         where: { equipeId: { in: membroIds }, mesReferencia },
       }),
       prisma.metaConsultorPf.findMany({
-        // Inclui metas com e sem setorId: o backoffice/metas-vendas grava
-        // por (consultorPf, setor, mês) e o líder grava sem setorId. A UI
-        // exibe uma única "Meta" por consultor/mês — somamos todas.
         where: { mesReferencia },
         select: { consultorPfId: true, valorMeta: true },
       }),
@@ -233,7 +170,7 @@ export async function GET(
     const valorComissaoPersistida = comissao ? Number(comissao.valorComissao ?? 0) : 0;
 
     const funcaoLideranca = l.funcao || "GERENTE_CIRE";
-    const pctLideranca = getComissaoFromFuncao({ regrasComerciais, regrasGestores }, funcaoLideranca);
+    const pctLideranca = calcularPctComissaoLideranca(regrasComerciais, regrasGestores, funcaoLideranca);
     const comissaoLiderancaCalculada = pctLideranca && valorProducao > 0
       ? calcularValorComissaoNum(String(valorProducao), pctLideranca)
       : valorComissaoPersistida;
@@ -248,7 +185,7 @@ export async function GET(
       const sValorProducao = producaoPorComercial.get(s.id) ?? 0;
       const sValorComissaoPersistida = sComissao ? Number(sComissao.valorComissao ?? 0) : 0;
       const sFuncao = s.funcao || "SUPERVISOR_ATIVO";
-      const sPct = getComissaoFromFuncao({ regrasComerciais, regrasGestores }, sFuncao);
+      const sPct = calcularPctComissaoLideranca(regrasComerciais, regrasGestores, sFuncao);
       const sComissaoCalc = sPct && sValorProducao > 0
         ? calcularValorComissaoNum(String(sValorProducao), sPct)
         : sValorComissaoPersistida;
@@ -305,7 +242,7 @@ export async function GET(
     const valorProducao = producaoPorComercial.get(c.id) ?? 0;
     const valorComissaoPersistida = comissao ? Number(comissao.valorComissao ?? 0) : 0;
     const funcao = c.funcao || "SUPERVISOR_ATIVO";
-    const pct = getComissaoFromFuncao({ regrasComerciais, regrasGestores }, funcao);
+    const pct = calcularPctComissaoLideranca(regrasComerciais, regrasGestores, funcao);
     const comissaoCalc = pct && valorProducao > 0
       ? calcularValorComissaoNum(String(valorProducao), pct)
       : valorComissaoPersistida;
