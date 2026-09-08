@@ -14,7 +14,7 @@ export function BonificacaoGestoresConsultores() {
   const [filtroGestor, setFiltroGestor] = useState("");
   const [inicio, setInicio] = useState("");
   const [fim, setFim] = useState("");
-  const [extrato, setExtrato] = useState<{
+  const [extratoLocal, setExtratoLocal] = useState<{
     consultorId: string;
     consultorNome: string;
     items: Array<{ id: string; tipo: string; origem: string; quantidade: number; descricao: string | null; ciclo: string; criadoEm: string }>;
