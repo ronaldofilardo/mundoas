@@ -70,33 +70,8 @@ const mockData: ProducaoOriginal[] = [
   },
 ];
 
-/** Filtros padrões (vazios) */
-const filtrosVazios = {} as {
-  filtroParceiro?: string;
-  filtroIndicado?: string;
-  filtroDataInicio?: string;
-  filtroDataFim?: string;
-};
-
-/** utils importados do código REAL (tabela-distribuicao.utils.ts) */
-import {
-  listarParceirosUnicos,
-  filtrarProducoes,
-  contarPendentes,
-  formatarMoeda,
-  formatarData,
-  obterPontosExibicao,
-  obterStatusDistribuicao,
-} from "@/app/(dashboard)/backoffice/pontos/components/tabela-distribuicao.utils";
-
-/** actions importados do código REAL (tabela-distribuicao.actions.ts) */
-import {
-  distribuirProducao,
-  distribuirTodasProducoes,
-  type DistribuicaoResult,
-} from "@/app/(dashboard)/backoffice/pontos/components/tabela-distribuicao.actions";
-
-describe("TabelaDistribuicao - Utils (Lógica Real Extraída)", () => {
+/** Dados mock usados em todos os testes */
+const mockData: ProducaoOriginal[] = [
   beforeEach(() => {
     vi.clearAllMocks();
   });
