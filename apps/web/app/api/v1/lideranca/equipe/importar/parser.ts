@@ -18,11 +18,22 @@ function parseMesReferencia(valor: string): string | null {
   return null;
 }
 
-function parseLinhaImport(linha: string, linhaNumero: number) {
-  const parts = linha.split("\t").map((p) => p.trim());
+function parseLinhaTSV(line: string, linhaNumero: number): {
+  nome: string;
+  email: string;
+  cpf: string;
+  telefone?: string;
+  metaStr?: string;
+  mesReferenciaRaw?: string;
+  erro?: string;
+} {
+  const parts = line.split("\t").map((p) => p.trim());
   
   if (parts.length < 3) {
     return {
+      nome: "",
+      email: "",
+      cpf: "",
       erro: "Formato esperado: Nome [TAB] Email [TAB] CPF [TAB] Telefone [TAB] Meta [TAB] Mês",
     };
   }
@@ -35,12 +46,12 @@ function parseLinhaImport(linha: string, linhaNumero: number) {
   const mesReferenciaRaw = parts[5]?.trim() || "";
 
   if (!nome || !email || !cpf) {
-    return { erro: "Nome, Email e CPF são obrigatórios." };
-  }
-
-  const mesReferencia = parseMesReferencia(mesReferenciaRaw);
-  if (!mesReferencia) {
-    return { erro: "Formato de mês inválido. Use YYYY-MM ou nome do mês e ano." };
+    return {
+      nome,
+      email,
+      cpf,
+      erro: "Nome, Email e CPF são obrigatórios.",
+    };
   }
 
   return {
@@ -48,9 +59,9 @@ function parseLinhaImport(linha: string, linhaNumero: number) {
     email,
     cpf,
     telefone,
-    meta: metaStr ? parseFloat(metaStr) / 100 : undefined,
-    mesReferencia,
+    metaStr,
+    mesReferenciaRaw,
   };
 }
 
-export { parseMesReferencia, parseLinhaImport };
+export { parseMesReferencia, parseLinhaTSV };

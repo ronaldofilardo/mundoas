@@ -1,28 +1,61 @@
 import { NextRequest } from "next/server";
 import { prisma, type Prisma } from "@asa/database";
 import { ok, badRequest, requireBackofficeWithScope } from "@/lib/api-helpers";
-import { getConsultorPfRelatorio } from "./service-consultor-pf";
-import { getComercialRelatorio } from "./service-comercial";
+import { relatorioComissoesQuerySchema, type RelatorioComissoesQuery } from "./validator";
+import {
+  getLiderancas,
+  getConsultorPFData,
+  formatConsultorPFResponse,
+  getComercialData,
+  formatComercialResponse,
+} from "./service";
 
 export async function GET(req: NextRequest) {
+  const query = new URL(req.url);
+  const parsed = relatorioComissoesQuerySchema.parse({
+    inicio: query.searchParams.get("inicio"),
+    fim: query.searchParams.get("fim"),
+    comercialId: query.searchParams.get("comercialId"),
+    funcao: query.searchParams.get("funcao"),
+    tipo: query.searchParams.get("tipo"),
+  });
+
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  const { searchParams } = new URL(req.url);
-  const inicio = searchParams.get("inicio");
-  const fim = searchParams.get("fim");
-  const tipo = searchParams.get("tipo") || "comercial";
-
-  if (!inicio || !fim) {
+  if (!parsed.inicio || !parsed.fim) {
     return badRequest("Parâmetros obrigatórios: inicio e fim (formato: YYYY-MM)");
   }
 
-  let result;
-  if (tipo === "consultor-pf") {
-    result = await getConsultorPfRelatorio(backofficeId, inicio, fim);
-  } else {
-    result = await getComercialRelatorio(backofficeId, inicio, fim, searchParams.get("funcao"));
+  const liderancas = await getLiderancas(backofficeId);
+
+  if (parsed.tipo === "consultor-pf") {
+    const data = await getConsultorPFData(liderancas, parsed.inicio, parsed.fim);
+    return formatConsultorPFResponse(
+      data.comissoes,
+      data.porMes,
+      data.totalGeralProducao,
+      data.totalGeralProducaoCalculada,
+      data.totalGeralDivergencias,
+      data.totalGeralComissao,
+      data.producaoCalculadaPorChave,
+      liderancas,
+    );
   }
 
-  return ok(result);
+  const data = await getComercialData(
+    liderancas,
+    parsed.inicio,
+    parsed.fim,
+    parsed.comercialId,
+    parsed.funcao,
+  );
+  return formatComercialResponse(
+    data.comissoes,
+    data.porMes,
+    data.porFuncao,
+    data.totalGeralVendas,
+    data.totalGeralComissao,
+    liderancas,
+  );
 }
