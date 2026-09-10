@@ -17,6 +17,7 @@ import { MesReferenciaSelect } from "./upload-planilha-preview.mes-select";
 import { FileInputSection, LoadingState } from "./upload-planilha-preview.file-input";
 import { executarUpload } from "./upload-planilha-preview.upload";
 import { useHandleFileChange } from "./upload-planilha-preview.handlers";
+import { FalhaLoteInfo, ProgressoUpload } from "./upload-chunked-client";
 
 export function getConsultorPfBadgeProps(
   usuarioDaConta?: string,
@@ -52,6 +53,8 @@ export function UploadPlanilhaPreview({
   const [mesReferencia, setMesReferencia] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [feedback, setFeedback] = useState<UploadFeedback | null>(null);
+  const [progresso, setProgresso] = useState<ProgressoUpload | null>(null);
+  const [falhaLote, setFalhaLote] = useState<FalhaLoteInfo | null>(null);
 
   const abrirFeedback = useCallback((novoFeedback: UploadFeedback) => {
     setFeedback(novoFeedback);
@@ -107,6 +110,9 @@ export function UploadPlanilhaPreview({
       setMesReferencia,
       setShowAllRows,
       onUploadSuccess,
+      setProgresso,
+      falhaLoteExistente: falhaLote,
+      setFalhaLote,
     });
   };
 
@@ -152,11 +158,15 @@ export function UploadPlanilhaPreview({
             previewData={previewData}
             uploading={uploading}
             mesReferencia={mesReferencia}
+            progresso={progresso}
+            falhaLote={falhaLote}
             onUpload={handleUpload}
             onReset={() => {
               setFile(null);
               setPreviewData(null);
               setShowAllRows(false);
+              setProgresso(null);
+              setFalhaLote(null);
             }}
           />
         </>
@@ -184,6 +194,9 @@ export function UploadPlanilhaPreview({
               setMesReferencia,
               setShowAllRows,
               onUploadSuccess,
+              setProgresso,
+              falhaLoteExistente: falhaLote,
+              setFalhaLote,
             });
           }}
         />

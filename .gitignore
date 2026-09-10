@@ -28,7 +28,8 @@ coverage/
 audit/
 
 # Uploads
-uploads/
+/uploads/
+apps/web/uploads/
 
 # Database
 prisma/*.db
