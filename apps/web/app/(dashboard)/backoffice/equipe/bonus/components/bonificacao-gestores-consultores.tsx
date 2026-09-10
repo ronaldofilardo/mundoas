@@ -18,6 +18,7 @@ export function BonificacaoGestoresConsultores() {
   const [ajustesPendentes, setAjustesPendentes] = useState<
     Record<string, number>
   >({});
+  const [inputsAjuste, setInputsAjuste] = useState<Record<string, string>>({});
   const [ajusteEmEnvio, setAjusteEmEnvio] = useState<string | null>(null);
   const [extratoLocal, setExtratoLocal] = useState<{
     consultorId: string;
@@ -58,24 +59,65 @@ export function BonificacaoGestoresConsultores() {
     handleAjuste,
   } = useBonificacaoExtrato(filtroCiclo, inicio, fim, refetch);
 
-  const alterarAjustePendente = (consultorId: string, delta: number) => {
-    setAjustesPendentes((prev) => {
-      const proximoDelta = (prev[consultorId] ?? 0) + delta;
+  const alterarPasso = (consultorId: string, step: number) => {
+    const currentStr = inputsAjuste[consultorId] ?? "";
+    const currentNum = parseInt(currentStr, 10);
+    const base = isNaN(currentNum) ? 0 : currentNum;
+    const nextVal = base + step;
+
+    setInputsAjuste((prev) => {
       const proximo = { ...prev };
-      if (proximoDelta === 0) delete proximo[consultorId];
-      else proximo[consultorId] = proximoDelta;
+      if (nextVal === 0) {
+        delete proximo[consultorId];
+      } else {
+        proximo[consultorId] = String(nextVal);
+      }
+      return proximo;
+    });
+
+    setAjustesPendentes((prev) => {
+      const proximo = { ...prev };
+      if (nextVal === 0) {
+        delete proximo[consultorId];
+      } else {
+        proximo[consultorId] = nextVal;
+      }
+      return proximo;
+    });
+  };
+
+  const handleInputChange = (consultorId: string, rawVal: string) => {
+    if (rawVal !== "" && !/^[-+]?\d*$/.test(rawVal)) {
+      return;
+    }
+
+    setInputsAjuste((prev) => ({ ...prev, [consultorId]: rawVal }));
+
+    const parsed = parseInt(rawVal, 10);
+    setAjustesPendentes((prev) => {
+      const proximo = { ...prev };
+      if (isNaN(parsed) || parsed === 0) {
+        delete proximo[consultorId];
+      } else {
+        proximo[consultorId] = parsed;
+      }
       return proximo;
     });
   };
 
   const confirmarAjuste = async (consultorId: string) => {
     const delta = ajustesPendentes[consultorId];
-    if (!delta || ajusteEmEnvio) return;
+    if (!delta || delta === 0 || ajusteEmEnvio) return;
 
     setAjusteEmEnvio(consultorId);
     const sucesso = await handleAjuste(consultorId, delta);
     if (sucesso) {
       setAjustesPendentes((prev) => {
+        const proximo = { ...prev };
+        delete proximo[consultorId];
+        return proximo;
+      });
+      setInputsAjuste((prev) => {
         const proximo = { ...prev };
         delete proximo[consultorId];
         return proximo;
@@ -86,6 +128,11 @@ export function BonificacaoGestoresConsultores() {
 
   const cancelarAjuste = (consultorId: string) => {
     setAjustesPendentes((prev) => {
+      const proximo = { ...prev };
+      delete proximo[consultorId];
+      return proximo;
+    });
+    setInputsAjuste((prev) => {
       const proximo = { ...prev };
       delete proximo[consultorId];
       return proximo;
@@ -241,13 +288,13 @@ export function BonificacaoGestoresConsultores() {
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm table-auto min-w-[720px]">
+                <table className="w-full text-sm table-auto min-w-[780px]">
                   <colgroup>
-                    <col style={{ width: "220px" }} />
-                    <col style={{ width: "160px" }} />
+                    <col style={{ width: "200px" }} />
+                    <col style={{ width: "130px" }} />
+                    <col style={{ width: "270px" }} />
+                    <col style={{ width: "100px" }} />
                     <col style={{ width: "140px" }} />
-                    <col style={{ width: "140px" }} />
-                    <col style={{ width: "180px" }} />
                   </colgroup>
                   <thead>
                     <tr className="border-b bg-gray-50">
@@ -279,59 +326,85 @@ export function BonificacaoGestoresConsultores() {
                         </td>
                         <td className="p-3 text-gray-700">{c.cpf}</td>
                         <td className="p-3 text-right font-semibold text-gray-900">
-                          <span className="mr-2 inline-block tabular-nums">
-                            {(
-                              c.saldoPontos + (ajustesPendentes[c.id] ?? 0)
-                            ).toLocaleString("pt-BR")}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => alterarAjustePendente(c.id, -1)}
-                            aria-label={`Diminuir pontos de ${c.nome}`}
-                            disabled={ajusteEmEnvio === c.id}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-gray-100"
-                          >
-                            −
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => alterarAjustePendente(c.id, 1)}
-                            aria-label={`Aumentar pontos de ${c.nome}`}
-                            disabled={ajusteEmEnvio === c.id}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-gray-100"
-                          >
-                            +
-                          </button>
-                          {ajustesPendentes[c.id] && (
-                            <span className="ml-2 inline-flex items-center gap-1 align-middle whitespace-nowrap text-xs font-normal">
-                              <span
-                                className={
-                                  ajustesPendentes[c.id] > 0
-                                    ? "text-green-700"
-                                    : "text-red-700"
-                                }
-                              >
-                                {ajustesPendentes[c.id] > 0 ? "+" : ""}
-                                {ajustesPendentes[c.id]}
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="text-right">
+                              <span className="inline-block tabular-nums text-gray-900">
+                                {(
+                                  c.saldoPontos + (ajustesPendentes[c.id] ?? 0)
+                                ).toLocaleString("pt-BR")}
                               </span>
+                              {ajustesPendentes[c.id] ? (
+                                <span
+                                  className={`block text-[11px] font-medium leading-tight tabular-nums ${
+                                    ajustesPendentes[c.id] > 0
+                                      ? "text-green-700"
+                                      : "text-red-700"
+                                  }`}
+                                >
+                                  {ajustesPendentes[c.id] > 0 ? "+" : ""}
+                                  {ajustesPendentes[c.id].toLocaleString("pt-BR")}
+                                </span>
+                              ) : null}
+                            </div>
+
+                            <div className="inline-flex items-center rounded-md border border-gray-300 bg-white shadow-xs">
                               <button
                                 type="button"
-                                onClick={() => void confirmarAjuste(c.id)}
+                                onClick={() => alterarPasso(c.id, -1)}
+                                aria-label={`Diminuir pontos de ${c.nome}`}
                                 disabled={ajusteEmEnvio === c.id}
-                                className="rounded border border-green-600 px-1.5 py-0.5 font-medium text-green-700 hover:bg-green-50 disabled:opacity-50"
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-l-md text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
                               >
-                                {ajusteEmEnvio === c.id ? "..." : "Confirmar"}
+                                −
                               </button>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                value={inputsAjuste[c.id] ?? ""}
+                                onChange={(e) => handleInputChange(c.id, e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") void confirmarAjuste(c.id);
+                                  if (e.key === "Escape") cancelarAjuste(c.id);
+                                }}
+                                placeholder="Qtd"
+                                aria-label={`Quantidade de pontos para ${c.nome}`}
+                                disabled={ajusteEmEnvio === c.id}
+                                className="h-7 w-16 border-x border-gray-300 px-1 text-center text-xs font-semibold tabular-nums text-gray-900 placeholder:text-gray-400 focus:bg-amber-50/40 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                              />
                               <button
                                 type="button"
-                                onClick={() => cancelarAjuste(c.id)}
+                                onClick={() => alterarPasso(c.id, 1)}
+                                aria-label={`Aumentar pontos de ${c.nome}`}
                                 disabled={ajusteEmEnvio === c.id}
-                                className="rounded border border-gray-300 px-1.5 py-0.5 font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-r-md text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
                               >
-                                Cancelar
+                                +
                               </button>
-                            </span>
-                          )}
+                            </div>
+
+                            {ajustesPendentes[c.id] && ajustesPendentes[c.id] !== 0 ? (
+                              <span className="inline-flex items-center gap-1 align-middle whitespace-nowrap text-xs font-normal">
+                                <button
+                                  type="button"
+                                  onClick={() => void confirmarAjuste(c.id)}
+                                  disabled={ajusteEmEnvio === c.id}
+                                  className="rounded border border-green-600 bg-green-50 px-1.5 py-1 text-xs font-medium text-green-700 hover:bg-green-100 disabled:opacity-50"
+                                  title="Confirmar ajuste (Enter)"
+                                >
+                                  {ajusteEmEnvio === c.id ? "..." : "Confirmar"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => cancelarAjuste(c.id)}
+                                  disabled={ajusteEmEnvio === c.id}
+                                  className="rounded border border-gray-300 bg-white px-1.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                                  title="Cancelar (Esc)"
+                                >
+                                  ✕
+                                </button>
+                              </span>
+                            ) : null}
+                          </div>
                         </td>
                         <td className="p-3 text-right text-gray-700">
                           {c.totalResgates}
