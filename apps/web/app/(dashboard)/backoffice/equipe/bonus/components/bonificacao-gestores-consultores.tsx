@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { useBonificacaoGestores } from "../hooks/use-bonificacao-gestores";
 import type { Gestor } from "../types";
 import { formatarData } from "@/util/format-data";
@@ -9,15 +8,29 @@ import { useBonificacaoExtrato } from "@/hooks/use-bonificacao-extrato";
 
 export function BonificacaoGestoresConsultores() {
   const { data, loading, error, refetch } = useBonificacaoGestores();
-  const [ciclos, setCiclos] = useState<Array<{ id: string; nome: string; status: string }>>([]);
+  const [ciclos, setCiclos] = useState<
+    Array<{ id: string; nome: string; status: string }>
+  >([]);
   const [filtroCiclo, setFiltroCiclo] = useState("");
   const [filtroGestor, setFiltroGestor] = useState("");
   const [inicio, setInicio] = useState("");
   const [fim, setFim] = useState("");
+  const [ajustesPendentes, setAjustesPendentes] = useState<
+    Record<string, number>
+  >({});
+  const [ajusteEmEnvio, setAjusteEmEnvio] = useState<string | null>(null);
   const [extratoLocal, setExtratoLocal] = useState<{
     consultorId: string;
     consultorNome: string;
-    items: Array<{ id: string; tipo: string; origem: string; quantidade: number; descricao: string | null; ciclo: string; criadoEm: string }>;
+    items: Array<{
+      id: string;
+      tipo: string;
+      origem: string;
+      quantidade: number;
+      descricao: string | null;
+      ciclo: string;
+      criadoEm: string;
+    }>;
     saldoAtual: number;
     loading: boolean;
   } | null>(null);
@@ -42,9 +55,42 @@ export function BonificacaoGestoresConsultores() {
     setExtrato,
     abrirExtrato,
     fecharExtrato,
-    handleReset,
     handleAjuste,
   } = useBonificacaoExtrato(filtroCiclo, inicio, fim, refetch);
+
+  const alterarAjustePendente = (consultorId: string, delta: number) => {
+    setAjustesPendentes((prev) => {
+      const proximoDelta = (prev[consultorId] ?? 0) + delta;
+      const proximo = { ...prev };
+      if (proximoDelta === 0) delete proximo[consultorId];
+      else proximo[consultorId] = proximoDelta;
+      return proximo;
+    });
+  };
+
+  const confirmarAjuste = async (consultorId: string) => {
+    const delta = ajustesPendentes[consultorId];
+    if (!delta || ajusteEmEnvio) return;
+
+    setAjusteEmEnvio(consultorId);
+    const sucesso = await handleAjuste(consultorId, delta);
+    if (sucesso) {
+      setAjustesPendentes((prev) => {
+        const proximo = { ...prev };
+        delete proximo[consultorId];
+        return proximo;
+      });
+    }
+    setAjusteEmEnvio(null);
+  };
+
+  const cancelarAjuste = (consultorId: string) => {
+    setAjustesPendentes((prev) => {
+      const proximo = { ...prev };
+      delete proximo[consultorId];
+      return proximo;
+    });
+  };
 
   useEffect(() => {
     void refetch({
@@ -57,7 +103,7 @@ export function BonificacaoGestoresConsultores() {
 
   const gestoresFiltrados = filtroGestor
     ? (data?.gestores ?? []).filter((g) => g.id === filtroGestor)
-    : data?.gestores ?? [];
+    : (data?.gestores ?? []);
 
   const cicloSelecionado = ciclos.find((c) => c.id === filtroCiclo);
   const cicloVigente = !filtroCiclo ? data?.ciclo : null;
@@ -67,12 +113,22 @@ export function BonificacaoGestoresConsultores() {
       {cicloVigente && (
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs text-gray-500">Ciclo vigente</p>
-          <p className="text-sm font-semibold text-gray-900">{cicloVigente.nome} <span className="text-xs text-gray-500">({cicloVigente.status})</span></p>
+          <p className="text-sm font-semibold text-gray-900">
+            {cicloVigente.nome}{" "}
+            <span className="text-xs text-gray-500">
+              ({cicloVigente.status})
+            </span>
+          </p>
         </div>
       )}
       <div className="flex flex-wrap items-end gap-4">
         <div>
-          <label htmlFor="filtro-ciclo" className="mb-1 block text-xs font-medium text-gray-600">Ciclo</label>
+          <label
+            htmlFor="filtro-ciclo"
+            className="mb-1 block text-xs font-medium text-gray-600"
+          >
+            Ciclo
+          </label>
           <select
             id="filtro-ciclo"
             value={filtroCiclo}
@@ -88,7 +144,12 @@ export function BonificacaoGestoresConsultores() {
           </select>
         </div>
         <div>
-          <label htmlFor="filtro-gestor" className="mb-1 block text-xs font-medium text-gray-600">Gestor</label>
+          <label
+            htmlFor="filtro-gestor"
+            className="mb-1 block text-xs font-medium text-gray-600"
+          >
+            Gestor
+          </label>
           <select
             id="filtro-gestor"
             value={filtroGestor}
@@ -104,40 +165,79 @@ export function BonificacaoGestoresConsultores() {
           </select>
         </div>
         <div>
-          <label htmlFor="filtro-inicio" className="mb-1 block text-xs font-medium text-gray-600">Início</label>
-          <input id="filtro-inicio" type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+          <label
+            htmlFor="filtro-inicio"
+            className="mb-1 block text-xs font-medium text-gray-600"
+          >
+            Início
+          </label>
+          <input
+            id="filtro-inicio"
+            type="date"
+            value={inicio}
+            onChange={(e) => setInicio(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          />
         </div>
         <div>
-          <label htmlFor="filtro-fim" className="mb-1 block text-xs font-medium text-gray-600">Fim</label>
-          <input id="filtro-fim" type="date" value={fim} onChange={(e) => setFim(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+          <label
+            htmlFor="filtro-fim"
+            className="mb-1 block text-xs font-medium text-gray-600"
+          >
+            Fim
+          </label>
+          <input
+            id="filtro-fim"
+            type="date"
+            value={fim}
+            onChange={(e) => setFim(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
           <p className="text-xs text-gray-500">Gestores</p>
-          <p className="text-lg font-semibold text-gray-900">{data?.resumo.totalGestores ?? 0}</p>
+          <p className="text-lg font-semibold text-gray-900">
+            {data?.resumo.totalGestores ?? 0}
+          </p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
           <p className="text-xs text-gray-500">Consultores</p>
-          <p className="text-lg font-semibold text-gray-900">{data?.resumo.totalConsultores ?? 0}</p>
+          <p className="text-lg font-semibold text-gray-900">
+            {data?.resumo.totalConsultores ?? 0}
+          </p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
           <p className="text-xs text-gray-500">Pontos distribuídos</p>
-          <p className="text-lg font-semibold text-gray-900">{(data?.resumo.totalPontosDistribuidos ?? 0).toLocaleString("pt-BR")}</p>
+          <p className="text-lg font-semibold text-gray-900">
+            {(data?.resumo.totalPontosDistribuidos ?? 0).toLocaleString(
+              "pt-BR",
+            )}
+          </p>
         </div>
       </div>
 
       {gestoresFiltrados.length === 0 ? (
-        <p className="text-sm text-gray-500">Nenhum gestor com consultores PF encontrado.</p>
+        <p className="text-sm text-gray-500">
+          Nenhum gestor com consultores PF encontrado.
+        </p>
       ) : (
         <div className="space-y-6">
           {gestoresFiltrados.map((gestor) => (
-            <div key={gestor.id} className="rounded-lg border border-gray-200 bg-white p-4">
+            <div
+              key={gestor.id}
+              className="rounded-lg border border-gray-200 bg-white p-4"
+            >
               <div className="mb-3 flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-gray-900">{gestor.nome}</h3>
-                  <p className="text-xs text-gray-500">{gestor.consultores.length} consultore(s)</p>
+                  <h3 className="text-base font-semibold text-gray-900">
+                    {gestor.nome}
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    {gestor.consultores.length} consultore(s)
+                  </p>
                 </div>
               </div>
               <div className="overflow-x-auto">
@@ -151,39 +251,94 @@ export function BonificacaoGestoresConsultores() {
                   </colgroup>
                   <thead>
                     <tr className="border-b bg-gray-50">
-                      <th className="text-left p-3 font-semibold text-gray-700">Consultor</th>
-                      <th className="text-left p-3 font-semibold text-gray-700">CPF</th>
-                      <th className="text-right p-3 font-semibold text-gray-700">Pontos</th>
-                      <th className="text-right p-3 font-semibold text-gray-700">Resgates</th>
-                      <th className="text-left p-3 font-semibold text-gray-700">Última produção</th>
+                      <th className="text-left p-3 font-semibold text-gray-700">
+                        Consultor
+                      </th>
+                      <th className="text-left p-3 font-semibold text-gray-700">
+                        CPF
+                      </th>
+                      <th className="text-right p-3 font-semibold text-gray-700">
+                        Pontos
+                      </th>
+                      <th className="text-right p-3 font-semibold text-gray-700">
+                        Resgates
+                      </th>
+                      <th className="text-left p-3 font-semibold text-gray-700">
+                        Última produção
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {gestor.consultores.map((c) => (
-                      <tr key={c.id} className="border-b last:border-0 hover:bg-gray-50">
+                      <tr
+                        key={c.id}
+                        className="border-b last:border-0 hover:bg-gray-50"
+                      >
                         <td className="p-3">
                           <p className="font-medium text-gray-900">{c.nome}</p>
                         </td>
                         <td className="p-3 text-gray-700">{c.cpf}</td>
                         <td className="p-3 text-right font-semibold text-gray-900">
-                          <span className="mr-2 inline-block tabular-nums">{c.saldoPontos.toLocaleString("pt-BR")}</span>
+                          <span className="mr-2 inline-block tabular-nums">
+                            {(
+                              c.saldoPontos + (ajustesPendentes[c.id] ?? 0)
+                            ).toLocaleString("pt-BR")}
+                          </span>
                           <button
                             type="button"
-                            onClick={() => handleAjuste(c.id, -1)}
+                            onClick={() => alterarAjustePendente(c.id, -1)}
+                            aria-label={`Diminuir pontos de ${c.nome}`}
+                            disabled={ajusteEmEnvio === c.id}
                             className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-gray-100"
                           >
                             −
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleAjuste(c.id, 1)}
+                            onClick={() => alterarAjustePendente(c.id, 1)}
+                            aria-label={`Aumentar pontos de ${c.nome}`}
+                            disabled={ajusteEmEnvio === c.id}
                             className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-gray-100"
                           >
                             +
                           </button>
+                          {ajustesPendentes[c.id] && (
+                            <span className="ml-2 inline-flex items-center gap-1 align-middle whitespace-nowrap text-xs font-normal">
+                              <span
+                                className={
+                                  ajustesPendentes[c.id] > 0
+                                    ? "text-green-700"
+                                    : "text-red-700"
+                                }
+                              >
+                                {ajustesPendentes[c.id] > 0 ? "+" : ""}
+                                {ajustesPendentes[c.id]}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => void confirmarAjuste(c.id)}
+                                disabled={ajusteEmEnvio === c.id}
+                                className="rounded border border-green-600 px-1.5 py-0.5 font-medium text-green-700 hover:bg-green-50 disabled:opacity-50"
+                              >
+                                {ajusteEmEnvio === c.id ? "..." : "Confirmar"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => cancelarAjuste(c.id)}
+                                disabled={ajusteEmEnvio === c.id}
+                                className="rounded border border-gray-300 px-1.5 py-0.5 font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                              >
+                                Cancelar
+                              </button>
+                            </span>
+                          )}
                         </td>
-                        <td className="p-3 text-right text-gray-700">{c.totalResgates}</td>
-                        <td className="p-3 text-gray-700">{formatarData(c.ultimaProducao)}</td>
+                        <td className="p-3 text-right text-gray-700">
+                          {c.totalResgates}
+                        </td>
+                        <td className="p-3 text-gray-700">
+                          {formatarData(c.ultimaProducao)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -199,10 +354,21 @@ export function BonificacaoGestoresConsultores() {
           <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Extrato - {extratoState.consultorNome}</h3>
-                <p className="text-xs text-gray-500">Saldo atual: {extratoState.saldoAtual.toLocaleString("pt-BR")} pontos</p>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Extrato - {extratoState.consultorNome}
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Saldo atual: {extratoState.saldoAtual.toLocaleString("pt-BR")}{" "}
+                  pontos
+                </p>
               </div>
-              <button type="button" onClick={fecharExtrato} className="text-sm text-gray-500 hover:text-gray-700">Fechar</button>
+              <button
+                type="button"
+                onClick={fecharExtrato}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Fechar
+              </button>
             </div>
             {extratoState.loading ? (
               <p className="text-sm text-gray-500">Carregando...</p>
@@ -211,28 +377,48 @@ export function BonificacaoGestoresConsultores() {
                 <table className="w-full text-sm table-auto">
                   <thead>
                     <tr className="border-b bg-gray-50">
-                      <th className="text-left p-3 font-semibold text-gray-700">Data</th>
-                      <th className="text-left p-3 font-semibold text-gray-700">Tipo</th>
-                      <th className="text-left p-3 font-semibold text-gray-700">Origem</th>
-                      <th className="text-left p-3 font-semibold text-gray-700">Ciclo</th>
-                      <th className="text-right p-3 font-semibold text-gray-700">Pontos</th>
+                      <th className="text-left p-3 font-semibold text-gray-700">
+                        Data
+                      </th>
+                      <th className="text-left p-3 font-semibold text-gray-700">
+                        Tipo
+                      </th>
+                      <th className="text-left p-3 font-semibold text-gray-700">
+                        Origem
+                      </th>
+                      <th className="text-left p-3 font-semibold text-gray-700">
+                        Ciclo
+                      </th>
+                      <th className="text-right p-3 font-semibold text-gray-700">
+                        Pontos
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {extratoState.items.map((item) => (
                       <tr key={item.id} className="border-b last:border-0">
-                        <td className="p-3 text-gray-700">{new Date(item.criadoEm).toLocaleDateString("pt-BR")}</td>
+                        <td className="p-3 text-gray-700">
+                          {new Date(item.criadoEm).toLocaleDateString("pt-BR")}
+                        </td>
                         <td className="p-3 text-gray-700">{item.tipo}</td>
                         <td className="p-3 text-gray-700">{item.origem}</td>
                         <td className="p-3 text-gray-700">{item.ciclo}</td>
-                        <td className={`p-3 text-right font-semibold ${item.tipo === "CREDITO" ? "text-green-700" : "text-red-700"}`}>
-                          {item.tipo === "CREDITO" ? "+" : "-"}{item.quantidade.toLocaleString("pt-BR")}
+                        <td
+                          className={`p-3 text-right font-semibold ${item.tipo === "CREDITO" ? "text-green-700" : "text-red-700"}`}
+                        >
+                          {item.tipo === "CREDITO" ? "+" : "-"}
+                          {item.quantidade.toLocaleString("pt-BR")}
                         </td>
                       </tr>
                     ))}
                     {extratoState.items.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="p-4 text-center text-sm text-gray-500">Nenhuma movimentação encontrada.</td>
+                        <td
+                          colSpan={5}
+                          className="p-4 text-center text-sm text-gray-500"
+                        >
+                          Nenhuma movimentação encontrada.
+                        </td>
                       </tr>
                     )}
                   </tbody>
