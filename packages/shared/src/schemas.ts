@@ -1,36 +1,38 @@
 import { z } from "zod";
-import { validarCPF, validarCNPJ } from "./validators";
 
-export { validarCPF, validarCNPJ };
+function validarCNPJ(cnpj: string): boolean {
+  const d = cnpj.replace(/\D/g, "");
+  if (d.length !== 14) return false;
+  if (/^(\d)\1{13}$/.test(d)) return false;
+  const calc = (len: number): number => {
+    let sum = 0;
+    let pos = len - 7;
+    for (let i = len; i >= 1; i--) {
+      sum += parseInt(d[len - i]) * pos--;
+      if (pos < 2) pos = 9;
+    }
+    return sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  };
+  return calc(12) === parseInt(d[12]) && calc(13) === parseInt(d[13]);
+}
 
-// Re-export all types from types-schemas
-export type {
-  LoginInput,
-  CriarConsultorInput,
-  AtualizarConsultorInput,
-  AtualizarConsultorSelfInput,
-  IndicarClienteInput,
-  CriarBackofficeInput,
-  CriarParceiroInput,
-  AtualizarParceiroInput,
-  DesligarParceiroInput,
-  AtualizarBackofficeInput,
-  CadastrarIndicadoInput,
-  ProcessarPlanilhaInput,
-  CriarEquipeInput,
-  AtualizarEquipeInput,
-  UpsertMetaComercialInput,
-  PreferenciaCicloParceiroInput,
-  CriarComercialInput,
-  AtualizarComercialInput,
-  AtualizarLiderancaInput,
-  CriarEquipeInput,
-  AtualizarEquipeInput,
-  UpsertMetaComercialInput,
-  PreferenciaCicloParceiroInput,
-};
+function validarCPF(cpf: string): boolean {
+  const d = cpf.replace(/\D/g, "");
+  if (d.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(d)) return false;
+  const calc = (len: number): number => {
+    let sum = 0;
+    let pos = len + 1;
+    for (let i = 0; i < len; i++) {
+      sum += parseInt(d[i]) * pos--;
+    }
+    return sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  };
+  return calc(9) === parseInt(d[9]) && calc(10) === parseInt(d[10]);
+}
 
-// Re-export all Zod schemas as values
+export { validarCNPJ, validarCPF };
+
 export const loginSchema = z.object({
   email: z.string().email("Email inválido"),
   senha: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
@@ -116,12 +118,26 @@ export const atualizarConsultorSchema = atualizarConsultorBaseSchema.refine(
   },
 );
 
+// Schema para self-update: exclui o campo status (consultor não pode se auto-desativar/ativar)
 export const atualizarConsultorSelfSchema = atualizarConsultorBaseSchema
   .omit({ status: true })
   .refine(pixValidation, {
     message: "Chave PIX inválida para o tipo selecionado",
     path: ["pixChave"],
   });
+
+export type LoginInput = z.infer<typeof loginSchema>;
+export type CriarConsultorInput = z.infer<typeof criarConsultorSchema>;
+export type AtualizarConsultorInput = z.infer<typeof atualizarConsultorSchema>;
+export type AtualizarConsultorSelfInput = z.infer<
+  typeof atualizarConsultorSelfSchema
+>;
+
+
+export const processarPagamentosSchema = z.object({
+  mesReferencia: z.number().int().min(1).max(12),
+  anoReferencia: z.number().int().min(2024).max(2100),
+});
 
 export const indicarClienteSchema = z.object({
   cpfParceiro: z
@@ -177,6 +193,9 @@ export const cadastrarIndicadoSchema = z.object({
 export const processarPlanilhaSchema = z.object({
   mesReferencia: z.string().regex(/^\d{4}-\d{2}$/, "Formato: YYYY-MM"),
 });
+
+// `criarComercialSchema` / `atualizarComercialSchema` agora são aliases do
+// schema unificado de equipe (ver abaixo) para manter compatibilidade de imports.
 
 export const criarEquipeSchema = z.object({
   nome: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
@@ -237,6 +256,7 @@ export const atualizarEquipeSchema = z.object({
   status: z.enum(["ATIVO", "INATIVO"]).optional(),
 });
 
+// Compatibilidade (scripts/testes antigos)
 export const criarComercialSchema = criarEquipeSchema;
 export const atualizarComercialSchema = atualizarEquipeSchema;
 export const atualizarLiderancaSchema = atualizarEquipeSchema;
@@ -289,7 +309,6 @@ export const preferenciaCicloParceiroSchema = z.object({
   periodicidade: z.enum(["SEMESTRAL", "ANUAL"]),
 });
 
-// Type-only exports using z.infer
 export type IndicarClienteInput = z.infer<typeof indicarClienteSchema>;
 export type CriarBackofficeInput = z.infer<typeof criarBackofficeSchema>;
 export type CriarParceiroInput = z.infer<typeof criarParceiroSchema>;
@@ -304,7 +323,9 @@ export type AtualizarLiderancaInput = z.infer<typeof atualizarLiderancaSchema>;
 export type CriarEquipeInput = z.infer<typeof criarEquipeSchema>;
 export type AtualizarEquipeInput = z.infer<typeof atualizarEquipeSchema>;
 export type UpsertMetaComercialInput = z.infer<typeof upsertMetaComercialSchema>;
-export type PreferenciaCicloParceiroInput = z.infer<typeof preferenciaCicloParceiroSchema>;
+export type PreferenciaCicloParceiroInput = z.infer<
+  typeof preferenciaCicloParceiroSchema
+>;
 
 /** Contrato financeiro compartilhado: zero é válido somente quando informado. */
 export const valorTotalFinanceiroSchema = z
