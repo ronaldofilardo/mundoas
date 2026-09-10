@@ -13,6 +13,7 @@ import type { NovaFaturaInput } from "./types";
 
 export default function DetalheBackofficePage() {
   const params = useParams<{ id: string }>();
+  const backofficeId = params?.id ?? "";
   const {
     assinatura,
     loading,
@@ -20,7 +21,7 @@ export default function DetalheBackofficePage() {
     fetchAssinatura,
     executarAcao,
     sincronizarAsaas,
-  } = useAssinatura(params.id);
+  } = useAssinatura(backofficeId);
 
   const handleAssinaturaMudou = useCallback(() => fetchAssinatura(), [fetchAssinatura]);
   const {
@@ -29,7 +30,7 @@ export default function DetalheBackofficePage() {
     fetchFaturas,
     criarFatura,
     marcarPago,
-  } = useFaturas(params.id, { onAssinaturaPodeMudar: handleAssinaturaMudou });
+  } = useFaturas(backofficeId, { onAssinaturaPodeMudar: handleAssinaturaMudou });
 
   const acaoEmAndamento = acaoAssinatura || acaoFaturas;
 

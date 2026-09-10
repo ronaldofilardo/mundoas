@@ -13,7 +13,7 @@ interface TokenInfo {
 export default function AcessoPFTokenPage() {
   const params = useParams();
   const router = useRouter();
-  const token = params.token as string;
+  const token = (params?.token as string) ?? "";
 
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
   const [loading, setLoading] = useState(true);

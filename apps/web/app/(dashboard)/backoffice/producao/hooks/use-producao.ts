@@ -19,7 +19,7 @@ export function useProducao() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const tab = searchParams.get("tab");
+    const tab = searchParams?.get("tab");
     if (tab === "upload") {
       setActiveTab("upload");
     }
