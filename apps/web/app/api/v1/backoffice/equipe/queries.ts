@@ -1,11 +1,13 @@
 import { prisma } from "@asa/database";
 import { ok, notFound, forbidden } from "@/lib/api-helpers";
+import { validarAcessoEquipe, validarLiderancaSuperior } from "./validators";
 
 export async function processarGETEquipeList(
+  backofficeId?: string,
   tipo?: string,
-  backofficeId: string,
 ): Promise<ReturnType<typeof ok>> {
-  const where: Record<string, unknown> = { backofficeId };
+  const where: Record<string, unknown> = {};
+  if (backofficeId) where.backofficeId = backofficeId;
   if (tipo) where.tipo = tipo;
 
   const membros = await prisma.equipe.findMany({
@@ -95,7 +97,19 @@ export async function processarGETEquipeList(
       })),
     }));
 
-  return ok({ liderancas, comerciais });
+  const commerciais = membros
+    .filter((m) => m.tipo === "COMERCIAL")
+    .map((l) => ({
+      id: l.id,
+      nome: l.nome,
+      cpf: l.cpf,
+      email: l.usuario.email,
+      funcao: l.funcao,
+      percentualComissao: l.percentualComissao,
+      status: l.status,
+    }));
+
+  return ok({ liderancas, commerciais });
 }
 
 export async function processarGETEquipeId(
@@ -136,7 +150,7 @@ export async function processarGETEquipeId(
     },
   });
 
-  if (!membro) return notFound("Membro da equipe não encontrado");
+  if (!membro) return notFound("Membro da equipe n�o encontrado");
 
   const acesso = await validarAcessoEquipe(backofficeId, membro);
   if (!acesso.allowed) return forbidden();

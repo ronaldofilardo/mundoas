@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
   const { session, backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  const result = await listarParceirosService(backofficeId);
-  if (!result.success) return badRequest(result.error);
+  const result = await listarParceirosService(backofficeId as string);
+  if (!result.success) return badRequest("Erro ao listar parceiros");
   return ok(result.data);
 }
 
@@ -40,10 +40,16 @@ export async function POST(req: NextRequest) {
   }
 
   const { nome, email, cpf } = validation.data;
-  const result = await criarParceiroService(nome, email, cpf, backofficeId, session);
-  if (!result.success) return badRequest(result.error);
+  const result = await criarParceiroService(
+    nome!,
+    email!,
+    cpf!,
+    backofficeId as string,
+    session as { user: { id: string; tipo: string } },
+  );
+  if (!result.success) return badRequest(result.error ?? "Erro desconhecido");
 
-  return created({ id: result.data.id, nome, email });
+  return created({ id: result.data!.id, nome, email });
 }
 
 export async function PUT(req: NextRequest) {
@@ -57,8 +63,15 @@ export async function PUT(req: NextRequest) {
   }
 
   const { id, nome, email, cpf } = validation.data;
-  const result = await atualizarParceiroService(id, nome, email, cpf, backofficeId, session);
-  if (!result.success) return badRequest(result.error);
+  const result = await atualizarParceiroService(
+    id,
+    nome,
+    email,
+    cpf ?? undefined,
+    backofficeId as string,
+    session as { user: { id: string; tipo: string } },
+  );
+  if (!result.success) return badRequest(result.error ?? "Erro desconhecido");
 
   return ok({ success: true });
 }
@@ -74,8 +87,8 @@ export async function DELETE(req: NextRequest) {
     return badRequest("ID do parceiro não informado");
   }
 
-  const result = await excluirParceiroService(id, backofficeId, session);
-  if (!result.success) return badRequest(result.error);
+  const result = await excluirParceiroService(id, backofficeId as string, session as { user: { id: string; tipo: string } });
+  if (!result.success) return badRequest(result.error ?? "Erro desconhecido");
 
   return ok({ success: true });
 }

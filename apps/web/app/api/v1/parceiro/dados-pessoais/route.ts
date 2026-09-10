@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   if (error) return error;
 
   const parceiro = await prisma.parceiro.findUnique({
-    where: { id: parceiroId },
+    where: { id: parceiroId as string },
     include: {
       usuario: {
         select: {
@@ -53,7 +53,7 @@ export async function PUT(req: NextRequest) {
   const { nome, telefone, pixChave } = parsed.data;
 
   const parceiro = await prisma.parceiro.findUnique({
-    where: { id: parceiroId },
+    where: { id: parceiroId as string },
   });
 
   if (!parceiro) {
@@ -67,7 +67,7 @@ export async function PUT(req: NextRequest) {
 
   await prisma.$transaction(async (tx) => {
     await tx.parceiro.update({
-      where: { id: parceiroId },
+      where: { id: parceiroId as string },
       data: dataToUpdate,
     });
 
@@ -83,7 +83,7 @@ export async function PUT(req: NextRequest) {
     usuarioId: session!.user.id,
     acao: "ATUALIZAR_PARCEIRO_SELF",
     entidade: "parceiro",
-    entidadeId: parceiroId,
+    entidadeId: parceiroId as string,
     detalhes: { nome, telefone, pixChave },
   });
 

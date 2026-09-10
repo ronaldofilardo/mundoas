@@ -1,13 +1,13 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
 import { hash } from "bcryptjs";
-import { badRequest, ok, requireLiderancaWithScope } from "@/lib/api-helpers";
+import { badRequest, ok, requireLiderancaWithScope, forbidden } from "@/lib/api-helpers";
 import { gerarSenhaProvisoria } from "@/lib/utils";
 import { processarImportacao } from "./service";
 
 export async function POST(req: NextRequest) {
   const { lideranca, error } = await requireLiderancaWithScope();
-  if (error) return error;
+  if (error || !lideranca) return error || forbidden();
 
   try {
     const body = await req.json() as { dados: string; modo?: "atualizar" | "criar" };

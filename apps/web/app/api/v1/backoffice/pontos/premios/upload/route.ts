@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
       }
 
       const existing = await prisma.premio.findFirst({
-        where: { codigo, backofficeId },
+        where: { codigo, backofficeId: backofficeId as string },
       });
 
       if (existing) {
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
       } else {
         await prisma.premio.create({
           data: {
-            backofficeId,
+            backofficeId: backofficeId as string,
             codigo,
             tipo,
             custoPontos,

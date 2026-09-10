@@ -25,7 +25,7 @@ export async function PATCH(req: NextRequest) {
   // já com movimentações do parceiro, bloquear troca (regra sugerida do plano,
   // aguardando confirmação do negócio).
   const parceiro = await prisma.parceiro.findUnique({
-    where: { id: parceiroId },
+    where: { id: parceiroId as string },
     select: {
       periodicidadeCicloEscolhida: true,
       _count: {
@@ -46,7 +46,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   await prisma.parceiro.update({
-    where: { id: parceiroId },
+    where: { id: parceiroId as string },
     data: {
       periodicidadeCicloEscolhida: parsed.data.periodicidade,
     },
@@ -63,7 +63,7 @@ export async function GET() {
   if (error) return error;
 
   const parceiro = await prisma.parceiro.findUnique({
-    where: { id: parceiroId },
+    where: { id: parceiroId as string },
     select: {
       periodicidadeCicloEscolhida: true,
     },

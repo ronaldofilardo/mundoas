@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
   }
 
   const consultores = await prisma.consultorPf.findMany({
-    where: { liderancaId, status: "ATIVO" },
+    where: { liderancaId: liderancaId as string, status: "ATIVO" },
     select: { id: true, nome: true, cpf: true },
     orderBy: { nome: "asc" },
   });

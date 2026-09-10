@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-function enforceHttpsProduction(req) {
+function enforceHttpsProduction(req: NextRequest) {
   if (process.env.NODE_ENV !== "production") {
     return null;
   }

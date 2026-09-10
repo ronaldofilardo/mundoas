@@ -1,5 +1,6 @@
 import { prisma } from "@asa/database";
 import { badRequest, notFound, forbidden, ok } from "@/lib/api-helpers";
+import { validarAcessoEquipe } from "./validators";
 import { criarAuditLog } from "@/lib/audit";
 
 export async function processarExclusaoEquipe(
@@ -25,7 +26,10 @@ export async function processarExclusaoEquipe(
   if (!membro) return notFound("Membro da equipe não encontrado");
 
   const acesso = await validarAcessoEquipe(backofficeId, membro);
-  if (!acesso.allowed) return acesso.error;
+  if (!acesso.allowed) {
+      if (acesso.error) return acesso.error;
+      return forbidden();
+    }
 
   if (membro.tipo === "LIDERANCA") {
     const temSubordinados =

@@ -3,7 +3,9 @@ import { criarAuditLog } from "@/lib/audit";
 import { validarCPF } from "@/lib/pontos-utils";
 import { read, utils } from "xlsx";
 import { mkdir, writeFile } from "fs/promises";
-import { join, tmpdir } from "path";
+import { join } from "path";
+import { hash } from "bcryptjs";
+import extrairLinhasDoArquivo, { mapearLinha, parceiroUploadSchema } from "./parser";
 
 export interface UploadResultados {
   total: number;

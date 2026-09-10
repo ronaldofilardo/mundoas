@@ -1,0 +1,40 @@
+Ôùç injected env (4) from .env.test // tip: Ôîÿ custom filepath { path: '/custom/path/.env' }
+
+[1m[46m RUN [49m[22m [36mv4.1.1 [39m[90mC:/apps/mundoas/apps/web[39m
+
+[90mstdout[2m | app/__tests__/consultor-pf-form.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîÿ suppress logs { quiet: true }
+
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Suites 1 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx [ app/__tests__/consultor-pf-form.test.tsx ]
+Error: Transform failed with 1 error:
+
+[PARSE_ERROR] Error: Expected `,` or `)` but found `;`
+    Ôò¡ÔöÇ[ app/__tests__/consultor-pf-form.test.tsx:16:2 ]
+    Ôöé
+  5 Ôöé vi.stubGlobal("fetch", vi.fn(() =>
+    Ôöé              Ôö¼  
+    Ôöé              Ôò░ÔöÇÔöÇ Opened here
+    Ôöé 
+ 16 Ôöé );
+    Ôöé  Ôö¼  
+    Ôöé  Ôò░ÔöÇÔöÇ `,` or `)` expected
+ÔöÇÔöÇÔöÇÔöÇÔò»
+
+  Plugin: vite:oxc
+  File: C:/apps/mundoas/apps/web/app/__tests__/consultor-pf-form.test.tsx
+ ÔØ» transformWithOxc ../../node_modules/.pnpm/vite@8.0.2_@emnapi+core@1.10.0_@emnapi+runtime@1.10.0_@types+node@20.19.37_jiti@1.21.7/node_modules/vite/dist/node/chunks/node.js:3720:19
+ ÔØ» TransformPluginContext.transform ../../node_modules/.pnpm/vite@8.0.2_@emnapi+core@1.10.0_@emnapi+runtime@1.10.0_@types+node@20.19.37_jiti@1.21.7/node_modules/vite/dist/node/chunks/node.js:3788:26
+ ÔØ» EnvironmentPluginContainer.transform ../../node_modules/.pnpm/vite@8.0.2_@emnapi+core@1.10.0_@emnapi+runtime@1.10.0_@types+node@20.19.37_jiti@1.21.7/node_modules/vite/dist/node/chunks/node.js:30035:51
+ ÔØ» loadAndTransform ../../node_modules/.pnpm/vite@8.0.2_@emnapi+core@1.10.0_@emnapi+runtime@1.10.0_@types+node@20.19.37_jiti@1.21.7/node_modules/vite/dist/node/chunks/node.js:24164:26
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/1]ÔÄ»
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 20:10:24
+[2m   Duration [22m 3.98s[2m (transform 85ms, setup 798ms, import 0ms, tests 0ms, environment 2.70s)[22m
+

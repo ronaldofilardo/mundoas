@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Parse da planilha
-    const resultado = await parsePlanilhaProducao(file, backofficeId);
+    const resultado = await parsePlanilhaProducao(file, backofficeId as string);
 
     return created(resultado);
   } catch (e: unknown) {

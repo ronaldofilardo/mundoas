@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
     // Buscar backofficeId diretamente do parceiro
     const parceiro = await prisma.parceiro.findUnique({
-      where: { id: parceiroId },
+      where: { id: parceiroId as string },
       select: { backofficeId: true },
     });
 
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
       const creditos = await prisma.movimentacaoPontos.aggregate({
         _sum: { quantidade: true },
         where: {
-          parceiroId,
+          parceiroId: parceiroId as string,
           cicloPontosId: cicloVigente.id ?? undefined,
           tipo: "CREDITO",
         },
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
       const debitos = await prisma.movimentacaoPontos.aggregate({
         _sum: { quantidade: true },
         where: {
-          parceiroId,
+          parceiroId: parceiroId as string,
           cicloPontosId: cicloVigente.id ?? undefined,
           tipo: "DEBITO",
         },
@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
       const estornos = await prisma.movimentacaoPontos.aggregate({
         _sum: { quantidade: true },
         where: {
-          parceiroId,
+          parceiroId: parceiroId as string,
           cicloPontosId: cicloVigente.id ?? undefined,
           tipo: "ESTORNO",
         },

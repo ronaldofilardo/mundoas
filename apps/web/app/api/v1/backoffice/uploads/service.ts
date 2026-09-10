@@ -1,12 +1,8 @@
-type PlanilhaCell = string | number | boolean | Date | null;
-type PlanilhaRow = PlanilhaCell[];
-type PlanilhaObject = Record<string, PlanilhaCell>;
-type ParserValue = string | number | Date | undefined;
-
 import { calcularPontosDeProducao, obterCicloVigente, calcularComissaoComercial } from "@/lib/pontos-utils";
-import { parseDate, parseNumber } from "./parser";
+import { parseDate, parseNumber, toParserValue, toNumberParserValue, type PlanilhaRow, type PlanilhaObject } from "./parser";
 import { criarAuditLog } from "@/lib/audit";
 import { prisma, Prisma } from "@asa/database";
+import { utils } from "xlsx";
 
 type UploadRecord = Awaited<ReturnType<typeof prisma.uploadPlanilhaBackoffice.create>>;
 
@@ -35,16 +31,6 @@ interface RowData {
   usuarioDaConta: string;
   rowIndex: number;
   uniqueKey: string;
-}
-
-function toParserValue(value: PlanilhaCell): ParserValue {
-  return typeof value === "string" || typeof value === "number" || value instanceof Date
-    ? value
-    : undefined;
-}
-
-function toNumberParserValue(value: PlanilhaCell): string | number | undefined {
-  return typeof value === "string" || typeof value === "number" ? value : undefined;
 }
 
 function competenciaFromDate(data: Date | string): string {
@@ -261,7 +247,7 @@ export async function processUploadPlanilha(
     "TotalPago",
   ];
 
-  const allRows = XLSX.utils.sheet_to_json<PlanilhaRow>(worksheet, { header: 1, defval: "", range: 0 });
+  const allRows = utils.sheet_to_json<PlanilhaRow>(worksheet, { header: 1, defval: "", range: 0 });
 
   const startRow = 1;
   const headerRow = allRows[startRow] ?? [];

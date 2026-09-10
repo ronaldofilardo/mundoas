@@ -1,0 +1,29 @@
+Ôùç injected env (4) from .env.test // tip: Ôùê encrypted .env [www.dotenvx.com]
+
+[1m[46m RUN [49m[22m [36mv4.1.1 [39m[90mC:/apps/mundoas/apps/web[39m
+
+[90mstdout[2m | app/__tests__/consultor-pf-form.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîÿ override existing { override: true }
+
+ [32mÔ£ô[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Importa├º├úo[2m > [22mdeve ser import├ível[32m 2[2mms[22m[39m
+ [2m[90mÔåô[39m[22m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Estado Inicial[2m > [22mdeve inicializar com estado padr├úo
+ [2m[90mÔåô[39m[22m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Estado Inicial[2m > [22mdeve preencher form quando consultor ├® fornecido
+ [2m[90mÔåô[39m[22m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - CPF Formatando[2m > [22mdeve formatar CPF simples
+ [2m[90mÔåô[39m[22m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Valida├º├úo[2m > [22mdeve validar campos obrigat├│rios
+ [2m[90mÔåô[39m[22m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Setores[2m > [22mdeve renderizar checkboxes de setores
+ [2m[90mÔåô[39m[22m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Setores[2m > [22mdeve permitir toggle de setor
+ [2m[90mÔåô[39m[22m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve lidar com consultor nulo
+ [2m[90mÔåô[39m[22m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve ter email disabled
+ [2m[90mÔåô[39m[22m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve mostrar mensagem de email imut├ível
+ [2m[90mÔåô[39m[22m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve mostrar mensagem de CPF imut├ível
+ [2m[90mÔåô[39m[22m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve mostrar mensagem de lideran├ºa imut├ível
+[90mstdout[2m | app/__tests__/consultor-pf-form-import.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîü auth for agents [www.vestauth.com]
+
+ [2m[90mÔåô[39m[22m app/__tests__/consultor-pf-form-import.test.tsx[2m > [22mConsultorPfForm - Import Only[2m > [22mdeve importar o componente
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (2)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[2m | [22m[33m12 skipped[39m[90m (13)[39m
+[2m   Start at [22m 20:36:47
+[2m   Duration [22m 5.43s[2m (transform 144ms, setup 824ms, import 335ms, tests 6ms, environment 3.39s)[22m
+

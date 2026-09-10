@@ -1,6 +1,6 @@
 "use client";
 
-import { Resgate } from "../types";
+import type { Resgate } from "./types";
 import { ResgateCard } from "./ResgateCard";
 import { StatusFilter } from "./StatusFilter";
 
@@ -9,20 +9,24 @@ export function ResgateList({
   loading,
   error,
   statusFiltro,
+  onFiltroChange,
   onStatusChange,
   processando,
   observacao,
   setObservacao,
+  resgateParaObservacao,
   setResgateParaObservacao,
 }: {
   resgates: Resgate[];
   loading: boolean;
   error: string | null;
   statusFiltro: string;
+  onFiltroChange: (status: string) => void;
   onStatusChange: (resgateId: string, novoStatus: string) => void;
   processando: string | null;
   observacao: string;
-  setObservacao: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  setObservacao: (value: string) => void;
+  resgateParaObservacao: string | null;
   setResgateParaObservacao: (id: string | null) => void;
 }) {
   if (loading) {
@@ -45,7 +49,7 @@ export function ResgateList({
     <div className="space-y-6">
       <StatusFilter
         statusAtual={statusFiltro}
-        onStatusChange={onStatusChange}
+        onStatusChange={onFiltroChange}
       />
 
       {resgates.length === 0 ? (
@@ -64,6 +68,7 @@ export function ResgateList({
               processando={processando}
               observacao={observacao}
               setObservacao={setObservacao}
+              resgateParaObservacao={resgateParaObservacao}
               setResgateParaObservacao={setResgateParaObservacao}
             />
           ))}

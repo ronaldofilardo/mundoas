@@ -11,6 +11,7 @@ export function GerenciadorPremios() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [deletando, setDeletando] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     nome: "",
     descricao: "",
@@ -118,20 +119,27 @@ export function GerenciadorPremios() {
         </button>
       </div>
 
-      {showForm && <PremioForm
-        showForm={showForm}
-        setShowForm={setShowForm}
-        formData={formData}
-        setFormData={setFormData}
-        editandoId={editandoId}
-        setEditandoId={setEditandoId}
-        onSubmit={handleSubmit}
-      />}
+      {showForm && (
+        <PremioForm
+          formData={formData}
+          setFormData={setFormData}
+          editandoId={editandoId}
+          setEditandoId={setEditandoId}
+          setShowForm={setShowForm}
+          onSubmit={handleSubmit}
+        />
+      )}
 
       <PremioList
         premios={premios}
+        deletando={deletando}
         onEdit={(p) => {
-          setFormData({nome: p.nome, descricao: p.descricao, custoPontos: p.custoPontos.toString(), imagemUrl: p.imagemUrl || ""});
+          setFormData({
+            nome: p.nome,
+            descricao: p.descricao,
+            custoPontos: p.custoPontos.toString(),
+            imagemUrl: p.imagemUrl || "",
+          });
           setEditandoId(p.id);
           setShowForm(true);
         }}

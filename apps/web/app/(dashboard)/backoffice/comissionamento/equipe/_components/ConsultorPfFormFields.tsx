@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { formatCpf } from "@/app/(dashboard)/backoffice/comissionamento/equipe/utils/cpf-utils";
-import { validate } from "@/app/(dashboard)/backoffice/comissionamento/equipe/utils/form-validation";
 import { Setor, Lideranca, ConsultorPfFormData } from "@/app/(dashboard)/backoffice/comissionamento/equipe/_types/setor-types";
 
 interface ConsultorPfFormFieldsProps {

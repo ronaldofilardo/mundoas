@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     if (
       !comercial ||
       comercial.tipo !== "COMERCIAL" ||
-      comercial.lideranca?.backofficeId !== backofficeId
+      comercial.lideranca?.backofficeId !== (backofficeId as string)
     ) {
       return badRequest("Comercial não encontrado ou não pertence a este gestor");
     }
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
         comercialId,
         modalidadeContemplacao: "COMISSAO",
         valorComissao: 0,
-        upload: { backofficeId },
+        upload: { backofficeId: backofficeId as string },
         dataReferencia: {
           gte: intervaloMes.inicio,
           lt: intervaloMes.fim,
@@ -186,7 +186,7 @@ export async function GET(req: NextRequest) {
   const countSemComercial = await prisma.procedimentoPF.count({
     where: {
       comercialId: null,
-      upload: { backofficeId },
+      upload: { backofficeId: backofficeId as string },
       dataReferencia: {
         gte: intervaloMes.inicio,
         lt: intervaloMes.fim,
@@ -199,7 +199,7 @@ export async function GET(req: NextRequest) {
     _sum: { valorTotal: true },
     where: {
       comercialId: null,
-      upload: { backofficeId },
+      upload: { backofficeId: backofficeId as string },
       dataReferencia: {
         gte: intervaloMes.inicio,
         lt: intervaloMes.fim,
@@ -209,7 +209,7 @@ export async function GET(req: NextRequest) {
 
   // Buscar comerciais do gestor
   const liderancas = await prisma.equipe.findMany({
-    where: { backofficeId, tipo: "LIDERANCA" },
+    where: { backofficeId: backofficeId as string, tipo: "LIDERANCA" },
     include: {
       subordinados: {
         where: { tipo: "COMERCIAL" },

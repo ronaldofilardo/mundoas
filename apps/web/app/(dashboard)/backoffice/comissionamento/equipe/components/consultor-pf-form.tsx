@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Setor, Lideranca, ConsultorPfFormData, ConsultorPfFormConsultor } from "@/app/(dashboard)/backoffice/comissionamento/equipe/_types/setor-types";
-import { validate } from "@/app/(dashboard)/backoffice/comissionamento/equipe/utils/form-validation";
+import { validateFormData as validate } from "@/app/(dashboard)/backoffice/comissionamento/equipe/utils/form-validation";
 import { ConsultorPfFormHeader } from "@/app/(dashboard)/backoffice/comissionamento/equipe/_components/ConsultorPfFormHeader";
 import { ConsultorPfFormFields } from "@/app/(dashboard)/backoffice/comissionamento/equipe/_components/ConsultorPfFormFields";
 import { ConsultorPfFormActions } from "@/app/(dashboard)/backoffice/comissionamento/equipe/_components/ConsultorPfFormActions";

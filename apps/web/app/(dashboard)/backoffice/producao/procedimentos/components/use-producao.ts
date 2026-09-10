@@ -66,10 +66,14 @@ export function useProducao({
   const [data, setData] = useState<ProducaoData | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filterMesState, setFilterMesState] = useState(filterMes ?? "");
+  const [filterParceiroState, setFilterParceiroState] = useState(filterParceiro ?? "");
+  const [filterConsultorPfState, setFilterConsultorPfState] = useState(filterConsultorPf ?? "");
+  const [filterSearchState, setFilterSearchState] = useState(filterSearch ?? "");
 
   useEffect(() => {
     fetchProducao();
-  }, [filterMes, filterParceiro, filterConsultorPf, currentPage]);
+  }, [filterMesState, filterParceiroState, filterConsultorPfState, currentPage, filterSearchState]);
 
   async function fetchProducao() {
     setLoading(true);
@@ -78,9 +82,9 @@ export function useProducao({
         page: currentPage.toString(),
         limit: "50",
       });
-      if (filterMes) params.set("mesReferencia", filterMes);
-      if (filterParceiro) params.set("parceiroId", filterParceiro);
-      if (filterConsultorPf) params.set("consultorPfId", filterConsultorPf);
+      if (filterMesState) params.set("mesReferencia", filterMesState);
+      if (filterParceiroState) params.set("parceiroId", filterParceiroState);
+      if (filterConsultorPfState) params.set("consultorPfId", filterConsultorPfState);
 
       const res = await fetch(`/api/v1/backoffice/producao?${params}`);
       const json = await res.json();
@@ -133,8 +137,8 @@ export function useProducao({
   }
 
   const filteredProcedimentos = (data?.procedimentos ?? []).filter((p) => {
-    if (filterSearch) {
-      const search = filterSearch.toLowerCase();
+    if (filterSearchState) {
+      const search = filterSearchState.toLowerCase();
       return (
         p.paciente.toLowerCase().includes(search) ||
         p.procedimento.toLowerCase().includes(search) ||
@@ -143,7 +147,7 @@ export function useProducao({
         p.formaPagamento.toLowerCase().includes(search)
       );
     }
-    if (filterConsultorPf && p.consultorPf?.id !== filterConsultorPf) {
+    if (filterConsultorPfState && p.consultorPf?.id !== filterConsultorPfState) {
       return false;
     }
     return true;
@@ -159,14 +163,15 @@ export function useProducao({
     loading,
     currentPage,
     setCurrentPage,
-    filterMes,
-    setFilterMes: (e: { target: { value: string } }) => setFilterMes(e.target.value),
-    filterParceiro,
-    setFilterParceiro: (e: { target: { value: string } }) => setFilterParceiro(e.target.value),
-    filterConsultorPf,
-    setFilterConsultorPf: (e: { target: { value: string } }) => setFilterConsultorPf(e.target.value),
-    filterSearch,
-    setFilterSearch: (e: { target: { value: string } }) => setFilterSearch(e.target.value),
+    filterMes: filterMesState,
+    setFilterMes: setFilterMesState,
+    filterParceiro: filterParceiroState,
+    setFilterParceiro: setFilterParceiroState,
+    filterConsultorPf: filterConsultorPfState,
+    setFilterConsultorPf: setFilterConsultorPfState,
+    filterSearch: filterSearchState,
+    setFilterSearch: setFilterSearchState,
+    pagination: data?.pagination,
     filteredProcedimentos,
     totalComissao,
     formatDate,

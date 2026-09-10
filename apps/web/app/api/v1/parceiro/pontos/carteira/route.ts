@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     if (error) return error;
 
 const parceiro = await prisma.parceiro.findUnique({
-      where: { id: parceiroId },
+      where: { id: parceiroId as string },
       select: {
         backofficeId: true,
         periodicidadeCicloEscolhida: true,

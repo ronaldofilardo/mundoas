@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { validateFormData as validate } from "@/app/(dashboard)/backoffice/comissionamento/equipe/utils/form-validation";
 
 interface ConsultorPfFormActionsProps {
   formData: {
@@ -20,6 +21,8 @@ interface ConsultorPfFormActionsProps {
   onClose: () => void;
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  errors: Record<string, string>;
+  setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }
 
 export function ConsultorPfFormActions({
@@ -29,6 +32,8 @@ export function ConsultorPfFormActions({
   onClose,
   loading,
   setLoading,
+  errors,
+  setErrors,
 }: ConsultorPfFormActionsProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

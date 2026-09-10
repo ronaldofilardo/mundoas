@@ -6,6 +6,20 @@ export function formatBRL(v: number) {
   }).format(v);
 }
 
+export function formatCpf(cpf: string) {
+  if (!cpf || cpf.length < 11) return cpf || "-";
+  return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+}
+
+export function formatDate(dateStr: string) {
+  if (!dateStr) return "-";
+  return new Date(dateStr).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export function formatMonth(mes: string) {
   const [ano, mesNum] = mes.split("-");
   const meses = [

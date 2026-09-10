@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
-import { badRequest, ok, requireLiderancaWithScope } from "@/lib/api-helpers";
+import { badRequest, ok, requireLiderancaWithScope, forbidden } from "@/lib/api-helpers";
 import { z } from "zod";
 
 const metaLiderancaSchema = z.object({
@@ -23,7 +23,7 @@ function composeMesReferencia(ano: number, mes: string): string {
 
 export async function GET() {
   const { lideranca, error } = await requireLiderancaWithScope();
-  if (error) return error;
+  if (error || !lideranca) return error || forbidden();
 
   const ano = getAnoAtual();
   const mesesReferencia = MESES.map((m) => composeMesReferencia(ano, m));
@@ -124,7 +124,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const { lideranca, error } = await requireLiderancaWithScope();
-  if (error) return error;
+  if (error || !lideranca) return error || forbidden();
 
   let body: unknown;
   try {

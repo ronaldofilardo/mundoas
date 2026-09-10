@@ -17,7 +17,7 @@ export async function PATCH(
   { params }: { params: { id: string } },
 ) {
   const { lideranca, error } = await requireLiderancaWithScope();
-  if (error) return error;
+  if (error || !lideranca) return error || notFound("Liderança não encontrada");
 
   const consultorPf = await prisma.consultorPf.findUnique({
     where: { id: params.id },
@@ -121,7 +121,7 @@ export async function DELETE(
   { params }: { params: { id: string } },
 ) {
   const { lideranca, error } = await requireLiderancaWithScope();
-  if (error) return error;
+  if (error || !lideranca) return error || notFound("Liderança não encontrada");
 
   const consultorPf = await prisma.consultorPf.findUnique({
     where: { id: params.id },

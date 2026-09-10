@@ -1,5 +1,6 @@
 import { prisma } from "@asa/database";
 import { badRequest, notFound, forbidden, ok } from "@/lib/api-helpers";
+import { validarAcessoEquipe, validarLiderancaSuperior } from "./validators";
 import { atualizarEquipeSchema } from "./validator";
 import { criarAuditLog } from "@/lib/audit";
 
@@ -32,7 +33,10 @@ export async function processarAtualizacaoEquipe(
   if (!membro) return notFound("Membro da equipe não encontrado");
 
   const acesso = await validarAcessoEquipe(backofficeId, membro);
-  if (!acesso.allowed) return acesso.error;
+  if (!acesso.allowed) {
+      if (acesso.error) return acesso.error;
+      return forbidden();
+    }
 
   const dataToUpdate: Record<string, unknown> = { ...parsed.data };
 
@@ -46,7 +50,10 @@ export async function processarAtualizacaoEquipe(
     dataToUpdate.tipoLideranca = null;
   } else if (dataToUpdate.liderancaId) {
     const result = await validarLiderancaSuperior(dataToUpdate.liderancaId as string, backofficeId);
-    if (!result.valid) return result.error;
+    if (!result.valid) {
+      if (result.error) return result.error;
+      return badRequest("Liderança superior inválida");
+    }
   }
 
   const usuarioUpdate: Record<string, unknown> = {};

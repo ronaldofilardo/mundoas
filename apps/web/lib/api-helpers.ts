@@ -4,6 +4,7 @@ export {
   requireGestorWithScope,
   requireGestorWithUserScope,
   requireConsultor,
+  requireConsultorPfWithScope,
   requireBackoffice,
   requireBackofficeWithScope,
   requireParceiro,

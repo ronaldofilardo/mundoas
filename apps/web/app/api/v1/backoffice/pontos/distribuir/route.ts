@@ -39,10 +39,10 @@ export async function POST(req: NextRequest) {
     if (!isJsonObject(body)) return badRequest("Corpo inválido");
     const producaoId = typeof body.producaoId === "string" ? body.producaoId : "";
 
-    const result = await distribuirPontosService(producaoId, backofficeId);
+    const result = await distribuirPontosService(producaoId, backofficeId as string);
 
     if (!result.success) {
-      return badRequest(result.error);
+      return badRequest(result.error ?? "Erro ao distribuir pontos");
     }
 
     return ok({
@@ -63,12 +63,12 @@ export async function GET(req: NextRequest) {
     if (error) return error;
 
     const { searchParams } = new URL(req.url);
-    const cicloPontosId = searchParams.get("cicloPontosId");
+    const cicloPontosId = searchParams.get("cicloPontosId") ?? undefined;
 
-    const result = await listarProducoesService(backofficeId, cicloPontosId);
+    const result = await listarProducoesService(backofficeId as string, cicloPontosId);
 
     if (!result.success) {
-      return badRequest(result.error);
+      return badRequest(result.error ?? "Erro ao buscar produções para pontos");
     }
 
     return ok({

@@ -1,103 +1,50 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
-
-interface Indicado {
-  id: string;
-  nome: string;
-  cpf: string;
-  telefone: string | null;
-  status: string;
-  createdAt: string;
-  desvinculadoEm: string | null;
-}
+import type { Indicado } from "./types";
 
 export default function ParceiroIndicados() {
   const { data: session } = useSession();
   const [indicados, setIndicados] = useState<Indicado[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  const [form, setForm] = useState({
-    nome: "",
-    cpf: "",
-    telefone: "",
-  });
+  const [form, setForm] = useState({ nome: "", cpf: "", telefone: "" });
   const [saving, setSaving] = useState(false);
-  const [cpfValidation, setCpfValidation] = useState<"valid" | "invalid" | "">(
-    "",
-  );
-  const cpfTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [cpfValidation, setCpfValidation] = useState<"valid" | "invalid" | "">("");
 
   useEffect(() => {
-    fetchIndicados();
+    fetch("/api/v1/parceiro/indicados")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setIndicados(data);
+      })
+      .finally(() => setLoading(false));
   }, []);
-
-  async function fetchIndicados() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/v1/parceiro/indicados");
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setIndicados(data);
-      }
-    } catch (e) {
-      toast.error("Erro ao carregar clientes");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function openCreate() {
     setForm({ nome: "", cpf: "", telefone: "" });
-    setCpfValidation("");
     setShowModal(true);
-  }
-
-  async function validateCpfRealTime(cpf: string) {
-    if (cpf.length < 11) {
-      setCpfValidation("");
-      return;
-    }
-    try {
-      const res = await fetch(
-        `/api/v1/parceiro/indicados/check-cpf?cpf=${encodeURIComponent(cpf)}`,
-      );
-      const data = await res.json();
-      setCpfValidation(data.valid ? "valid" : "invalid");
-      if (!data.valid) {
-        toast.error(data.message);
-      }
-    } catch (e) {
-      setCpfValidation("invalid");
-    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-
     try {
       const res = await fetch("/api/v1/parceiro/indicados", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         toast.error(data.error || "Erro ao cadastrar cliente");
         return;
       }
-
-      console.log('Cadastro sucesso, mostrando popup:', form.nome);
       toast.success(`${form.nome} cadastrado com sucesso!`);
       setShowModal(false);
-      setShowSuccessPopup(true);
-      fetchIndicados();
+      setForm({ nome: "", cpf: "", telefone: "" });
     } catch (e) {
       toast.error("Erro ao cadastrar cliente");
     } finally {
@@ -126,10 +73,7 @@ export default function ParceiroIndicados() {
             Cadastre clientes para receber comissões sobre procedimentos
           </p>
         </div>
-        <button
-          onClick={openCreate}
-          className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-smooth text-sm font-medium focus-ring"
-        >
+        <button onClick={openCreate} className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-smooth text-sm font-medium focus-ring">
           + Cadastrar Cliente
         </button>
       </div>
@@ -147,10 +91,7 @@ export default function ParceiroIndicados() {
         <div className="card text-center py-12">
           <div className="text-gray-300 text-5xl mb-4">👥</div>
           <p className="text-gray-500 mb-4">Nenhum cliente cadastrado ainda</p>
-          <button
-            onClick={openCreate}
-            className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium"
-          >
+          <button onClick={openCreate} className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium">
             Cadastrar primeiro cliente
           </button>
         </div>
@@ -163,13 +104,7 @@ export default function ParceiroIndicados() {
                   <p className="font-semibold text-gray-900">{i.nome}</p>
                   <p className="text-xs text-gray-500">{formatCpf(i.cpf)}</p>
                 </div>
-                <span
-                  className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    i.status === "ATIVO"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
+                <span className={`px-2 py-0.5 rounded text-xs font-medium ${i.status === "ATIVO" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
                   {i.status === "ATIVO" ? "Ativo" : "Inativo"}
                 </span>
               </div>
@@ -177,9 +112,7 @@ export default function ParceiroIndicados() {
                 <p className="text-xs text-gray-500 mb-2">📞 {i.telefone}</p>
               )}
               <div className="flex justify-between items-center pt-2 border-t">
-                <span className="text-xs text-gray-500">
-                  Desde {formatDate(i.createdAt)}
-                </span>
+                <span className="text-xs text-gray-500">Desde {formatDate(i.createdAt)}</span>
               </div>
             </div>
           ))}
@@ -189,149 +122,40 @@ export default function ParceiroIndicados() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
-              Cadastrar Cliente
-            </h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Cadastrar Cliente</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nome">
                   Nome Completo
                 </label>
-                <input id="nome"
-                  type="text"
-                  required
-                  value={form.nome}
-                  onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus-ring"
-                  placeholder="Nome do cliente"
-                />
+                <input id="nome" type="text" required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm focus-ring" placeholder="Nome do cliente" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="cpf">
                   CPF
                 </label>
-                <input id="cpf"
-                  type="text"
-                  required
-                  maxLength={14}
-                  value={form.cpf}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/\D/g, "");
-                    const masked =
-                      v.length > 9
-                        ? `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6, 9)}-${v.slice(9)}`
-                        : v.length > 6
-                          ? `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6)}`
-                          : v.length > 3
-                            ? `${v.slice(0, 3)}.${v.slice(3)}`
-                            : v;
-                    setForm({ ...form, cpf: masked });
-
-                    // Validate CPF in real-time
-                    if (v.length === 11) {
-                      if (cpfTimeoutRef.current) {
-                        clearTimeout(cpfTimeoutRef.current);
-                      }
-                      cpfTimeoutRef.current = setTimeout(() => {
-                        validateCpfRealTime(masked);
-                      }, 500);
-                    } else {
-                      setCpfValidation("");
-                    }
-                  }}
-                  placeholder="000.000.000-00"
-                  className={`w-full px-3 py-2 border rounded-lg text-sm focus-ring ${
-                    cpfValidation === "invalid"
-                      ? "border-red-500"
-                      : cpfValidation === "valid"
-                        ? "border-green-500"
-                        : ""
-                  }`}
-                />
-                {cpfValidation === "invalid" && (
-                  <p className="text-xs text-red-600 mt-1">
-                    CPF inválido ou não disponível
-                  </p>
-                )}
-                {cpfValidation === "valid" && (
-                  <p className="text-xs text-green-600 mt-1">
-                    ✓ CPF disponível
-                  </p>
-                )}
+                <input id="cpf" type="text" required maxLength={14} value={form.cpf} onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "");
+                  setForm({ ...form, cpf: v.length > 9 ? `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6, 9)}-${v.slice(9)}` : v.length > 6 ? `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6)}` : v.length > 3 ? `${v.slice(0, 3)}.${v.slice(3)}` : v });
+                }} placeholder="000.000.000-00" className="w-full px-3 py-2 border rounded-lg text-sm focus-ring" />
+              </div>
+              <div>
+                {cpfValidation === "invalid" && <p className="text-xs text-red-600 mt-1">CPF inválido ou não disponível</p>}
+                {cpfValidation === "valid" && <p className="text-xs text-green-600 mt-1">✓ CPF disponível</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="telefone">
                   Telefone (opcional)
                 </label>
-                <input id="telefone"
-                  type="text"
-                  value={form.telefone}
-                  onChange={(e) =>
-                    setForm({ ...form, telefone: e.target.value })
-                  }
-                  placeholder="(00) 00000-0000"
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus-ring"
-                />
+                <input id="telefone" type="text" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} placeholder="(00) 00000-0000" className="w-full px-3 py-2 border rounded-lg text-sm focus-ring" />
               </div>
               <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={
-                    saving ||
-                    cpfValidation === "invalid" ||
-                    !form.cpf ||
-                    cpfValidation !== "valid"
-                  }
-                  className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50">Cancelar</button>
+                <button type="submit" disabled={saving || !form.cpf} className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50">
                   {saving ? "Salvando..." : "Cadastrar"}
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {showSuccessPopup && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-xl font-bold text-gray-900 mb-2">
-                Cadastro Realizado com Sucesso!
-              </h2>
-              <p className="text-gray-600 mb-6">
-                O cliente <strong>{form.nome}</strong> foi cadastrado
-                corretamente no sistema.
-              </p>
-              <button
-                onClick={() => setShowSuccessPopup(false)}
-                className="w-full bg-green-600 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-green-700 transition-smooth focus-ring"
-              >
-                Confirmar e Fechar
-              </button>
-            </div>
           </div>
         </div>
       )}

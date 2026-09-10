@@ -1,6 +1,6 @@
 "use client";
 
-import type { DistribuicaoPontosItem } from "./pontos-types";
+import type { DistribuicaoPontosItem } from "../pontos-types";
 
 export function TabelaDistribuicaoTable({
   producoesFiltradas,

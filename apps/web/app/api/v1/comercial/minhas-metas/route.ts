@@ -7,7 +7,7 @@ export async function GET(_req: NextRequest) {
   if (error) return error;
 
   const metas = await prisma.metaEquipe.findMany({
-    where: { equipeId: comercialId },
+    where: { equipeId: comercialId as string },
     orderBy: { mesReferencia: "desc" },
     take: 12,
   });

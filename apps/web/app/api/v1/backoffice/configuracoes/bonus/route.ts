@@ -25,7 +25,7 @@ export async function GET() {
     if (error) return error;
 
     const configs = await prisma.configuracaoBonus.findMany({
-      where: { backofficeId },
+      where: { backofficeId: backofficeId as string },
       orderBy: { vigenteDesde: "desc" },
     });
 
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 
     const vigenteAtual = await prisma.configuracaoBonus.findFirst({
       where: {
-        backofficeId,
+        backofficeId: backofficeId as string,
         vigenteAte: null,
       },
     });
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 
     const novaConfig = await prisma.configuracaoBonus.create({
       data: {
-        backofficeId,
+        backofficeId: backofficeId as string,
         valorPorPonto: new Decimal(valorPorPonto),
         tipoArredondamento,
         vigenteDesde: new Date(),

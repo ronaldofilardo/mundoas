@@ -27,7 +27,7 @@ export async function GET(_req: NextRequest) {
   if (error) return error;
 
   const parceiros = await prisma.parceiro.findMany({
-    where: { gestorId },
+    where: { gestorId: gestorId as string },
     include: {
       usuario: {
         select: { id: true, email: true, status: true },
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     if (error) return error;
 
     const gestor = await prisma.gestor.findUnique({
-      where: { id: gestorId },
+      where: { id: gestorId as string },
       select: { liderancaId: true },
     });
     if (!gestor) {
@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
           pixChave,
           status: "ATIVO",
           backofficeId: lideranca.backofficeId,
-          gestorId,
+          gestorId: gestorId as string,
         },
       });
 
@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
       acao: "CRIAR_PARCEIRO",
       entidade: "parceiro",
       entidadeId: result.parceiro.id,
-      detalhes: { nome, email, cpf: cpfClean, gestorId },
+      detalhes: { nome, email, cpf: cpfClean, gestorId: gestorId as string },
     });
 
     const baseUrl = getBaseUrl(req);

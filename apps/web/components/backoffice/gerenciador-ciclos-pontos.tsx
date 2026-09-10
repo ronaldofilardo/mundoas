@@ -118,7 +118,14 @@ export function GerenciadorCiclosPontos() {
         </button>
       </div>
 
-      {showForm && <CicloForm formData={formData} setFormData={setFormData} onCreate={() => {setShowForm(false); fetchCiclos()}} />}
+      {showForm && (
+        <CicloForm
+          formData={formData}
+          setFormData={setFormData}
+          setShowForm={setShowForm}
+          onSubmit={handleCreateCiclo}
+        />
+      )}
 
       <div className="space-y-4">
         {error ? (

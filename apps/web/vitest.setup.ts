@@ -1,6 +1,6 @@
 // Setup executado antes dos testes para configurar o ambiente de teste.
-// Mantido separado do vitest.config.ts para que o Next.js não faça
-// type-check deste código durante o build.
+// Mantido separado do vitest.config.ts para que o Next.js nÃo faça
+// type-check deste cÃdigo durante o build.
 
 import 'vitest';
 import '@testing-library/jest-dom/vitest';

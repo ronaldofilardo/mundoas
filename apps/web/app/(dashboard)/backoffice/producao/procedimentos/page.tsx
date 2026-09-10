@@ -41,16 +41,7 @@ export default function BackofficeProducao() {
     <div className="font-sans space-y-4">
       <Resumo />
 
-      <Filtros
-        filterMes={filterMes}
-        setFilterMes={setFilterMes}
-        filterParceiro={filterParceiro}
-        setFilterParceiro={setFilterParceiro}
-        filterConsultorPf={filterConsultorPf}
-        setFilterConsultorPf={setFilterConsultorPf}
-        filterSearch={filterSearch}
-        setFilterSearch={setFilterSearch}
-      />
+      <Filtros />
 
       <Tabela />
     </div>

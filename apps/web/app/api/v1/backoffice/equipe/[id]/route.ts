@@ -20,7 +20,7 @@ export async function GET(
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  return processarGETEquipeId(params, backofficeId);
+  return processarGETEquipeId(params, backofficeId as string);
 }
 
 export async function PATCH(
@@ -30,7 +30,7 @@ export async function PATCH(
   const { backofficeId, session, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  return processarAtualizacaoEquipe(req, params, backofficeId, session);
+  return processarAtualizacaoEquipe(req, params, backofficeId as string, session);
 }
 
 export async function DELETE(
@@ -40,5 +40,5 @@ export async function DELETE(
   const { backofficeId, session, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  return processarExclusaoEquipe(params, backofficeId, session);
+  return processarExclusaoEquipe(params, backofficeId as string, session);
 }

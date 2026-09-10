@@ -1,15 +1,31 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@/*": ["./*"],
-      "@asa/database": ["../../packages/database/src"],
-      "@asa/shared": ["../../packages/shared/src"]
+      "@/*": [
+        "./*"
+      ],
+      "@asa/database": [
+        "../../packages/database/src"
+      ],
+      "@asa/shared": [
+        "../../packages/shared/src"
+      ]
     },
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "strictNullChecks": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
   "exclude": [
     "node_modules",
     "vitest.config.ts",

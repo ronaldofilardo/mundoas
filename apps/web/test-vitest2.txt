@@ -1,0 +1,10 @@
+Ôùç injected env (4) from .env.test // tip: Ôîÿ multiple files { path: ['.env.local', '.env'] }
+
+[1m[46m RUN [49m[22m [36mv4.1.1 [39m[90mC:/apps/mundoas/apps/web[39m
+
+No test files found, exiting with code 1
+
+filter: apps/app/__tests__/consultor-pf-form.test.tsx
+include: __tests__/**/*.test.ts, __tests__/**/*.test.tsx, __tests__/**/*.test.mjs, app/__tests__/**/*.test.ts, app/__tests__/**/*.test.tsx, lib/__tests__/**/*.test.ts, lib/__tests__/**/*.test.tsx, lib/__tests__/**/*.test.mjs, components/__tests__/**/*.test.ts, components/__tests__/**/*.test.tsx
+exclude:  **/node_modules/**, **/.git/**
+

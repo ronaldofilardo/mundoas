@@ -37,7 +37,7 @@ function getAllowedOrigins() {
   return Array.from(origins);
 }
 
-function buildCorsHeaders(origin) {
+function buildCorsHeaders(origin: string) {
   return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
@@ -46,13 +46,22 @@ function buildCorsHeaders(origin) {
   };
 }
 
-function isLocalhostOrigin(origin) {
+function isLocalhostOrigin(origin: string) {
   try {
     const url = new URL(origin);
-    return url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "::1";
+    return (
+      url.hostname === "localhost" ||
+      url.hostname === "127.0.0.1" ||
+      url.hostname === "::1"
+    );
   } catch {
     return false;
   }
 }
 
-export { getAllowedOrigin, getAllowedOrigins, buildCorsHeaders, isLocalhostOrigin };
+export {
+  getAllowedOrigin,
+  getAllowedOrigins,
+  buildCorsHeaders,
+  isLocalhostOrigin,
+};

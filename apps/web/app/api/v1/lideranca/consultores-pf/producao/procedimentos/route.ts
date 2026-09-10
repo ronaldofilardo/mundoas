@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const skip = (page - 1) * limit;
 
   const consultores = await prisma.consultorPf.findMany({
-    where: { liderancaId, status: "ATIVO" },
+    where: { liderancaId: liderancaId as string, status: "ATIVO" },
     select: { id: true, nome: true, cpf: true },
     orderBy: { nome: "asc" },
   });

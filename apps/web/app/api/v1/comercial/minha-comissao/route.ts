@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     ? mesReferencia
     : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
-  const where: { equipeId: string; mesReferencia?: string } = { equipeId: comercialId };
+  const where: { equipeId: string; mesReferencia?: string } = { equipeId: comercialId as string };
   if (mesReferencia) where.mesReferencia = mesReferencia;
 
   const comissoes = await prisma.comissaoEquipe.findMany({
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   });
 
   const comercial = await prisma.equipe.findFirst({
-    where: { id: comercialId, tipo: "COMERCIAL" },
+    where: { id: comercialId as string, tipo: "COMERCIAL" },
     select: {
       nome: true,
       cpf: true,

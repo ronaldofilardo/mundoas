@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Resgate } from "../types";
+import type { Resgate } from "./types";
 
 export function ResgateCard({
   resgate,
@@ -9,13 +8,15 @@ export function ResgateCard({
   processando,
   observacao,
   setObservacao,
+  resgateParaObservacao,
   setResgateParaObservacao,
 }: {
   resgate: Resgate;
   onStatusChange: (resgateId: string, novoStatus: string) => void;
   processando: string | null;
   observacao: string;
-  setObservacao: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  setObservacao: (value: string) => void;
+  resgateParaObservacao: string | null;
   setResgateParaObservacao: (id: string | null) => void;
 }) {
   const getStatusBadge = (status: string) => {
@@ -31,18 +32,13 @@ export function ResgateCard({
   };
 
   return (
-    <div
-      key={resgate.id}
-      className="bg-white border border-gray-200 rounded-lg p-6 space-y-4 hover:shadow-md transition-shadow"
-    >
+    <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <h3 className="text-lg font-semibold text-gray-900">
             {resgate.parceiro.nome}
           </h3>
-          <p className="text-sm text-gray-600">
-            {resgate.parceiro.cpf}
-          </p>
+          <p className="text-sm text-gray-600">{resgate.parceiro.cpf}</p>
         </div>
         <span
           className={`inline-block px-3 py-1 text-sm font-medium border rounded-full ${getStatusBadge(
@@ -56,15 +52,11 @@ export function ResgateCard({
       <div className="grid grid-cols-4 gap-4 pt-4 border-t border-gray-200 text-sm">
         <div>
           <p className="text-gray-600 mb-1">Prêmio</p>
-          <p className="font-medium text-gray-900">
-            {resgate.premio.nome}
-          </p>
+          <p className="font-medium text-gray-900">{resgate.premio.nome}</p>
         </div>
         <div>
           <p className="text-gray-600 mb-1">Pontos</p>
-          <p className="font-medium text-gray-900">
-            {resgate.pontosDebitados}
-          </p>
+          <p className="font-medium text-gray-900">{resgate.pontosDebitados}</p>
         </div>
         <div>
           <p className="text-gray-600 mb-1">Ciclo</p>
@@ -87,16 +79,13 @@ export function ResgateCard({
             {resgate.observacao}
           </p>
         </div>
-      )
+      )}
 
-      {/* Ações */}
       <div className="space-y-3 pt-4 border-t border-gray-200">
         {resgate.status === "SOLICITADO" && (
           <div className="flex gap-2">
             <button
-              onClick={() =>
-                onStatusChange(resgate.id, "EM_ANALISE")
-              }
+              onClick={() => onStatusChange(resgate.id, "EM_ANALISE")}
               disabled={processando === resgate.id}
               className={`flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-colors ${
                 processando === resgate.id
@@ -122,18 +111,14 @@ export function ResgateCard({
                 />
                 <div className="flex gap-2">
                   <button
-                    onClick={() =>
-                      onStatusChange(resgate.id, "APROVADO")
-                    }
+                    onClick={() => onStatusChange(resgate.id, "APROVADO")}
                     disabled={processando === resgate.id}
                     className="flex-1 py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm"
                   >
                     Aprovar
                   </button>
                   <button
-                    onClick={() =>
-                      onStatusChange(resgate.id, "REJEITADO")
-                    }
+                    onClick={() => onStatusChange(resgate.id, "REJEITADO")}
                     disabled={processando === resgate.id}
                     className="flex-1 py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm"
                   >
@@ -171,9 +156,7 @@ export function ResgateCard({
                 : "bg-green-600 text-white hover:bg-green-700"
             }`}
           >
-            {processando === resgate.id
-              ? "..."
-              : "Marcar como Entregue"}
+            {processando === resgate.id ? "..." : "Marcar como Entregue"}
           </button>
         )}
 
@@ -181,9 +164,7 @@ export function ResgateCard({
           resgate.status === "ENTREGUE" ||
           resgate.status === "CANCELADO") && (
           <div className="p-3 bg-gray-50 rounded-lg text-center">
-            <p className="text-sm text-gray-600 font-medium">
-              Status final
-            </p>
+            <p className="text-sm text-gray-600 font-medium">Status final</p>
           </div>
         )}
       </div>

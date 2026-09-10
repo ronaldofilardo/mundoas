@@ -1,0 +1,128 @@
+app/(dashboard)/backoffice/equipe/bonus/components/bonificacao-gestores-consultores.tsx(7,30): error TS2307: Cannot find module '@/util/format-data' or its corresponding type declarations.
+app/(dashboard)/backoffice/equipe/bonus/components/bonificacao-gestores-consultores.tsx(8,39): error TS2307: Cannot find module '@/hooks/use-bonificacao-extrato' or its corresponding type declarations.
+app/(dashboard)/backoffice/equipe/bonus/components/bonificacao-gestores-consultores.tsx(222,46): error TS7006: Parameter 'item' implicitly has an 'any' type.
+app/(dashboard)/backoffice/metas-vendas/components/painel-metas-vendas-client.tsx(5,32): error TS2307: Cannot find module '@/util/use-metavendas' or its corresponding type declarations.
+app/(dashboard)/backoffice/metas-vendas/components/painel-metas-vendas-client.tsx(6,31): error TS2307: Cannot find module '@/util/format-moeda' or its corresponding type declarations.
+app/(dashboard)/backoffice/metas-vendas/components/painel-metas-vendas-client.tsx(62,21): error TS7006: Parameter 'm' implicitly has an 'any' type.
+app/(dashboard)/backoffice/metas-vendas/components/painel-metas-vendas-client.tsx(85,34): error TS7006: Parameter 'a' implicitly has an 'any' type.
+app/(dashboard)/backoffice/metas-vendas/components/painel-metas-vendas-client.tsx(106,43): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/(dashboard)/backoffice/metas-vendas/components/painel-metas-vendas-client.tsx(121,58): error TS2304: Cannot find name 'SortKey'.
+app/(dashboard)/backoffice/metas-vendas/components/painel-metas-vendas-client.tsx(124,32): error TS7006: Parameter 'o' implicitly has an 'any' type.
+app/(dashboard)/backoffice/metas-vendas/components/painel-metas-vendas-client.tsx(183,33): error TS7006: Parameter 'c' implicitly has an 'any' type.
+app/(dashboard)/backoffice/metas-vendas/components/painel-metas-vendas-client.tsx(227,36): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/(dashboard)/backoffice/pontos/components/premios-form.tsx(4,32): error TS2307: Cannot find module '@/components/backoffice/pontos/components/use-premios-form' or its corresponding type declarations.
+app/(dashboard)/backoffice/pontos/components/premios-pontos.tsx(4,29): error TS2307: Cannot find module '@/components/backoffice/pontos/components/premios-form' or its corresponding type declarations.
+app/(dashboard)/backoffice/pontos/components/premios-pontos.tsx(5,30): error TS2307: Cannot find module '@/components/backoffice/pontos/components/premios-table' or its corresponding type declarations.
+app/(dashboard)/backoffice/pontos/components/premios-pontos.tsx(94,8): error TS2304: Cannot find name 'PremiosUpload'.
+app/(dashboard)/backoffice/pontos/components/premios-pontos.tsx(100,22): error TS18048: 'data.length' is possibly 'undefined'.
+app/(dashboard)/backoffice/pontos/components/premios-pontos.tsx(100,41): error TS18048: 'data' is possibly 'undefined'.
+app/(dashboard)/backoffice/pontos/components/tabela-distribuicao-filtros.tsx(4,45): error TS2307: Cannot find module './pontos-types' or its corresponding type declarations.
+app/(dashboard)/backoffice/pontos/components/tabela-distribuicao-table.tsx(3,45): error TS2307: Cannot find module './pontos-types' or its corresponding type declarations.
+app/(dashboard)/backoffice/pontos/components/tabela-distribuicao.utils.ts(45,7): error TS18049: 'producao.paciente' is possibly 'null' or 'undefined'.
+app/(dashboard)/backoffice/producao/pagamentos/components/use-comissoes.ts(5,15): error TS2614: Module '"@/app/(dashboard)/backoffice/producao/pagamentos/page"' has no exported member 'Comissao'. Did you mean to use 'import Comissao from "@/app/(dashboard)/backoffice/producao/pagamentos/page"' instead?
+app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx(24,26): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ target: { value: string; }; }'.
+app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx(25,13): error TS2304: Cannot find name 'setCurrentPage'.
+app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx(32,16): error TS2304: Cannot find name 'formatMes'.
+app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx(40,31): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ target: { value: string; }; }'.
+app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx(41,13): error TS2304: Cannot find name 'setCurrentPage'.
+app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx(56,34): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ target: { value: string; }; }'.
+app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx(57,13): error TS2304: Cannot find name 'setCurrentPage'.
+app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx(73,44): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ target: { value: string; }; }'.
+app/(dashboard)/backoffice/producao/procedimentos/components/use-producao.ts(163,57): error TS2552: Cannot find name 'setFilterMes'. Did you mean 'filterMes'?
+app/(dashboard)/backoffice/producao/procedimentos/components/use-producao.ts(165,62): error TS2552: Cannot find name 'setFilterParceiro'. Did you mean 'filterParceiro'?
+app/(dashboard)/backoffice/producao/procedimentos/components/use-producao.ts(167,65): error TS2552: Cannot find name 'setFilterConsultorPf'. Did you mean 'filterConsultorPf'?
+app/(dashboard)/backoffice/producao/procedimentos/components/use-producao.ts(169,60): error TS2552: Cannot find name 'setFilterSearch'. Did you mean 'filterSearch'?
+app/(dashboard)/backoffice/producao/procedimentos/page.tsx(33,5): error TS2339: Property 'pagination' does not exist on type '{ data: ProducaoData | null; loading: boolean; currentPage: number; setCurrentPage: Dispatch<SetStateAction<number>>; filterMes: string | undefined; ... 14 more ...; fetchProducao: () => Promise<...>; }'.
+app/(dashboard)/backoffice/producao/procedimentos/page.tsx(45,9): error TS2322: Type '{ filterMes: string | undefined; setFilterMes: (e: { target: { value: string; }; }) => any; filterParceiro: string | undefined; setFilterParceiro: (e: { target: { value: string; }; }) => any; filterConsultorPf: string | undefined; setFilterConsultorPf: (e: { ...; }) => any; filterSearch: string | undefined; setFilte...' is not assignable to type 'IntrinsicAttributes'.
+  Property 'filterMes' does not exist on type 'IntrinsicAttributes'.
+app/(dashboard)/backoffice/relatorios/comissoes/page.tsx(5,40): error TS2307: Cannot find module '@/util/format-brl' or its corresponding type declarations.
+app/(dashboard)/backoffice/relatorios/comissoes/page.tsx(6,39): error TS2307: Cannot find module '@/util/use-relatorio-comissoes' or its corresponding type declarations.
+app/(dashboard)/backoffice/relatorios/comissoes/page.tsx(32,9): error TS2304: Cannot find name 'setComerciais'.
+app/(dashboard)/backoffice/relatorios/comissoes/page.tsx(87,32): error TS7006: Parameter 'c' implicitly has an 'any' type.
+app/(dashboard)/backoffice/relatorios/comissoes/page.tsx(165,33): error TS7006: Parameter 'c' implicitly has an 'any' type.
+app/api/v1/backoffice/comissionamento/validacao/service.ts(25,34): error TS2322: Type 'Map<string, number>' is not assignable to type 'ProducaoPorComercial'.
+  Index signature for type 'string' is missing in type 'Map<string, number>'.
+app/api/v1/backoffice/comissionamento/validacao/service.ts(27,18): error TS1308: 'await' expressions are only allowed within async functions and at the top levels of modules.
+app/api/v1/backoffice/comissionamento/validacao/service.ts(43,3): error TS2322: Type 'Map<string, number>' is not assignable to type 'ProducaoPorComercial'.
+app/api/v1/backoffice/comissionamento/validacao/service.ts(52,36): error TS2322: Type 'Map<string, number>' is not assignable to type 'ProducaoPorConsultor'.
+  Index signature for type 'string' is missing in type 'Map<string, number>'.
+app/api/v1/backoffice/comissionamento/validacao/service.ts(54,18): error TS1308: 'await' expressions are only allowed within async functions and at the top levels of modules.
+app/api/v1/backoffice/comissionamento/validacao/service.ts(70,3): error TS2322: Type 'Map<string, number>' is not assignable to type 'ProducaoPorConsultor'.
+app/api/v1/backoffice/comissionamento/validacao/service.ts(78,34): error TS2322: Type 'any[]' is not assignable to type 'RegrasComerciais'.
+app/api/v1/backoffice/comissionamento/validacao/service.ts(78,52): error TS2322: Type 'any[]' is not assignable to type 'RegrasGestores'.
+app/api/v1/backoffice/equipe/[id]/route.ts(14,8): error TS2307: Cannot find module './service' or its corresponding type declarations.
+app/api/v1/backoffice/equipe/route.ts(21,33): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+app/api/v1/backoffice/equipe/service.ts(201,3): error TS1016: A required parameter cannot follow an optional parameter.
+app/api/v1/backoffice/equipe/service.ts(435,24): error TS2322: Type 'NextResponse<{ error: string; }> | NextResponse<{ error: string; }> | undefined' is not assignable to type 'NextResponse<{ error: string; }> | NextResponse<{ error: string; details: unknown; }> | NextResponse<unknown>'.
+  Type 'undefined' is not assignable to type 'NextResponse<{ error: string; }> | NextResponse<{ error: string; details: unknown; }> | NextResponse<unknown>'.
+app/api/v1/backoffice/equipe/service.ts(449,24): error TS2322: Type 'NextResponse<{ error: string; }> | NextResponse<{ error: string; details: unknown; }> | undefined' is not assignable to type 'NextResponse<{ error: string; }> | NextResponse<{ error: string; details: unknown; }> | NextResponse<unknown>'.
+  Type 'undefined' is not assignable to type 'NextResponse<{ error: string; }> | NextResponse<{ error: string; details: unknown; }> | NextResponse<unknown>'.
+app/api/v1/backoffice/equipe/service.ts(557,24): error TS2322: Type 'NextResponse<{ error: string; }> | NextResponse<{ error: string; }> | undefined' is not assignable to type 'NextResponse<{ error: string; details: unknown; }> | NextResponse<unknown>'.
+  Type 'undefined' is not assignable to type 'NextResponse<{ error: string; details: unknown; }> | NextResponse<unknown>'.
+app/api/v1/backoffice/parceiros/route.ts(28,49): error TS2339: Property 'error' does not exist on type '{ success: boolean; data: { id: string; nome: string; cpf: string; email: string; pixChave: string | null; periodicidadeCicloEscolhida: PeriodicidadeCiclo | null; status: StatusParceiro; totalIndicados: number; desligadoEm: Date | null; createdAt: Date; indicacoes: { ...; }[]; }[]; }'.
+app/api/v1/backoffice/parceiros/route.ts(44,42): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/api/v1/backoffice/parceiros/route.ts(46,24): error TS18048: 'result.data' is possibly 'undefined'.
+app/api/v1/backoffice/parceiros/route.ts(61,42): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/api/v1/backoffice/parceiros/route.ts(78,42): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/api/v1/backoffice/parceiros/upload/parser.ts(111,15): error TS2661: Cannot export 'Record'. Only local declarations can be exported from a module.
+app/api/v1/backoffice/parceiros/upload/service.ts(6,16): error TS2305: Module '"path"' has no exported member 'tmpdir'.
+app/api/v1/backoffice/parceiros/upload/service.ts(29,26): error TS2304: Cannot find name 'extrairLinhasDoArquivo'.
+app/api/v1/backoffice/parceiros/upload/service.ts(71,26): error TS2304: Cannot find name 'mapearLinha'.
+app/api/v1/backoffice/parceiros/upload/service.ts(73,20): error TS2304: Cannot find name 'parceiroUploadSchema'.
+app/api/v1/backoffice/parceiros/upload/service.ts(130,9): error TS2304: Cannot find name 'hash'.
+app/api/v1/backoffice/parceiros/upload/service.ts(130,29): error TS7006: Parameter 'err' implicitly has an 'any' type.
+app/api/v1/backoffice/parceiros/upload/service.ts(130,34): error TS7006: Parameter 'hash' implicitly has an 'any' type.
+app/api/v1/backoffice/relatorio-comissoes/service.ts(18,3): error TS2502: 'comissoes' is referenced directly or indirectly in its own type annotation.
+app/api/v1/backoffice/relatorio-comissoes/service.ts(132,3): error TS2502: 'comissoes' is referenced directly or indirectly in its own type annotation.
+app/api/v1/backoffice/relatorio-comissoes/service.ts(149,10): error TS2304: Cannot find name 'ok'.
+app/api/v1/backoffice/relatorio-comissoes/service.ts(151,31): error TS7006: Parameter 'c' implicitly has an 'any' type.
+app/api/v1/backoffice/relatorio-comissoes/service.ts(188,3): error TS2502: 'comissoes' is referenced directly or indirectly in its own type annotation.
+app/api/v1/backoffice/relatorio-comissoes/service.ts(203,22): error TS2552: Cannot find name 'commerciaisDoGestor'. Did you mean 'comerciaisDoGestor'?
+app/api/v1/backoffice/relatorio-comissoes/service.ts(203,47): error TS7006: Parameter 'c' implicitly has an 'any' type.
+app/api/v1/backoffice/relatorio-comissoes/service.ts(292,10): error TS2304: Cannot find name 'ok'.
+app/api/v1/backoffice/relatorio-comissoes/service.ts(294,31): error TS7006: Parameter 'c' implicitly has an 'any' type.
+app/api/v1/lideranca/equipe/importar/route.ts(17,5): error TS2741: Property 'dados' is missing in type 'Record<string, unknown>' but required in type 'DadosImportar'.
+app/api/v1/lideranca/equipe/importar/service.ts(6,15): error TS2305: Module '"./route"' has no exported member 'JsonObject'.
+app/api/v1/lideranca/equipe/importar/service.ts(164,52): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/api/v1/lideranca/equipe/importar/service.ts(170,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/api/v1/lideranca/equipe/importar/service.ts(171,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/api/v1/lideranca/equipe/importar/service.ts(182,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/api/v1/lideranca/equipe/importar/service.ts(183,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/util/use-metavendas.ts(3,31): error TS2307: Cannot find module '@/util/format-moeda' or its corresponding type declarations.
+app/util/use-metavendas.ts(4,53): error TS2307: Cannot find module '@/util/opcoes-metas-vendas' or its corresponding type declarations.
+comissionamento/components/FiltrosConsultores.tsx(11,38): error TS2339: Property 'items' does not exist on type 'FiltrosConsultoresProps'.
+comissionamento/components/FiltrosConsultores.tsx(13,5): error TS2339: Property 'filtroStatus' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/FiltrosConsultores.tsx(14,5): error TS2339: Property 'setFiltroStatus' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/FiltrosConsultores.tsx(15,5): error TS2339: Property 'filtroLideranca' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/FiltrosConsultores.tsx(16,5): error TS2339: Property 'setFiltroLideranca' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/FiltrosConsultores.tsx(17,5): error TS2339: Property 'busca' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/FiltrosConsultores.tsx(18,5): error TS2339: Property 'setBusca' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/FiltrosConsultores.tsx(19,5): error TS2339: Property 'liderancas' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/FiltrosConsultores.tsx(20,5): error TS2339: Property 'totalAtivos' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/FiltrosConsultores.tsx(21,5): error TS2339: Property 'totalInativos' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/FiltrosConsultores.tsx(22,22): error TS2304: Cannot find name 'itens'.
+comissionamento/components/FiltrosConsultores.tsx(63,26): error TS7006: Parameter 'l' implicitly has an 'any' type.
+comissionamento/components/FiltrosConsultores.tsx(79,47): error TS2304: Cannot find name 'itens'.
+comissionamento/components/FormNovaRegra.tsx(27,24): error TS2304: Cannot find name 'percentNum'.
+comissionamento/components/TabelaComissoes.tsx(5,26): error TS2307: Cannot find module '@/types' or its corresponding type declarations.
+comissionamento/components/TabelaConsultores.tsx(23,5): error TS2339: Property 'consultoresFiltrados' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/TabelaConsultores.tsx(24,5): error TS2339: Property 'totalAtivos' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/TabelaConsultores.tsx(25,5): error TS2339: Property 'totalInativos' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/TabelaConsultores.tsx(26,5): error TS2339: Property 'handleEditar' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/TabelaConsultores.tsx(27,5): error TS2339: Property 'handleDeletarConsultor' does not exist on type '{ filtroStatus: "ATIVO" | "INATIVO" | "todos"; setFiltroStatus: Dispatch<SetStateAction<"ATIVO" | "INATIVO" | "todos">>; filtroLideranca: string; ... 14 more ...; handleCloseModal: () => void; } | null'.
+comissionamento/components/TabelaConsultores.tsx(52,10): error TS2304: Cannot find name 'FiltrosConsultores'.
+comissionamento/components/TabelaConsultores.tsx(75,43): error TS7006: Parameter 'cp' implicitly has an 'any' type.
+hooks/use-comissoes.ts(84,79): error TS2304: Cannot find name 'fetchComissoes'.
+lib/comissao-calculo.ts(93,24): error TS2304: Cannot find name 'prisma'.
+lib/comissao-calculo.ts(120,24): error TS2304: Cannot find name 'prisma'.
+lib/comissao-calculo.ts(145,34): error TS2741: Property 'itens' is missing in type 'any[]' but required in type 'RegrasComerciais'.
+lib/comissao-calculo.ts(145,52): error TS2741: Property 'itens' is missing in type 'any[]' but required in type 'RegrasGestores'.

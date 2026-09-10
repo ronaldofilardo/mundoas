@@ -102,7 +102,7 @@ export async function GET(req: NextRequest) {
         valorMeta: true,
       },
     }),
-    getProcedimentosDoBackoffice({ backofficeId, ano }),
+    getProcedimentosDoBackoffice({ backofficeId: backofficeId as string, ano }),
   ]);
 
   const metaPorConsultor = new Map<string, MetaPorSetor>();

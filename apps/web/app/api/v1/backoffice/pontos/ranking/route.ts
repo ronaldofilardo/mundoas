@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
     if (error) return error;
 
     const { searchParams } = new URL(req.url);
-    const cicloPontosId = searchParams.get('cicloPontosId');
+    const cicloPontosId = searchParams.get('cicloPontosId') ?? undefined;
     const forceRefresh = searchParams.get('forceRefresh') === 'true';
 
     // Buscar ciclo vigente se não especificado
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
     if (!cicloId) {
       const cicloVigente = await prisma.cicloPontos.findFirst({
         where: {
-          backofficeId,
+          backofficeId: backofficeId as string,
           OR: [{ status: 'EM_ANDAMENTO' }, { status: 'RESGATE_ABERTO' }],
         },
       });
@@ -72,14 +72,14 @@ export async function GET(req: NextRequest) {
       where: { id: cicloId },
     });
 
-    if (!ciclo || ciclo.backofficeId !== backofficeId) {
+    if (!ciclo || ciclo.backofficeId !== (backofficeId as string)) {
       return badRequest('Ciclo não encontrado ou não pertence ao backoffice');
     }
 
     const agora = new Date();
     const configuracaoVigente = await prisma.configuracaoPontos.findFirst({
       where: {
-        backofficeId,
+        backofficeId: backofficeId as string,
         vigenteDesde: { lte: agora },
         OR: [{ vigenteAte: null }, { vigenteAte: { gte: agora } }],
       },
@@ -104,7 +104,7 @@ export async function GET(req: NextRequest) {
 
     // Buscar todos os parceiros diretamente vinculados a este backoffice
     const parceiros = await prisma.parceiro.findMany({
-      where: { backofficeId, status: 'ATIVO' },
+      where: { backofficeId: backofficeId as string, status: 'ATIVO' },
       select: {
         id: true,
         nome: true,

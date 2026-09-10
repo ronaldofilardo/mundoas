@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { DistribuicaoPontosItem } from "./pontos-types";
+import type { DistribuicaoPontosItem } from "../pontos-types";
 
 export function TabelaDistribuicaoFiltros({
   filtroParceiro,

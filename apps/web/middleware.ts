@@ -2,9 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 import { enforceHttpsProduction } from "./middleware/https";
-import { getAllowedOrigin, getAllowedOrigins, buildCorsHeaders, isLocalhostOrigin } from "./middleware/cors";
-import { ROUTE_RULES, dashboardForPapel, authorizeByPapel } from "./middleware/auth";
-import { ONBOARDING_PATHS, ONBOARDING_ALLOWLIST, isOnboardingAllowlist, checarAcessoUnidade } from "./middleware/billing";
+import {
+  getAllowedOrigin,
+  getAllowedOrigins,
+  buildCorsHeaders,
+  isLocalhostOrigin,
+} from "./middleware/cors";
+import {
+  ROUTE_RULES,
+  dashboardForPapel,
+  authorizeByPapel,
+} from "./middleware/auth";
+import {
+  ONBOARDING_PATHS,
+  ONBOARDING_ALLOWLIST,
+  isOnboardingAllowlist,
+  checarAcessoUnidade,
+} from "./middleware/billing";
 
 // ---------------------------------------------------------------------------
 // Security: Enforce HTTPS in production
@@ -114,11 +128,7 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Retorna NextResponse com header x-middleware-next: 1 para continuar
-  return new NextResponse(null, {
-    status: 204,
-    headers: { "x-middleware-next": "1" },
-  });
+  return NextResponse.next();
 }
 
 export const config = {

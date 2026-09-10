@@ -1,19 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import type { Premio } from "../types";
-
 export function PremioForm({
-  showForm,
-  setShowForm,
   formData,
   setFormData,
   editandoId,
   setEditandoId,
+  setShowForm,
   onSubmit,
 }: {
-  showForm: boolean;
-  setShowForm: (value: boolean) => void;
   formData: {
     nome: string;
     descricao: string;
@@ -28,12 +22,18 @@ export function PremioForm({
   }) => void;
   editandoId: string | null;
   setEditandoId: (value: string | null) => void;
+  setShowForm: (value: boolean) => void;
   onSubmit: (e: React.FormEvent) => void;
 }) {
   return (
-    <form onSubmit={onSubmit} className="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
+    <form
+      onSubmit={onSubmit}
+      className="bg-white border border-gray-200 rounded-lg p-6 space-y-4"
+    >
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Nome</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Nome
+        </label>
         <input
           type="text"
           value={formData.nome}
@@ -45,10 +45,14 @@ export function PremioForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Descrição
+        </label>
         <textarea
           value={formData.descricao}
-          onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, descricao: e.target.value })
+          }
           placeholder="Descrição detalhada do prêmio..."
           required
           rows={3}
@@ -58,11 +62,15 @@ export function PremioForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Custo em Pontos</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Custo em Pontos
+          </label>
           <input
             type="number"
             value={formData.custoPontos}
-            onChange={(e) => setFormData({ ...formData, custoPontos: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, custoPontos: e.target.value })
+            }
             placeholder="Ex: 5000"
             required
             min="1"
@@ -70,11 +78,15 @@ export function PremioForm({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">URL da Imagem</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            URL da Imagem
+          </label>
           <input
             type="url"
             value={formData.imagemUrl}
-            onChange={(e) => setFormData({ ...formData, imagemUrl: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, imagemUrl: e.target.value })
+            }
             placeholder="https://exemplo.com/imagem.jpg"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
@@ -93,7 +105,12 @@ export function PremioForm({
           onClick={() => {
             setShowForm(false);
             setEditandoId(null);
-            setFormData({nome: "", descricao: "", custoPontos: "", imagemUrl: ""});
+            setFormData({
+              nome: "",
+              descricao: "",
+              custoPontos: "",
+              imagemUrl: "",
+            });
           }}
           className="flex-1 py-2 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
         >

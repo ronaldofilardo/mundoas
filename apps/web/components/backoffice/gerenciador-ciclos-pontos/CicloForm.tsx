@@ -1,17 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { CicloPontos } from "../types";
-
 export function CicloForm({
-  showForm,
-  setShowForm,
   formData,
   setFormData,
-  onCreate,
+  setShowForm,
+  onSubmit,
 }: {
-  showForm: boolean;
-  setShowForm: (value: boolean) => void;
   formData: {
     nome: string;
     inicioAcumuloEm: string;
@@ -24,10 +18,12 @@ export function CicloForm({
     fimAcumuloEm: string;
     fimResgateEm: string;
   }) => void;
-  onCreate: () => void;
+  setShowForm: (value: boolean) => void;
+  onSubmit: (e: React.FormEvent) => void;
 }) {
   return (
     <form
+      onSubmit={onSubmit}
       className="bg-white border border-gray-200 rounded-lg p-6 space-y-4"
     >
       <div>
@@ -37,9 +33,7 @@ export function CicloForm({
         <input
           type="text"
           value={formData.nome}
-          onChange={(e) =>
-            setFormData({ ...formData, nome: e.target.value })
-          }
+          onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
           placeholder="Ex: 1º Semestre 2026"
           required
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"

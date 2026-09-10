@@ -40,6 +40,7 @@ export function useFilaResgates(statusInicial: string = "SOLICITADO") {
     loading,
     error,
     processando,
+    setProcessando,
     statusFiltro,
     setStatusFiltro,
     observacao,

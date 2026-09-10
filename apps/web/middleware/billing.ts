@@ -1,7 +1,11 @@
+import type { NextRequest } from "next/server";
+
 const ONBOARDING_PATHS = {
   TERMOS: "/onboarding/termos",
   PAGAMENTO: "/onboarding/plano-pagamento",
 } as const;
+
+type EtapaOnboarding = keyof typeof ONBOARDING_PATHS;
 
 const ONBOARDING_ALLOWLIST = [
   "/onboarding/",
@@ -10,11 +14,14 @@ const ONBOARDING_ALLOWLIST = [
   "/api/auth/",
 ] as const;
 
-function isOnboardingAllowlist(pathname) {
+function isOnboardingAllowlist(pathname: string) {
   return ONBOARDING_ALLOWLIST.some((p) => pathname.startsWith(p));
 }
 
-async function checarAcessoUnidade(req, backofficeId) {
+async function checarAcessoUnidade(
+  req: NextRequest,
+  backofficeId: string,
+) {
   const { pathname } = req.nextUrl;
   if (isOnboardingAllowlist(pathname)) return null;
 
@@ -29,19 +36,31 @@ async function checarAcessoUnidade(req, backofficeId) {
 
     if (!res.ok) return null;
 
-    const data = await res.json();
+    const data = (await res.json()) as {
+      liberado?: boolean;
+      etapaOnboarding?: EtapaOnboarding | null;
+    };
     if (data.liberado) return null;
 
     const redirectUrl = req.nextUrl.clone();
+    const etapa = data.etapaOnboarding;
     redirectUrl.pathname =
-      data.etapaOnboarding
-        ? ONBOARDING_PATHS[data.etapaOnboarding]
+      etapa && etapa in ONBOARDING_PATHS
+        ? ONBOARDING_PATHS[etapa]
         : "/acesso-suspenso";
     redirectUrl.search = "";
-    return new Response(null, { status: 302, headers: { Location: redirectUrl.toString() } });
+    return new Response(null, {
+      status: 302,
+      headers: { Location: redirectUrl.toString() },
+    });
   } catch {
     return null;
   }
 }
 
-export { ONBOARDING_PATHS, ONBOARDING_ALLOWLIST, isOnboardingAllowlist, checarAcessoUnidade };
+export {
+  ONBOARDING_PATHS,
+  ONBOARDING_ALLOWLIST,
+  isOnboardingAllowlist,
+  checarAcessoUnidade,
+};

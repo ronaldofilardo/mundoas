@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
     // Buscar ciclos do gestor
     const ciclos = await prisma.cicloPontos.findMany({
-      where: { backofficeId },
+      where: { backofficeId: backofficeId as string },
       select: { id: true },
     });
 

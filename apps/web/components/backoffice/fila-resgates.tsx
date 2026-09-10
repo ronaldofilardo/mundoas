@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useFilaResgates } from "@/hooks/use-fila-resgates";
 import { ResgateList } from "@/components/backoffice/fila-resgates/ResgateList";
-import type { Resgate } from "@/components/backoffice/fila-resgates/types";
 
 export function FilaResgates() {
   const {
@@ -11,17 +9,15 @@ export function FilaResgates() {
     loading,
     error,
     processando,
+    setProcessando,
     statusFiltro,
+    setStatusFiltro,
     observacao,
     setObservacao,
     resgateParaObservacao,
     setResgateParaObservacao,
     refetch,
   } = useFilaResgates("SOLICITADO");
-
-  useEffect(() => {
-    refetch();
-  }, [statusFiltro]);
 
   const handleChangeStatus = async (resgateId: string, novoStatus: string) => {
     setProcessando(resgateId);
@@ -48,7 +44,7 @@ export function FilaResgates() {
       setObservacao("");
       setResgateParaObservacao(null);
       refetch();
-    } catch (err) {
+    } catch {
       alert("Erro ao atualizar resgate");
     } finally {
       setProcessando(null);
@@ -61,10 +57,12 @@ export function FilaResgates() {
       loading={loading}
       error={error}
       statusFiltro={statusFiltro}
+      onFiltroChange={setStatusFiltro}
       onStatusChange={handleChangeStatus}
       processando={processando}
       observacao={observacao}
       setObservacao={setObservacao}
+      resgateParaObservacao={resgateParaObservacao}
       setResgateParaObservacao={setResgateParaObservacao}
     />
   );

@@ -1,4 +1,4 @@
-interface Premio {
+export interface Premio {
   id: string;
   nome: string;
   descricao: string;

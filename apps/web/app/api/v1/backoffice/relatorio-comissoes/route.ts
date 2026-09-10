@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     return badRequest("Parâmetros obrigatórios: inicio e fim (formato: YYYY-MM)");
   }
 
-  const liderancas = await getLiderancas(backofficeId);
+  const liderancas = await getLiderancas(backofficeId as string);
 
   if (parsed.tipo === "consultor-pf") {
     const data = await getConsultorPFData(liderancas, parsed.inicio, parsed.fim);

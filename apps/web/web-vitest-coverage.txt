@@ -1,0 +1,1712 @@
+Ôùç injected env (4) from .env.test // tip: Ôùê encrypted .env [www.dotenvx.com]
+Loaded  vitest@4.1.1  and  @vitest/coverage-v8@4.1.11 .
+Running mixed versions is not supported and may lead into bugs
+Update your dependencies and make sure the versions match.
+
+[1m[46m RUN [49m[22m [36mv4.1.1 [39m[90mC:/apps/mundoas/apps/web[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+[90mstdout[2m | app/__tests__/consultor-pf-form.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôùê encrypted .env [www.dotenvx.com]
+
+ [31mÔØ»[39m app/__tests__/consultor-pf-form.test.tsx [2m([22m[2m12 tests[22m[2m | [22m[31m8 failed[39m[2m)[22m[33m 8367[2mms[22m[39m
+[31m     [31m├ù[31m deve inicializar com estado padr├úo[39m[33m 1069[2mms[22m[39m
+[31m     [31m├ù[31m deve preencher form quando consultor ├® fornecido[39m[33m 1016[2mms[22m[39m
+[31m     [31m├ù[31m deve formatar CPF simples[39m[33m 1028[2mms[22m[39m
+[31m     [31m├ù[31m deve validar campos obrigat├│rios[39m[33m 1016[2mms[22m[39m
+[31m     [31m├ù[31m deve renderizar checkboxes de setores[39m[33m 1020[2mms[22m[39m
+[31m     [31m├ù[31m deve permitir toggle de setor[39m[33m 1053[2mms[22m[39m
+[31m     [31m├ù[31m deve lidar com consultor nulo[39m[33m 1035[2mms[22m[39m
+[31m     [31m├ù[31m deve ter email disabled[39m[33m 1025[2mms[22m[39m
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir aviso quando nenhuma linha valida para enviar
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir aviso quando nenhuma linha valida para enviar
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"REJEITADO"}],"hasMore":false,"totalRows":1,"summary":{"total":1,"validos":0,"resgatados":0,"orfaos":0,"rejeitados":1,"totalComissao":0,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'REJEITADO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m1[39m,
+  summary: {
+    total: [33m1[39m,
+    validos: [33m0[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m1[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve alternar exibicao de todas as linhas ao clicar em Ver mais/Ver menos
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve alternar exibicao de todas as linhas ao clicar em Ver mais/Ver menos
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO"},{"rowNumber":2,"dataReferencia":"2026-07-15","paciente":"Maria","procedimento":"Consulta","cpf":"98765432100","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial2","valorTotal":100,"status":"VALIDO"},{"rowNumber":3,"dataReferencia":"2026-07-15","paciente":"Jos├®","procedimento":"Consulta","cpf":"11122233344","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial3","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":3,"summary":{"total":3,"validos":3,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":300,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    },
+    {
+      rowNumber: [33m2[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Maria'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'98765432100'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial2'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    },
+    {
+      rowNumber: [33m3[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jos├®'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'11122233344'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial3'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m3[39m,
+  summary: {
+    total: [33m3[39m,
+    validos: [33m3[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m300[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîÿ suppress logs { quiet: true }
+
+ [31mÔØ»[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx [2m([22m[2m23 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 3679[2mms[22m[39m
+[31m       [31m├ù[31m deve exibir aviso quando nenhuma linha valida para enviar[39m[33m 1173[2mms[22m[39m
+[31m       [31m├ù[31m deve alternar exibicao de todas as linhas ao clicar em Ver mais/Ver menos[39m[32m 53[2mms[22m[39m
+stderr | app/__tests__/pagamentos-page.test.tsx > PagamentosPage - Renderiza├º├úo > deve renderizar o t├¡tulo "Gest├úo de Pagamentos"
+Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+stderr | app/__tests__/pagamentos-page.test.tsx > PagamentosPage - Renderiza├º├úo > deve renderizar subt├¡tulo descriptivo
+Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+stderr | app/__tests__/pagamentos-page.test.tsx > PagamentosPage - Dados e Filtros > deve buscar comiss├Áes com status filterStatus
+Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+stderr | app/__tests__/pagamentos-page.test.tsx > PagamentosPage - Dados e Filtros > deve aplicar filtro de m├¬s
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/resumo.tsx:9:146)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/resumo.tsx:9:146)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/filtros.tsx:8:20)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/tabela.tsx:9:119)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to PagamentosPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to PagamentosPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+
+stderr | app/__tests__/pagamentos-page.test.tsx > PagamentosPage - Dados e Filtros > deve aplicar filtro de status e m├¬s juntos
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/resumo.tsx:9:146)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/resumo.tsx:9:146)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/filtros.tsx:8:20)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/tabela.tsx:9:119)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to PagamentosPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to PagamentosPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+
+stderr | app/__tests__/pagamentos-page.test.tsx > PagamentosPage - Pagamento > deve chamar API de pagamento quando h├í sele├º├úo
+Warning: React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check your code at pagamentos-page.test.tsx:152.
+
+stderr | app/__tests__/pagamentos-page.test.tsx > PagamentosPage - Pagamento > deve chamar API de pagamento quando h├í sele├º├úo
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/resumo.tsx:9:146)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/resumo.tsx:9:146)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/filtros.tsx:8:20)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/tabela.tsx:9:119)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to PagamentosPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to PagamentosPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+
+stderr | app/__tests__/pagamentos-page.test.tsx > PagamentosPage - Filtros Aplicados > deve atualizar filtro de m├¬s e recarregar
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/resumo.tsx:9:146)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/filtros.tsx:8:20)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/tabela.tsx:9:119)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to PagamentosPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to PagamentosPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+
+stderr | app/__tests__/pagamentos-page.test.tsx > PagamentosPage - Filtros Aplicados > deve atualizar filtro de consultor PF e recarregar
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/resumo.tsx:9:146)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/filtros.tsx:8:20)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/components/tabela.tsx:9:119)
+    at div
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+[90mstdout[2m | app/__tests__/pagamentos-page.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîÿ enable debugging { debug: true }
+
+Warning: An update to PagamentosPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+Warning: An update to PagamentosPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at PagamentosPage (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/pagamentos/page.tsx:17:272)
+
+ [31mÔØ»[39m app/__tests__/pagamentos-page.test.tsx [2m([22m[2m16 tests[22m[2m | [22m[31m12 failed[39m[2m)[22m[33m 315[2mms[22m[39m
+[31m     [31m├ù[31m deve renderizar o t├¡tulo "Gest├úo de Pagamentos"[39m[32m 23[2mms[22m[39m
+[31m     [31m├ù[31m deve renderizar subt├¡tulo descriptivo[39m[32m 2[2mms[22m[39m
+[31m     [31m├ù[31m deve buscar comiss├Áes com status filterStatus[39m[32m 4[2mms[22m[39m
+[31m     [31m├ù[31m deve aplicar filtro de m├¬s[39m[32m 121[2mms[22m[39m
+[31m     [31m├ù[31m deve aplicar filtro de status e m├¬s juntos[39m[32m 20[2mms[22m[39m
+[31m     [31m├ù[31m deve exibir erro quando nenhuma comiss├úo selecionada[39m[32m 2[2mms[22m[39m
+[31m     [31m├ù[31m deve chamar API de pagamento quando h├í sele├º├úo[39m[32m 17[2mms[22m[39m
+[31m     [31m├ù[31m deve exibir toast de sucesso ao pagar[39m[32m 3[2mms[22m[39m
+[31m     [31m├ù[31m deve disparar download de recibo quando h├í sele├º├úo[39m[32m 3[2mms[22m[39m
+[31m     [31m├ù[31m deve gerar conte├║do de recibo com totais corretos[39m[32m 18[2mms[22m[39m
+[31m     [31m├ù[31m deve atualizar filtro de m├¬s e recarregar[39m[32m 21[2mms[22m[39m
+[31m     [31m├ù[31m deve atualizar filtro de consultor PF e recarregar[39m[32m 24[2mms[22m[39m
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Renderiza├º├úo > deve renderizar t├¡tulo "Produ├º├úo"
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Renderiza├º├úo > deve renderizar subt├¡tulo descriptivo
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Filtros > deve aplicar filtro de m├¬s
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Filtros > deve aplicar filtro de parceiro
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Filtros > deve aplicar filtro de consultor PF
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Filtros > deve aplicar filtro de busca
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Formata├º├Áes > deve formatar data corretamente
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Formata├º├Áes > deve formatar CPF corretamente
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Formata├º├Áes > deve formatar fun├º├úo corretamente
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Tabela > deve renderizar tabela com dados
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Tabela > deve renderizar linhas da tabela com dados mockados
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Tabela > deve exibir mensagem quando n├úo h├í dados
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Pagina├º├úo > deve renderizar controles de pagina├º├úo quando h├í m├║ltiplas p├íginas
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Pagina├º├úo > deve desabilitar bot├úo anterior na p├ígina 1
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Pagina├º├úo > deve permitir navega├º├úo para pr├│xima p├ígina
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Total de Comiss├Áes > deve exibir total apenas quando h├í dados
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Filtros Aplicados > deve atualizar filtro de m├¬s e recarregar
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+stderr | app/__tests__/procedimentos-page.test.tsx > BackofficeProducao - Filtros Aplicados > deve atualizar filtro de consultor PF e recarregar
+Warning: An update to Resumo inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Resumo (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/resumo.tsx:9:116)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Filtros inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Filtros (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/filtros.tsx:9:188)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to Tabela inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Tabela (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/components/tabela.tsx:9:146)
+    at div
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+Warning: An update to BackofficeProducao inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at BackofficeProducao (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/producao/procedimentos/page.tsx:17:360)
+
+[90mstdout[2m | app/__tests__/procedimentos-page.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîÿ custom filepath { path: '/custom/path/.env' }
+
+ [31mÔØ»[39m app/__tests__/procedimentos-page.test.tsx [2m([22m[2m20 tests[22m[2m | [22m[31m18 failed[39m[2m)[22m[33m 973[2mms[22m[39m
+[31m     [31m├ù[31m deve renderizar t├¡tulo "Produ├º├úo"[39m[32m 89[2mms[22m[39m
+[31m     [31m├ù[31m deve renderizar subt├¡tulo descriptivo[39m[32m 16[2mms[22m[39m
+[31m     [31m├ù[31m deve aplicar filtro de m├¬s[39m[32m 18[2mms[22m[39m
+[31m     [31m├ù[31m deve aplicar filtro de parceiro[39m[32m 32[2mms[22m[39m
+[31m     [31m├ù[31m deve aplicar filtro de consultor PF[39m[32m 15[2mms[22m[39m
+[31m     [31m├ù[31m deve aplicar filtro de busca[39m[32m 12[2mms[22m[39m
+[31m     [31m├ù[31m deve formatar data corretamente[39m[32m 19[2mms[22m[39m
+[31m     [31m├ù[31m deve formatar CPF corretamente[39m[32m 14[2mms[22m[39m
+[31m     [31m├ù[31m deve formatar fun├º├úo corretamente[39m[32m 6[2mms[22m[39m
+[31m     [31m├ù[31m deve renderizar tabela com dados[39m[32m 12[2mms[22m[39m
+[31m     [31m├ù[31m deve renderizar linhas da tabela com dados mockados[39m[32m 18[2mms[22m[39m
+[31m     [31m├ù[31m deve exibir mensagem quando n├úo h├í dados[39m[32m 34[2mms[22m[39m
+[31m     [31m├ù[31m deve renderizar controles de pagina├º├úo quando h├í m├║ltiplas p├íginas[39m[32m 47[2mms[22m[39m
+[31m     [31m├ù[31m deve desabilitar bot├úo anterior na p├ígina 1[39m[32m 212[2mms[22m[39m
+[31m     [31m├ù[31m deve permitir navega├º├úo para pr├│xima p├ígina[39m[32m 19[2mms[22m[39m
+[31m     [31m├ù[31m deve exibir total apenas quando h├í dados[39m[32m 148[2mms[22m[39m
+[31m     [31m├ù[31m deve atualizar filtro de m├¬s e recarregar[39m[32m 27[2mms[22m[39m
+[31m     [31m├ù[31m deve atualizar filtro de consultor PF e recarregar[39m[32m 166[2mms[22m[39m
+[90mstdout[2m | app/__tests__/tabela-distribuicao-pontos.test.ts
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîÿ multiple files { path: ['.env.local', '.env'] }
+
+ [31mÔØ»[39m app/__tests__/tabela-distribuicao-pontos.test.ts [2m([22m[2m0 test[22m[2m)[22m
+[90mstdout[2m | app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôùê secrets for agents [www.dotenvx.com]
+
+ [31mÔØ»[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts [2m([22m[2m32 tests[22m[2m | [22m[31m9 failed[39m[2m)[22m[32m 178[2mms[22m[39m
+[31m     [31m├ù[31m a p├ígina existe e importa os utilit├írios extra├¡dos[39m[32m 28[2mms[22m[39m
+[31m     [31m├ù[31m a p├ígina deve usar MESES_ANO (12 meses) como fonte de verdade[39m[32m 11[2mms[22m[39m
+[31m     [31m├ù[31m handleSalvarMeta N├âO deve chamar fetchMetasGerais (evita remount)[39m[32m 5[2mms[22m[39m
+[31m     [31m├ù[31m os inputs de meta devem ser uncontrolled (defaultValue, sem value+onChange)[39m[32m 3[2mms[22m[39m
+[31m     [31m├ù[31m a key da c├®lula <td> do m├¬s deve ser est├ível (apenas m.value, sem version)[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m o handler onBlur N├âO deve chamar nada se o valor estiver vazio[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m a p├ígina deve renderizar 12 colunas de m├¬s no header da tabela[39m[32m 17[2mms[22m[39m
+[31m     [31m├ù[31m o colspan do estado vazio deve incluir as 12 colunas de m├¬s[39m[32m 25[2mms[22m[39m
+[31m     [31m├ù[31m cada input deve ter aria-label identificando consultor e m├¬s (acessibilidade)[39m[32m 25[2mms[22m[39m
+[90mstdout[2m | components/__tests__/sidebar/app-sidebar.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôùê secrets for agents [www.dotenvx.com]
+
+ [31mÔØ»[39m components/__tests__/sidebar/app-sidebar.test.tsx [2m([22m[2m17 tests[22m[2m | [22m[31m17 failed[39m[2m)[22m[32m 34[2mms[22m[39m
+[31m     [31m├ù[31m renders desktop sidebar when not mobile[39m[32m 10[2mms[22m[39m
+[31m     [31m├ù[31m renders mobile drawer when isParceiro[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m renders mobile drawer trigger for parceiro profile[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m renders brand with profile label[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m renders navigation links with active state[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m renders user dropdown with name and initials[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m lembreteFinanceiro state based on backoffice profile[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m isParceiro boolean based on profile.id[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m opens mobile drawer[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m closes mobile drawer on route change[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m closes mobile drawer on ESC key for parceiro profile[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m renders financeiro link with lembrete badge when backoffice profile[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m does not render financeiro badge when not backoffice profile[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m renders desktop sidebar links with proper active class[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m user dropdown renders signOut button[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m user dropdown renders initials from user name[39m[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m user dropdown renders 'Convidado' when no session user name[39m[32m 1[2mms[22m[39m

@@ -1,4 +1,4 @@
-interface CicloPontos {
+export interface CicloPontos {
   id: string;
   nome: string;
   inicioAcumuloEm: string;

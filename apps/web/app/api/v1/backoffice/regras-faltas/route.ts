@@ -15,8 +15,8 @@ function isJsonObject(value: unknown): value is JsonObject {
 
 async function getOrCreateRegra(backofficeId: string) {
   return prisma.regraFalta.upsert({
-    where: { backofficeId },
-    create: { backofficeId },
+    where: { backofficeId: backofficeId as string },
+    create: { backofficeId: backofficeId as string },
     update: {},
     include: { itens: { orderBy: { ordem: "asc" } } },
   });
@@ -27,7 +27,7 @@ export async function GET() {
   if (error) return error;
 
   const regra = await prisma.regraFalta.findUnique({
-    where: { backofficeId },
+    where: { backofficeId: backofficeId as string },
     include: { itens: { where: { tipo: "CUSTOM" }, orderBy: { ordem: "asc" } } },
   });
   if (!regra) return ok({ itens: [] });
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     return badRequest("Nome e percentual são obrigatórios");
   }
 
-  const regra = await getOrCreateRegra(backofficeId);
+  const regra = await getOrCreateRegra(backofficeId as string);
 
   const existente = await prisma.regraFaltaItem.findFirst({
     where: { regraFaltaId: regra.id, nome: nome.trim() },
@@ -114,7 +114,7 @@ export async function PATCH(req: NextRequest) {
     where: { id: itemId },
     include: { regraFalta: true },
   });
-  if (!item || item.regraFalta.backofficeId !== backofficeId) {
+  if (!item || item.regraFalta.backofficeId !== (backofficeId as string)) {
     return badRequest("Item não encontrado");
   }
   if (item.tipo === "SISTEMA") {
@@ -153,7 +153,7 @@ export async function DELETE(req: NextRequest) {
       include: { regraFalta: true },
     });
 
-    if (!item || item.regraFalta.backofficeId !== backofficeId) {
+    if (!item || item.regraFalta.backofficeId !== (backofficeId as string)) {
       return badRequest("Item não encontrado");
     }
 
@@ -176,7 +176,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   const regra = await prisma.regraFalta.findUnique({
-    where: { backofficeId },
+    where: { backofficeId: backofficeId as string },
   });
 
   if (!regra) {
@@ -185,7 +185,7 @@ export async function DELETE(req: NextRequest) {
 
   await prisma.$transaction(async (tx) => {
     await tx.regraFaltaItem.deleteMany({ where: { regraFaltaId: regra.id } });
-    await tx.regraFalta.delete({ where: { backofficeId } });
+    await tx.regraFalta.delete({ where: { backofficeId: backofficeId as string } });
     await criarAuditLog({
       usuarioId: session!.user.id,
       acao: "EXCLUIR_REGRAS_FALTAS",

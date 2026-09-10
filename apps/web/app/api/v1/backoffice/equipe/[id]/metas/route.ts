@@ -38,7 +38,7 @@ export async function GET(
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
-  const membro = await buscarMembroEscopado(params.id, backofficeId);
+  const membro = await buscarMembroEscopado(params.id, backofficeId as string);
   if (membro) {
     const metas = await prisma.metaEquipe.findMany({
       where: { equipeId: params.id },
@@ -86,7 +86,7 @@ export async function POST(
   const valorAtingidoNum = parseValor(parsed.data.valorAtingido);
   const valorComissaoNum = parseValor(parsed.data.valorComissao);
 
-  const membro = await buscarMembroEscopado(params.id, backofficeId);
+  const membro = await buscarMembroEscopado(params.id, backofficeId as string);
   if (membro) {
     const meta = await prisma.metaEquipe.upsert({
       where: {
@@ -195,7 +195,7 @@ export async function DELETE(
 
   if (!mesReferencia) return badRequest("Parâmetro 'mes' é obrigatório");
 
-  const membro = await buscarMembroEscopado(params.id, backofficeId);
+  const membro = await buscarMembroEscopado(params.id, backofficeId as string);
   if (membro) {
     await prisma.metaEquipe.deleteMany({
       where: { equipeId: params.id, mesReferencia },

@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     if (error) return error;
 
     // Obter ciclo vigente
-    const cicloVigente = await obterCicloVigente(backofficeId, undefined, "PARCEIRO");
+    const cicloVigente = await obterCicloVigente(backofficeId as string, undefined, "PARCEIRO");
     if (!cicloVigente) {
       return badRequest(
         "Nenhum ciclo de pontos vigente encontrado. Crie um ciclo antes de distribuir pontos.",
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     // Parceiros do backoffice
     const parceiros = await prisma.parceiro.findMany({
-      where: { backofficeId, status: "ATIVO" },
+      where: { backofficeId: backofficeId as string, status: "ATIVO" },
       select: { id: true, nome: true },
     });
     const parceiroIds = parceiros.map((p) => p.id);
@@ -59,8 +59,8 @@ export async function POST(req: NextRequest) {
     const producoes = await prisma.procedimentoPF.findMany({
       where: {
         OR: [
-          { upload: { backofficeId } },
-          { parceiro: { backofficeId } },
+          { upload: { backofficeId: backofficeId as string } },
+          { parceiro: { backofficeId: backofficeId as string } },
         ],
         parceiroId: { in: parceiroIds },
         modalidadeContemplacao: "COMISSAO",
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
         const pontos = await calcularPontosDeProducao(
           valorBasePontos,
           producao.dataReferencia,
-          backofficeId,
+          backofficeId as string,
         );
 
         if (pontos <= 0) {

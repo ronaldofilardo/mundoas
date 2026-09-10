@@ -2,43 +2,83 @@
 
 import { useProducao } from "@/app/(dashboard)/backoffice/producao/procedimentos/components/use-producao";
 
-export function Filtros() {
+export function Filtros({
+  filterMes,
+  setFilterMes,
+  filterParceiro,
+  setFilterParceiro,
+  filterConsultorPf,
+  setFilterConsultorPf,
+  filterSearch,
+  setFilterSearch,
+  currentPage,
+  setCurrentPage,
+  formatMes,
+}: {
+  filterMes?: string;
+  setFilterMes?: (value: string) => void;
+  filterParceiro?: string;
+  setFilterParceiro?: (value: string) => void;
+  filterConsultorPf?: string;
+  setFilterConsultorPf?: (value: string) => void;
+  filterSearch?: string;
+  setFilterSearch?: (value: string) => void;
+  currentPage?: number;
+  setCurrentPage?: (value: number) => void;
+  formatMes?: (mes: string) => string;
+} = {}) {
   const {
-    data,
-    filterMes,
-    setFilterMes,
-    filterParceiro,
-    setFilterParceiro,
-    filterConsultorPf,
-    setFilterConsultorPf,
-    filterSearch,
-    setFilterSearch,
+    data: hookData,
+    filterMes: hookFilterMes,
+    setFilterMes: hookSetFilterMes,
+    filterParceiro: hookFilterParceiro,
+    setFilterParceiro: hookSetFilterParceiro,
+    filterConsultorPf: hookFilterConsultorPf,
+    setFilterConsultorPf: hookSetFilterConsultorPf,
+    filterSearch: hookFilterSearch,
+    setFilterSearch: hookSetFilterSearch,
+    currentPage: hookCurrentPage,
+    setCurrentPage: hookSetCurrentPage,
+    formatMes: hookFormatMes,
   } = useProducao();
+
+  const data = hookData;
+  const activeFilterMes = filterMes ?? hookFilterMes;
+  const activeSetFilterMes = setFilterMes ?? hookSetFilterMes;
+  const activeFilterParceiro = filterParceiro ?? hookFilterParceiro;
+  const activeSetFilterParceiro = setFilterParceiro ?? hookSetFilterParceiro;
+  const activeFilterConsultorPf = filterConsultorPf ?? hookFilterConsultorPf;
+  const activeSetFilterConsultorPf = setFilterConsultorPf ?? hookSetFilterConsultorPf;
+  const activeFilterSearch = filterSearch ?? hookFilterSearch;
+  const activeSetFilterSearch = setFilterSearch ?? hookSetFilterSearch;
+  const activeCurrentPage = currentPage ?? hookCurrentPage;
+  const activeSetCurrentPage = setCurrentPage ?? hookSetCurrentPage;
+  const activeFormatMes = formatMes ?? hookFormatMes;
 
   return (
     <div className="card">
       <div className="flex flex-wrap gap-3 mb-4">
         <select
-          value={filterMes}
+          value={activeFilterMes}
           onChange={(e) => {
-            setFilterMes(e.target.value);
-            setCurrentPage(1);
+            activeSetFilterMes(e.currentTarget.value);
+            activeSetCurrentPage(1);
           }}
           className="text-sm border rounded px-3 py-2"
         >
           <option value="">Todos os Meses</option>
           {data?.mesesDisponiveis?.map((mes) => (
             <option key={mes} value={mes}>
-              {formatMes(mes)}
+              {activeFormatMes(mes)}
             </option>
           ))}
         </select>
 
         <select
-          value={filterParceiro}
+          value={activeFilterParceiro}
           onChange={(e) => {
-            setFilterParceiro(e.target.value);
-            setCurrentPage(1);
+            activeSetFilterParceiro(e.currentTarget.value);
+            activeSetCurrentPage(1);
           }}
           className="text-sm border rounded px-3 py-2"
         >
@@ -51,10 +91,10 @@ export function Filtros() {
         </select>
 
         <select
-          value={filterConsultorPf}
+          value={activeFilterConsultorPf}
           onChange={(e) => {
-            setFilterConsultorPf(e.target.value);
-            setCurrentPage(1);
+            activeSetFilterConsultorPf(e.currentTarget.value);
+            activeSetCurrentPage(1);
           }}
           className="text-sm border rounded px-3 py-2"
         >
@@ -69,8 +109,8 @@ export function Filtros() {
         <input
           type="text"
           placeholder="Buscar paciente, procedimento, CPF, unidade..."
-          value={filterSearch}
-          onChange={(e) => setFilterSearch(e.target.value)}
+          value={activeFilterSearch}
+          onChange={(e) => activeSetFilterSearch(e.currentTarget.value)}
           className="text-sm border rounded px-3 py-2 flex-1 min-w-[250px]"
         />
       </div>

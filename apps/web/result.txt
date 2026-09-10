@@ -1,0 +1,171 @@
+Ôùç injected env (4) from .env.test // tip: Ôîÿ override existing { override: true }
+
+[1m[46m RUN [49m[22m [36mv4.1.1 [39m[90mC:/apps/mundoas/apps/web[39m
+
+[90mstdout[2m | app/__tests__/consultor-pf-form.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîÿ suppress logs { quiet: true }
+
+ [32mÔ£ô[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Importa├º├úo[2m > [22mdeve ser import├ível[32m 2[2mms[22m[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Estado Inicial[2m > [22mdeve inicializar com estado padr├úo[32m 4[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Estado Inicial[2m > [22mdeve preencher form quando consultor ├® fornecido[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - CPF Formatando[2m > [22mdeve formatar CPF simples[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Valida├º├úo[2m > [22mdeve validar campos obrigat├│rios[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Setores[2m > [22mdeve renderizar checkboxes de setores[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Setores[2m > [22mdeve permitir toggle de setor[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve lidar com consultor nulo[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve ter email disabled[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve mostrar mensagem de email imut├ível[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve mostrar mensagem de CPF imut├ível[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve mostrar mensagem de lideran├ºa imut├ível[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Tests 11 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Estado Inicial > deve inicializar com estado padr├úo
+TypeError: mount is not a function
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:31:17
+     29| describe("ConsultorPfForm - Estado Inicial", () => {
+     30|   it("deve inicializar com estado padr├úo", () => {
+     31|     const div = mount(<ConsultorPfForm />);
+       |                 ^
+     32|     expect(div.getByLabelText("Nome completo").prop("value")).toBe("");
+     33|     expect(div.getByLabelText("Email").prop("value")).toBe("");
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Estado Inicial > deve preencher form quando consultor ├® fornecido
+TypeError: mount is not a function
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:38:17
+     36|
+     37|   it("deve preencher form quando consultor ├® fornecido", () => {
+     38|     const div = mount(
+       |                 ^
+     39|       <ConsultorPfForm
+     40|         consultor={mockConsultor}
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - CPF Formatando > deve formatar CPF simples
+TypeError: mount is not a function
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:51:17
+     49| describe("ConsultorPfForm - CPF Formatando", () => {
+     50|   it("deve formatar CPF simples", () => {
+     51|     const div = mount(<ConsultorPfForm />);
+       |                 ^
+     52|     const cpfInput = div.getByLabelText("CPF");
+     53|     cpfInput.simulate("change", { target: { value: "12345678901" } });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[3/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Valida├º├úo > deve validar campos obrigat├│rios
+TypeError: mount is not a function
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:60:17
+     58| describe("ConsultorPfForm - Valida├º├úo", () => {
+     59|   it("deve validar campos obrigat├│rios", () => {
+     60|     const div = mount(<ConsultorPfForm />);
+       |                 ^
+     61|     const form = div.find("form");
+     62|     expect(form.prop("checkValidity")).toBeFalsy();
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[4/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Setores > deve renderizar checkboxes de setores
+TypeError: mount is not a function
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:68:17
+     66| describe("ConsultorPfForm - Setores", () => {
+     67|   it("deve renderizar checkboxes de setores", () => {
+     68|     const div = mount(
+       |                 ^
+     69|       <ConsultorPfForm
+     70|         consultor={mockConsultor}
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[5/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Setores > deve permitir toggle de setor
+TypeError: mount is not a function
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:78:17
+     76|
+     77|   it("deve permitir toggle de setor", () => {
+     78|     const div = mount(
+       |                 ^
+     79|       <ConsultorPfForm
+     80|         consultor={mockConsultor}
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[6/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Edge Cases > deve lidar com consultor nulo
+TypeError: mount is not a function
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:91:17
+     89| describe("ConsultorPfForm - Edge Cases", () => {
+     90|   it("deve lidar com consultor nulo", () => {
+     91|     const div = mount(
+       |                 ^
+     92|       <ConsultorPfForm
+     93|         consultor={null}
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[7/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Edge Cases > deve ter email disabled
+TypeError: mount is not a function
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:100:17
+     98|
+     99|   it("deve ter email disabled", () => {
+    100|     const div = mount(
+       |                 ^
+    101|       <ConsultorPfForm
+    102|         consultor={mockConsultor}
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[8/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Edge Cases > deve mostrar mensagem de email imut├ível
+TypeError: mount is not a function
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:110:17
+
+    108|
+    109|   it("deve mostrar mensagem de email imut├ível", () => {
+    110|     const div = mount(
+       |                 ^
+    111|       <ConsultorPfForm
+    112|         consultor={mockConsultor}
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m11 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 16:28:05
+[2m   Duration [22m 3.12s[2m (transform 123ms, setup 441ms, import 343ms, tests 18ms, environment 1.89s)[22m
+
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[9/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Edge Cases > deve mostrar mensagem de CPF imut├ível
+TypeError: mount is not a function
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:120:17
+    118|
+    119|   it("deve mostrar mensagem de CPF imut├ível", () => {
+    120|     const div = mount(
+       |                 ^
+    121|       <ConsultorPfForm
+    122|         consultor={mockConsultor}
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[10/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Edge Cases > deve mostrar mensagem de lideran├ºa imut├ível
+TypeError: mount is not a function
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:130:17
+    128|
+    129|   it("deve mostrar mensagem de lideran├ºa imut├ível", () => {
+    130|     const div = mount(
+       |                 ^
+    131|       <ConsultorPfForm
+    132|         consultor={mockConsultor}
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[11/11]ÔÄ»
+

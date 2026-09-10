@@ -8,7 +8,7 @@ export async function GET() {
     if (error) return error;
 
     const backoffice = await prisma.backoffice.findUnique({
-      where: { id: backofficeId },
+      where: { id: backofficeId as string },
       select: { catalogoUrl: true },
     });
 
@@ -28,7 +28,7 @@ export async function PATCH(req: NextRequest) {
     const catalogoUrl = String(body?.catalogoUrl ?? "").trim();
 
     await prisma.backoffice.update({
-      where: { id: backofficeId },
+      where: { id: backofficeId as string },
       data: { catalogoUrl: catalogoUrl || null },
     });
 

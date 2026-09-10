@@ -1,0 +1,2005 @@
+Ôùç injected env (4) from .env.test // tip: Ôîÿ enable debugging { debug: true }
+
+[1m[46m RUN [49m[22m [36mv4.1.1 [39m[90mC:/apps/mundoas/apps/web[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôùê encrypted .env [www.dotenvx.com]
+
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mdeve ser importavel[32m 4[2mms[22m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mgetConsultorPfBadgeProps[2m > [22mdeve retornar badge cinza quando usuarioDaConta for vazio[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mgetConsultorPfBadgeProps[2m > [22mdeve retornar badge verde quando consultorPfNome existir[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mgetConsultorPfBadgeProps[2m > [22mdeve retornar badge ambar quando usuarioDaConta existir mas nao for consultor PF[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Renderizacao[2m > [22mdeve renderizar o componente corretamente[32m 46[2mms[22m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Renderizacao[2m > [22mdeve exibir input de arquivo aceitando .xlsx e .xls[32m 9[2mms[22m[39m
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Selecao de Arquivo[2m > [22m[2mdeve chamar API de preview ao selecionar arquivo valido
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Selecao de Arquivo[2m > [22m[2mdeve chamar API de preview ao selecionar arquivo valido
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[],"hasMore":false,"totalRows":0,"summary":{"total":0,"validos":0,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":0,"colunasEncontradas":[],"colunasObrigatorias":[],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m0[39m,
+  summary: {
+    total: [33m0[39m,
+    validos: [33m0[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [],
+    colunasObrigatorias: [],
+    colunasOpcionais: []
+  }
+}
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Preview e Upload[2m > [22m[2mdeve extrair mes de referencia automaticamente
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Preview e Upload[2m > [22m[2mdeve extrair mes de referencia automaticamente
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":1,"summary":{"total":1,"validos":1,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":0,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m1[39m,
+  summary: {
+    total: [33m1[39m,
+    validos: [33m1[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Selecao de Arquivo[2m > [22mdeve exibir erro para formato invalido[32m 44[2mms[22m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Selecao de Arquivo[2m > [22mdeve chamar API de preview ao selecionar arquivo valido[32m 74[2mms[22m[39m
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Preview e Upload[2m > [22m[2mdeve chamar API de upload ao confirmar
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Preview e Upload[2m > [22m[2mdeve chamar API de upload ao confirmar
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":1,"summary":{"total":1,"validos":1,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":0,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m1[39m,
+  summary: {
+    total: [33m1[39m,
+    validos: [33m1[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Preview e Upload[2m > [22m[2mdeve chamar API de upload ao confirmar
+[22m[39m[Upload] Iniciando upload do arquivo: teste.xlsx [33m0[39m M├¬s: 2026-07
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Preview e Upload[2m > [22m[2mdeve chamar API de upload ao confirmar
+[22m[39m[Upload] Status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Preview e Upload[2m > [22m[2mdeve chamar API de upload ao confirmar
+[22m[39m[Upload] Resposta: {
+  id: [32m'upload-123'[39m,
+  status: [32m'CONCLUIDO'[39m,
+  summary: {
+    totalRows: [33m1[39m,
+    processedRows: [33m1[39m,
+    duplicatedRows: [33m0[39m,
+    rejectedRows: [33m0[39m,
+    orphanedRows: [33m0[39m
+  }
+}
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Estados da UI[2m > [22m[2mdeve exibir loading durante processamento do arquivo
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Estados da UI[2m > [22m[2mdeve exibir loading durante processamento do arquivo
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[],"hasMore":false,"totalRows":0,"summary":{"total":0,"validos":0,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":0,"colunasEncontradas":[],"colunasObrigatorias":[],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m0[39m,
+  summary: {
+    total: [33m0[39m,
+    validos: [33m0[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [],
+    colunasObrigatorias: [],
+    colunasOpcionais: []
+  }
+}
+
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Preview e Upload[2m > [22mdeve extrair mes de referencia automaticamente[32m 179[2mms[22m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Preview e Upload[2m > [22mdeve chamar API de upload ao confirmar[32m 78[2mms[22m[39m
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Modal de Confirmacao[2m > [22m[2mdeve exibir modal de confirmacao quando ha rejeitados
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Modal de Confirmacao[2m > [22m[2mdeve exibir modal de confirmacao quando ha rejeitados
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":1,"summary":{"total":1,"validos":1,"resgatados":0,"orfaos":0,"rejeitados":1,"totalComissao":0,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m1[39m,
+  summary: {
+    total: [33m1[39m,
+    validos: [33m1[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m1[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Feedback[2m > [22m[2mdeve exibir feedback de erro quando upload falha
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Feedback[2m > [22m[2mdeve exibir feedback de erro quando upload falha
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":1,"summary":{"total":1,"validos":1,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":0,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m1[39m,
+  summary: {
+    total: [33m1[39m,
+    validos: [33m1[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Estados da UI[2m > [22mdeve exibir loading durante processamento do arquivo[32m 41[2mms[22m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Modal de Confirmacao[2m > [22mdeve exibir modal de confirmacao quando ha rejeitados[32m 93[2mms[22m[39m
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Feedback[2m > [22m[2mdeve exibir feedback de erro quando upload falha
+[22m[39m[Upload] Iniciando upload do arquivo: teste.xlsx [33m0[39m M├¬s: 2026-07
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Feedback[2m > [22m[2mdeve exibir feedback de erro quando upload falha
+[22m[39m[Upload] Status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Feedback[2m > [22m[2mdeve exibir feedback de erro quando upload falha
+[22m[39m[Upload] Resposta: { error: [32m'Erro no servidor'[39m }
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Botao Nova Planilha[2m > [22m[2mdeve resetar o estado ao clicar em Nova Planilha
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Botao Nova Planilha[2m > [22m[2mdeve resetar o estado ao clicar em Nova Planilha
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":1,"summary":{"total":1,"validos":1,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":0,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m1[39m,
+  summary: {
+    total: [33m1[39m,
+    validos: [33m1[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Feedback[2m > [22mdeve exibir feedback de erro quando upload falha[32m 78[2mms[22m[39m
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Badge Consultor PF[2m > [22m[2mdeve exibir badge correto na tabela
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Badge Consultor PF[2m > [22m[2mdeve exibir badge correto na tabela
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO","consultorPfNome":"Consultor PF"},{"rowNumber":2,"dataReferencia":"2026-07-15","paciente":"Maria","procedimento":"Consulta","cpf":"98765432100","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"","valorTotal":100,"status":"VALIDO"},{"rowNumber":3,"dataReferencia":"2026-07-15","paciente":"Jos├®","procedimento":"Consulta","cpf":"11122233344","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial2","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":3,"summary":{"total":3,"validos":3,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":300,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m,
+      consultorPfNome: [32m'Consultor PF'[39m
+    },
+    {
+      rowNumber: [33m2[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Maria'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'98765432100'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m''[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    },
+    {
+      rowNumber: [33m3[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jos├®'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'11122233344'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial2'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m3[39m,
+  summary: {
+    total: [33m3[39m,
+    validos: [33m3[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m300[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando API de preview falhar
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando API de preview falhar
+[22m[39m[Preview] Response body: Erro interno
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando API de upload retornar status PROCESSANDO e polling retornar ERRO
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando API de upload retornar status PROCESSANDO e polling retornar ERRO
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":1,"summary":{"total":1,"validos":1,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":0,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m1[39m,
+  summary: {
+    total: [33m1[39m,
+    validos: [33m1[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando API de upload retornar status PROCESSANDO e polling retornar ERRO
+[22m[39m[Upload] Iniciando upload do arquivo: teste.xlsx [33m0[39m M├¬s: 2026-07
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando API de upload retornar status PROCESSANDO e polling retornar ERRO
+[22m[39m[Upload] Status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando API de upload retornar status PROCESSANDO e polling retornar ERRO
+[22m[39m[Upload] Resposta: { id: [32m'upload-123'[39m, status: [32m'PROCESSANDO'[39m }
+
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Botao Nova Planilha[2m > [22mdeve resetar o estado ao clicar em Nova Planilha[32m 91[2mms[22m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Badge Consultor PF[2m > [22mdeve exibir badge correto na tabela[32m 44[2mms[22m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Cobertura de ramos[2m > [22mdeve exibir erro quando API de preview falhar[32m 25[2mms[22m[39m
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status ERRO
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status ERRO
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":1,"summary":{"total":1,"validos":1,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":0,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m1[39m,
+  summary: {
+    total: [33m1[39m,
+    validos: [33m1[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status ERRO
+[22m[39m[Upload] Iniciando upload do arquivo: teste.xlsx [33m0[39m M├¬s: 2026-07
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status ERRO
+[22m[39m[Upload] Status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status ERRO
+[22m[39m[Upload] Resposta: { id: [32m'upload-123'[39m, status: [32m'ERRO'[39m, error: [32m'Erro no servidor'[39m }
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status PROCESSANDO e polling retornar CONCLUIDO
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status PROCESSANDO e polling retornar CONCLUIDO
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":1,"summary":{"total":1,"validos":1,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":0,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m1[39m,
+  summary: {
+    total: [33m1[39m,
+    validos: [33m1[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Cobertura de ramos[2m > [22mdeve exibir erro quando API de upload retornar status PROCESSANDO e polling retornar ERRO[32m 61[2mms[22m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Cobertura de ramos[2m > [22mdeve exibir erro quando upload retornar status ERRO[32m 70[2mms[22m[39m
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status PROCESSANDO e polling retornar CONCLUIDO
+[22m[39m[Upload] Iniciando upload do arquivo: teste.xlsx [33m0[39m M├¬s: 2026-07
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status PROCESSANDO e polling retornar CONCLUIDO
+[22m[39m[Upload] Status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status PROCESSANDO e polling retornar CONCLUIDO
+[22m[39m[Upload] Resposta: { id: [32m'upload-123'[39m, status: [32m'PROCESSANDO'[39m }
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status PROCESSANDO e polling retornar PROCESSANDO novamente
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status PROCESSANDO e polling retornar PROCESSANDO novamente
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":1,"summary":{"total":1,"validos":1,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":0,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m1[39m,
+  summary: {
+    total: [33m1[39m,
+    validos: [33m1[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status PROCESSANDO e polling retornar PROCESSANDO novamente
+[22m[39m[Upload] Iniciando upload do arquivo: teste.xlsx [33m0[39m M├¬s: 2026-07
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status PROCESSANDO e polling retornar PROCESSANDO novamente
+[22m[39m[Upload] Status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar status PROCESSANDO e polling retornar PROCESSANDO novamente
+[22m[39m[Upload] Resposta: { id: [32m'upload-123'[39m, status: [32m'PROCESSANDO'[39m }
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir aviso quando nenhuma linha valida para enviar
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir aviso quando nenhuma linha valida para enviar
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"REJEITADO"}],"hasMore":false,"totalRows":1,"summary":{"total":1,"validos":0,"resgatados":0,"orfaos":0,"rejeitados":1,"totalComissao":0,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'REJEITADO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m1[39m,
+  summary: {
+    total: [33m1[39m,
+    validos: [33m0[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m1[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Cobertura de ramos[2m > [22mdeve exibir erro quando upload retornar status PROCESSANDO e polling retornar CONCLUIDO[32m 65[2mms[22m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Cobertura de ramos[2m > [22mdeve exibir erro quando upload retornar status PROCESSANDO e polling retornar PROCESSANDO novamente[32m 64[2mms[22m[39m
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve alternar exibicao de todas as linhas ao clicar em Ver mais/Ver menos
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve alternar exibicao de todas as linhas ao clicar em Ver mais/Ver menos
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO"},{"rowNumber":2,"dataReferencia":"2026-07-15","paciente":"Maria","procedimento":"Consulta","cpf":"98765432100","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial2","valorTotal":100,"status":"VALIDO"},{"rowNumber":3,"dataReferencia":"2026-07-15","paciente":"Jos├®","procedimento":"Consulta","cpf":"11122233344","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial3","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":3,"summary":{"total":3,"validos":3,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":300,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    },
+    {
+      rowNumber: [33m2[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Maria'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'98765432100'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial2'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    },
+    {
+      rowNumber: [33m3[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jos├®'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'11122233344'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial3'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m3[39m,
+  summary: {
+    total: [33m3[39m,
+    validos: [33m3[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m300[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar resposta sem id
+[22m[39m[Preview] Response status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar resposta sem id
+[22m[39m[Preview] Response body: {"fileName":"teste.xlsx","previewRows":[{"rowNumber":1,"dataReferencia":"2026-07-15","paciente":"Jo├úo","procedimento":"Consulta","cpf":"12345678901","tipoProcedimento":"ROTINA","unidade":"Matriz","usuarioDaConta":"comercial1","valorTotal":100,"status":"VALIDO"}],"hasMore":false,"totalRows":1,"summary":{"total":1,"validos":1,"resgatados":0,"orfaos":0,"rejeitados":0,"totalComissao":0,"colunasEncontradas":["Data de Refer├¬ncia","Paciente"],"colunasObrigatorias":["Data de Refer├¬ncia","Paciente"],"colunasOpcionais":[]}}
+[Preview] Parsed data: {
+  fileName: [32m'teste.xlsx'[39m,
+  previewRows: [
+    {
+      rowNumber: [33m1[39m,
+      dataReferencia: [32m'2026-07-15'[39m,
+      paciente: [32m'Jo├úo'[39m,
+      procedimento: [32m'Consulta'[39m,
+      cpf: [32m'12345678901'[39m,
+      tipoProcedimento: [32m'ROTINA'[39m,
+      unidade: [32m'Matriz'[39m,
+      usuarioDaConta: [32m'comercial1'[39m,
+      valorTotal: [33m100[39m,
+      status: [32m'VALIDO'[39m
+    }
+  ],
+  hasMore: [33mfalse[39m,
+  totalRows: [33m1[39m,
+  summary: {
+    total: [33m1[39m,
+    validos: [33m1[39m,
+    resgatados: [33m0[39m,
+    orfaos: [33m0[39m,
+    rejeitados: [33m0[39m,
+    totalComissao: [33m0[39m,
+    colunasEncontradas: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasObrigatorias: [ [32m'Data de Refer├¬ncia'[39m, [32m'Paciente'[39m ],
+    colunasOpcionais: []
+  }
+}
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar resposta sem id
+[22m[39m[Upload] Iniciando upload do arquivo: teste.xlsx [33m0[39m M├¬s: 2026-07
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar resposta sem id
+[22m[39m[Upload] Status: [90mundefined[39m
+
+[90mstdout[2m | components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22m[2mbackoffice/upload-planilha-preview[2m > [22m[2mUploadPlanilhaPreview - Cobertura de ramos[2m > [22m[2mdeve exibir erro quando upload retornar resposta sem id
+[22m[39m[Upload] Resposta: { status: [32m'CONCLUIDO'[39m }
+
+ [31m├ù[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Cobertura de ramos[2m > [22mdeve exibir aviso quando nenhuma linha valida para enviar[33m 1063[2mms[22m[39m
+[31m   ÔåÆ Unable to find an element with the text: /Nenhuma linha v├ílida para enviar/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-6"[31m
+    [36m>[31m
+      [36m<div>[31m
+        [36m<h2[31m
+          [33mclass[31m=[32m"text-xl font-bold text-gray-900"[31m
+        [36m>[31m
+          [0m­ƒôÑ Upload de Planilha de Produ├º├úo[0m
+        [36m</h2>[31m
+        [36m<p[31m
+          [33mclass[31m=[32m"text-sm text-gray-500 mt-1"[31m
+        [36m>[31m
+          [0mEnvie a planilha de procedimentos para processamento autom├ítico[0m
+        [36m</p>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl shadow-sm border p-6"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center gap-4"[31m
+        [36m>[31m
+          [36m<input[31m
+            [33maccept[31m=[32m".xlsx,.xls"[31m
+            [33mclass[31m=[32m"block w-full text-sm text-gray-500
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-lg file:border-0
+            file:text-sm file:font-semibold
+            file:bg-primary-50 file:text-primary-700
+            hover:file:bg-primary-100
+            disabled:opacity-50"[31m
+            [33mtype[31m=[32m"file"[31m
+          [36m/>[31m
+        [36m</div>[31m
+        [36m<p[31m
+          [33mclass[31m=[32m"text-xs text-gray-500 mt-2"[31m
+        [36m>[31m
+          [0mApenas arquivos Excel (.xlsx ou .xls). A planilha deve conter as colunas:[0m
+          [0m [0m
+          [36m<span[31m
+            [33mclass[31m=[32m"font-medium"[31m
+          [36m>[31m
+            [0mData de Refer├¬ncia, Paciente, CPF, Procedimento, Usu├írio da conta[0m
+          [36m</span>[31m
+        [36m</p>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl shadow-sm border p-6"[31m
+      [36m>[31m
+        [36m<h3[31m
+          [33mclass[31m=[32m"font-semibold text-gray-900 mb-4"[31m
+        [36m>[31m
+          [0mM├¬s de Refer├¬ncia[0m
+        [36m</h3>[31m
+        [36m<select[31m
+          [33mclass[31m=[32m"text-sm border rounded px-3 py-2 w-full md:w-auto"[31m
+        [36m>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m""[31m
+          [36m>[31m
+            [0mSelecione o m├¬s de refer├¬ncia[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-09"[31m
+          [36m>[31m
+            [0mSetembro de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-08"[31m
+          [36m>[31m
+            [0mAgosto de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-07"[31m
+          [36m>[31m
+            [0mJulho de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-06"[31m
+          [36m>[31m
+            [0mJunho de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-05"[31m
+          [36m>[31m
+            [0mMaio de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-04"[31m
+          [36m>[31m
+            [0mAbril de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-03"[31m
+          [36m>[31m
+            [0mMar├ºo de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-02"[31m
+          [36m>[31m
+            [0mFevereiro de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-01"[31m
+          [36m>[31m
+            [0mJaneiro de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2025-12"[31m
+          [36m>[31m
+            [0mDezembro de 2025[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2025-11"[31m
+          [36m>[31m
+            [0mNovembro de 2025[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2025-10"[31m
+          [36m>[31m
+            [0mOutubro de 2025[0m
+          [36m</option>[31m
+        [36m</select>[31m
+        [36m<p[31m
+          [33mclass[31m=[32m"text-xs text-gray-500 mt-2"[31m
+        [36m>[31m
+          [0mM├¬s extra├¡do automaticamente da primeira linha v├ílida da planilha[0m
+        [36m</p>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl shadow-sm border p-6"[31m
+      [36m>[31m
+        [36m<h3[31m
+          [33mclass[31m=[32m"font-semibold text-gray-900 mb-4"[31m
+        [36m>[31m
+          [0mResumo do Preview[0m
+        [36m</h3>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-4"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-gray-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-gray-500"[31m
+            [36m>[31m
+              [0mTotal[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-gray-900"[31m
+            [36m>[31m
+              [0m1[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-green-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-green-600"[31m
+            [36m>[31m
+              [0mV├ílidos[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-green-700"[31m
+            [36m>[31m
+              [0m0[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-emerald-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-emerald-600"[31m
+            [36m>[31m
+              [0mResgatados[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-emerald-700"[31m
+            [36m>[31m
+              [0m0[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-yellow-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-yellow-600"[31m
+            [36m>[31m
+              [0m├ôrf├úos[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-yellow-700"[31m
+            [36m>[31m
+              [0m0[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-red-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-red-600"[31m
+            [36m>[31m
+              [0mRejeitados[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-red-700"[31m
+            [36m>[31m
+              [0m1[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-amber-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-amber-700"[31m
+            [36m>[31m
+              [0mDuplicadas[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-amber-800"[31m
+            [36m>[31m
+              [0m0[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-blue-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-blue-600"[31m
+            [36m>[31m
+              [0mTotal Comiss├úo[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-blue-700"[31m
+            [36m>[31m
+              [0mR$[0m
+              [0m [0m
+              [0m0,00[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-blue-500 mt-1"[31m
+            [36m>[31m
+              [0mA calcular[0m
+            [36m</p>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"mt-4 pt-4 border-t"[31m
+        [36m>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-xs font-medium text-gray-700 mb-2"[31m
+          [36m>[31m
+            [0mColunas Encontradas:[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex flex-wrap gap-1"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded"[31m
+            [36m>[31m
+              [0mData de Refer├¬ncia[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded"[31m
+            [36m>[31m
+              [0mPaciente[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl shadow-sm border overflow-hidden"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"px-6 py-4 border-b flex justify-between items-center"[31m
+        [36m>[31m
+          [36m<h3[31m
+            [33mclass[31m=[32m"font-semibold text-gray-900"[31m
+          [36m>[31m
+            [0mPreview ([0m
+            [0m1[0m
+            [0m linhas)[0m
+          [36m</h3>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"overflow-x-auto max-h-96 overflow-y-auto"[31m
+        [36m>[31m
+          [36m<table[31m
+            [33mclass[31m=[32m"w-full text-xs"[31m
+          [36m>[31m
+            [36m<thead[31m
+              [33mclass[31m=[32m"bg-gray-50 sticky top-0"[31m
+            [36m>[31m
+              [36m<tr>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-left p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0m#[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-left p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mData Ref.[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-left p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mPaciente[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-left p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mCPF[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-left p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mUnidade[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-left p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mUsu├írio Conta[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-center p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mConsultor PF[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-right p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mTotal Pago[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-center p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mStatus[0m
+                [36m</th>[31m
+              [36m</tr>[31m
+            [36m</thead>[31m
+            [36m<tbody>[31m
+              [36m<tr[31m
+                [33mclass[31m=[32m"border-t hover:bg-gray-50"[31m
+              [36m>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-500"[31m
+                [36m>[31m
+                  [0m1[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-900"[31m
+                [36m>[31m
+                  [0m2026-07-15[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-900 font-medium"[31m
+                [36m>[31m
+                  [0mJo├úo[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-600"[31m
+                [36m>[31m
+                  [0m123.456.789-01[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-600"[31m
+                [36m>[31m
+                  [0mMatriz[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-600"[31m
+                [36m>[31m
+                  [0mcomercial1[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-center"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-amber-600"[31m
+                    [33mtitle[31m=[32m"Usu├írio da conta n├úo foi localizado como Consultor PF; a produ├º├úo ser├í importada sem v├¡nculo PF"[31m
+                  [36m>[31m
+                    [0m![0m
+                  [36m</span>[31m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-right text-gray-500"[31m
+                [36m>[31m
+                  [0mR$[0m
+                  [0m [0m
+                  [0m100,00[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-center"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-xs px-2 py-0.5 rounded bg-red-100 text-red-800"[31m
+                  [36m>[31m
+                    [0mREJEITADO[0m
+                  [36m</span>[31m
+                [36m</td>[31m
+              [36m</tr>[31m
+            [36m</tbody>[31m
+          [36m</table>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-3"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"[31m
+          [33mdisabled[31m=[32m""[31m
+        [36m>[31m
+          [0mConfirmar Upload (0 v├ílidos)[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-medium"[31m
+        [36m>[31m
+          [0mNovo Upload[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-yellow-50 border border-yellow-200 rounded-lg p-4"[31m
+      [36m>[31m
+        [36m<p[31m
+          [33mclass[31m=[32m"text-sm text-yellow-800"[31m
+        [36m>[31m
+          [0mÔÜá´©Å [0m
+          [36m<strong>[31m
+            [0mAten├º├úo:[0m
+          [36m</strong>[31m
+          [0m [0m
+          [0m1[0m
+          [0m [0m
+          [0mlinhas foram rejeitadas. Voc├¬ poder├í revisar e confirmar antes de enviar ÔÇö apenas as linhas v├ílidas ser├úo processadas.[0m
+        [36m</p>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m
+
+Ignored nodes: comments, script, style
+[36m<html>[31m
+  [36m<head />[31m
+  [36m<body>[31m
+    [36m<div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-6"[31m
+      [36m>[31m
+        [36m<div>[31m
+          [36m<h2[31m
+            [33mclass[31m=[32m"text-xl font-bold text-gray-900"[31m
+          [36m>[31m
+            [0m­ƒôÑ Upload de Planilha de Produ├º├úo[0m
+          [36m</h2>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-sm text-gray-500 mt-1"[31m
+          [36m>[31m
+            [0mEnvie a planilha de procedimentos para processamento autom├ítico[0m
+          [36m</p>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"bg-white rounded-xl shadow-sm border p-6"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-4"[31m
+          [36m>[31m
+            [36m<input[31m
+              [33maccept[31m=[32m".xlsx,.xls"[31m
+              [33mclass[31m=[32m"block w-full text-sm text-gray-500
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-lg file:border-0
+            file:text-sm file:font-semibold
+            file:bg-primary-50 file:text-primary-700
+            hover:file:bg-primary-100
+            disabled:opacity-50"[31m
+              [33mtype[31m=[32m"file"[31m
+            [36m/>[31m
+          [36m</div>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-xs text-gray-500 mt-2"[31m
+          [36m>[31m
+            [0mApenas arquivos Excel (.xlsx ou .xls). A planilha deve conter as colunas:[0m
+            [0m [0m
+            [36m<span[31m
+              [33mclass[31m=[32m"font-medium"[31m
+            [36m>[31m
+              [0mData de Refer├¬ncia, Paciente, CPF, Procedimento, Usu├írio da conta[0m
+            [36m</span>[31m
+          [36m</p>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"bg-white rounded-xl shadow-sm border p-6"[31m
+        [36m>[31m
+          [36m<h3[31m
+            [33mclass[31m=[32m"font-semibold text-gray-900 mb-4"[31m
+          [36m>[31m
+            [0mM├¬s de Refer├¬ncia[0m
+          [36m</h3>[31m
+          [36m<select[31m
+            [33mclass[31m=[32m"text-sm border rounded px-3 py-2 w-full md:w-auto"[31m
+          [36m>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m""[31m
+            [36m>[31m
+              [0mSelecione o m├¬s de refer├¬ncia[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"2026-09"[31m
+            [36m>[31m
+              [0mSetembro de 2026[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"2026-08"[31m
+            [36m>[31m
+              [0mAgosto de 2026[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"2026-07"[31m
+            [36m>[31m
+              [0mJulho de 2026[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"2026-06"[31m
+            [36m>[31m
+              [0mJunho de 2026[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"2026-05"[31m
+            [36m>[31m
+              [0mMaio de 2026[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"2026-04"[31m
+            [36m>[31m
+              [0mAbril de 2026[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"2026-03"[31m
+            [36m>[31m
+              [0mMar├ºo de 2026[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"2026-02"[31m
+            [36m>[31m
+              [0mFevereiro de 2026[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"2026-01"[31m
+            [36m>[31m
+              [0mJaneiro de 2026[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"2025-12"[31m
+            [36m>[31m
+              [0mDezembro de 2025[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"2025-11"[31m
+            [36m>[31m
+              [0mNovembro de 2025[0m
+            [36m</option>[31m
+            [36m<option[31m
+              [33mvalue[31m=[32m"2025-10"[31m
+            [36m>[31m
+              [0mOutubro de 2025[0m
+            [36m</option>[31m
+          [36m</select>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-xs text-gray-500 mt-2"[31m
+          [36m>[31m
+            [0mM├¬s extra├¡do automaticamente da primeira linha v├ílida da planilha[0m
+          [36m</p>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"bg-white rounded-xl shadow-sm border p-6"[31m
+        [36m>[31m
+          [36m<h3[31m
+            [33mclass[31m=[32m"font-semibold text-gray-900 mb-4"[31m
+          [36m>[31m
+            [0mResumo do Preview[0m
+          [36m</h3>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-4"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"text-center p-3 bg-gray-50 rounded-lg"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-xs text-gray-500"[31m
+              [36m>[31m
+                [0mTotal[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-lg font-bold text-gray-900"[31m
+              [36m>[31m
+                [0m1[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"text-center p-3 bg-green-50 rounded-lg"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-xs text-green-600"[31m
+              [36m>[31m
+                [0mV├ílidos[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-lg font-bold text-green-700"[31m
+              [36m>[31m
+                [0m0[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"text-center p-3 bg-emerald-50 rounded-lg"[31m
+            [36m>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-xs text-emerald-600"[31m
+              [36m>[31m
+                [0mResgatados[0m
+              [36m</p>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-lg font-bold text-emerald-700"[31m
+              [36m>[31m
+                [0m0[0m
+              [36m</p>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"text-center p-3 bg-yellow-50 rounded-lg"[3...[39m
+ [31m├ù[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Cobertura de ramos[2m > [22mdeve alternar exibicao de todas as linhas ao clicar em Ver mais/Ver menos[32m 35[2mms[22m[39m
+[31m   ÔåÆ Unable to find an element with the text: /Ver mais/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-6"[31m
+    [36m>[31m
+      [36m<div>[31m
+        [36m<h2[31m
+          [33mclass[31m=[32m"text-xl font-bold text-gray-900"[31m
+        [36m>[31m
+          [0m­ƒôÑ Upload de Planilha de Produ├º├úo[0m
+        [36m</h2>[31m
+        [36m<p[31m
+          [33mclass[31m=[32m"text-sm text-gray-500 mt-1"[31m
+        [36m>[31m
+          [0mEnvie a planilha de procedimentos para processamento autom├ítico[0m
+        [36m</p>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl shadow-sm border p-6"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center gap-4"[31m
+        [36m>[31m
+          [36m<input[31m
+            [33maccept[31m=[32m".xlsx,.xls"[31m
+            [33mclass[31m=[32m"block w-full text-sm text-gray-500
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-lg file:border-0
+            file:text-sm file:font-semibold
+            file:bg-primary-50 file:text-primary-700
+            hover:file:bg-primary-100
+            disabled:opacity-50"[31m
+            [33mtype[31m=[32m"file"[31m
+          [36m/>[31m
+        [36m</div>[31m
+        [36m<p[31m
+          [33mclass[31m=[32m"text-xs text-gray-500 mt-2"[31m
+        [36m>[31m
+          [0mApenas arquivos Excel (.xlsx ou .xls). A planilha deve conter as colunas:[0m
+          [0m [0m
+          [36m<span[31m
+            [33mclass[31m=[32m"font-medium"[31m
+          [36m>[31m
+            [0mData de Refer├¬ncia, Paciente, CPF, Procedimento, Usu├írio da conta[0m
+          [36m</span>[31m
+        [36m</p>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl shadow-sm border p-6"[31m
+      [36m>[31m
+        [36m<h3[31m
+          [33mclass[31m=[32m"font-semibold text-gray-900 mb-4"[31m
+        [36m>[31m
+          [0mM├¬s de Refer├¬ncia[0m
+        [36m</h3>[31m
+        [36m<select[31m
+          [33mclass[31m=[32m"text-sm border rounded px-3 py-2 w-full md:w-auto"[31m
+        [36m>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m""[31m
+          [36m>[31m
+            [0mSelecione o m├¬s de refer├¬ncia[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-09"[31m
+          [36m>[31m
+            [0mSetembro de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-08"[31m
+          [36m>[31m
+            [0mAgosto de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-07"[31m
+          [36m>[31m
+            [0mJulho de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-06"[31m
+          [36m>[31m
+            [0mJunho de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-05"[31m
+          [36m>[31m
+            [0mMaio de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-04"[31m
+          [36m>[31m
+            [0mAbril de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-03"[31m
+          [36m>[31m
+            [0mMar├ºo de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-02"[31m
+          [36m>[31m
+            [0mFevereiro de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2026-01"[31m
+          [36m>[31m
+            [0mJaneiro de 2026[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2025-12"[31m
+          [36m>[31m
+            [0mDezembro de 2025[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2025-11"[31m
+          [36m>[31m
+            [0mNovembro de 2025[0m
+          [36m</option>[31m
+          [36m<option[31m
+            [33mvalue[31m=[32m"2025-10"[31m
+          [36m>[31m
+            [0mOutubro de 2025[0m
+          [36m</option>[31m
+        [36m</select>[31m
+        [36m<p[31m
+          [33mclass[31m=[32m"text-xs text-gray-500 mt-2"[31m
+        [36m>[31m
+          [0mM├¬s extra├¡do automaticamente da primeira linha v├ílida da planilha[0m
+        [36m</p>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl shadow-sm border p-6"[31m
+      [36m>[31m
+        [36m<h3[31m
+          [33mclass[31m=[32m"font-semibold text-gray-900 mb-4"[31m
+        [36m>[31m
+          [0mResumo do Preview[0m
+        [36m</h3>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-4"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-gray-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-gray-500"[31m
+            [36m>[31m
+              [0mTotal[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-gray-900"[31m
+            [36m>[31m
+              [0m3[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-green-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-green-600"[31m
+            [36m>[31m
+              [0mV├ílidos[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-green-700"[31m
+            [36m>[31m
+              [0m3[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-emerald-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-emerald-600"[31m
+            [36m>[31m
+              [0mResgatados[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-emerald-700"[31m
+            [36m>[31m
+              [0m0[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-yellow-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-yellow-600"[31m
+            [36m>[31m
+              [0m├ôrf├úos[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-yellow-700"[31m
+            [36m>[31m
+              [0m0[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-red-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-red-600"[31m
+            [36m>[31m
+              [0mRejeitados[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-red-700"[31m
+            [36m>[31m
+              [0m0[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-amber-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-amber-700"[31m
+            [36m>[31m
+              [0mDuplicadas[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-amber-800"[31m
+            [36m>[31m
+              [0m0[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-center p-3 bg-blue-50 rounded-lg"[31m
+          [36m>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-blue-600"[31m
+            [36m>[31m
+              [0mTotal Comiss├úo[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-lg font-bold text-blue-700"[31m
+            [36m>[31m
+              [0mR$[0m
+              [0m [0m
+              [0m300,00[0m
+            [36m</p>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-blue-500 mt-1"[31m
+            [36m>[31m
+              [0mA calcular[0m
+            [36m</p>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"mt-4 pt-4 border-t"[31m
+        [36m>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-xs font-medium text-gray-700 mb-2"[31m
+          [36m>[31m
+            [0mColunas Encontradas:[0m
+          [36m</p>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex flex-wrap gap-1"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded"[31m
+            [36m>[31m
+              [0mData de Refer├¬ncia[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded"[31m
+            [36m>[31m
+              [0mPaciente[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl shadow-sm border overflow-hidden"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"px-6 py-4 border-b flex justify-between items-center"[31m
+        [36m>[31m
+          [36m<h3[31m
+            [33mclass[31m=[32m"font-semibold text-gray-900"[31m
+          [36m>[31m
+            [0mPreview ([0m
+            [0m3[0m
+            [0m linhas)[0m
+          [36m</h3>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"overflow-x-auto max-h-96 overflow-y-auto"[31m
+        [36m>[31m
+          [36m<table[31m
+            [33mclass[31m=[32m"w-full text-xs"[31m
+          [36m>[31m
+            [36m<thead[31m
+              [33mclass[31m=[32m"bg-gray-50 sticky top-0"[31m
+            [36m>[31m
+              [36m<tr>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-left p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0m#[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-left p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mData Ref.[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-left p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mPaciente[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-left p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mCPF[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-left p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mUnidade[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-left p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mUsu├írio Conta[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-center p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mConsultor PF[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-right p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mTotal Pago[0m
+                [36m</th>[31m
+                [36m<th[31m
+                  [33mclass[31m=[32m"text-center p-2 font-medium text-gray-600"[31m
+                [36m>[31m
+                  [0mStatus[0m
+                [36m</th>[31m
+              [36m</tr>[31m
+            [36m</thead>[31m
+            [36m<tbody>[31m
+              [36m<tr[31m
+                [33mclass[31m=[32m"border-t hover:bg-gray-50"[31m
+              [36m>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-500"[31m
+                [36m>[31m
+                  [0m1[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-900"[31m
+                [36m>[31m
+                  [0m2026-07-15[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-900 font-medium"[31m
+                [36m>[31m
+                  [0mJo├úo[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-600"[31m
+                [36m>[31m
+                  [0m123.456.789-01[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-600"[31m
+                [36m>[31m
+                  [0mMatriz[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-600"[31m
+                [36m>[31m
+                  [0mcomercial1[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-center"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-amber-600"[31m
+                    [33mtitle[31m=[32m"Usu├írio da conta n├úo foi localizado como Consultor PF; a produ├º├úo ser├í importada sem v├¡nculo PF"[31m
+                  [36m>[31m
+                    [0m![0m
+                  [36m</span>[31m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-right text-gray-500"[31m
+                [36m>[31m
+                  [0mR$[0m
+                  [0m [0m
+                  [0m100,00[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-center"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-xs px-2 py-0.5 rounded bg-green-100 text-green-800"[31m
+                  [36m>[31m
+                    [0mVALIDO[0m
+                  [36m</span>[31m
+                [36m</td>[31m
+              [36m</tr>[31m
+              [36m<tr[31m
+                [33mclass[31m=[32m"border-t hover:bg-gray-50"[31m
+              [36m>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-500"[31m
+                [36m>[31m
+                  [0m2[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-900"[31m
+                [36m>[31m
+                  [0m2026-07-15[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-900 font-medium"[31m
+                [36m>[31m
+                  [0mMaria[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-600"[31m
+                [36m>[31m
+                  [0m987.654.321-00[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-600"[31m
+                [36m>[31m
+                  [0mMatriz[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-600"[31m
+                [36m>[31m
+                  [0mcomercial2[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-center"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-amber-600"[31m
+                    [33mtitle[31m=[32m"Usu├írio da conta n├úo foi localizado como Consultor PF; a produ├º├úo ser├í importada sem v├¡nculo PF"[31m
+                  [36m>[31m
+                    [0m![0m
+                  [36m</span>[31m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-right text-gray-500"[31m
+                [36m>[31m
+                  [0mR$[0m
+                  [0m [0m
+                  [0m100,00[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-center"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-xs px-2 py-0.5 rounded bg-green-100 text-green-800"[31m
+                  [36m>[31m
+                    [0mVALIDO[0m
+                  [36m</span>[31m
+                [36m</td>[31m
+              [36m</tr>[31m
+              [36m<tr[31m
+                [33mclass[31m=[32m"border-t hover:bg-gray-50"[31m
+              [36m>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-500"[31m
+                [36m>[31m
+                  [0m3[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-900"[31m
+                [36m>[31m
+                  [0m2026-07-15[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-900 font-medium"[31m
+                [36m>[31m
+                  [0mJos├®[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-600"[31m
+                [36m>[31m
+                  [0m111.222.333-44[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-600"[31m
+                [36m>[31m
+                  [0mMatriz[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-gray-600"[31m
+                [36m>[31m
+                  [0mcomercial3[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-center"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-amber-600"[31m
+                    [33mtitle[31m=[32m"Usu├írio da conta n├úo foi localizado como Consultor PF; a produ├º├úo ser├í importada sem v├¡nculo PF"[31m
+                  [36m>[31m
+                    [0m![0m
+                  [36m</span>[31m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-right text-gray-500"[31m
+                [36m>[31m
+                  [0mR$[0m
+                  [0m [0m
+                  [0m100,00[0m
+                [36m</td>[31m
+                [36m<td[31m
+                  [33mclass[31m=[32m"p-2 text-center"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-xs px-2 py-0.5 rounded bg-green-100 text-green-800"[31m
+                  [36m>[31m
+                    [0mVALIDO[0m
+                  [36m</span>[31m
+                [36m</td>[31m
+              [36m</tr>[31m
+            [36m</tbody>[31m
+          [36m</table>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-3"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex-1 bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"[31m
+        [36m>[31m
+          [0mConfirmar Upload (3 v├ílidos)[0m
+        [36m</button>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-medium"[31m
+        [36m>[31m
+          [0mNovo Upload[0m
+        [36m</button>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [32mÔ£ô[39m components/__tests__/backoffice-upload-planilha-preview.test.tsx[2m > [22mbackoffice/upload-planilha-preview[2m > [22mUploadPlanilhaPreview - Cobertura de ramos[2m > [22mdeve exibir erro quando upload retornar resposta sem id[32m 61[2mms[22m[39m
+[90mstdout[2m | app/__tests__/consultor-pf-form.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîÿ multiple files { path: ['.env.local', '.env'] }
+
+ [32mÔ£ô[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Importa├º├úo[2m > [22mdeve ser import├ível[32m 3[2mms[22m[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Estado Inicial[2m > [22mdeve inicializar com estado padr├úo[32m 5[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Estado Inicial[2m > [22mdeve preencher form quando consultor ├® fornecido[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - CPF Formatando[2m > [22mdeve formatar CPF simples[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Valida├º├úo[2m > [22mdeve validar campos obrigat├│rios[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Setores[2m > [22mdeve renderizar checkboxes de setores[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Setores[2m > [22mdeve permitir toggle de setor[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve lidar com consultor nulo[32m 0[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve ter email disabled[32m 0[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve mostrar mensagem de email imut├ível[32m 1[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve mostrar mensagem de CPF imut├ível[32m 0[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve mostrar mensagem de lideran├ºa imut├ível[32m 0[2mms[22m[39m
+[31m   ÔåÆ mount is not a function[39m
+[90mstdout[2m | app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîü auth for agents [www.vestauth.com]
+
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mvalidarValorMeta[2m > [22mrejeita string vazia com motivo "vazio"[32m 3[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mvalidarValorMeta[2m > [22mrejeita valor n├úo-num├®rico com motivo "nan"[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mvalidarValorMeta[2m > [22mrejeita valor negativo com motivo "negativo"[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mvalidarValorMeta[2m > [22mrejeita valor explicitamente negativo com ponto decimal[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mvalidarValorMeta[2m > [22maceita "100" como 100[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mvalidarValorMeta[2m > [22maceita "100.50" como 100.5[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mvalidarValorMeta[2m > [22maceita "0" como 0[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mvalidarValorMeta[2m > [22mrejeita Infinity retornado por Number()[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mcomposeMesReferencia[2m > [22mcomp├Áe YYYY-MM no formato esperado pela API[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mMESES_ANO[2m > [22mcont├®m exatamente 12 meses Jan-Dez[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mMESES_ANO[2m > [22mvalores est├úo padded com zero (01-12)[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mformatarCpf / formatarData[2m > [22mformata CPF de 11 d├¡gitos para XXX.XXX.XXX-XX[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mformatarCpf / formatarData[2m > [22mformata data ISO para pt-BR[32m 31[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mnormalizarRespostaMetas[2m > [22mextrai metas de payload { metas: [...] }[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mnormalizarRespostaMetas[2m > [22mextrai metas de array direto[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mnormalizarRespostaMetas[2m > [22mretorna array vazio para payload inv├ílido[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22msalvarMeta[2m > [22mdispara POST com URL, m├®todo e payload corretos[32m 4[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22msalvarMeta[2m > [22mN├âO faz GET subsequente ap├│s salvar (preserva valor digitado e foco)[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22msalvarMeta[2m > [22mretorna erro com mensagem da API quando status n├úo-ok[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22msalvarMeta[2m > [22mcai em mensagem padr├úo quando corpo de erro n├úo ├® JSON[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22msalvarMeta[2m > [22mtrata exce├º├úo de rede (fetch rejected) sem quebrar[32m 0[2mms[22m[39m
+ [31m├ù[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mConsultoresPfPage - invariantes estruturais[2m > [22ma p├ígina existe e importa os utilit├írios extra├¡dos[32m 15[2mms[22m[39m
+[31m   ÔåÆ expected '"use client";\n\nimport { useState } ÔÇª' to contain 'from "./utils"'[39m
+ [31m├ù[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mConsultoresPfPage - invariantes estruturais[2m > [22ma p├ígina deve usar MESES_ANO (12 meses) como fonte de verdade[32m 6[2mms[22m[39m
+[31m   ÔåÆ expected '"use client";\n\nimport { useState } ÔÇª' to contain 'MESES_ANO'[39m
+ [31m├ù[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mConsultoresPfPage - invariantes estruturais[2m > [22mhandleSalvarMeta N├âO deve chamar fetchMetasGerais (evita remount)[32m 1[2mms[22m[39m
+[31m   ÔåÆ expected -1 to be greater than -1[39m
+ [31m├ù[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mConsultoresPfPage - invariantes estruturais[2m > [22mos inputs de meta devem ser uncontrolled (defaultValue, sem value+onChange)[32m 3[2mms[22m[39m
+[31m   ÔåÆ expected null not to be null[39m
+ [31m├ù[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mConsultoresPfPage - invariantes estruturais[2m > [22ma key da c├®lula <td> do m├¬s deve ser est├ível (apenas m.value, sem version)[32m 2[2mms[22m[39m
+[31m   ÔåÆ expected null not to be null[39m
+ [31m├ù[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mConsultoresPfPage - invariantes estruturais[2m > [22mo handler onBlur N├âO deve chamar nada se o valor estiver vazio[32m 1[2mms[22m[39m
+[31m   ÔåÆ expected null not to be null[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mConsultoresPfPage - invariantes estruturais[2m > [22ma URL do POST deve apontar para o endpoint de metas do consultor PF[32m 2[2mms[22m[39m
+ [31m├ù[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mConsultoresPfPage - invariantes estruturais[2m > [22ma p├ígina deve renderizar 12 colunas de m├¬s no header da tabela[32m 5[2mms[22m[39m
+[31m   ÔåÆ expected '"use client";\n\nimport { useState } ÔÇª' to contain '{m.label}/{anoReferencia}'[39m
+ [31m├ù[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mConsultoresPfPage - invariantes estruturais[2m > [22mo colspan do estado vazio deve incluir as 12 colunas de m├¬s[32m 4[2mms[22m[39m
+[31m   ÔåÆ expected '"use client";\n\nimport { useState } ÔÇª' to contain 'colSpan={4 + MESES_ANO.length}'[39m
+ [31m├ù[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mConsultoresPfPage - invariantes estruturais[2m > [22mcada input deve ter aria-label identificando consultor e m├¬s (acessibilidade)[32m 5[2mms[22m[39m
+[31m   ÔåÆ expected '"use client";\n\nimport { useState } ÔÇª' to contain 'aria-label={`Meta de ${c.nome} para $ÔÇª'[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consultores-pf-metas.test.ts[2m > [22mConsultoresPfPage - invariantes estruturais[2m > [22ma p├ígina N├âO deve usar state controlado por m├¬s para os valores das metas[32m 1[2mms[22m[39m
+[90mstdout[2m | app/__tests__/tabela-distribuicao-pontos.test.ts
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîÿ enable debugging { debug: true }
+
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mlistarParceirosUnicos[2m > [22mdeve extrair parceiros ├║nicos da lista[32m 4[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mlistarParceirosUnicos[2m > [22mdeve retornar array vazio quando n├úo houver dados[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mlistarParceirosUnicos[2m > [22mn├úo deve duplicar parceiros repetidos[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mfiltrarProducoes[2m > [22mdeve filtrar por nome do indicado (case insensitive)[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mfiltrarProducoes[2m > [22mdeve filtrar por parte do nome do indicado[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mfiltrarProducoes[2m > [22mdeve retornar todos quando filtro vazio[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mfiltrarProducoes[2m > [22mdeve filtrar por parceiro espec├¡fico[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mfiltrarProducoes[2m > [22mdeve filtrar m├║ltiplos itens do mesmo parceiro[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mfiltrarProducoes[2m > [22mdeve combinar filtros de parceiro e indicado[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mfiltrarProducoes[2m > [22mdeve combinar filtros de data (range)[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mfiltrarProducoes[2m > [22mdeve combinar todos os filtros[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mfiltrarProducoes[2m > [22mdeve retornar array vazio quando combina├º├úo n├úo tiver resultados[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mcontarPendentes[2m > [22mdeve contar produ├º├Áes sem pontos distribu├¡dos[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mcontarPendentes[2m > [22mdeve retornar 0 quando dados forem undefined[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mcontarPendentes[2m > [22mdeve retornar total quando nenhum for distribu├¡do[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mformatarMoeda[2m > [22mdeve formatar valor num├®rico como moeda PT-BR[32m 27[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mformatarMoeda[2m > [22mdeve lidar com null e undefined[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mformatarMoeda[2m > [22mdeve lidar com NaN[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mformatarData[2m > [22mdeve formatar data no formato PT-BR[32m 7[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mformatarData[2m > [22mdeve retornar string vazia quando data for null/undefined[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mobterPontosExibicao[2m > [22mdeve exibir pontos distribu├¡dos em verde[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mobterPontosExibicao[2m > [22mdeve exibir pontos potenciais em amarelo[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mobterPontosExibicao[2m > [22mdeve exibir 0 pts quando pontosPotenciais for 0[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mobterStatusDistribuicao[2m > [22mdeve retornar span verde 'Distribu├¡do' quando j├í distribu├¡do[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Utils (L├│gica Real Extra├¡da)[2m > [22mobterStatusDistribuicao[2m > [22mdeve retornar button 'Distribuir' quando pendente[32m 0[2mms[22m[39m
+ [31m├ù[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Actions (Fetch simulado)[2m > [22mdistribuirProducao[2m > [22mdeve retornar ok=true quando API responder ok[32m 8[2mms[22m[39m
+[31m   ÔåÆ expected false to be true // Object.is equality[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Actions (Fetch simulado)[2m > [22mdistribuirProducao[2m > [22mdeve retornar ok=false quando API responder erro[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Actions (Fetch simulado)[2m > [22mdistribuirProducao[2m > [22mdeve tratar erro de rede[32m 0[2mms[22m[39m
+ [31m├ù[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Actions (Fetch simulado)[2m > [22mdistribuirTodasProducoes[2m > [22mdeve retornar ok=true com mensagem de sucesso[32m 1[2mms[22m[39m
+[31m   ÔåÆ expected false to be true // Object.is equality[39m
+ [31m├ù[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Actions (Fetch simulado)[2m > [22mdistribuirTodasProducoes[2m > [22mdeve retornar resultado com erros quando alguns falham[32m 1[2mms[22m[39m
+[31m   ÔåÆ expected false to be true // Object.is equality[39m
+ [32mÔ£ô[39m app/__tests__/tabela-distribuicao-pontos.test.ts[2m > [22mTabelaDistribuicao - Actions (Fetch simulado)[2m > [22mdistribuirTodasProducoes[2m > [22mdeve tratar erro de rede[32m 0[2mms[22m[39m
+[90mstdout[2m | app/__tests__/backoffice/comissionamento/components/tab-comerciais.test.ts
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîü auth for agents [www.vestauth.com]
+
+ [32mÔ£ô[39m app/__tests__/backoffice/comissionamento/components/tab-comerciais.test.ts[2m > [22mTabComerciais - regress├úo[2m > [22mrenderiza estado inicial[32m 35[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/backoffice/comissionamento/components/tab-comerciais.test.ts[2m > [22mTabComerciais - regress├úo[2m > [22mrenderiza estado vazio quando n├úo h├í comerciais[32m 29[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/backoffice/comissionamento/components/tab-comerciais.test.ts[2m > [22mTabComerciais - regress├úo[2m > [22mrenderiza tabela com comerciais[32m 18[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/backoffice/comissionamento/components/tab-comerciais.test.ts[2m > [22mTabComerciais - regress├úo[2m > [22mhandleChangeMeta marca altera├º├úo[32m 29[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/backoffice/comissionamento/components/tab-comerciais.test.ts[2m > [22mTabComerciais - regress├úo[2m > [22mhandleDeletarComercial chama callback[32m 15[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/backoffice/comissionamento/components/tab-comerciais.test.ts[2m > [22mTabComerciais - regress├úo[2m > [22mhandleEditarComercial chama callback[32m 16[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/backoffice/comissionamento/components/tab-comerciais.test.ts[2m > [22mTabComerciais - regress├úo[2m > [22mbotao salvar esta presente[32m 10[2mms[22m[39m
+[90mstdout[2m | app/__tests__/parceiro-indicados.test.ts
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîÿ enable debugging { debug: true }
+
+[90mstdout[2m | app/__tests__/parceiro-indicados.test.ts
+[22m[39m[db.ts] import.meta.url: file:///C:/apps/mundoas/apps/web/lib/db.ts
+[db.ts] import.meta.url type: string
+[db.ts] MONOREPO_ROOT: C:\apps\mundoas
+[db.ts] pkgPath: C:\apps\mundoas\apps\web\package.json
+
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mGET /api/v1/parceiro/indicados[2m > [22mdeve retornar 401 quando usu├írio n├úo est├í autenticado[33m 1349[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mGET /api/v1/parceiro/indicados[2m > [22mdeve retornar 403 quando usu├írio n├úo ├® PARCEIRO[33m 1291[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mGET /api/v1/parceiro/indicados[2m > [22mdeve retornar lista de indicados do parceiro[33m 1238[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mGET /api/v1/parceiro/indicados[2m > [22mdeve incluir estrutura correta do indicado[33m 1256[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mGET /api/v1/parceiro/indicados[2m > [22mdeve retornar apenas indicados ativos por padr├úo[33m 1251[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mGET /api/v1/parceiro/indicados[2m > [22mdeve ordenar indicados por data de cria├º├úo (mais recente primeiro)[33m 1146[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mGET /api/v1/parceiro/indicados[2m > [22mdeve retornar apenas indicados do parceiro autenticado[33m 1196[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mPOST /api/v1/parceiro/indicados[2m > [22mdeve retornar 401 quando usu├írio n├úo est├í autenticado[33m 1133[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mPOST /api/v1/parceiro/indicados[2m > [22mdeve retornar 403 quando usu├írio n├úo ├® PARCEIRO[33m 1182[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mPOST /api/v1/parceiro/indicados[2m > [22mdeve retornar erro quando nome ├® ausente[33m 1115[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mPOST /api/v1/parceiro/indicados[2m > [22mdeve retornar erro quando CPF ├® inv├ílido[33m 1098[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mPOST /api/v1/parceiro/indicados[2m > [22mdeve cadastrar indicado com sucesso quando dados s├úo v├ílidos[33m 1154[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mPOST /api/v1/parceiro/indicados[2m > [22mdeve aceitar telefone vazio[33m 1114[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mPOST /api/v1/parceiro/indicados[2m > [22mdeve normalizar CPF removendo caracteres especiais[33m 1202[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mGET /api/v1/parceiro/indicados/check-cpf[2m > [22mdeve retornar 401 quando usu├írio n├úo est├í autenticado[33m 1146[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mGET /api/v1/parceiro/indicados/check-cpf[2m > [22mdeve retornar v├ílido=true quando CPF est├í dispon├¡vel[33m 1122[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mGET /api/v1/parceiro/indicados/check-cpf[2m > [22mdeve retornar v├ílido=false quando CPF j├í est├í cadastrado[33m 1166[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mGET /api/v1/parceiro/indicados/check-cpf[2m > [22mdeve retornar v├ílido=false quando CPF tem formato inv├ílido[33m 1116[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/parceiro-indicados.test.ts[2m > [22mAPI - Parceiro Indicados[2m > [22mDELETE /api/v1/parceiro/indicados[2m > [22mdeve desvincular indicado com sucesso[33m 1181[2mms[22m[39m
+[90mstdout[2m | app/__tests__/lideranca-equipe-consistente.test.ts
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôùê encrypted .env [www.dotenvx.com]
+
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consistente.test.ts[2m > [22mAPI - Lideran├ºa Equipe Page[2m > [22mGET /api/v1/lideranca/equipe[2m > [22mdeve retornar equipe da lideran├ºa autenticada[33m 1272[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consistente.test.ts[2m > [22mAPI - Lideran├ºa Equipe Page[2m > [22mGET /api/v1/lideranca/equipe[2m > [22mdeve retornar totais zerados quando sem equipe[33m 1160[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consistente.test.ts[2m > [22mAPI - Lideran├ºa Equipe Page[2m > [22mGET /api/v1/lideranca/equipe[2m > [22mdeve retornar consultores PF da equipe[33m 1678[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consistente.test.ts[2m > [22mAPI - Lideran├ºa Equipe Page[2m > [22mGET /api/v1/lideranca/equipe[2m > [22mdeve retornar m├║ltiplos consultores PF[33m 2269[2mms[22m[39m
+ [32mÔ£ô[39m app/__tests__/lideranca-equipe-consistente.test.ts[2m > [22mAPI - Lideran├ºa Equipe Page[2m > [22mPOST /api/v1/lideranca/consultores-pf[2m > [22mdeve criar consultor PF com sucesso via API[33m 1727[2mms[22m[39m

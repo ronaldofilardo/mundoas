@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
   const indicados = await prisma.indicado.findMany({
     where: {
-      parceiroId,
+      parceiroId: parceiroId as string,
       status: status as "ATIVO" | "DESVINCULADO",
     },
     orderBy: { createdAt: "desc" },
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   const cpfClean = cpf.replace(/\D/g, "");
 
   const parceiro = await prisma.parceiro.findUnique({
-    where: { id: parceiroId },
+    where: { id: parceiroId as string },
   });
 
   if (!parceiro) {
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
       nome,
       cpf: cpfClean,
       telefone: telefone || null,
-      parceiroId,
+      parceiroId: parceiroId as string,
       status: "ATIVO",
     },
   });
@@ -126,7 +126,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   const indicado = await prisma.indicado.findFirst({
-    where: { id, parceiroId },
+    where: { id, parceiroId: parceiroId as string },
   });
 
   if (!indicado) {

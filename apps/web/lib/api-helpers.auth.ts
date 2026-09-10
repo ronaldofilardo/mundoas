@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { NextResponse } from "next/server";
+import { forbidden, unauthorized } from "@/lib/api-helpers.responses";
 
 export async function getSession() {
   return await auth();

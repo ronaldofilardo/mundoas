@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
         valorAtingido: true,
       },
     }),
-    getProcedimentosDoBackoffice({ backofficeId, ano }),
+    getProcedimentosDoBackoffice({ backofficeId: backofficeId as string, ano }),
   ]);
 
   const valorAtingidoPorConsultor = new Map<string, Map<string, number>>();

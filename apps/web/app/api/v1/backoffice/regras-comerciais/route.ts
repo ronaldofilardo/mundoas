@@ -15,8 +15,8 @@ function isJsonObject(value: unknown): value is JsonObject {
 
 async function getOrCreateRegra(backofficeId: string) {
   return prisma.regraComercial.upsert({
-    where: { backofficeId },
-    create: { backofficeId },
+    where: { backofficeId: backofficeId as string },
+    create: { backofficeId: backofficeId as string },
     update: {},
     include: { itens: { orderBy: { ordem: "asc" } } },
   });
@@ -27,7 +27,7 @@ async function getRegrasComerciais(_req: NextRequest = new NextRequest("http://l
   if (error) return error;
 
   const regra = await prisma.regraComercial.findUnique({
-    where: { backofficeId },
+    where: { backofficeId: backofficeId as string },
     include: { itens: { where: { tipo: "CUSTOM" }, orderBy: { ordem: "asc" } } },
   });
   if (!regra) return ok({ itens: [] });
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
   if (!nome) return badRequest("Nome é obrigatório");
   if (Number.isNaN(percentual) || percentual < 0) return badRequest("Percentual inválido");
 
-  const regra = await getOrCreateRegra(backofficeId);
+  const regra = await getOrCreateRegra(backofficeId as string);
 
   const existente = await prisma.regraComercialItem.findFirst({
     where: { regraComercialId: regra.id, nome },
@@ -86,8 +86,8 @@ export async function POST(req: NextRequest) {
   });
 
   await prisma.setor.upsert({
-    where: { backofficeId_nome: { backofficeId, nome } },
-    create: { backofficeId, nome, ativo: true },
+    where: { backofficeId_nome: { backofficeId: backofficeId as string, nome } },
+    create: { backofficeId: backofficeId as string, nome, ativo: true },
     update: { ativo: true },
   });
 
@@ -123,7 +123,7 @@ export async function PATCH(req: NextRequest) {
     where: { id: itemId },
     include: { regraComercial: true },
   });
-  if (!item || item.regraComercial.backofficeId !== backofficeId) {
+  if (!item || item.regraComercial.backofficeId !== (backofficeId as string)) {
     return badRequest("Item não encontrado");
   }
   if (item.tipo === "SISTEMA") {
@@ -162,7 +162,7 @@ export async function DELETE(req: NextRequest) {
       include: { regraComercial: true },
     });
 
-    if (!item || item.regraComercial.backofficeId !== backofficeId) {
+    if (!item || item.regraComercial.backofficeId !== (backofficeId as string)) {
       return badRequest("Item não encontrado");
     }
 
@@ -173,7 +173,7 @@ export async function DELETE(req: NextRequest) {
     await prisma.$transaction(async (tx) => {
       await tx.regraComercialItem.delete({ where: { id: itemId } });
       await tx.setor.updateMany({
-        where: { backofficeId, nome: item.nome },
+        where: { backofficeId: backofficeId as string, nome: item.nome },
         data: { ativo: false },
       });
       await criarAuditLog({
@@ -189,7 +189,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   const regra = await prisma.regraComercial.findUnique({
-    where: { backofficeId },
+    where: { backofficeId: backofficeId as string },
   });
 
   if (!regra) {
@@ -198,7 +198,7 @@ export async function DELETE(req: NextRequest) {
 
   await prisma.$transaction(async (tx) => {
     await tx.regraComercialItem.deleteMany({ where: { regraComercialId: regra.id } });
-    await tx.regraComercial.delete({ where: { backofficeId } });
+    await tx.regraComercial.delete({ where: { backofficeId: backofficeId as string } });
     await criarAuditLog({
       usuarioId: session!.user.id,
       acao: "EXCLUIR_REGRAS_COMERCIAIS",

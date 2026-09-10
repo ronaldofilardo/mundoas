@@ -24,7 +24,7 @@ const criarParceiroSchema = z.object({
 
 export async function GET(req: NextRequest) {
   const { session, comercial, error } = await requireComercialWithScope();
-  if (error) return error;
+  if (error || !comercial) return error || badRequest("Comercial não encontrado");
 
   const parceiros = await prisma.parceiro.findMany({
     where: { comercialId: comercial.id },
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const { session, comercial, error } = await requireComercialWithScope();
-    if (error) return error;
+    if (error || !comercial) return error || badRequest("Comercial não encontrado");
 
     const lideranca = await prisma.equipe.findFirst({
       where: { id: comercial.liderancaId!, tipo: "LIDERANCA" },

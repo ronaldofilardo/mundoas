@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
-export function StatusFilter(
-  statusAtual: string,
-  onStatusChange: (status: string) => void,
-) {
-  const [isActive, setIsActive] = useState<boolean>(false);
-
+export function StatusFilter({
+  statusAtual,
+  onStatusChange,
+}: {
+  statusAtual: string;
+  onStatusChange: (status: string) => void;
+}) {
   return (
     <div className="flex items-center justify-between mb-6">
       <h2 className="text-xl font-bold text-gray-900">Fila de Resgates</h2>

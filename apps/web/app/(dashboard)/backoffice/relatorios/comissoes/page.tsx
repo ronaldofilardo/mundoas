@@ -17,6 +17,7 @@ export default function RelatorioComissoesPage() {
     comercialId,
     setComercialId,
     comerciais,
+    setComerciais,
     buscarRelatorio,
     exportarCSV,
   } = useRelatorioComissoes();

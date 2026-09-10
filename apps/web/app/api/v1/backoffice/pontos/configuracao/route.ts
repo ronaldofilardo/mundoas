@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     if (error) return error;
 
     const configs = await prisma.configuracaoPontos.findMany({
-      where: { backofficeId },
+      where: { backofficeId: backofficeId as string },
       orderBy: { vigenteDesde: "desc" },
     });
 
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     // Só pode haver um ciclo em andamento
     const vigenteAtual = await prisma.configuracaoPontos.findFirst({
       where: {
-        backofficeId,
+        backofficeId: backofficeId as string,
         vigenteAte: null,
       },
     });
@@ -75,8 +75,8 @@ export async function POST(req: NextRequest) {
 
     // Criar nova configuração
     const novaConfig = await prisma.configuracaoPontos.create({
-      data: {
-        backofficeId,
+    data: {
+      backofficeId: backofficeId as string,
         valorPorPonto: new Decimal(valorPorPonto),
         tipoArredondamento,
         vigenteDesde: new Date(),
@@ -122,7 +122,7 @@ export async function PATCH(req: NextRequest) {
       where: { id: configId },
     });
 
-    if (!config || config.backofficeId !== backofficeId) {
+    if (!config || config.backofficeId !== (backofficeId as string)) {
       return forbidden();
     }
 

@@ -25,7 +25,7 @@ const criarConsultorPfSchema = z.object({
 
 export async function GET() {
   const { lideranca, error } = await requireLiderancaWithScope();
-  if (error) return error;
+  if (error || !lideranca) return error || forbidden();
 
   const consultores = await prisma.consultorPf.findMany({
     where: { liderancaId: lideranca.id },
@@ -57,9 +57,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const { lideranca, error } = await requireLiderancaWithScope();
-  if (error) {
+  if (error || !lideranca) {
     console.error("[POST /consultores-pf] Erro na autenticação:", error);
-    return error;
+    return error || forbidden();
   }
   const backofficeId = lideranca.backofficeId;
   if (!backofficeId) return forbidden();

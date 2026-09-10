@@ -1,4 +1,4 @@
-interface Resgate {
+export interface Resgate {
   id: string;
   parceiro: {
     id: string;

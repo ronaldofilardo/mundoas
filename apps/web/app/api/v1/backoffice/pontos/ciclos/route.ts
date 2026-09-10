@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     if (error) return error;
 
     const ciclos = await prisma.cicloPontos.findMany({
-      where: { backofficeId },
+      where: { backofficeId: backofficeId as string },
       orderBy: { inicioAcumuloEm: "desc" },
     });
 
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
   // Ciclos SEMESTRAL e ANUAL podem coexistir quando seus intervalos não se cruzam.
   const cicloSobreposto = await prisma.cicloPontos.findFirst({
     where: {
-      backofficeId,
+      backofficeId: backofficeId as string,
       periodicidade,
       inicioAcumuloEm: { lte: fimResgate },
       fimResgateEm: { gte: inicio },
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
 
   const novoCiclo = await prisma.cicloPontos.create({
     data: {
-      backofficeId,
+      backofficeId: backofficeId as string,
       nome,
       periodicidade,
       inicioAcumuloEm: inicio,

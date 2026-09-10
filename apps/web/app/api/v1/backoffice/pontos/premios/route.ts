@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     if (error) return error;
 
     const premios = await prisma.premio.findMany({
-      where: { backofficeId, ativo: true },
+      where: { backofficeId: backofficeId as string, ativo: true },
       orderBy: { criadoEm: "desc" },
     });
 
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
 
     const novoPremio = await prisma.premio.create({
       data: {
-        backofficeId,
+        backofficeId: backofficeId as string,
         nome: nome ?? codigo,
         codigo,
         tipo,
@@ -129,7 +129,7 @@ export async function PATCH(req: NextRequest) {
       where: { id: premioId },
     });
 
-    if (!premio || premio.backofficeId !== backofficeId) {
+    if (!premio || premio.backofficeId !== (backofficeId as string)) {
       return forbidden();
     }
 
@@ -188,7 +188,7 @@ export async function DELETE(req: NextRequest) {
       where: { id: premioId },
     });
 
-    if (!premio || premio.backofficeId !== backofficeId) {
+    if (!premio || premio.backofficeId !== (backofficeId as string)) {
       return forbidden();
     }
 

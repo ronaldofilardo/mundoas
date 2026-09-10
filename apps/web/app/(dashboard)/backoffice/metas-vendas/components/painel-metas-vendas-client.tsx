@@ -2,6 +2,7 @@
 
 import { CardSetor } from "./card-setor";
 import { BarraProgresso } from "./barra-progresso";
+import type { SortKey } from "./types";
 import { useMetasVendas } from "@/util/use-metavendas";
 import { formatarMoeda } from "@/util/format-moeda";
 
@@ -103,7 +104,7 @@ export function PainelMetasVendasClient() {
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
             >
               <option value="TODOS">Todos os Setores</option>
-              {(data?.setores ?? []).map((s) => (
+              {(data?.setores ?? []).map((s: { setorId: string; setorNome: string }) => (
                 <option key={s.setorId} value={s.setorId}>
                   {s.setorNome}
                 </option>
@@ -224,7 +225,7 @@ export function PainelMetasVendasClient() {
           )}
 
           <div className="space-y-4">
-            {setoresFiltrados.map((s) => (
+            {setoresFiltrados.map((s: { setorId: string; setorNome: string; consultores: any[] }) => (
               <CardSetor
                 key={s.setorId}
                 setorId={s.setorId}

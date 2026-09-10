@@ -16,13 +16,13 @@ export interface ProducaoPorConsultor {
   [consultorPfId: string]: number;
 }
 
-export function somarProducaoPorComerciais(
+export async function somarProducaoPorComerciais(
   comercialIds: string[],
   backofficeId: string,
   intervalo: IntervalosMes,
-): ProducaoPorComercial {
+): Promise<ProducaoPorComercial> {
   const mapa = new Map<string, number>();
-  if (comercialIds.length === 0) return mapa;
+  if (comercialIds.length === 0) return Object.fromEntries(mapa);
 
   const grupos = await prisma.procedimentoPF.groupBy({
     by: ["comercialId"],
@@ -40,16 +40,16 @@ export function somarProducaoPorComerciais(
     const v2 = Number(g._sum.valorTotal ?? 0);
     mapa.set(g.comercialId, Math.max(v1, v2));
   }
-  return mapa;
+  return Object.fromEntries(mapa) as ProducaoPorComercial;
 }
 
-export function somarProducaoPorConsultoresPf(
+export async function somarProducaoPorConsultoresPf(
   consultorPfIds: string[],
   backofficeId: string,
   intervalo: IntervalosMes,
-): ProducaoPorConsultor {
+): Promise<ProducaoPorConsultor> {
   const mapa = new Map<string, number>();
-  if (consultorPfIds.length === 0) return mapa;
+  if (consultorPfIds.length === 0) return Object.fromEntries(mapa);
 
   const grupos = await prisma.procedimentoPF.groupBy({
     by: ["consultorPfId"],
@@ -67,12 +67,14 @@ export function somarProducaoPorConsultoresPf(
     const v2 = Number(g._sum.valorTotal ?? 0);
     mapa.set(g.consultorPfId, Math.max(v1, v2));
   }
-  return mapa;
+  return Object.fromEntries(mapa) as ProducaoPorConsultor;
 }
 
+import { RegrasComerciais, RegrasGestores } from "@/app/(dashboard)/backoffice/usuarios/comerciais/types";
+
 export function calcularPctComissaoLideranca(
-  regrasComerciais: any[],
-  regrasGestores: any[],
+  regrasComerciais: RegrasComerciais,
+  regrasGestores: RegrasGestores,
   funcao: string,
 ): number | null {
   return getComissaoFromFuncao({ regrasComerciais, regrasGestores }, funcao);

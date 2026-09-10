@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   });
 
   await criarAuditLog({
-    usuarioId: session.user.id,
+    usuarioId: session!.user.id,
     acao: "REATIVAR",
     entidade: "PARCEIRO",
     entidadeId: id,

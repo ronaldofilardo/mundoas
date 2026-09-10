@@ -1,5 +1,5 @@
 import { prisma } from "@asa/database";
-import { forbidden, badRequest } from "@/lib/api-helpers";
+import { forbidden, badRequest, notFound } from "@/lib/api-helpers";
 
 export async function validarAcessoEquipe(
   backofficeId: string,

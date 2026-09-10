@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     // Criar registro de upload
     const upload = await prisma.uploadPlanilhaBackoffice.create({
       data: {
-        backofficeId,
+        backofficeId: backofficeId as string,
         nomeArquivo: file.name,
         mesReferencia,
         status: "PROCESSANDO",
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     // Processar planilha de forma síncrona para garantir persistência em serverless (Vercel)
     let bonusPf: { bonusPfDistribuidos: number; bonusPfIgnorados: number; bonusPfIgnoradosExistente: number; bonusPfErros: number };
     try {
-      bonusPf = await processarUploadPlanilhaPF(upload.id, file, backofficeId);
+      bonusPf = await processarUploadPlanilhaPF(upload.id, file, backofficeId as string);
     } catch (processError) {
       console.error("[processarUploadPlanilhaPF] Erro:", processError);
       await prisma.uploadPlanilhaBackoffice.update({

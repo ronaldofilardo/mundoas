@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PremiosUpload } from "@/components/backoffice/premios-upload";
 import { PremiosForm } from "@/components/backoffice/pontos/components/premios-form";
 import { PremiosTable } from "@/components/backoffice/pontos/components/premios-table";
 
@@ -60,11 +61,11 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = async (premio: Premio) => {
-    if (!confirm(`Excluir prêmio ${premio.codigo}?`)) return;
+  const handleDelete = async (id: string) => {
+    if (!confirm(`Excluir prêmio ${id}?`)) return;
 
     try {
-      const response = await fetch(`/api/v1/backoffice/pontos/premios?id=${premio.id}`, {
+      const response = await fetch(`/api/v1/backoffice/pontos/premios?id=${id}`, {
         method: "DELETE",
       });
       const result = await response.json().catch(() => ({}));
@@ -97,7 +98,7 @@ export function PremiosPontos({ data }: { data?: Premio[] }) {
         onSave={handleSave}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        initialData={data?.length > 0 ? data[0] : undefined}
+        initialData={(data && data.length > 0) ? data[0] : undefined}
         onUploadSuccess={handleUploadSuccess}
       />
 

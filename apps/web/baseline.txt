@@ -1,0 +1,645 @@
+Ôùç injected env (4) from .env.test // tip: Ôîÿ override existing { override: true }
+
+[1m[46m RUN [49m[22m [36mv4.1.1 [39m[90mC:/apps/mundoas/apps/web[39m
+
+[90mstdout[2m | app/__tests__/consultor-pf-form.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôùê secrets for agents [www.dotenvx.com]
+
+stderr | app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Estado Inicial > deve inicializar com estado padr├úo
+Warning: An update to ConsultorPfForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at ConsultorPfForm (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/comissionamento/equipe/components/consultor-pf-form.tsx:10:28)
+
+stderr | app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Estado Inicial > deve preencher form quando consultor ├® fornecido
+Warning: An update to ConsultorPfForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at ConsultorPfForm (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/comissionamento/equipe/components/consultor-pf-form.tsx:10:28)
+
+stderr | app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - CPF Formatando > deve formatar CPF simples
+Warning: An update to ConsultorPfForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at ConsultorPfForm (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/comissionamento/equipe/components/consultor-pf-form.tsx:10:28)
+
+stderr | app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Valida├º├úo > deve validar campos obrigat├│rios
+Warning: An update to ConsultorPfForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at ConsultorPfForm (C:/apps/mundoas/apps/web/app/(dashboard)/backoffice/comissionamento/equipe/components/consultor-pf-form.tsx:10:28)
+
+ [32mÔ£ô[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Importa├º├úo[2m > [22mdeve ser import├ível[32m 2[2mms[22m[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Estado Inicial[2m > [22mdeve inicializar com estado padr├úo[32m 44[2mms[22m[39m
+[31m   ÔåÆ Unable to find a label with the text of: Nome completo
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"fixed inset-0 z-50 flex items-center justify-center bg-black/50"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl p-8 w-full max-w-md"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center justify-center"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"[31m
+          [36m/>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Estado Inicial[2m > [22mdeve preencher form quando consultor ├® fornecido[32m 10[2mms[22m[39m
+[31m   ÔåÆ Unable to find a label with the text of: Nome completo
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"fixed inset-0 z-50 flex items-center justify-center bg-black/50"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl p-8 w-full max-w-md"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center justify-center"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"[31m
+          [36m/>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - CPF Formatando[2m > [22mdeve formatar CPF simples[32m 7[2mms[22m[39m
+[31m   ÔåÆ Unable to find a label with the text of: CPF
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"fixed inset-0 z-50 flex items-center justify-center bg-black/50"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl p-8 w-full max-w-md"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center justify-center"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"[31m
+          [36m/>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Valida├º├úo[2m > [22mdeve validar campos obrigat├│rios[32m 129[2mms[22m[39m
+[31m   ÔåÆ Unable to find an accessible element with the role "form"
+
+There are no accessible roles. But there might be some inaccessible roles. If you wish to access them, then set the `hidden` option to `true`. Learn more about this here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"fixed inset-0 z-50 flex items-center justify-center bg-black/50"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl p-8 w-full max-w-md"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center justify-center"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"[31m
+          [36m/>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Setores[2m > [22mdeve renderizar checkboxes de setores[32m 12[2mms[22m[39m
+[31m   ÔåÆ actual value must be number or bigint, received "undefined"[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Setores[2m > [22mdeve permitir toggle de setor[32m 8[2mms[22m[39m
+[31m   ÔåÆ Cannot read properties of undefined (reading 'simulate')[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve lidar com consultor nulo[32m 9[2mms[22m[39m
+[31m   ÔåÆ Unable to find a label with the text of: Nome completo
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"fixed inset-0 z-50 flex items-center justify-center bg-black/50"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl p-8 w-full max-w-md"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center justify-center"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"[31m
+          [36m/>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve ter email disabled[32m 5[2mms[22m[39m
+[31m   ÔåÆ Unable to find a label with the text of: Email
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"fixed inset-0 z-50 flex items-center justify-center bg-black/50"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl p-8 w-full max-w-md"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center justify-center"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"[31m
+          [36m/>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve mostrar mensagem de email imut├ível[32m 10[2mms[22m[39m
+[31m   ÔåÆ Unable to find an element with the text: O email n├úo pode ser alterado ap├│s a cria├º├úo.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"fixed inset-0 z-50 flex items-center justify-center bg-black/50"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl p-8 w-full max-w-md"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center justify-center"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"[31m
+          [36m/>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve mostrar mensagem de CPF imut├ível[32m 5[2mms[22m[39m
+[31m   ÔåÆ Unable to find an element with the text: O CPF n├úo pode ser alterado ap├│s a cria├º├úo.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"fixed inset-0 z-50 flex items-center justify-center bg-black/50"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl p-8 w-full max-w-md"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center justify-center"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"[31m
+          [36m/>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [31m├ù[39m app/__tests__/consultor-pf-form.test.tsx[2m > [22mConsultorPfForm - Edge Cases[2m > [22mdeve mostrar mensagem de lideran├ºa imut├ível[32m 7[2mms[22m[39m
+[31m   ÔåÆ Unable to find an element with the text: A lideran├ºa n├úo pode ser alterada ap├│s a cria├º├úo.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"fixed inset-0 z-50 flex items-center justify-center bg-black/50"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"bg-white rounded-xl p-8 w-full max-w-md"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center justify-center"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"[31m
+          [36m/>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90mstdout[2m | app/__tests__/consultor-pf-form-import.test.tsx
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîÿ enable debugging { debug: true }
+
+ [32mÔ£ô[39m app/__tests__/consultor-pf-form-import.test.tsx[2m > [22mConsultorPfForm - Import Only[2m > [22mdeve importar o componente[32m 259[2mms[22m[39m
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Tests 11 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Estado Inicial > deve inicializar com estado padr├úo
+TestingLibraryElementError: Unable to find a label with the text of: Nome completo
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
+      <div
+        class="bg-white rounded-xl p-8 w-full max-w-md"
+      >
+        <div
+          class="flex items-center justify-center"
+        >
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ÔØ» Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ÔØ» getAllByLabelText ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/queries/label-text.js:111:38
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:14:25
+     12|   it("deve inicializar com estado padr├úo", () => {
+     13|     render(<ConsultorPfForm />);
+     14|     const nome = screen.getByLabelText("Nome completo");
+       |                         ^
+     15|     expect(nome.prop("value")).toBe("");
+     16|     const email = screen.getByLabelText("Email");
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Estado Inicial > deve preencher form quando consultor ├® fornecido
+TestingLibraryElementError: Unable to find a label with the text of: Nome completo
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
+      <div
+        class="bg-white rounded-xl p-8 w-full max-w-md"
+      >
+        <div
+          class="flex items-center justify-center"
+        >
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ÔØ» Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ÔØ» getAllByLabelText ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/queries/label-text.js:111:38
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:36:25
+     34|       <ConsultorPfForm consultor={mockConsultor} />
+     35|     );
+     36|     const nome = screen.getByLabelText("Nome completo");
+       |                         ^
+     37|     expect(nome.prop("value")).toBe("Jo├úo Silva");
+     38|     const email = screen.getByLabelText("Email");
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - CPF Formatando > deve formatar CPF simples
+TestingLibraryElementError: Unable to find a label with the text of: CPF
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
+      <div
+        class="bg-white rounded-xl p-8 w-full max-w-md"
+      >
+        <div
+          class="flex items-center justify-center"
+        >
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ÔØ» Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ÔØ» getAllByLabelText ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/queries/label-text.js:111:38
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:48:29
+     46|   it("deve formatar CPF simples", () => {
+     47|     render(<ConsultorPfForm />);
+     48|     const cpfInput = screen.getByLabelText("CPF");
+       |                             ^
+     49|     cpfInput.simulate("change", { target: { value: "12345678901" } });
+     50|     expect(cpfInput.prop("value")).toBe("123.456.789-01");
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[3/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Valida├º├úo > deve validar campos obrigat├│rios
+TestingLibraryElementError: Unable to find an accessible element with the role "form"
+
+There are no accessible roles. But there might be some inaccessible roles. If you wish to access them, then set the `hidden` option to `true`. Learn more about this here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
+      <div
+        class="bg-white rounded-xl p-8 w-full max-w-md"
+      >
+        <div
+          class="flex items-center justify-center"
+        >
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ÔØ» Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:57:25
+     55|   it("deve validar campos obrigat├│rios", () => {
+     56|     render(<ConsultorPfForm />);
+     57|     const form = screen.getByRole("form");
+       |                         ^
+     58|     expect(form.prop("checkValidity")).toBeFalsy();
+     59|   });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[4/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Setores > deve renderizar checkboxes de setores
+TypeError: actual value must be number or bigint, received "undefined"
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:78:31
+     76|     );
+     77|     const checkboxes = screen.findAllByRole("checkbox");
+     78|     expect(checkboxes.length).toBeGreaterThan(0);
+       |                               ^
+     79|   });
+     80|
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[5/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Setores > deve permitir toggle de setor
+TypeError: Cannot read properties of undefined (reading 'simulate')
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:96:19
+     94|     );
+     95|     const checkboxes = screen.findAllByRole("checkbox");
+     96|     checkboxes[0].simulate("change");
+       |                   ^
+     97|     expect(checkboxes[0].prop("checked")).toBe(true);
+     98|   });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[6/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Edge Cases > deve lidar com consultor nulo
+TestingLibraryElementError: Unable to find a label with the text of: Nome completo
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
+      <div
+        class="bg-white rounded-xl p-8 w-full max-w-md"
+      >
+        <div
+          class="flex items-center justify-center"
+        >
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ÔØ» Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ÔØ» getAllByLabelText ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/queries/label-text.js:111:38
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:115:25
+    113|   it("deve lidar com consultor nulo", () => {
+    114|     render(<ConsultorPfForm consultor={null} />);
+    115|     const nome = screen.getByLabelText("Nome completo");
+       |                         ^
+    116|     expect(nome.prop("value")).toBe("");
+    117|   });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[7/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Edge Cases > deve ter email disabled
+TestingLibraryElementError: Unable to find a label with the text of: Email
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
+      <div
+        class="bg-white rounded-xl p-8 w-full max-w-md"
+      >
+        <div
+          class="flex items-center justify-center"
+        >
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ÔØ» Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ÔØ» getAllByLabelText ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/queries/label-text.js:111:38
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:123:31
+    121|       <ConsultorPfForm consultor={mockConsultor} />
+    122|     );
+    123|     const emailInput = screen.getByLabelText("Email");
+       |                               ^
+    124|     expect(emailInput.prop("disabled")).toBe(true);
+    125|   });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[8/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Edge Cases > deve mostrar mensagem de email imut├ível
+TestingLibraryElementError: Unable to find an element with the text: O email n├úo pode ser alterado ap├│s a cria├º├úo.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
+      <div
+        class="bg-white rounded-xl p-8 w-full max-w-md"
+      >
+        <div
+          class="flex items-center justify-center"
+        >
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ÔØ» Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:131:25
+    129|       <ConsultorPfForm consultor={mockConsultor} />
+    130|     );
+    131|     const text = screen.getByText("O email n├úo pode ser alterado ap├│s ÔÇª
+       |                         ^
+    132|     expect(text.textContent).toContain("O email n├úo pode ser alterado ÔÇª
+    133|   });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[9/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Edge Cases > deve mostrar mensagem de CPF imut├ível
+TestingLibraryElementError: Unable to find an element with the text: O CPF n├úo pode ser alterado ap├│s a cria├º├úo.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
+      <div
+        class="bg-white rounded-xl p-8 w-full max-w-md"
+      >
+        <div
+          class="flex items-center justify-center"
+        >
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ÔØ» Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:139:25
+    137|       <ConsultorPfForm consultor={mockConsultor} />
+    138|     );
+    139|     const text = screen.getByText("O CPF n├úo pode ser alterado ap├│s a ÔÇª
+       |                         ^
+    140|     expect(text.textContent).toContain("O CPF n├úo pode ser alterado apÔÇª
+    141|   });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[10/11]ÔÄ»
+
+ FAIL  app/__tests__/consultor-pf-form.test.tsx > ConsultorPfForm - Edge Cases > deve mostrar mensagem de lideran├ºa imut├ível
+TestingLibraryElementError: Unable to find an element with the text: A lideran├ºa n├úo pode ser alterada ap├│s a cria├º├úo.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
+      <div
+        class="bg-white rounded-xl p-8 w-full max-w-md"
+      >
+        <div
+          class="flex items-center justify-center"
+        >
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ÔØ» Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ÔØ» ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ÔØ» app/__tests__/consultor-pf-form.test.tsx:147:25
+    145|       <ConsultorPfForm consultor={mockConsultor} />
+    146|     );
+    147|     const text = screen.getByText("A lideran├ºa n├úo pode ser alterada aÔÇª
+       |                         ^
+    148|     expect(text.textContent).toContain("A lideran├ºa n├úo pode ser alterÔÇª
+    149|   });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[11/11]ÔÄ»
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m11 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (13)[39m
+[2m   Start at [22m 20:37:33
+[2m   Duration [22m 6.03s[2m (transform 167ms, setup 977ms, import 394ms, tests 515ms, environment 3.38s)[22m
+

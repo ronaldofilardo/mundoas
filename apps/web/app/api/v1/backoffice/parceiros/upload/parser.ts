@@ -4,6 +4,8 @@ import { z } from "zod";
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_ROWS = 500;
 
+type SheetRecord = Record<string, unknown>;
+
 const parceiroUploadSchema = z.object({
   nome: z.string().trim().min(3, "Nome deve ter no mínimo 3 caracteres"),
   email: z.string().trim().email("Email inválido"),
@@ -108,5 +110,5 @@ async function extrairLinhasDoArquivo(
 }
 
 export { mapearLinha, normalizarChave, MAPA_COLUNAS, parceiroUploadSchema };
-export type { Record as SheetRecord };
+export type { SheetRecord };
 export default extrairLinhasDoArquivo;

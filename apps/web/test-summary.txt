@@ -1,0 +1,44 @@
+Ôùç injected env (4) from .env.test // tip: Ôîÿ suppress logs { quiet: true }
+
+[1m[46m RUN [49m[22m [36mv4.1.1 [39m[90mC:/apps/mundoas/apps/web[39m
+
+[90mstdout[2m | app/__tests__/backoffice-pontos-distribuir-route.test.ts[2m > [22m[2mAPI - Backoffice Pontos Distribuir[2m > [22m[2mPOST /distribuir[2m > [22m[2mdeve retornar 401 quando n├úo autenticado
+[22m[39mprisma:error 
+Invalid `prisma.procedimentoPF.create()` invocation:
+
+
+Foreign key constraint violated on the (not available)
+
+[90mstdout[2m | app/__tests__/backoffice-pontos-distribuir-route.test.ts
+[22m[39mÔùç injected env (0) from .env.test // tip: Ôîü auth for agents [www.vestauth.com]
+
+[90mstdout[2m | app/__tests__/backoffice-pontos-distribuir-route.test.ts
+[22m[39m[db.ts] import.meta.url: file:///C:/apps/mundoas/apps/web/lib/db.ts
+[db.ts] import.meta.url type: string
+[db.ts] MONOREPO_ROOT: C:\apps\mundoas
+[db.ts] pkgPath: C:\apps\mundoas\apps\web\package.json
+
+ [31mÔØ»[39m app/__tests__/backoffice-pontos-distribuir-route.test.ts [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 17714[2mms[22m[39m
+[31m       [31m├ù[31m deve retornar 401 quando n├úo autenticado[39m[33m 10716[2mms[22m[39m
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Tests 1 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+
+ FAIL  app/__tests__/backoffice-pontos-distribuir-route.test.ts > API - Backoffice Pontos Distribuir > POST /distribuir > deve retornar 401 quando n├úo autenticado
+Error: Hook timed out in 10000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ÔØ» app/__tests__/backoffice-pontos-distribuir-route.test.ts:45:3
+     43|   let procedimentoId: string;
+     44|
+     45|   beforeEach(async () => {
+       |   ^
+     46|     resetAuthMocks();
+     47|
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/1]ÔÄ»
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m8 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 14:30:11
+[2m   Duration [22m 71.88s[2m (transform 1.46s, setup 23.79s, import 2.02s, tests 18.93s, environment 23.90s)[22m
+

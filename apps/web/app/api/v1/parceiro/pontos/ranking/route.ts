@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
     // Buscar informações do parceiro
     const parceiro = await prisma.parceiro.findUnique({
-      where: { id: parceiroId },
+      where: { id: parceiroId as string },
       select: { 
         comercial: { select: { lideranca: { select: { backofficeId: true } } } },
         gestor: { select: { lideranca: { select: { backofficeId: true } } } }

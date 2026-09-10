@@ -6,24 +6,26 @@ import {
   ok,
   requireBackofficeWithScope,
 } from "@/lib/api-helpers";
-import {
-  processarCriacaoEquipe,
-  processarGETEquipeList,
-} from "./service";
+import { processarCriacaoEquipe, processarGETEquipeList } from "./service";
 
 export async function GET(req: NextRequest) {
   const { backofficeId, error } = await requireBackofficeWithScope();
   if (error) return error;
 
   const { searchParams } = new URL(req.url);
-  const tipo = searchParams.get("tipo");
+  const tipo = searchParams.get("tipo") as string | undefined;
 
-  return processarGETEquipeList(tipo, backofficeId);
+  return processarGETEquipeList(backofficeId as string, tipo);
 }
 
 export async function POST(req: NextRequest) {
-  const { session, backofficeId, error } = await requireBackofficeWithScope();
+  const result = await requireBackofficeWithScope();
+  const { session, backofficeId, error } = result;
   if (error) return error;
 
-  return processarCriacaoEquipe(req, backofficeId, session);
+  return processarCriacaoEquipe(
+    req,
+    backofficeId as string,
+    session as { user: { id: string } },
+  );
 }

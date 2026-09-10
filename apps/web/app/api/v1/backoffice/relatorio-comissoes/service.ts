@@ -174,15 +174,15 @@ export async function getComercialData(
   funcao?: string,
 ) {
   const subordinadosDoGestor = liderancas.flatMap((l) => l.subordinados);
-  let commercialIds = commerciaisDoGestor.map((c) => c.id);
+  let commercialIds = subordinadosDoGestor.map((c) => c.id);
 
   if (funcao) {
-    commercialIds = commerciaisDoGestor
+    commercialIds = subordinadosDoGestor
       .filter((c) => c.funcao === funcao)
       .map((c) => c.id);
   }
 
-  if (comerciaisDoGestor.length === 0 || commercialIds.length === 0) {
+  if (subordinadosDoGestor.length === 0 || commercialIds.length === 0) {
     return {
       comissoes: [],
       porMes: new Map(),
@@ -255,8 +255,8 @@ export async function getComercialData(
 
 export function formatComercialResponse(
   comissoes: any[],
-  porMes: Map,
-  porFuncao: Map,
+  porMes: Map<string, any>,
+  porFuncao: Map<string, any>,
   totalGeralVendas: number,
   totalGeralComissao: number,
   liderancas: Awaited<ReturnType<typeof getLiderancas>>,
@@ -290,7 +290,7 @@ export function formatComercialResponse(
           quantidade: dados.quantidade,
           comerciaisCount: dados.comerciais.size,
         }))
-        .sort((a: [string, any], b: [string, any]) => b[1].totalComissao - a[1].totalComissao),
+        .sort((a: { funcao: string | null; totalVendas: any; totalComissao: any; quantidade: any; comerciaisCount: any; }, b: { funcao: string | null; totalVendas: any; totalComissao: any; quantidade: any; comerciaisCount: any; }) => b.totalComissao - a.totalComissao),
       totalGeral: {
         totalVendas: totalGeralVendas,
         totalComissao: totalGeralComissao,

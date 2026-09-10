@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     let cicloId = cicloPontosId ?? undefined;
     if (!cicloId) {
       const parceiro = await prisma.parceiro.findUnique({
-        where: { id: parceiroId },
+        where: { id: parceiroId as string },
         select: { 
           comercial: { select: { lideranca: { select: { backofficeId: true } } } },
           gestor: { select: { lideranca: { select: { backofficeId: true } } } }

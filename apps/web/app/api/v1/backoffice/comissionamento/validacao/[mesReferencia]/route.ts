@@ -9,20 +9,20 @@ import {
   getComissaoFromFuncao,
   calcularValorComissaoNum,
   intervaloMesReferencia,
+  calcularPctComissaoLideranca,
+  calcularValorComissao,
 } from "@/lib/comissao-calculo";
 import {
   somarProducaoPorComerciais,
   somarProducaoPorConsultoresPf,
-  calcularPctComissaoLideranca,
-  calcularValorComissao,
-} from "@/lib/comissao-calculo";
+} from "@/lib/comissao-producao";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { mesReferencia: string } },
 ) {
   const { backofficeId, error } = await requireBackofficeWithScope();
-  if (error) return error;
+  if (error || !backofficeId) return error || notFound("backofficeId não encontrado");
 
   const mesReferencia = params.mesReferencia;
   if (!mesReferencia || !/^\d{4}-\d{2}$/.test(mesReferencia)) {
