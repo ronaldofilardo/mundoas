@@ -60,8 +60,7 @@ export async function POST(req: NextRequest) {
     });
 
     return ok({
-      status: "CONCLUIDO",
-      id: uploadFinal.id,
+      ...uploadFinal,
       summary: {
         totalRows: uploadFinal.totalRows,
         processedRows: uploadFinal.processedRows,
@@ -69,7 +68,6 @@ export async function POST(req: NextRequest) {
         rejectedRows: uploadFinal.rejectedRows,
         orphanedRows: uploadFinal.orphanedRows,
       },
-      ...uploadFinal,
       bonusPfDistribuidos: bonusPf.bonusPfDistribuidos,
       bonusPfIgnorados: bonusPf.bonusPfIgnorados,
       bonusPfIgnoradosExistente: bonusPf.bonusPfIgnoradosExistente,

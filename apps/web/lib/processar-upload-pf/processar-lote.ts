@@ -31,7 +31,7 @@ const normalizar = (s: string) =>
   s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 export function montarIndicesDeHeaders(headersRaw: unknown[]): IndicesColunas {
-  const headers: Record<string, string> = headersRaw.reduce(
+  const headers = headersRaw.reduce<Record<string, string>>(
     (acc, h, idx) => {
       const headerStr = h ? String(h).trim() : "";
       if (headerStr) {
@@ -39,7 +39,7 @@ export function montarIndicesDeHeaders(headersRaw: unknown[]): IndicesColunas {
       }
       return acc;
     },
-    {} as Record<string, string>,
+    {},
   );
 
   const getColIndex = (nome: string) => {
