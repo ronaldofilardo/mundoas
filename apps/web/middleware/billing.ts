@@ -30,8 +30,16 @@ async function checarAcessoUnidade(
     url.pathname = "/api/internal/acesso-unidade";
     url.search = `?backofficeId=${backofficeId}`;
 
+    const internalSecret =
+      process.env.INTERNAL_API_SECRET ||
+      process.env.AUTH_SECRET ||
+      "internal-secret";
+
     const res = await fetch(url.toString(), {
-      headers: { cookie: req.headers.get("cookie") ?? "" },
+      headers: {
+        cookie: req.headers.get("cookie") ?? "",
+        "x-internal-secret": internalSecret,
+      },
     });
 
     if (!res.ok) return null;

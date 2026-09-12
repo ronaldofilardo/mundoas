@@ -2,15 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { POST } from "@/app/api/webhooks/asaas/route";
-import { prisma } from "@asa/database";
+import { prisma } from "@/lib/db";
 import { criarAuditLog } from "@/lib/audit";
 
-vi.mock("@asa/database", () => ({
-  prisma: {
+vi.mock("@/lib/db", () => {
+  const mPrisma = {
     assinatura: { findFirst: vi.fn(), update: vi.fn() },
     faturaAsaas: { upsert: vi.fn(), updateMany: vi.fn() },
-  },
-}));
+    asaasWebhookEvent: { findUnique: vi.fn(), create: vi.fn() },
+  };
+  return { prisma: mPrisma };
+});
+
+vi.mock("@asa/database", () => {
+  const mPrisma = {
+    assinatura: { findFirst: vi.fn(), update: vi.fn() },
+    faturaAsaas: { upsert: vi.fn(), updateMany: vi.fn() },
+    asaasWebhookEvent: { findUnique: vi.fn(), create: vi.fn() },
+  };
+  return { prisma: mPrisma };
+});
 
 vi.mock("@/lib/audit", () => ({
   criarAuditLog: vi.fn().mockResolvedValue(undefined),
@@ -34,6 +45,8 @@ describe("API webhooks/asaas — contrato funcional", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.ASAAS_WEBHOOK_TOKEN = "whsec_test";
+    prismaMock.asaasWebhookEvent.findUnique.mockResolvedValue(null as never);
+    prismaMock.asaasWebhookEvent.create.mockResolvedValue({} as never);
   });
 
   it("rejeita token inválido", async () => {
@@ -43,11 +56,31 @@ describe("API webhooks/asaas — contrato funcional", () => {
     expect(prismaMock.assinatura.findFirst).not.toHaveBeenCalled();
   });
 
-  it("aceita requisição sem token quando ASAAS_WEBHOOK_TOKEN não configurado", async () => {
+  it("rejeita requisição quando ASAAS_WEBHOOK_TOKEN não configurado", async () => {
     process.env.ASAAS_WEBHOOK_TOKEN = "";
     const response = await POST(buildRequest({ event: "PAYMENT_CONFIRMED" }));
 
+    expect(response.status).toBe(401);
+    expect(prismaMock.assinatura.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("retorna ok idempotente para evento repetido", async () => {
+    prismaMock.asaasWebhookEvent.findUnique.mockResolvedValue({ id: "evt-ja-existente" } as never);
+    const response = await POST(
+      buildRequest(
+        {
+          id: "evt-123",
+          event: "PAYMENT_CONFIRMED",
+          payment: { id: "payment-1", subscription: "subscription-1", status: "CONFIRMED", value: 350, dueDate: "2026-10-15" },
+        },
+        "whsec_test",
+      ),
+    );
+
     expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.idempotente).toBe(true);
+    expect(prismaMock.assinatura.findFirst).not.toHaveBeenCalled();
   });
 
   it("ignora corpo sem event", async () => {

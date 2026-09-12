@@ -1,11 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
-import { requireBackofficeWithScope, badRequest, ok } from "@/lib/api-helpers";
-import { prisma } from "@asa/database";
+import { NextRequest } from "next/server";
+import {
+  requireBackofficeWithScope,
+  requireLiderancaWithScope,
+  badRequest,
+  ok,
+} from "@/lib/api-helpers";
+import { prisma } from "@/lib/db";
 
 export async function GET() {
   try {
-    const { session, backofficeId, error } = await requireBackofficeWithScope();
-    if (error) return error;
+    const bo = await requireBackofficeWithScope();
+    let backofficeId = bo.backofficeId;
+
+    if (bo.error) {
+      const lid = await requireLiderancaWithScope();
+      if (lid.error || !lid.backofficeId) {
+        return bo.error;
+      }
+      backofficeId = lid.backofficeId;
+    }
 
     const backoffice = await prisma.backoffice.findUnique({
       where: { id: backofficeId as string },
@@ -21,7 +34,7 @@ export async function GET() {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const { session, backofficeId, error } = await requireBackofficeWithScope();
+    const { backofficeId, error } = await requireBackofficeWithScope();
     if (error) return error;
 
     const body = await req.json().catch(() => ({}));

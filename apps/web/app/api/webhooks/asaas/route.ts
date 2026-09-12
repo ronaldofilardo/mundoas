@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@asa/database";
+import { prisma } from "@/lib/db";
 import { criarAuditLog } from "@/lib/audit";
 
 // Webhook do Asaas — recebe eventos de Assinatura (SUBSCRIPTION_*) e de
@@ -16,6 +16,7 @@ import { criarAuditLog } from "@/lib/audit";
 // valor definido no painel do Asaas ao criar o webhook.
 
 type AsaasWebhookBody = {
+  id?: string;
   event: string;
   payment?: {
     id: string;
@@ -46,13 +47,32 @@ export async function POST(req: NextRequest) {
   const tokenEsperado = process.env.ASAAS_WEBHOOK_TOKEN;
   const tokenRecebido = req.headers.get("asaas-access-token");
 
-  if (tokenEsperado && tokenRecebido !== tokenEsperado) {
-    return NextResponse.json({ error: "Token inválido." }, { status: 401 });
+  // Segurança crítica: rejeitar se token não estiver configurado no servidor ou se diferir do recebido
+  if (!tokenEsperado || tokenRecebido !== tokenEsperado) {
+    return NextResponse.json({ error: "Token de webhook inválido ou não configurado." }, { status: 401 });
   }
 
   const body = (await req.json().catch(() => null)) as AsaasWebhookBody | null;
   if (!body?.event) {
     return NextResponse.json({ ok: true }); // corpo inesperado — não falha, apenas ignora
+  }
+
+  // Idempotência: chave única por evento
+  const asaasEventId =
+    body.id ||
+    (body.payment?.id
+      ? `${body.event}:${body.payment.id}:${body.payment.status}`
+      : body.subscription?.id
+        ? `${body.event}:${body.subscription.id}:${body.subscription.status}`
+        : undefined);
+
+  if (asaasEventId && prisma.asaasWebhookEvent?.findUnique) {
+    const jaProcessado = await prisma.asaasWebhookEvent
+      .findUnique({ where: { asaasEventId } })
+      .catch(() => null);
+    if (jaProcessado) {
+      return NextResponse.json({ ok: true, idempotente: true });
+    }
   }
 
   try {
@@ -178,9 +198,34 @@ export async function POST(req: NextRequest) {
       detalhes: { event: body.event },
     });
 
+    if (asaasEventId && prisma.asaasWebhookEvent?.create) {
+      await prisma.asaasWebhookEvent
+        .create({
+          data: {
+            asaasEventId,
+            tipoEvento: body.event,
+            payloadJson: body as any,
+            processadoEm: new Date(),
+          },
+        })
+        .catch(() => null);
+    }
+
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {
     console.error("[webhooks/asaas] Erro ao processar evento:", body.event, err);
+    if (asaasEventId && prisma.asaasWebhookEvent?.create) {
+      await prisma.asaasWebhookEvent
+        .create({
+          data: {
+            asaasEventId,
+            tipoEvento: body.event,
+            payloadJson: body as any,
+            erro: err instanceof Error ? err.message : String(err),
+          },
+        })
+        .catch(() => null);
+    }
     // Sempre 200 para o Asaas não ficar retentando indefinidamente por um
     // erro nosso; o log acima é o que fica para investigação.
     return NextResponse.json({ ok: true, aviso: "Erro interno ao processar, verificar logs." });

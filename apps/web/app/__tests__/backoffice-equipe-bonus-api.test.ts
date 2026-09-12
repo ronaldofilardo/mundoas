@@ -27,6 +27,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@asa/database", () => ({ prisma: mocks.prisma }));
+vi.mock("@/lib/db", () => ({ prisma: mocks.prisma }));
 vi.mock("@/lib/api-helpers", async () => {
   const { NextResponse } = await import("next/server");
   return {

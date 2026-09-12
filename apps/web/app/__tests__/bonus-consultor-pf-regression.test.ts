@@ -19,6 +19,7 @@ const bonusCarteira = read("app", "api", "v1", "consultor", "bonus", "carteira",
 const bonusPremios = read("app", "api", "v1", "consultor", "bonus", "premios", "route.ts");
 const bonusResgates = read("app", "api", "v1", "consultor", "bonus", "resgates", "route.ts");
 const pontosUtils = read("lib", "pontos-utils.ts");
+const pontosSaldo = read("lib", "pontos", "saldo.ts");
 const reprocessarComissoes = read("app", "api", "v1", "backoffice", "reprocessar-comissoes", "route.ts");
 const schema = read("..", "..", "packages", "database", "prisma", "schema.prisma");
 const resetMigration = read(
@@ -92,7 +93,7 @@ describe("Bônus PF — integração completa", () => {
     expect(bonusDistribuir).toContain("referenciaProcedimentoId: producao.id");
     expect(pontosUtils).toContain("creditarBonusConsultorPfPorProducao");
     expect(pontosUtils).toContain("export * from \"./pontos/saldo\"");
-    expect(pontosUtils).toContain('consultorPfId: params.consultorPfId');
+    expect(pontosSaldo).toContain('consultorPfId: params.consultorPfId');
   });
 
   it("impede dupla contemplação: comissão só processa procedimentos ainda marcados como COMISSAO", () => {

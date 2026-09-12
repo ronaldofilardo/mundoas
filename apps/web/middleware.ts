@@ -19,6 +19,8 @@ import {
   isOnboardingAllowlist,
   checarAcessoUnidade,
 } from "./middleware/billing";
+import { withRateLimit } from "./lib/rate-limit";
+import { isBackofficeRole } from "./lib/rbac";
 
 // ---------------------------------------------------------------------------
 // Security: Enforce HTTPS in production
@@ -42,6 +44,17 @@ export async function middleware(req: NextRequest) {
   const httpsResponse = enforceHttpsProduction(req);
   if (httpsResponse) {
     return httpsResponse;
+  }
+
+  // ------ Rate limiting para APIs sensíveis e autenticação --------------------
+  if (
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/v1/public")
+  ) {
+    const rl = withRateLimit(req);
+    if (!rl.success && rl.response) {
+      return rl.response;
+    }
   }
 
   const isApiV1 = pathname.startsWith("/api/v1/");
@@ -114,9 +127,7 @@ export async function middleware(req: NextRequest) {
     // Só se aplica a quem de fato é a unidade (BACKOFFICE com backofficeId).
     // Admin nunca é bloqueado por essa checagem, senão fica sem conseguir
     // liberar a própria unidade que ele bloqueou.
-    const ehUnidadeBackoffice =
-      user.tipo === "BACKOFFICE" ||
-      (user.tipo === "GESTOR" && user.papel === "BACKOFFICE");
+    const ehUnidadeBackoffice = isBackofficeRole(user);
 
     if (
       ehUnidadeBackoffice &&

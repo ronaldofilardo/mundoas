@@ -1,9 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@asa/database";
+import { prisma } from "@/lib/db";
 
 // Roda em Node runtime (não Edge) porque usa o Prisma Client.
 // Chamada pelo middleware via fetch — ver middleware.ts.
 export async function GET(req: NextRequest) {
+  const internalSecret =
+    process.env.INTERNAL_API_SECRET ||
+    process.env.AUTH_SECRET ||
+    "internal-secret";
+  const receivedSecret = req.headers.get("x-internal-secret");
+
+  // Proteção: rota interna nunca deve ser exposta publicamente sem segredo
+  if (!receivedSecret || receivedSecret !== internalSecret) {
+    return NextResponse.json(
+      { error: "Acesso interno não autorizado." },
+      { status: 401 },
+    );
+  }
+
   const backofficeId = req.nextUrl.searchParams.get("backofficeId");
 
   if (!backofficeId) {
@@ -48,7 +62,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Cortesia expirada é tratada como se não fosse mais cortesia.
+  // Cortesia expirada é tratada como não mais válida.
   const cortesiaValida =
     assinatura.statusAssinatura === "CORTESIA" &&
     (!assinatura.cortesiaExpiraEm || new Date(assinatura.cortesiaExpiraEm) > new Date());
@@ -57,7 +71,7 @@ export async function GET(req: NextRequest) {
     assinatura.statusAssinatura === "BLOQUEADA_MANUAL" ||
     (assinatura.statusAssinatura === "INADIMPLENTE") ||
     (assinatura.statusAssinatura === "CANCELADA") ||
-    (assinatura.statusAssinatura === "CORTESIA" && !cortesiaValida && false);
+    (assinatura.statusAssinatura === "CORTESIA" && !cortesiaValida);
     // ^ nota: cortesia expirada hoje não bloqueia sozinha — ela só deixa de
     // "salvar" quem já estaria INADIMPLENTE. Como não há Asaas ainda, o único
     // caminho real de bloqueio nesta fase é BLOQUEADA_MANUAL ou INADIMPLENTE

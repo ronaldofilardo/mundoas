@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     where,
     include: {
       usuario: {
-        select: { id: true, email: true, status: true, telefone: true },
+        select: { id: true, email: true, status: true, telefone: true, senhaTemporaria: true },
       },
       setores: {
         include: { setor: { select: { id: true, nome: true } } },
@@ -61,6 +61,7 @@ export async function GET(req: NextRequest) {
       email: c.usuario.email,
       telefone: c.usuario.telefone,
       status: c.usuario.status,
+      senhaTemporaria: c.usuario.senhaTemporaria,
       createdAt: c.criadoEm,
       setores: c.setores.map((s) => ({ id: s.setor.id, nome: s.setor.nome })),
       lideranca: { id: c.lideranca.id, nome: c.lideranca.nome },

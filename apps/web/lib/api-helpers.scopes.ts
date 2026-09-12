@@ -1,12 +1,12 @@
-import { prisma } from "@asa/database";
+import { prisma } from "@/lib/db";
 import { forbidden, unauthorized } from "./api-helpers.responses";
+import { isBackofficeRole, isGestorPjRole } from "@/lib/rbac";
 
 export async function requireGestorWithScope() {
   const session = await getSession();
   if (!session?.user)
     return { session: null, consultorIds: [], error: unauthorized() };
-  const isGestorPJ =
-    session.user.tipo === "GESTOR" && session.user.papel === "GESTOR_PJ";
+  const isGestorPJ = isGestorPjRole(session.user);
   if (!isGestorPJ)
     return { session: null, consultorIds: [], error: forbidden() };
 
@@ -28,8 +28,7 @@ export async function requireGestorWithUserScope() {
       usuarioIds: [],
       error: unauthorized(),
     };
-  const isGestorPJ =
-    session.user.tipo === "GESTOR" && session.user.papel === "GESTOR_PJ";
+  const isGestorPJ = isGestorPjRole(session.user);
   if (!isGestorPJ)
     return {
       session: null,
@@ -68,9 +67,7 @@ export async function requireConsultor() {
 export async function requireBackoffice() {
   const session = await getSession();
   if (!session?.user) return { session: null, error: unauthorized() };
-  const isBackoffice =
-    session.user.tipo === "BACKOFFICE" ||
-    (session.user.tipo === "GESTOR" && session.user.papel === "BACKOFFICE");
+  const isBackoffice = isBackofficeRole(session.user);
   if (!isBackoffice) return { session: null, error: forbidden() };
   return { session, error: null };
 }
@@ -87,9 +84,7 @@ export async function requireBackofficeWithScope() {
   if (!session?.user) {
     return { session: null, backofficeId: null, error: unauthorized() };
   }
-  const isBackoffice =
-    session.user.tipo === "BACKOFFICE" ||
-    (session.user.tipo === "GESTOR" && session.user.papel === "BACKOFFICE");
+  const isBackoffice = isBackofficeRole(session.user);
   if (!isBackoffice) {
     return { session: null, backofficeId: null, error: forbidden() };
   }

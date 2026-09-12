@@ -13,7 +13,7 @@ export async function processarGETEquipeList(
   const membros = await prisma.equipe.findMany({
     where,
     include: {
-      usuario: { select: { id: true, email: true, status: true } },
+      usuario: { select: { id: true, email: true, status: true, senhaTemporaria: true } },
       lideranca: {
         select: {
           id: true,
@@ -24,7 +24,7 @@ export async function processarGETEquipeList(
               nome: true,
               cpf: true,
               status: true,
-              usuario: { select: { email: true, telefone: true } },
+              usuario: { select: { email: true, telefone: true, senhaTemporaria: true } },
               setores: {
                 select: {
                   setor: { select: { id: true, nome: true } },
@@ -40,7 +40,7 @@ export async function processarGETEquipeList(
           nome: true,
           cpf: true,
           status: true,
-          usuario: { select: { email: true, telefone: true } },
+          usuario: { select: { email: true, telefone: true, senhaTemporaria: true } },
           setores: {
             select: {
               setor: { select: { id: true, nome: true } },
@@ -56,7 +56,7 @@ export async function processarGETEquipeList(
           funcao: true,
           percentualComissao: true,
           status: true,
-          usuario: { select: { email: true } },
+          usuario: { select: { email: true, senhaTemporaria: true } },
         },
       },
     },
@@ -74,6 +74,7 @@ export async function processarGETEquipeList(
       tipoLideranca: l.tipoLideranca,
       funcao: l.funcao,
       status: l.status,
+      senhaTemporaria: l.usuario.senhaTemporaria,
       consultorPfs: l.consultorPfs.map((c) => ({
         id: c.id,
         nome: c.nome,
@@ -81,6 +82,7 @@ export async function processarGETEquipeList(
         email: c.usuario.email,
         telefone: c.usuario.telefone,
         status: c.status,
+        senhaTemporaria: c.usuario.senhaTemporaria,
         setores: c.setores.map((s) => ({
           id: s.setor.id,
           nome: s.setor.nome,
@@ -94,6 +96,7 @@ export async function processarGETEquipeList(
         funcao: c.funcao,
         percentualComissao: c.percentualComissao,
         status: c.status,
+        senhaTemporaria: c.usuario.senhaTemporaria,
       })),
     }));
 
@@ -107,6 +110,7 @@ export async function processarGETEquipeList(
       funcao: l.funcao,
       percentualComissao: l.percentualComissao,
       status: l.status,
+      senhaTemporaria: l.usuario.senhaTemporaria,
     }));
 
   return ok({ liderancas, commerciais });

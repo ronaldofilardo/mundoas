@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@asa/database";
+import { prisma } from "@/lib/db";
 import { badRequest, notFound, ok, requireBackofficeWithScope } from "@/lib/api-helpers";
 
 export async function GET(
@@ -50,6 +50,7 @@ export async function GET(
         origem: true,
         quantidade: true,
         descricao: true,
+        observacao: true,
         criadoEm: true,
         cicloPontos: { select: { nome: true } },
       },
@@ -86,6 +87,7 @@ export async function GET(
       origem: m.origem,
       quantidade: Number(m.quantidade),
       descricao: m.descricao ?? null,
+      observacao: m.observacao ?? null,
       ciclo: m.cicloPontos.nome,
       criadoEm: m.criadoEm,
     })),

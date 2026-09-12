@@ -1,25 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useConsultores } from "@/hooks/use-consultores";
+import { useConsultores, type ConsultorCompleto } from "@/hooks/use-consultores";
 import { formatCpf } from "@/app/(dashboard)/backoffice/usuarios/comerciais/utils";
 import { FiltrosConsultores } from "./FiltrosConsultores";
+import { toast } from "sonner";
+import { ModalResetSenha } from "@/app/(dashboard)/backoffice/comissionamento/equipe/components/modal-reset-senha";
+import { Copy, Check } from "lucide-react";
 
 interface TabelaConsultoresProps {
   itens: any[];
+  onRefetch?: () => Promise<void>;
 }
 
-interface ConsultorLinha {
-  id: string;
-  liderancaNome: string;
-  nome: string;
-  cpf: string;
-  email: string;
-  setores: Array<{ id: string; nome: string }>;
-  status: string;
-}
-
-export function TabelaConsultores({ itens }: TabelaConsultoresProps) {
+export function TabelaConsultores({ itens, onRefetch }: TabelaConsultoresProps) {
   const {
     consultoresFiltrados,
     totalAtivos,
@@ -27,6 +21,58 @@ export function TabelaConsultores({ itens }: TabelaConsultoresProps) {
     handleEditar,
     handleDeletarConsultor,
   } = useConsultores(itens);
+
+  const [resetModalItem, setResetModalItem] = useState<ConsultorCompleto | null>(null);
+  const [linksCache, setLinksCache] = useState<Record<string, string>>({});
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const isPendingReset = (cp: ConsultorCompleto) =>
+    Boolean(cp.senhaTemporaria || linksCache[cp.id]);
+
+  async function handleConfirmReset(cp: ConsultorCompleto): Promise<string | null> {
+    const res = await fetch(
+      `/api/v1/backoffice/consultores-pf/${cp.id}/reset-senha`,
+      { method: "POST" },
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao resetar senha.");
+    }
+    setLinksCache((prev) => ({ ...prev, [cp.id]: data.link }));
+    cp.senhaTemporaria = true;
+    if (onRefetch) {
+      void onRefetch();
+    }
+    return data.link;
+  }
+
+  async function handleCopiarLinkDireto(cp: ConsultorCompleto) {
+    let link = linksCache[cp.id];
+    if (!link) {
+      try {
+        const res = await fetch(
+          `/api/v1/backoffice/consultores-pf/${cp.id}/reset-senha`,
+          { method: "POST" },
+        );
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao obter link");
+        link = data.link;
+        setLinksCache((prev) => ({ ...prev, [cp.id]: link }));
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Erro ao copiar link");
+        return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedId(cp.id);
+      toast.success("Link copiado para a área de transferência!");
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      toast.error("Erro ao copiar para a área de transferência");
+    }
+  }
 
   function renderSetores(setores: Array<{ id: string; nome: string }>) {
     if (!setores || setores.length === 0) {
@@ -55,7 +101,7 @@ export function TabelaConsultores({ itens }: TabelaConsultoresProps) {
 
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm table-auto min-w-[900px]">
+          <table className="w-full text-sm table-auto min-w-[950px]">
             <thead>
               <tr className="border-b bg-gray-50 sticky top-0 z-10">
                 <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-[200px]">
@@ -70,7 +116,7 @@ export function TabelaConsultores({ itens }: TabelaConsultoresProps) {
                 <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[100px]">
                   Status
                 </th>
-                <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 w-[140px]">
+                <th className="text-center p-3 font-semibold text-gray-700 bg-gray-50 min-w-[260px]">
                   Ações
                 </th>
               </tr>
@@ -114,7 +160,7 @@ export function TabelaConsultores({ itens }: TabelaConsultoresProps) {
                       </span>
                     </td>
                     <td className="p-3 text-center">
-                      <div className="flex gap-1 justify-center">
+                      <div className="flex gap-1 justify-center items-center flex-wrap">
                         <button
                           onClick={() => handleEditar(cp)}
                           className="text-blue-600 hover:text-blue-800 text-xs font-medium px-2 py-1 rounded hover:bg-blue-50"
@@ -122,6 +168,27 @@ export function TabelaConsultores({ itens }: TabelaConsultoresProps) {
                         >
                           Editar
                         </button>
+                        <button
+                          onClick={() => setResetModalItem(cp)}
+                          className="text-amber-600 hover:text-amber-800 text-xs font-medium px-2 py-1 rounded hover:bg-amber-50"
+                          title="Reset de Senha"
+                        >
+                          Reset de Senha
+                        </button>
+                        {isPendingReset(cp) && (
+                          <button
+                            onClick={() => handleCopiarLinkDireto(cp)}
+                            className="text-indigo-600 hover:text-indigo-800 text-xs font-medium px-2 py-1 rounded hover:bg-indigo-50 flex items-center gap-1"
+                            title="Copiar link para o consultor criar nova senha"
+                          >
+                            {copiedId === cp.id ? (
+                              <Check className="w-3.5 h-3.5 text-green-600" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                            <span>Copiar Link</span>
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDeletarConsultor(cp.id)}
                           className="text-red-600 hover:text-red-800 text-xs font-medium px-2 py-1 rounded hover:bg-red-50"
@@ -138,6 +205,19 @@ export function TabelaConsultores({ itens }: TabelaConsultoresProps) {
           </table>
         </div>
       </div>
+
+      {resetModalItem && (
+        <ModalResetSenha
+          open={Boolean(resetModalItem)}
+          onOpenChange={(open) => {
+            if (!open) setResetModalItem(null);
+          }}
+          usuarioNome={resetModalItem.nome}
+          usuarioEmail={resetModalItem.email}
+          initialLink={linksCache[resetModalItem.id] || null}
+          onConfirmReset={() => handleConfirmReset(resetModalItem)}
+        />
+      )}
     </div>
   );
 }

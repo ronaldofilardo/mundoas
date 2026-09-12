@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useBonificacaoGestores } from "../hooks/use-bonificacao-gestores";
 import type { Gestor } from "../types";
 import { formatarData } from "@/util/format-data";
 import { useBonificacaoExtrato } from "@/hooks/use-bonificacao-extrato";
+import {
+  ExtratoBonusTabela,
+  type MovimentacaoBonusItem,
+} from "@/components/bonus/extrato-bonus-tabela";
 
 export function BonificacaoGestoresConsultores() {
   const { data, loading, error, refetch } = useBonificacaoGestores();
@@ -20,21 +24,11 @@ export function BonificacaoGestoresConsultores() {
   >({});
   const [inputsAjuste, setInputsAjuste] = useState<Record<string, string>>({});
   const [ajusteEmEnvio, setAjusteEmEnvio] = useState<string | null>(null);
-  const [extratoLocal, setExtratoLocal] = useState<{
-    consultorId: string;
-    consultorNome: string;
-    items: Array<{
-      id: string;
-      tipo: string;
-      origem: string;
-      quantidade: number;
-      descricao: string | null;
-      ciclo: string;
-      criadoEm: string;
-    }>;
-    saldoAtual: number;
-    loading: boolean;
-  } | null>(null);
+
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [extratosCache, setExtratosCache] = useState<
+    Record<string, { loading: boolean; items: MovimentacaoBonusItem[] }>
+  >({});
 
   useEffect(() => {
     async function carregarCiclos() {
@@ -58,6 +52,68 @@ export function BonificacaoGestoresConsultores() {
     fecharExtrato,
     handleAjuste,
   } = useBonificacaoExtrato(filtroCiclo, inicio, fim, refetch);
+
+  const carregarExtratoConsultor = async (consultorId: string) => {
+    setExtratosCache((prev) => ({
+      ...prev,
+      [consultorId]: {
+        loading: true,
+        items: prev[consultorId]?.items ?? [],
+      },
+    }));
+
+    try {
+      const params = new URLSearchParams();
+      if (filtroCiclo) params.set("cicloId", filtroCiclo);
+      if (inicio) params.set("inicio", inicio);
+      if (fim) params.set("fim", fim);
+
+      const qs = params.toString();
+      const res = await fetch(
+        `/api/v1/backoffice/equipe/bonus/${consultorId}/extrato${qs ? `?${qs}` : ""}`,
+      );
+
+      if (res.ok) {
+        const body = await res.json();
+        setExtratosCache((prev) => ({
+          ...prev,
+          [consultorId]: {
+            loading: false,
+            items: body.movimentacoes ?? body.items ?? [],
+          },
+        }));
+      } else {
+        setExtratosCache((prev) => ({
+          ...prev,
+          [consultorId]: {
+            loading: false,
+            items: [],
+          },
+        }));
+      }
+    } catch {
+      setExtratosCache((prev) => ({
+        ...prev,
+        [consultorId]: {
+          loading: false,
+          items: [],
+        },
+      }));
+    }
+  };
+
+  const toggleExpand = (consultorId: string) => {
+    setExpandedIds((prev) => {
+      const proximo = new Set(prev);
+      if (proximo.has(consultorId)) {
+        proximo.delete(consultorId);
+      } else {
+        proximo.add(consultorId);
+        void carregarExtratoConsultor(consultorId);
+      }
+      return proximo;
+    });
+  };
 
   const alterarPasso = (consultorId: string, step: number) => {
     const currentStr = inputsAjuste[consultorId] ?? "";
@@ -122,6 +178,9 @@ export function BonificacaoGestoresConsultores() {
         delete proximo[consultorId];
         return proximo;
       });
+      if (expandedIds.has(consultorId)) {
+        void carregarExtratoConsultor(consultorId);
+      }
     }
     setAjusteEmEnvio(null);
   };
@@ -146,6 +205,12 @@ export function BonificacaoGestoresConsultores() {
       inicio: inicio || undefined,
       fim: fim || undefined,
     });
+
+    if (expandedIds.size > 0) {
+      expandedIds.forEach((cId) => {
+        void carregarExtratoConsultor(cId);
+      });
+    }
   }, [filtroCiclo, filtroGestor, inicio, fim, refetch]);
 
   const gestoresFiltrados = filtroGestor
@@ -290,7 +355,7 @@ export function BonificacaoGestoresConsultores() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm table-auto min-w-[780px]">
                   <colgroup>
-                    <col style={{ width: "200px" }} />
+                    <col style={{ width: "230px" }} />
                     <col style={{ width: "130px" }} />
                     <col style={{ width: "270px" }} />
                     <col style={{ width: "100px" }} />
@@ -316,104 +381,195 @@ export function BonificacaoGestoresConsultores() {
                     </tr>
                   </thead>
                   <tbody>
-                    {gestor.consultores.map((c) => (
-                      <tr
-                        key={c.id}
-                        className="border-b last:border-0 hover:bg-gray-50"
-                      >
-                        <td className="p-3">
-                          <p className="font-medium text-gray-900">{c.nome}</p>
-                        </td>
-                        <td className="p-3 text-gray-700">{c.cpf}</td>
-                        <td className="p-3 text-right font-semibold text-gray-900">
-                          <div className="flex items-center justify-end gap-2">
-                            <div className="text-right">
-                              <span className="inline-block tabular-nums text-gray-900">
-                                {(
-                                  c.saldoPontos + (ajustesPendentes[c.id] ?? 0)
-                                ).toLocaleString("pt-BR")}
-                              </span>
-                              {ajustesPendentes[c.id] ? (
-                                <span
-                                  className={`block text-[11px] font-medium leading-tight tabular-nums ${
-                                    ajustesPendentes[c.id] > 0
-                                      ? "text-green-700"
-                                      : "text-red-700"
+                    {gestor.consultores.map((c) => {
+                      const isExpanded = expandedIds.has(c.id);
+                      const cacheData = extratosCache[c.id];
+
+                      return (
+                        <Fragment key={c.id}>
+                          <tr
+                            className={`border-b transition-colors hover:bg-gray-50 ${
+                              isExpanded ? "bg-amber-50/20" : ""
+                            }`}
+                          >
+                            <td className="p-3">
+                              <div className="flex items-start gap-2.5">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleExpand(c.id)}
+                                  className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded border text-xs font-bold transition-colors ${
+                                    isExpanded
+                                      ? "border-amber-400 bg-amber-100 text-amber-900 shadow-xs"
+                                      : "border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
                                   }`}
+                                  title={
+                                    isExpanded
+                                      ? "Ocultar histórico de bônus"
+                                      : "Ver histórico de bônus"
+                                  }
+                                  aria-expanded={isExpanded}
                                 >
-                                  {ajustesPendentes[c.id] > 0 ? "+" : ""}
-                                  {ajustesPendentes[c.id].toLocaleString("pt-BR")}
-                                </span>
-                              ) : null}
-                            </div>
-
-                            <div className="inline-flex items-center rounded-md border border-gray-300 bg-white shadow-xs">
-                              <button
-                                type="button"
-                                onClick={() => alterarPasso(c.id, -1)}
-                                aria-label={`Diminuir pontos de ${c.nome}`}
-                                disabled={ajusteEmEnvio === c.id}
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-l-md text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
-                              >
-                                −
-                              </button>
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                value={inputsAjuste[c.id] ?? ""}
-                                onChange={(e) => handleInputChange(c.id, e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") void confirmarAjuste(c.id);
-                                  if (e.key === "Escape") cancelarAjuste(c.id);
-                                }}
-                                placeholder="Qtd"
-                                aria-label={`Quantidade de pontos para ${c.nome}`}
-                                disabled={ajusteEmEnvio === c.id}
-                                className="h-7 w-16 border-x border-gray-300 px-1 text-center text-xs font-semibold tabular-nums text-gray-900 placeholder:text-gray-400 focus:bg-amber-50/40 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => alterarPasso(c.id, 1)}
-                                aria-label={`Aumentar pontos de ${c.nome}`}
-                                disabled={ajusteEmEnvio === c.id}
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-r-md text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
-                              >
-                                +
-                              </button>
-                            </div>
-
-                            {ajustesPendentes[c.id] && ajustesPendentes[c.id] !== 0 ? (
-                              <span className="inline-flex items-center gap-1 align-middle whitespace-nowrap text-xs font-normal">
-                                <button
-                                  type="button"
-                                  onClick={() => void confirmarAjuste(c.id)}
-                                  disabled={ajusteEmEnvio === c.id}
-                                  className="rounded border border-green-600 bg-green-50 px-1.5 py-1 text-xs font-medium text-green-700 hover:bg-green-100 disabled:opacity-50"
-                                  title="Confirmar ajuste (Enter)"
-                                >
-                                  {ajusteEmEnvio === c.id ? "..." : "Confirmar"}
+                                  {isExpanded ? "−" : "+"}
                                 </button>
-                                <button
-                                  type="button"
-                                  onClick={() => cancelarAjuste(c.id)}
-                                  disabled={ajusteEmEnvio === c.id}
-                                  className="rounded border border-gray-300 bg-white px-1.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
-                                  title="Cancelar (Esc)"
-                                >
-                                  ✕
-                                </button>
-                              </span>
-                            ) : null}
-                          </div>
-                        </td>
-                        <td className="p-3 text-right text-gray-700">
-                          {c.totalResgates}
-                        </td>
-                        <td className="p-3 text-gray-700">
-                          {formatarData(c.ultimaProducao)}
-                        </td>
-                      </tr>
-                    ))}
+                                <div>
+                                  <p className="font-medium text-gray-900 leading-tight">
+                                    {c.nome}
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleExpand(c.id)}
+                                    className="text-[11px] font-medium text-primary-600 hover:text-primary-800 hover:underline"
+                                  >
+                                    {isExpanded
+                                      ? "Ocultar histórico"
+                                      : "Histórico detalhado"}
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-3 text-gray-700">{c.cpf}</td>
+                            <td className="p-3 text-right font-semibold text-gray-900">
+                              <div className="flex items-center justify-end gap-2">
+                                <div className="text-right">
+                                  <span className="inline-block tabular-nums text-gray-900">
+                                    {(
+                                      c.saldoPontos +
+                                      (ajustesPendentes[c.id] ?? 0)
+                                    ).toLocaleString("pt-BR")}
+                                  </span>
+                                  {ajustesPendentes[c.id] ? (
+                                    <span
+                                      className={`block text-[11px] font-medium leading-tight tabular-nums ${
+                                        ajustesPendentes[c.id] > 0
+                                          ? "text-green-700"
+                                          : "text-red-700"
+                                      }`}
+                                    >
+                                      {ajustesPendentes[c.id] > 0 ? "+" : ""}
+                                      {ajustesPendentes[c.id].toLocaleString(
+                                        "pt-BR",
+                                      )}
+                                    </span>
+                                  ) : null}
+                                </div>
+
+                                <div className="inline-flex items-center rounded-md border border-gray-300 bg-white shadow-xs">
+                                  <button
+                                    type="button"
+                                    onClick={() => alterarPasso(c.id, -1)}
+                                    aria-label={`Diminuir pontos de ${c.nome}`}
+                                    disabled={ajusteEmEnvio === c.id}
+                                    className="inline-flex h-7 w-7 items-center justify-center rounded-l-md text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                                  >
+                                    −
+                                  </button>
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={inputsAjuste[c.id] ?? ""}
+                                    onChange={(e) =>
+                                      handleInputChange(c.id, e.target.value)
+                                    }
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter")
+                                        void confirmarAjuste(c.id);
+                                      if (e.key === "Escape")
+                                        cancelarAjuste(c.id);
+                                    }}
+                                    placeholder="Qtd"
+                                    aria-label={`Quantidade de pontos para ${c.nome}`}
+                                    disabled={ajusteEmEnvio === c.id}
+                                    className="h-7 w-16 border-x border-gray-300 px-1 text-center text-xs font-semibold tabular-nums text-gray-900 placeholder:text-gray-400 focus:bg-amber-50/40 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => alterarPasso(c.id, 1)}
+                                    aria-label={`Aumentar pontos de ${c.nome}`}
+                                    disabled={ajusteEmEnvio === c.id}
+                                    className="inline-flex h-7 w-7 items-center justify-center rounded-r-md text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+
+                                {ajustesPendentes[c.id] &&
+                                ajustesPendentes[c.id] !== 0 ? (
+                                  <span className="inline-flex items-center gap-1 align-middle whitespace-nowrap text-xs font-normal">
+                                    <button
+                                      type="button"
+                                      onClick={() => void confirmarAjuste(c.id)}
+                                      disabled={ajusteEmEnvio === c.id}
+                                      className="rounded border border-green-600 bg-green-50 px-1.5 py-1 text-xs font-medium text-green-700 hover:bg-green-100 disabled:opacity-50"
+                                      title="Confirmar ajuste (Enter)"
+                                    >
+                                      {ajusteEmEnvio === c.id
+                                        ? "..."
+                                        : "Confirmar"}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => cancelarAjuste(c.id)}
+                                      disabled={ajusteEmEnvio === c.id}
+                                      className="rounded border border-gray-300 bg-white px-1.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                                      title="Cancelar (Esc)"
+                                    >
+                                      ✕
+                                    </button>
+                                  </span>
+                                ) : null}
+                              </div>
+                            </td>
+                            <td className="p-3 text-right text-gray-700">
+                              {c.totalResgates}
+                            </td>
+                            <td className="p-3 text-gray-700">
+                              {formatarData(c.ultimaProducao)}
+                            </td>
+                          </tr>
+
+                          {isExpanded && (
+                            <tr className="border-b bg-gray-50/60">
+                              <td
+                                colSpan={5}
+                                className="p-3.5 sm:p-4 sm:pl-10 sm:pr-6"
+                              >
+                                <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-xs">
+                                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-2.5">
+                                    <div>
+                                      <h4 className="text-sm font-semibold text-gray-900">
+                                        Histórico de Bônus — {c.nome}
+                                      </h4>
+                                      <p className="text-xs text-gray-500">
+                                        Data e hora de cada movimentação
+                                        (produção e inserções/retiradas do
+                                        BackOffice)
+                                      </p>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void carregarExtratoConsultor(c.id)
+                                      }
+                                      disabled={cacheData?.loading}
+                                      className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                                    >
+                                      {cacheData?.loading
+                                        ? "Atualizando..."
+                                        : "Recarregar"}
+                                    </button>
+                                  </div>
+                                  <ExtratoBonusTabela
+                                    movimentacoes={cacheData?.items ?? []}
+                                    loading={cacheData?.loading}
+                                    emptyMessage="Nenhuma movimentação de bônus registrada para este consultor no período selecionado."
+                                  />
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

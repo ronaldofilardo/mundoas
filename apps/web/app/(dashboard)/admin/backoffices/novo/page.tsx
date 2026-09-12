@@ -74,8 +74,8 @@ export default function NovoBackofficePage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Nova Unidade</h1>
         <p className="text-sm text-gray-500">
-          Cadastre uma nova unidade/franquia. A assinatura nasce em cortesia
-          até você ativar a cobrança manualmente.
+          Cadastre uma nova unidade mundoAS. A unidade iniciará em fase de Onboarding
+          para aceite dos termos contratuais e ativação da assinatura.
         </p>
       </div>
 

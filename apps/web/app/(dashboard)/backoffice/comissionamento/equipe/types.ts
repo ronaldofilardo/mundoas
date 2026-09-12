@@ -5,6 +5,7 @@ export interface ConsultorPfResumo {
   email: string;
   telefone?: string | null;
   status: string;
+  senhaTemporaria?: boolean;
   setores?: Array<{ id: string; nome: string }>;
 }
 
@@ -16,6 +17,7 @@ export interface ComercialResumo {
   funcao?: string | null;
   percentualComissao?: number;
   status: string;
+  senhaTemporaria?: boolean;
 }
 
 export interface EquipeItem {
@@ -24,6 +26,7 @@ export interface EquipeItem {
   cpf: string;
   email: string;
   status: string;
+  senhaTemporaria?: boolean;
   tipo?: string;
   funcao?: string | null;
   tipoLideranca?: string | null;

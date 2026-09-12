@@ -27,7 +27,7 @@ function CadastroContent({ activeTab }: { activeTab: TabType }) {
   }
 
   if (activeTab === "consultores") {
-    return <TabConsultores itens={itens} />;
+    return <TabConsultores itens={itens} refetch={refetch} />;
   }
 
   return <TabEquipe itens={itens} refetch={refetch} />;

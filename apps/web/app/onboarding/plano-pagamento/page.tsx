@@ -223,35 +223,60 @@ export default function OnboardingPlanoPagamentoPage() {
                     <textarea
                       readOnly
                       value={resultado.pix.payload}
-                      className="w-full text-xs p-2 border border-gray-200 rounded-lg bg-white resize-none"
+                      className="w-full text-xs p-2.5 border border-gray-200 rounded-lg bg-white resize-none font-mono text-gray-700 select-all"
                       rows={3}
                       onClick={(e) => (e.target as HTMLTextAreaElement).select()}
                     />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (resultado.pix?.payload) {
+                          navigator.clipboard.writeText(resultado.pix.payload);
+                          toast.success("Código PIX copiado para a área de transferência!");
+                        }
+                      }}
+                      className="mt-2 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition shadow-sm"
+                    >
+                      📋 Copiar código PIX
+                    </button>
                   </>
                 ) : resultado.metodoPagamento === "BOLETO" && resultado.fatura?.linkBoleto ? (
                   <a
                     href={resultado.fatura.linkBoleto}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-primary-600 font-semibold text-sm hover:underline"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary-50 text-primary-700 font-semibold text-sm hover:bg-primary-100 transition"
                   >
-                    Abrir boleto para pagamento →
+                    📄 Abrir boleto para pagamento →
                   </a>
                 ) : resultado.fatura?.linkFatura ? (
                   <a
                     href={resultado.fatura.linkFatura}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-primary-600 font-semibold text-sm hover:underline"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 transition"
                   >
-                    Abrir checkout do cartão →
+                    💳 Abrir checkout do cartão →
                   </a>
                 ) : (
                   <p className="text-sm text-gray-500">Pagamento iniciado. Aguardando confirmação.</p>
                 )}
-                <p className="text-xs text-gray-400 mt-3">
-                  Assim que o pagamento for confirmado, seu acesso será liberado automaticamente.
-                </p>
+                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-center gap-2">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  </span>
+                  <p className="text-xs text-gray-500">
+                    Aguardando confirmação bancária. A ativação ocorrerá automaticamente.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => window.location.href = "/backoffice/dashboard"}
+                  className="mt-3 text-xs text-primary-600 hover:text-primary-700 font-medium underline"
+                >
+                  Já realizou o pagamento? Tentar acessar o painel →
+                </button>
               </div>
             )}
           </>

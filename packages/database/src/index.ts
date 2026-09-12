@@ -1,4 +1,14 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
+
+const EXPECTED_PRISMA_VERSION = "6.19.2";
+const version = (Prisma as any)?.prismaVersion?.client;
+if (version && !version.startsWith(EXPECTED_PRISMA_VERSION)) {
+  throw new Error(
+    `[packages/database] @prisma/client resolvido na versão ${version}, mas a esperada é ${EXPECTED_PRISMA_VERSION}. ` +
+      `Provavelmente existe uma instalação órfã em uma pasta-irmã (ex.: C:\\Users\\<user>\\node_modules\\@prisma\\client). ` +
+      `Consulte C:\\apps\\mundoas\\AGENTS.md para instruções de diagnóstico e remoção.`,
+  );
+}
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 

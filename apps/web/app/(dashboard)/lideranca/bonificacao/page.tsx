@@ -1,7 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { BotaoLinkCatalogo } from "@/components/bonus/botao-link-catalogo";
+import {
+  ExtratoBonusTabela,
+  type MovimentacaoBonusItem,
+} from "@/components/bonus/extrato-bonus-tabela";
 
 type Ciclo = { id: string; nome: string; status: string };
 type Consultor = {
@@ -28,6 +33,11 @@ export default function LiderancaBonificacaoPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [extratosCache, setExtratosCache] = useState<
+    Record<string, { loading: boolean; items: MovimentacaoBonusItem[] }>
+  >({});
+
   const fetchBonificacao = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -50,6 +60,62 @@ export default function LiderancaBonificacaoPage() {
   useEffect(() => {
     void fetchBonificacao();
   }, [fetchBonificacao]);
+
+  const carregarExtratoConsultor = async (consultorId: string) => {
+    setExtratosCache((prev) => ({
+      ...prev,
+      [consultorId]: {
+        loading: true,
+        items: prev[consultorId]?.items ?? [],
+      },
+    }));
+
+    try {
+      const res = await fetch(
+        `/api/v1/lideranca/equipe/bonus/${consultorId}/extrato`,
+      );
+
+      if (res.ok) {
+        const body = await res.json();
+        setExtratosCache((prev) => ({
+          ...prev,
+          [consultorId]: {
+            loading: false,
+            items: body.movimentacoes ?? body.items ?? [],
+          },
+        }));
+      } else {
+        setExtratosCache((prev) => ({
+          ...prev,
+          [consultorId]: {
+            loading: false,
+            items: [],
+          },
+        }));
+      }
+    } catch {
+      setExtratosCache((prev) => ({
+        ...prev,
+        [consultorId]: {
+          loading: false,
+          items: [],
+        },
+      }));
+    }
+  };
+
+  const toggleExpand = (consultorId: string) => {
+    setExpandedIds((prev) => {
+      const proximo = new Set(prev);
+      if (proximo.has(consultorId)) {
+        proximo.delete(consultorId);
+      } else {
+        proximo.add(consultorId);
+        void carregarExtratoConsultor(consultorId);
+      }
+      return proximo;
+    });
+  };
 
   function formatarData(iso: string | null) {
     if (!iso) return "—";
@@ -75,11 +141,14 @@ export default function LiderancaBonificacaoPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Bonificação</h1>
-        <p className="text-sm text-gray-500">
-          Bonificação da equipe em relação ao ciclo vigente
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Bonificação</h1>
+          <p className="text-sm text-gray-500">
+            Bonificação da equipe em relação ao ciclo vigente
+          </p>
+        </div>
+        <BotaoLinkCatalogo />
       </div>
 
       {data?.ciclo && (
@@ -135,13 +204,13 @@ export default function LiderancaBonificacaoPage() {
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm table-auto min-w-[720px]">
+                <table className="w-full text-sm table-auto min-w-[780px]">
                   <colgroup>
-                    <col style={{ width: "220px" }} />
-                    <col style={{ width: "160px" }} />
+                    <col style={{ width: "230px" }} />
+                    <col style={{ width: "130px" }} />
                     <col style={{ width: "140px" }} />
+                    <col style={{ width: "100px" }} />
                     <col style={{ width: "140px" }} />
-                    <col style={{ width: "180px" }} />
                   </colgroup>
                   <thead>
                     <tr className="border-b bg-gray-50">
@@ -163,26 +232,106 @@ export default function LiderancaBonificacaoPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {gestor.consultores.map((c) => (
-                      <tr
-                        key={c.id}
-                        className="border-b last:border-0 hover:bg-gray-50"
-                      >
-                        <td className="p-3">
-                          <p className="font-medium text-gray-900">{c.nome}</p>
-                        </td>
-                        <td className="p-3 text-gray-700">{c.cpf}</td>
-                        <td className="p-3 text-right font-semibold text-gray-900">
-                          {c.saldoPontos.toLocaleString("pt-BR")}
-                        </td>
-                        <td className="p-3 text-right text-gray-700">
-                          {c.totalResgates}
-                        </td>
-                        <td className="p-3 text-gray-700">
-                          {formatarData(c.ultimaProducao)}
-                        </td>
-                      </tr>
-                    ))}
+                    {gestor.consultores.map((c) => {
+                      const isExpanded = expandedIds.has(c.id);
+                      const cacheData = extratosCache[c.id];
+
+                      return (
+                        <Fragment key={c.id}>
+                          <tr
+                            className={`border-b transition-colors hover:bg-gray-50 ${
+                              isExpanded ? "bg-amber-50/20" : ""
+                            }`}
+                          >
+                            <td className="p-3">
+                              <div className="flex items-start gap-2.5">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleExpand(c.id)}
+                                  className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded border text-xs font-bold transition-colors ${
+                                    isExpanded
+                                      ? "border-amber-400 bg-amber-100 text-amber-900 shadow-xs"
+                                      : "border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
+                                  }`}
+                                  title={
+                                    isExpanded
+                                      ? "Ocultar histórico de bônus"
+                                      : "Ver histórico de bônus"
+                                  }
+                                  aria-expanded={isExpanded}
+                                >
+                                  {isExpanded ? "−" : "+"}
+                                </button>
+                                <div>
+                                  <p className="font-medium text-gray-900 leading-tight">
+                                    {c.nome}
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleExpand(c.id)}
+                                    className="text-[11px] font-medium text-primary-600 hover:text-primary-800 hover:underline"
+                                  >
+                                    {isExpanded
+                                      ? "Ocultar histórico"
+                                      : "Histórico detalhado"}
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-3 text-gray-700">{c.cpf}</td>
+                            <td className="p-3 text-right font-semibold text-gray-900">
+                              {c.saldoPontos.toLocaleString("pt-BR")}
+                            </td>
+                            <td className="p-3 text-right text-gray-700">
+                              {c.totalResgates}
+                            </td>
+                            <td className="p-3 text-gray-700">
+                              {formatarData(c.ultimaProducao)}
+                            </td>
+                          </tr>
+
+                          {isExpanded && (
+                            <tr className="border-b bg-gray-50/60">
+                              <td
+                                colSpan={5}
+                                className="p-3.5 sm:p-4 sm:pl-10 sm:pr-6"
+                              >
+                                <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-xs">
+                                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-2.5">
+                                    <div>
+                                      <h4 className="text-sm font-semibold text-gray-900">
+                                        Histórico de Bônus — {c.nome}
+                                      </h4>
+                                      <p className="text-xs text-gray-500">
+                                        Data e hora de cada movimentação
+                                        (produção e inserções/retiradas)
+                                      </p>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void carregarExtratoConsultor(c.id)
+                                      }
+                                      disabled={cacheData?.loading}
+                                      className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                                    >
+                                      {cacheData?.loading
+                                        ? "Atualizando..."
+                                        : "Recarregar"}
+                                    </button>
+                                  </div>
+                                  <ExtratoBonusTabela
+                                    movimentacoes={cacheData?.items ?? []}
+                                    loading={cacheData?.loading}
+                                    emptyMessage="Nenhuma movimentação de bônus registrada para este consultor no período selecionado."
+                                  />
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

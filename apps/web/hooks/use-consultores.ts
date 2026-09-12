@@ -12,6 +12,7 @@ export interface ConsultorCompleto {
   email: string;
   telefone: string | null;
   status: string;
+  senhaTemporaria?: boolean;
   liderancaNome: string;
   liderancaId: string;
   setores: Array<{ id: string; nome: string }>;
@@ -43,6 +44,7 @@ export function useConsultores(itens: EquipeItem[]) {
             email: cp.email,
             telefone: cp.telefone ?? null,
             status: cp.status,
+            senhaTemporaria: cp.senhaTemporaria,
             liderancaNome: lideranca.nome,
             liderancaId: lideranca.id,
             setores: cp.setores ?? [],

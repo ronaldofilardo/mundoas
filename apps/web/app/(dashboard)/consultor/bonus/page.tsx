@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ExtratoBonusTabela } from "@/components/bonus/extrato-bonus-tabela";
 
 type Premio = {
   id: string;
@@ -230,44 +231,11 @@ export default function BonusConsultorPfPage() {
           <h2 className="mb-3 text-lg font-semibold text-gray-900">
             Extrato de Bônus
           </h2>
-          <div className="overflow-x-auto rounded-xl border bg-white">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b text-left">
-                  <th className="p-3">Data</th>
-                  <th className="p-3">Origem</th>
-                  <th className="p-3">Descrição</th>
-                  <th className="p-3 text-right">Pontos</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(carteira?.movimentacoes ?? []).map((mov) => (
-                  <tr key={mov.id} className="border-b last:border-0">
-                    <td className="p-3">
-                      {new Date(mov.criadoEm).toLocaleDateString("pt-BR")}
-                    </td>
-                    <td className="p-3">{mov.origem}</td>
-                    <td className="p-3">{mov.descricao ?? "—"}</td>
-                    <td
-                      className={`p-3 text-right font-semibold ${
-                        mov.tipo === "DEBITO" ? "text-red-600" : "text-green-600"
-                      }`}
-                    >
-                      {mov.tipo === "DEBITO" ? "-" : "+"}
-                      {mov.quantidade}
-                    </td>
-                  </tr>
-                ))}
-                {(!carteira?.movimentacoes || carteira.movimentacoes.length === 0) && (
-                  <tr>
-                    <td colSpan={4} className="p-4 text-center text-sm text-gray-500">
-                      Nenhuma movimentação encontrada.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <ExtratoBonusTabela
+            movimentacoes={carteira?.movimentacoes ?? []}
+            loading={loading}
+            emptyMessage="Nenhuma movimentação encontrada no seu extrato."
+          />
         </div>
       </div>
     </div>

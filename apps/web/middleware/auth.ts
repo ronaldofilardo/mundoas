@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { dashboardForUser } from "@/lib/rbac";
+
 type SessionUser = {
   tipo?: string;
   papel?: string | null;
@@ -27,24 +29,7 @@ const ROUTE_RULES = [
 ];
 
 function dashboardForPapel(user: SessionUser) {
-  if (user.tipo === "ADMIN") return "/admin/usuarios";
-  if (user.tipo === "BACKOFFICE" && user.papel === "BACKOFFICE") {
-    return "/backoffice/dashboard";
-  }
-  if (user.tipo === "GESTOR" && user.papel === "BACKOFFICE") {
-    return "/backoffice/dashboard";
-  }
-  if (user.tipo === "GESTOR" && user.papel === "GESTOR_PJ") {
-    return "/gestor/dashboard";
-  }
-  if (user.tipo === "PARCEIRO") return "/parceiro/indicados";
-  if (user.tipo === "COMERCIAL") return "/comercial/minha-comissao";
-  if (user.tipo === "CONSULTOR" || user.tipo === "CONSULTOR_PF") {
-    return "/consultor/comissoes";
-  }
-  if (user.tipo === "LIDERANCA") return "/lideranca";
-  if (user.tipo === "BACKOFFICE") return "/backoffice/dashboard";
-  return "/login";
+  return dashboardForUser(user);
 }
 
 function authorizeByPapel(req: NextRequest, user: SessionUser) {

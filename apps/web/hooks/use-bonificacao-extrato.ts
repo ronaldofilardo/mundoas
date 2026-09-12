@@ -8,6 +8,7 @@ interface ExtratoItem {
   origem: string;
   quantidade: number;
   descricao: string | null;
+  observacao?: string | null;
   ciclo: string;
   criadoEm: string;
 }
@@ -50,7 +51,7 @@ export function useBonificacaoExtrato(
         setExtrato({
           consultorId,
           consultorNome,
-          items: data.items ?? [],
+          items: data.movimentacoes ?? data.items ?? [],
           saldoAtual: data.saldoAtual ?? 0,
           loading: false,
         });

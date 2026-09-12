@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Acesso Saúde Aqui",
+  title: "mundoAS - Acesso Saúde Aqui",
   description:
-    "Programa Acesso Saúde Aqui - Gestão de Cupons, Consultas e Comissões",
+    "Plataforma mundoAS - Gestão Inteligente de Saúde, Procedimentos e Fidelização",
 };
 
 export default function RootLayout({
@@ -14,7 +15,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        <Toaster richColors position="top-right" />
+        {children}
+      </body>
     </html>
   );
 }

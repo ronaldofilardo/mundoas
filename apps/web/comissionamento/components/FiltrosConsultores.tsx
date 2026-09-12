@@ -96,13 +96,6 @@ export function FiltrosConsultores({ itens }: FiltrosConsultoresProps) {
         </span>
         <span className="font-medium">Total: {itens.length}</span>
       </div>
-
-      <button
-        onClick={() => {}}
-        className="ml-auto px-3 py-2 bg-primary-600 text-white rounded text-sm font-medium hover:bg-primary-700 transition-colors"
-      >
-        + Novo Consultor
-      </button>
     </div>
   );
 }

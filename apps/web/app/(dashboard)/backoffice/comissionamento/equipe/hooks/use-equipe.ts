@@ -10,6 +10,7 @@ type EquipeApiConsultor = {
   email: string;
   telefone?: string | null;
   status: string;
+  senhaTemporaria?: boolean;
   setores?: Array<{ id: string; nome: string }>;
 };
 
@@ -21,6 +22,7 @@ type EquipeApiComercial = {
   funcao?: string | null;
   percentualComissao?: number;
   status: string;
+  senhaTemporaria?: boolean;
   tipo?: string;
   tipoLideranca?: string | null;
   liderancaId?: string | null;
@@ -33,6 +35,7 @@ type EquipeApiMembro = {
   cpf: string;
   email: string;
   status: string;
+  senhaTemporaria?: boolean;
   tipo?: string;
   tipoLideranca?: string | null;
   funcao?: string | null;
@@ -49,6 +52,7 @@ function mapMembro(m: EquipeApiMembro): EquipeItem {
     cpf: m.cpf,
     email: m.email,
     status: m.status,
+    senhaTemporaria: m.senhaTemporaria,
     tipo: m.tipo,
     tipoLideranca: m.tipoLideranca ?? null,
     funcao: m.funcao ?? null,
@@ -62,6 +66,7 @@ function mapMembro(m: EquipeApiMembro): EquipeItem {
       email: cp.email,
       telefone: cp.telefone ?? null,
       status: cp.status,
+      senhaTemporaria: cp.senhaTemporaria,
       setores: cp.setores ?? [],
     })),
     comerciais: (m.comerciais ?? []).map((c: EquipeApiComercial) => ({
@@ -72,6 +77,7 @@ function mapMembro(m: EquipeApiMembro): EquipeItem {
       funcao: c.funcao ?? null,
       percentualComissao: c.percentualComissao ?? 0,
       status: c.status,
+      senhaTemporaria: c.senhaTemporaria,
     })),
   };
 }
@@ -89,6 +95,7 @@ export function buildEquipeItens(
     cpf: m.cpf,
     email: m.email,
     status: m.status,
+    senhaTemporaria: m.senhaTemporaria,
     tipo: m.tipo,
     funcao: m.funcao ?? null,
     tipoLideranca: m.tipoLideranca ?? null,
@@ -102,6 +109,7 @@ export function buildEquipeItens(
       email: cp.email ?? "",
       telefone: cp.telefone ?? null,
       status: cp.status ?? "ATIVO",
+      senhaTemporaria: cp.senhaTemporaria,
       setores: cp.setores ?? [],
     })),
     comerciais: (m.comerciais ?? []).map((c: EquipeApiComercial) => ({
@@ -112,6 +120,7 @@ export function buildEquipeItens(
       funcao: c.funcao ?? null,
       percentualComissao: c.percentualComissao ?? 0,
       status: c.status,
+      senhaTemporaria: c.senhaTemporaria,
     })),
   }))
 
@@ -123,6 +132,7 @@ export function buildEquipeItens(
       cpf: m.cpf,
       email: m.email,
       status: m.status,
+      senhaTemporaria: m.senhaTemporaria,
       tipo: m.tipo,
       funcao: m.funcao ?? null,
       tipoLideranca: m.tipoLideranca ?? null,
@@ -138,6 +148,7 @@ export function buildEquipeItens(
         funcao: c.funcao ?? null,
         percentualComissao: c.percentualComissao ?? 0,
         status: c.status,
+        senhaTemporaria: c.senhaTemporaria,
       })),
     }))
 

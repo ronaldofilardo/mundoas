@@ -79,6 +79,7 @@ export function TabEquipe({ itens: propsItens, refetch }: TabEquipeProps) {
               onToggleStatusLideranca={(id, statusAtual) =>
                 handleToggleStatusLideranca(id, statusAtual)
               }
+              onRefetch={refetch}
             />
           </div>
         )}

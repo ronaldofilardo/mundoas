@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@asa/database";
+import { prisma } from "@/lib/db";
 import { requireBackofficeWithScope, ok, badRequest, notFound } from "@/lib/api-helpers";
 import { atualizarConsultorSchema } from "@asa/shared";
 import { criarAuditLog } from "@/lib/audit";
@@ -13,8 +13,32 @@ export async function GET(
 
   const { id } = await params;
 
-  const consultor = await prisma.consultor.findUnique({
-    where: { id },
+  const consultor = await prisma.consultor.findFirst({
+    where: {
+      id,
+      OR: [
+        {
+          gestoresAtribuicoes: {
+            some: {
+              gestor: {
+                equipe: {
+                  backofficeId,
+                },
+              },
+            },
+          },
+        },
+        {
+          usuario: {
+            consultorPf: {
+              lideranca: {
+                backofficeId,
+              },
+            },
+          },
+        },
+      ],
+    },
     include: {
       usuario: {
         select: {
@@ -25,7 +49,7 @@ export async function GET(
           status: true,
         },
       },
-},
+    },
   });
 
   if (!consultor) return notFound("Consultor não encontrado");
@@ -47,8 +71,32 @@ export async function PATCH(
     return badRequest(parsed.error.errors.map((e) => e.message).join(", "));
   }
 
-  const consultor = await prisma.consultor.findUnique({
-    where: { id },
+  const consultor = await prisma.consultor.findFirst({
+    where: {
+      id,
+      OR: [
+        {
+          gestoresAtribuicoes: {
+            some: {
+              gestor: {
+                equipe: {
+                  backofficeId,
+                },
+              },
+            },
+          },
+        },
+        {
+          usuario: {
+            consultorPf: {
+              lideranca: {
+                backofficeId,
+              },
+            },
+          },
+        },
+      ],
+    },
     include: { usuario: true },
   });
   if (!consultor) return notFound("Consultor não encontrado");
