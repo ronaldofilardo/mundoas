@@ -13,6 +13,8 @@ import {
   Building2,
 } from "lucide-react";
 
+import { DashboardRankingSection } from "@/components/backoffice/dashboard-ranking";
+
 interface ParceiroComissao {
   status: string;
   valorTotal: number | string;
@@ -216,6 +218,9 @@ export default function BackofficeDashboard() {
           </p>
         </div>
       </div>
+
+      {/* Seção Ranking - Ciclos Vigentes para Consultores [Bônus e Pontos] */}
+      <DashboardRankingSection />
 
       {/* Grid: Parceiros Recentes & Resumo de Comissões */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

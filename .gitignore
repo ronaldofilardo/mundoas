@@ -47,3 +47,11 @@ prisma/*.db
 # OS
 .DS_Store
 Thumbs.db
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
+
+# Query scripts com credenciais
+query.sql
+query2.js
+query3.js

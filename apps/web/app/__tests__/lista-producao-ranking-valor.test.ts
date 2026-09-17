@@ -5,7 +5,7 @@ import { normalizarNomeUnidade } from "@/lib/formatadores-producao";
 
 const appRoot = join(__dirname, "../..");
 const read = (...parts: string[]) => readFileSync(join(appRoot, ...parts), "utf8");
-const producaoPage = read("app", "(dashboard)", "backoffice", "producao", "page.tsx");
+const producaoTable = read("app", "(dashboard)", "backoffice", "producao", "components", "producao-table.tsx");
 const rankingRoute = read("app", "api", "v1", "backoffice", "pontos", "ranking", "route.ts");
 const rankingComponent = read("app", "(dashboard)", "backoffice", "pontos", "components", "ranking-pontos.tsx");
 const rankingTypes = read("app", "(dashboard)", "backoffice", "pontos", "pontos-types.ts");
@@ -20,7 +20,7 @@ describe("Lista de Produção — nome de unidade", () => {
     expect(normalizarNomeUnidade("Curitiba")).toBe("Curitiba");
     expect(normalizarNomeUnidade("Acesso Saúde")).toBe("Acesso Saúde");
     expect(normalizarNomeUnidade(null)).toBe("-");
-    expect(producaoPage).toContain("normalizarNomeUnidade(p.unidade)");
+    expect(producaoTable).toContain("normalizarNomeUnidade(p.unidade)");
   });
 });
 

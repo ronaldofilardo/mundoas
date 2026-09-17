@@ -1,15 +1,12 @@
-import { defineConfig } from "vitest/config";
-import path from "path";
-import { randomBytes } from "crypto";
-import dotenv from "dotenv";
+const path = require("path");
+const { randomBytes } = require("crypto");
+const dotenv = require("dotenv");
 
-// Load test environment variables
 dotenv.config({ path: ".env.test" });
 
-// Generate random test secret each run (never hardcoded)
 const testSecret = randomBytes(32).toString("base64");
 
-export default defineConfig({
+module.exports = {
   test: {
     globals: true,
     environment: "node",
@@ -25,4 +22,4 @@ export default defineConfig({
       "@": path.resolve(__dirname, "apps/web"),
     },
   },
-});
+};

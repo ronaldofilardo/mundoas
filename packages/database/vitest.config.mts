@@ -12,5 +12,10 @@ export default defineConfig({
     pool: "forks",
     fileParallelism: false,
     sequence: { concurrent: false },
+    coverage: {
+      provider: "v8",
+      reportsDirectory: "./coverage",
+      include: ["src/**/*.ts"],
+    },
   },
 });
