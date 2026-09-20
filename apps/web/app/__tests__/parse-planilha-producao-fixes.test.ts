@@ -5,15 +5,15 @@ import { join } from 'node:path';
 const root = join(__dirname, '../..');
 const read = (...parts: string[]) => readFileSync(join(root, ...parts), 'utf8');
 
-const parsePlanilha = read('lib', 'parse-planilha-producao.ts');
+const parsePlanilha = read('lib', 'planilha-producao', 'index.ts');
 
 describe('parse-planilha-producao - correção status DUPLICADA', () => {
   it('não compara status com DUPLICADA antes do bloco de validação de CPF/parceiro', () => {
     expect(parsePlanilha).not.toMatch(/status\s*!==\s*"REJEITADO"\s*&&\s*status\s*!==\s*"DUPLICADA"/);
   });
 
-  it('usa apenas status !== REJEITADO como guarda do bloco de parceiro/consultor', () => {
-    expect(parsePlanilha).toMatch(/if\s*\(\s*status\s*!==\s*"REJEITADO"\s*\)\s*\{/);
+  it('usa status === VALIDO como guarda do bloco de parceiro/consultor', () => {
+    expect(parsePlanilha).toMatch(/if\s*\(\s*status\s*===\s*"VALIDO"\s*&&/);
   });
 
   it('define DUPLICADA apenas após validação de chave existente', () => {
@@ -22,7 +22,7 @@ describe('parse-planilha-producao - correção status DUPLICADA', () => {
   });
 
   it('mantém contagem separada de duplicadas no summary', () => {
-    expect(parsePlanilha).toMatch(/totalDuplicadas\+\+;/);
-    expect(parsePlanilha).toMatch(/duplicadas:\s*number/);
+    expect(parsePlanilha).toMatch(/contadores\.totalDuplicadas\+\+;/);
+    expect(parsePlanilha).toMatch(/duplicadas:\s*contadores\.totalDuplicadas/);
   });
 });

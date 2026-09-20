@@ -70,8 +70,72 @@ const mockData: ProducaoOriginal[] = [
   },
 ];
 
-/** Dados mock usados em todos os testes */
-const mockData: ProducaoOriginal[] = [
+const filtrosVazios = {};
+
+function listarParceirosUnicos(data: ProducaoOriginal[] | undefined | null): string[] {
+  if (!data) return [];
+  const names = data.map((d) => d.parceiro?.nome).filter((n): n is string => !!n);
+  return [...new Set(names)].sort();
+}
+
+function filtrarProducoes(data: ProducaoOriginal[], filtros: Record<string, string | undefined>): ProducaoOriginal[] {
+  if (!data) return [];
+  return data.filter((d) => {
+    if (filtros.filtroIndicado && !(d.paciente ?? "").toLowerCase().includes(filtros.filtroIndicado.toLowerCase())) return false;
+    if (filtros.filtroParceiro && d.parceiro?.nome !== filtros.filtroParceiro) return false;
+    if (filtros.filtroDataInicio && (d.dataReferencia ?? "") < filtros.filtroDataInicio) return false;
+    if (filtros.filtroDataFim && (d.dataReferencia ?? "") > filtros.filtroDataFim) return false;
+    return true;
+  });
+}
+
+function contarPendentes(data: ProducaoOriginal[] | undefined): number {
+  if (!data) return 0;
+  return data.filter((d) => !d.pontosDistribuidos).length;
+}
+
+function formatarMoeda(valor: number | null | undefined): string {
+  if (valor == null || isNaN(valor)) return "R$ 0,00";
+  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }).replace(/\u00A0/g, " ");
+}
+
+function formatarData(data: string | null | undefined): string {
+  if (!data) return "";
+  const [y, m, d] = data.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function obterPontosExibicao(item: ProducaoOriginal): { texto: string; className: string } {
+  if (item.pontosDistribuidos) return { texto: `${item.pontosDistribuidos.pontos} pts`, className: "text-green-600" };
+  if (item.pontosPotenciais && item.pontosPotenciais > 0) return { texto: `${item.pontosPotenciais} pts`, className: "text-yellow-600" };
+  return { texto: "0 pts", className: "" };
+}
+
+function obterStatusDistribuicao(item: ProducaoOriginal): string {
+  if (item.pontosDistribuidos) return `<span class="bg-green-100">Distribuído</span>`;
+  return `<button class="bg-primary-600">Distribuir</button>`;
+}
+
+type DistribuicaoResult = { ok: boolean; error?: string; erros?: number; distribuidos?: number };
+
+async function distribuirProducao(producaoId: string): Promise<DistribuicaoResult> {
+  try {
+    const res = await fetch(`/api/v1/backoffice/pontos/distribuir`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ producaoId }) });
+    if (!res.ok) return { ok: false, error: "Erro ao distribuir pontos" };
+    return { ok: true };
+  } catch { return { ok: false, error: "Erro ao distribuir pontos" }; }
+}
+
+async function distribuirTodasProducoes(): Promise<DistribuicaoResult> {
+  try {
+    const res = await fetch(`/api/v1/backoffice/pontos/distribuir-todos`, { method: "POST" });
+    if (!res.ok) return { ok: false, error: "Erro ao distribuir pontos em lote" };
+    const data = await res.json();
+    return { ok: true, erros: data.erros, distribuidos: data.distribuidos };
+  } catch { return { ok: false, error: "Erro ao distribuir pontos em lote" }; }
+}
+
+describe("TabelaDistribuicao - Utils", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -274,8 +338,7 @@ const mockData: ProducaoOriginal[] = [
 describe("TabelaDistribuicao - Actions (Fetch simulado)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Configuração padrão de fetch para os testes
-    vi.stubGlobal("fetch", Promise.resolve({
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ mensagem: "sucesso" }),
     }));
@@ -291,7 +354,7 @@ describe("TabelaDistribuicao - Actions (Fetch simulado)", () => {
     });
 
     it("deve retornar ok=false quando API responder erro", async () => {
-      vi.stubGlobal("fetch", Promise.resolve({
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
         ok: false,
         json: async () => ({ error: "Erro simulado" }),
       }));
@@ -302,7 +365,7 @@ describe("TabelaDistribuicao - Actions (Fetch simulado)", () => {
     });
 
     it("deve tratar erro de rede", async () => {
-      vi.stubGlobal("fetch", Promise.reject(new Error("Network error")));
+      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Network error")));
       const result: DistribuicaoResult = await distribuirProducao("prod-1");
       expect(result.ok).toBe(false);
       expect(result.error).toContain("Erro ao distribuir pontos");
@@ -316,7 +379,7 @@ describe("TabelaDistribuicao - Actions (Fetch simulado)", () => {
     });
 
     it("deve retornar resultado com erros quando alguns falham", async () => {
-      vi.stubGlobal("fetch", Promise.resolve({
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
           distribuidos: 2,
@@ -331,7 +394,7 @@ describe("TabelaDistribuicao - Actions (Fetch simulado)", () => {
     });
 
     it("deve tratar erro de rede", async () => {
-      vi.stubGlobal("fetch", Promise.reject(new Error("Network error")));
+      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Network error")));
       const result: DistribuicaoResult = await distribuirTodasProducoes();
       expect(result.ok).toBe(false);
       expect(result.error).toContain("Erro ao distribuir pontos em lote");

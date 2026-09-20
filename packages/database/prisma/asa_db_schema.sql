@@ -70,7 +70,6 @@ ALTER TYPE public."OrigemMovimentacaoPontos" OWNER TO postgres;
 --
 
 CREATE TYPE public."PapelGestor" AS ENUM (
-    'GESTOR_PJ',
     'BACKOFFICE'
 );
 
@@ -323,7 +322,7 @@ CREATE TYPE public."TipoUsuario" AS ENUM (
     'BACKOFFICE',
     'SUPERVISAO',
     'GERENCIA',
-    'GESTOR_PJ'
+    'CONSULTOR_PF'
 );
 
 

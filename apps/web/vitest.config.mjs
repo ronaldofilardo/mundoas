@@ -23,6 +23,10 @@ export default defineConfig({
       'components/__tests__/**/*.{test.ts,test.tsx}',
       'components/__tests__/*.{test.ts,test.tsx}',
     ],
+    pool: 'threads',
+    poolOptions: {
+      threads: { minThreads: 1, maxThreads: 4 },
+    },
     testTimeout: 30000,
     server: {
       deps: {

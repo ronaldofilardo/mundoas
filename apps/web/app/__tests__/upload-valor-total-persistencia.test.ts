@@ -51,7 +51,7 @@ const createMockExcel = (data: any[][], fileName = "test.xlsx"): File => {
 const BACKOFFICE_ID = "bo-teste";
 
 // CPF válido (11 dígitos) que bate com o parceiro cadastrado.
-const CPF_VALIDO = "52998224725";
+const CPF_VALIDO = "12345678900";
 
 import { processarUploadPlanilhaPF } from "@/lib/processar-upload-pf";
 

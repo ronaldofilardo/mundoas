@@ -841,7 +841,6 @@ enum TipoUsuario {
   BACKOFFICE
   SUPERVISAO
   GERENCIA
-  GESTOR_PJ
   CONSULTOR_PF
 }
 
@@ -857,7 +856,6 @@ enum TipoLideranca {
 }
 
 enum PapelGestor {
-  GESTOR_PJ
   BACKOFFICE
 }
 

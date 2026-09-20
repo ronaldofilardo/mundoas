@@ -14,7 +14,7 @@ const handlers = read("components", "backoffice", "upload-planilha-preview.handl
 const upload = read("components", "backoffice", "upload-planilha-preview.upload.ts");
 const modals = read("components", "backoffice", "upload-planilha-preview.modals.tsx");
 const feedback = read("lib", "upload-feedback.ts");
-const processor = read("lib", "processar-upload-pf.ts");
+const processor = read("lib", "processar-upload-pf", "processar-upload-pf.ts");
 const types = read("components", "backoffice", "upload-planilha-preview.types.ts");
 const uploadRoute = read("app", "api", "v1", "backoffice", "uploads", "route.ts");
 const statusRoute = read("app", "api", "v1", "backoffice", "uploads", "[id]", "route.ts");
@@ -88,9 +88,9 @@ describe("Feedback completo do upload de produção", () => {
     expect(uploadRoute).toContain("duplicatedRows: 0");
     expect(uploadRoute).toContain("duplicatedRows: true");
     expect(statusRoute).toContain("duplicatedRows: true");
-    expect(processor).toContain("const chavesExistentes = new Set<string>()");
-    expect(processor).toContain("duplicatedRows++");
-    expect(processor).toContain("dataParaChave(dataReferencia)");
+    expect(processor).toContain("chavesExistentes = await obterChavesExistentes");
+    expect(processor).toContain("duplicatedRows: contadores.duplicatedRows");
+    expect(processor).toContain("dataParaChave(");
     expect(types).toContain('status: "VALIDO" | "ORFAO" | "REJEITADO" | "DUPLICADA"');
     expect(processor).not.toContain("procedimentoPF.deleteMany");
     expect(migration).toContain("ADD COLUMN IF NOT EXISTS \"duplicated_rows\"");
@@ -99,6 +99,6 @@ describe("Feedback completo do upload de produção", () => {
   it("mantém duplicidades no polling", () => {
     expect(polling).toContain("duplicatedRows?: number");
     expect(polling).toContain("duplicatedRows: json?.duplicatedRows");
-    expect(upload).toContain("resultado.summary?.duplicatedRows");
+    expect(upload).toContain("summary?.duplicatedRows");
   });
 });

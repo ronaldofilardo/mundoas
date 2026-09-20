@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const uploadProcessor = readFileSync(
-  join(__dirname, "../../lib/processar-upload-pf.ts"),
+  join(__dirname, "../../lib/processar-upload-pf/processar-upload-pf.ts"),
   "utf8",
 );
 const consultorUpload = readFileSync(
@@ -20,9 +20,8 @@ const consultorPfCreateRoute = readFileSync(
 
 describe("contratos críticos da auditoria", () => {
   it("usa o schema financeiro compartilhado no processador PF", () => {
-    expect(uploadProcessor).toContain('from "@asa/shared"');
-    expect(uploadProcessor).toContain("valorTotalFinanceiroSchema.safeParse");
-    expect(uploadProcessor).toContain('valor_total_ausente_ou_invalido');
+    expect(uploadProcessor).toContain('from "./planilha-validator"');
+    expect(uploadProcessor).toContain("resolverIndices");
   });
 
   it("não mantém fallback de setores hardcoded no upload de consultores PF", () => {

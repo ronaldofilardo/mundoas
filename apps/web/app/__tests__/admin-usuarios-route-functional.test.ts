@@ -80,7 +80,7 @@ describe("API admin/usuarios — contrato funcional", () => {
         status: "ATIVO",
         telefone: "11888888888",
         tipo: "GESTOR",
-        papel: "GESTOR_PJ",
+        papel: null,
         criadoEm: new Date("2024-01-10"),
       },
     ] as Awaited<ReturnType<typeof prisma.usuario.findMany>>);

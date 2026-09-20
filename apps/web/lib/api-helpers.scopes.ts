@@ -1,22 +1,14 @@
 import { prisma } from "@/lib/db";
 import { forbidden, unauthorized } from "./api-helpers.responses";
-import { isBackofficeRole, isGestorPjRole } from "@/lib/rbac";
+import { isBackofficeRole } from "@/lib/rbac";
 
+// GESTOR_PJ foi removido (FASE 0): nenhum usuário possui este papel.
+// FASE 1b reabrirá /gestor para SUPERVISAO/GERENCIA com escopo de backoffice.
 export async function requireGestorWithScope() {
   const session = await getSession();
   if (!session?.user)
     return { session: null, consultorIds: [], error: unauthorized() };
-  const isGestorPJ = isGestorPjRole(session.user);
-  if (!isGestorPJ)
-    return { session: null, consultorIds: [], error: forbidden() };
-
-  const gestoresConsultores = await prisma.gestorConsultor.findMany({
-    where: { gestorId: session.user.id },
-    select: { consultorId: true },
-  });
-
-  const consultorIds = gestoresConsultores.map((gc) => gc.consultorId);
-  return { session, consultorIds, error: null };
+  return { session: null, consultorIds: [], error: forbidden() };
 }
 
 export async function requireGestorWithUserScope() {
@@ -28,32 +20,12 @@ export async function requireGestorWithUserScope() {
       usuarioIds: [],
       error: unauthorized(),
     };
-  const isGestorPJ = isGestorPjRole(session.user);
-  if (!isGestorPJ)
-    return {
-      session: null,
-      consultorIds: [],
-      usuarioIds: [],
-      error: forbidden(),
-    };
-
-  const gestoresConsultores = await prisma.gestorConsultor.findMany({
-    where: { gestorId: session.user.id },
-    select: {
-      consultorId: true,
-      consultor: { select: { usuarioId: true } },
-    },
-  });
-
-  const consultorIds = gestoresConsultores.map(
-    (gc: { consultorId: string; consultor: { usuarioId: string } }) =>
-      gc.consultorId,
-  );
-  const usuarioIds = gestoresConsultores.map(
-    (gc: { consultorId: string; consultor: { usuarioId: string } }) =>
-      gc.consultor.usuarioId,
-  );
-  return { session, consultorIds, usuarioIds, error: null };
+  return {
+    session: null,
+    consultorIds: [],
+    usuarioIds: [],
+    error: forbidden(),
+  };
 }
 
 export async function requireConsultor() {

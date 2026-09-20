@@ -1,15 +1,57 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, userEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// Mock sonner toast
+// Mock sonner toast (importado pela página)
 vi.mock('sonner', () => ({
-  toast: vi.fn(),
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-import PagamentosPage, { Comissao } from '@/app/(dashboard)/backoffice/producao/pagamentos/page';
+/**
+ * Estado controlável do hook useComissoes.
+ * Resumo, Filtros e Tabela consomem o hook — mocká-lo é o ponto único
+ * de controle para dados, loading, seleção e callbacks.
+ */
+const { hookState, mocks } = vi.hoisted(() => ({
+  hookState: {
+    comissoes: [] as Array<Record<string, unknown>>,
+    loading: false,
+    selectedComissoes: [] as string[],
+    filterStatus: 'CALCULADA',
+    filterMes: '',
+  },
+  mocks: {
+    fetchComissoes: vi.fn(),
+    handlePagar: vi.fn(),
+    setFilterStatus: vi.fn(),
+    setFilterMes: vi.fn(),
+    exportarRecibo: vi.fn(),
+  },
+}));
 
-const mockComissoes: import('../app/(dashboard)/backoffice/producao/pagamentos/page').Comissao[] = [
+vi.mock('@/app/(dashboard)/backoffice/producao/pagamentos/components/use-comissoes', () => ({
+  useComissoes: () => ({
+    comissoes: hookState.comissoes,
+    loading: hookState.loading,
+    selectedComissoes: hookState.selectedComissoes,
+    setSelectedComissoes: vi.fn(),
+    filterStatus: hookState.filterStatus,
+    setFilterStatus: mocks.setFilterStatus,
+    filterMes: hookState.filterMes,
+    setFilterMes: mocks.setFilterMes,
+    totalSelecionado: 0,
+    totalGeral: 0,
+    handlePagar: mocks.handlePagar,
+    toggleComissao: vi.fn(),
+    toggleTodas: vi.fn(),
+    exportarRecibo: mocks.exportarRecibo,
+    fetchComissoes: mocks.fetchComissoes,
+  }),
+}));
+
+import PagamentosPage from '@/app/(dashboard)/backoffice/producao/pagamentos/page';
+
+const mockComissoes = [
   {
     id: '1',
     mesReferencia: '2026-07',
@@ -39,77 +81,70 @@ const mockComissoes: import('../app/(dashboard)/backoffice/producao/pagamentos/p
   },
 ];
 
-beforeEach(() => {
-  vi.useFakeTimers();
-});
+function setHookState(overrides: Partial<typeof hookState>) {
+  Object.assign(hookState, overrides);
+}
 
-afterEach(() => {
-  vi.useRealTimers();
-  vi.restoreAllMocks();
+beforeEach(() => {
+  vi.clearAllMocks();
+  setHookState({
+    comissoes: [],
+    loading: false,
+    selectedComissoes: [],
+    filterStatus: 'CALCULADA',
+    filterMes: '',
+  });
 });
 
 describe('PagamentosPage - Renderização', () => {
-  it('deve renderizar o título "Gestão de Pagamentos"', () => {
-    const { container } = render(PagamentosPage());
-    const title = container.querySelector('h1');
-    expect(title).toBeInTheDocument();
-    expect(title?.textContent).toContain('Gestão de Pagamentos');
+  it('deve renderizar o resumo com cards A Pagar, Selecionado e Já Pagas', () => {
+    render(<PagamentosPage />);
+    // "A Pagar" também aparece como option do select de status — usa getAllByText
+    expect(screen.getAllByText('A Pagar').length).toBeGreaterThan(0);
+    expect(screen.getByText('Selecionado')).toBeInTheDocument();
+    expect(screen.getByText('Já Pagas')).toBeInTheDocument();
   });
 
-  it('deve renderizar subtítulo descriptivo', () => {
-    const { container } = render(PagamentosPage());
-    const subtitle = container.querySelector('p');
-    expect(subtitle).toBeInTheDocument();
-    expect(subtitle?.textContent).toContain('Gerencie o pagamento de comissões');
+  it('deve renderizar filtros com labels Status e Mês', () => {
+    render(<PagamentosPage />);
+    expect(screen.getByLabelText('Status')).toBeInTheDocument();
+    expect(screen.getByLabelText('Mês')).toBeInTheDocument();
   });
 });
 
 describe('PagamentosPage - Dados e Filtros', () => {
-  it('deve buscar comissões com status filterStatus', async () => {
-    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: mockComissoes }),
-    } as Response);
-
-    const { rerender } = render(PagamentosPage());
-    await vi.runAllTicks();
-
-    const statusSelect = screen.getByLabelText('Status');
-    expect(statusSelect).toBeInTheDocument();
+  it('deve carregar comissões no mount (useEffect chama fetchComissoes)', () => {
+    render(<PagamentosPage />);
+    expect(mocks.fetchComissoes).toHaveBeenCalled();
   });
 
-  it('deve aplicar filtro de mês', async () => {
-    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: [] }),
-    } as Response);
-
-    const { rerender } = render(
-      <PagamentosPage filterMes="2026-07" />
-    );
-    await vi.runAllTicks();
-
-    const mesInput = screen.getByLabelText('Mês');
-    expect(mesInput).toHaveValue('2026-07');
+  it('deve refletir o filtro de mês vindo do hook state', () => {
+    setHookState({ filterMes: '2026-07' });
+    render(<PagamentosPage />);
+    expect(screen.getByLabelText('Mês')).toHaveValue('2026-07');
   });
 
-  it('deve aplicar filtro de status e mês juntos', async () => {
-    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: mockComissoes.filter(c => c.status === 'CALCULADA') }),
-    } as Response);
+  it('deve refletir filtro de status e mês juntos', () => {
+    setHookState({ filterStatus: 'CALCULADA', filterMes: '2026-07' });
+    render(<PagamentosPage />);
+    expect(screen.getByLabelText('Status')).toHaveValue('CALCULADA');
+    expect(screen.getByLabelText('Mês')).toHaveValue('2026-07');
+  });
 
-    const { rerender } = render(
-      <PagamentosPage filterStatus="CALCULADA" filterMes="2026-07" />
-    );
-    await vi.runAllTicks();
+  it('deve atualizar filtro de mês via onChange (setFilterMes)', () => {
+    render(<PagamentosPage />);
+    fireEvent.change(screen.getByLabelText('Mês'), { target: { value: '2026-07' } });
+    expect(mocks.setFilterMes).toHaveBeenCalledWith('2026-07');
+  });
 
-    const statusSelect = screen.getByLabelText('Status');
-    expect(statusSelect).toHaveValue('CALCULADA');
+  it('deve atualizar filtro de status via onChange (setFilterStatus)', () => {
+    render(<PagamentosPage />);
+    fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'PAGA' } });
+    expect(mocks.setFilterStatus).toHaveBeenCalledWith('PAGA');
   });
 });
 
-describe('PagamentosPage - Resumo', () => {
+describe('PagamentosPage - Resumo (cálculo puro)', () => {
   it('deve calcular total geral com comissões pagas', () => {
     const pagas = mockComissoes.filter(c => c.status === 'PAGA');
     const totalGeral = pagas.reduce((sum, c) => sum + c.valorComissao, 0);
@@ -124,116 +159,54 @@ describe('PagamentosPage - Resumo', () => {
 });
 
 describe('PagamentosPage - Pagamento', () => {
-  it('deve exibir erro quando nenhuma comissão selecionada', async () => {
-    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({}),
-    } as Response);
-
-    const { rerender } = render(PagamentosPage());
-    await vi.runAllTicks();
-
+  it('deve desabilitar o botão Pagar quando nenhuma comissão selecionada', () => {
+    setHookState({ selectedComissoes: [] });
+    render(<PagamentosPage />);
     const btnPagar = screen.getByRole('button', { name: /Pagar/ });
     expect(btnPagar).toBeDisabled();
   });
 
-  it('deve chamar API de pagamento quando há seleção', async () => {
-    const pagamentos = [...mockComissoes].filter(c => c.status === 'CALCULADA');
-    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        mensagem: 'Pagamento processado com sucesso',
-        valorComissao: 1100,
-      }),
-    } as Response);
-
-    const { rerender } = render(
-      <PagamentosPage>
-        <PagamentosPage.Comissao data={pagamentos} />
-      </PagamentosPage>
-    );
-    await vi.runAllTicks();
-
+  it('deve habilitar o botão Pagar e chamar handlePagar quando há seleção', () => {
+    setHookState({ selectedComissoes: ['1', '3'] });
+    render(<PagamentosPage />);
     const btnPagar = screen.getByRole('button', { name: /Pagar/ });
-    await act(async () => {
-      userEvent.click(btnPagar);
-    });
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/backoffice/comissoes/pagamento'),
-      expect.objectContaining({
-        method: 'POST',
-      })
-    );
+    expect(btnPagar).toBeEnabled();
+    fireEvent.click(btnPagar);
+    expect(mocks.handlePagar).toHaveBeenCalledTimes(1);
   });
 
-  it('deve exibir toast de sucesso ao pagar', async () => {
-    const pagamentos = [...mockComissoes].filter(c => c.status === 'CALCULADA');
-    const toastSpy = vi.spyOn('sonner', 'toast');
-    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        mensagem: 'Pagamento processado com sucesso',
-        valorComissao: 1100,
-      }),
-    } as Response);
+  it('deve exibir a contagem de comissões selecionadas no botão Pagar', () => {
+    setHookState({ selectedComissoes: ['1', '3'] });
+    render(<PagamentosPage />);
+    expect(screen.getByRole('button', { name: /2 Selecionada\(s\)/ })).toBeInTheDocument();
+  });
 
-    const { rerender } = render(
-      <PagamentosPage>
-        <PagamentosPage.Comissao data={pagamentos} />
-      </PagamentosPage>
-    );
-    await vi.runAllTicks();
+  it('deve habilitar o botão Exportar Recibo e chamar exportarRecibo quando há seleção', () => {
+    setHookState({ selectedComissoes: ['1'] });
+    render(<PagamentosPage />);
+    const btnExportar = screen.getByRole('button', { name: /Exportar Recibo/ });
+    expect(btnExportar).toBeEnabled();
+    fireEvent.click(btnExportar);
+    expect(mocks.exportarRecibo).toHaveBeenCalledTimes(1);
+  });
 
-    const btnPagar = screen.getByRole('button', { name: /Pagar/ });
-    await userEvent.click(btnPagar);
-
-    expect(toastSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Sucesso'),
-      expect.objectContaining({ type: 'success' })
-    );
+  it('deve desabilitar o botão Exportar Recibo quando nenhuma seleção', () => {
+    setHookState({ selectedComissoes: [] });
+    render(<PagamentosPage />);
+    expect(screen.getByRole('button', { name: /Exportar Recibo/ })).toBeDisabled();
   });
 });
 
-describe('PagamentosPage - Exportar Recibo', () => {
-  it('deve disparar download de recibo quando há seleção', async () => {
-    const downloadSpy = vi.spyOn(window, 'downloadEvent', () => undefined);
-    const linkClickSpy = vi.spyOn(document, 'createElement');
-    const blobSpy = vi.spyOn(window, 'URL', 'createObjectURL');
-    const revokeSpy = vi.spyOn(window.URL, 'revokeObjectURL');
-
-    const pagamentos = [...mockComissoes].filter(c => c.status === 'CALCULADA');
-    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ mensagem: 'OK' }),
-    } as Response);
-
-    const { rerender } = render(
-      <PagamentosPage>
-        <PagamentosPage.Comissao data={pagamentos} />
-      </PagamentosPage>
-    );
-    await vi.runAllTicks();
-
-    const btnExportar = screen.getByRole('button', { name: /Exportar Recibo/ });
-    await act(async () => {
-      userEvent.click(btnExportar);
-    });
-
-    expect(linkClickSpy).toHaveBeenCalled();
-    expect(blobSpy).toHaveBeenCalled();
-    expect(revokeSpy).toHaveBeenCalled();
-  });
-
+describe('PagamentosPage - Exportar Recibo (conteúdo puro)', () => {
   it('deve gerar conteúdo de recibo com totais corretos', () => {
-    const reciboConteudo = `RECIBO DE PAGAMENTO DE COMISSÕES\n===============================\n\nData: ${new Date().toLocaleDateString("pt-BR")}\n\nComissões Pagas: ----------------\n\nTotal: R$ 400,00\n===============================\nAcesso Saúde - Gestão de Comissões     `.trim();
+    const reciboConteudo = `RECIBO DE PAGAMENTO DE COMISSÕES\n===============================\n\nData: ${new Date().toLocaleDateString("pt-BR")}\n\nComissões Pagas: ----------------\n\nTOTAL: R$ 400,00\n===============================\nAcesso Saúde - Gestão de Comissões     `.trim();
 
     expect(reciboConteudo).toContain('RECIBO DE PAGAMENTO DE COMISSÕES');
     expect(reciboConteudo).toContain('TOTAL');
   });
 });
 
-describe('PagamentosPage - Totais', () => {
+describe('PagamentosPage - Totais e Tabela', () => {
   it('deve calcular totais corretamente', () => {
     const calculoTotalGeral = mockComissoes
       .filter(c => c.status === 'PAGA')
@@ -247,51 +220,24 @@ describe('PagamentosPage - Totais', () => {
     expect(calculoTotalSelecionado).toBe(1100);
   });
 
-  it('deve exibir totais na interface', () => {
-    const { container } = render(
-      <PagamentosPage>
-        <PagamentosPage.Comissao data={mockComissoes} />
-      </PagamentosPage>
-    );
-
+  it('deve renderizar os cards da interface', () => {
+    setHookState({ comissoes: mockComissoes });
+    const { container } = render(<PagamentosPage />);
     const cards = container.querySelectorAll('.card');
     expect(cards.length).toBeGreaterThan(0);
   });
-});
 
-describe('PagamentosPage - Filtros Aplicados', () => {
-  it('deve atualizar filtro de mês e recarregar', async () => {
-    const handleFilterMes = vi.fn();
-    const { rerender } = render(
-      <PagamentosPage
-        filterMes=""
-        onFilterMes={handleFilterMes}
-      />
-    );
-
-    const mesSelect = screen.getByLabelText('Mês');
-    await act(async () => {
-      await userEvent.type(mesSelect, '2026-07');
-      await userEvent.click(mesSelect);
-    });
-
-    expect(handleFilterMes).toHaveBeenCalledWith('2026-07');
+  it('deve renderizar as linhas de comissões na tabela', () => {
+    setHookState({ comissoes: mockComissoes });
+    render(<PagamentosPage />);
+    expect(screen.getByText('João Silva')).toBeInTheDocument();
+    expect(screen.getByText('Maria Costa')).toBeInTheDocument();
+    expect(screen.getByText('Pedro Almeida')).toBeInTheDocument();
   });
 
-  it('deve atualizar filtro de consultor PF e recarregar', async () => {
-    const handleFilterConsultorPf = vi.fn();
-    const { rerender } = render(
-      <PagamentosPage
-        filterConsultorPf=""
-        onFilterConsultorPf={handleFilterConsultorPf}
-      />
-    );
-
-    const consultorSelect = screen.getByLabelText('Todos os Usuários da Conta');
-    await act(async () => {
-      await userEvent.change(consultorSelect, { target: { value: 'co1' } });
-    });
-
-    expect(handleFilterConsultorPf).toHaveBeenCalledWith('co1');
+  it('deve renderizar estado vazio quando não há comissões', () => {
+    setHookState({ comissoes: [] });
+    render(<PagamentosPage />);
+    expect(screen.getByText('Nenhuma comissão encontrada')).toBeInTheDocument();
   });
 });

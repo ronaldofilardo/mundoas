@@ -204,44 +204,44 @@ describe('salvarMeta', () => {
  *     de versão que forçaria React a remontar o input a cada save.
  */
 describe('ConsultoresPfPage - invariantes estruturais', () => {
-  const pagePath = join(__dirname, '../(dashboard)/lideranca/equipe/consultores-pf/page.tsx');
-  const source = readFileSync(pagePath, 'utf-8');
+  const basePath = join(__dirname, '../(dashboard)/lideranca/equipe/consultores-pf');
+  const pageSource = readFileSync(join(basePath, 'page.tsx'), 'utf-8');
+  const tablePath = join(basePath, '_components/consultores-pf-table.tsx');
+  const tableSource = readFileSync(tablePath, 'utf-8');
+  const hookPath = join(basePath, 'hooks/use-metas-consultores-pf.ts');
+  const hookSource = readFileSync(hookPath, 'utf-8');
 
   it('a página existe e importa os utilitários extraídos', () => {
-    expect(source).toContain('from "./utils"');
+    expect(tableSource).toContain('from "../utils"');
   });
 
   it('a página deve usar MESES_ANO (12 meses) como fonte de verdade', () => {
-    expect(source).toContain('MESES_ANO');
+    expect(tableSource).toContain('MESES_ANO');
   });
 
   it('handleSalvarMeta NÃO deve chamar fetchMetasGerais (evita remount)', () => {
-    const fnStart = source.indexOf('async function handleSalvarMeta');
+    const fnStart = hookSource.indexOf('async (consultorId: string, mesRef: string, rawValor: string)');
     expect(fnStart).toBeGreaterThan(-1);
 
-    const fnEnd = source.indexOf('\n  }', fnStart);
-    const fnBody = source.substring(fnStart, fnEnd);
+    const fnEnd = hookSource.indexOf('\n    }', fnStart);
+    const fnBody = hookSource.substring(fnStart, fnEnd);
 
     expect(fnBody).not.toContain('fetchMetasGerais');
     expect(fnBody).not.toContain('setMetasPorConsultor');
   });
 
   it('os inputs de meta devem ser uncontrolled (defaultValue, sem value+onChange)', () => {
-    // Encontra o trecho dos inputs de meta
-    const inputMatch = source.match(/<input[\s\S]*?placeholder="R\$"[\s\S]*?\/>/);
+    const inputMatch = tableSource.match(/<input[\s\S]*?placeholder="R\$"[\s\S]*?\/>/);
     expect(inputMatch).not.toBeNull();
     const inputTag = inputMatch![0];
 
-    // Deve usar defaultValue
     expect(inputTag).toMatch(/defaultValue=/);
-    // NÃO deve ter value= controlado
     expect(inputTag).not.toMatch(/\bvalue=\{[^}]/);
-    // NÃO deve ter onChange (que tornaria o input controlado)
     expect(inputTag).not.toMatch(/onChange=/);
   });
 
   it('a key da célula <td> do mês deve ser estável (apenas m.value, sem version)', () => {
-    const tdMatch = source.match(/<td key=\{[^}]+\} className="p-1">/);
+    const tdMatch = tableSource.match(/<td key=\{[^}]+\} className="p-1">/);
     expect(tdMatch).not.toBeNull();
     expect(tdMatch![0]).toContain('m.value');
     expect(tdMatch![0]).not.toContain('Version');
@@ -249,48 +249,40 @@ describe('ConsultoresPfPage - invariantes estruturais', () => {
   });
 
   it('o handler onBlur NÃO deve chamar nada se o valor estiver vazio', () => {
-    // Garante que inputs vazios não disparam POST (preserva dados já salvos)
-    const onBlurMatch = source.match(/onBlur=\{[\s\S]*?\}\}/);
+    const onBlurMatch = tableSource.match(/onBlur=\{[\s\S]*?\}\}/);
     expect(onBlurMatch).not.toBeNull();
     const onBlurBody = onBlurMatch![0];
 
     expect(onBlurBody).toMatch(/!==\s*["']["']/);
-    expect(onBlurBody).toContain('handleSalvarMeta');
+    expect(onBlurBody).toContain('onSalvarMeta');
   });
 
   it('a URL do POST deve apontar para o endpoint de metas do consultor PF', () => {
-    // URL vive em utils.ts (refatoração para testabilidade)
-    const utilsPath = join(__dirname, '../(dashboard)/lideranca/equipe/consultores-pf/utils.ts');
+    const utilsPath = join(basePath, 'utils.ts');
     const utilsSource = readFileSync(utilsPath, 'utf-8');
     expect(utilsSource).toContain('/api/v1/lideranca/consultores-pf/${consultorId}/metas');
     expect(utilsSource).toMatch(/method:\s*["']POST["']/);
   });
 
   it('a página deve renderizar 12 colunas de mês no header da tabela', () => {
-    // O thead é gerado via .map(MESES_ANO), então o source contém o template
-    // literal JSX {m.label}/{anoReferencia}.
-    expect(source).toContain('{m.label}/{anoReferencia}');
+    expect(tableSource).toContain('{m.label}/{anoReferencia}');
 
-    // O componente itera MESES_ANO no header (uma vez) e no body (outra vez)
-    const headerMatch = source.match(/MESES_ANO\.map\(\(m\)/g) ?? [];
+    const headerMatch = tableSource.match(/MESES_ANO\.map\(\(m\)/g) ?? [];
     expect(headerMatch.length).toBeGreaterThanOrEqual(2);
   });
 
   it('o colspan do estado vazio deve incluir as 12 colunas de mês', () => {
-    expect(source).toContain('colSpan={4 + MESES_ANO.length}');
+    expect(tableSource).toContain('colSpan={4 + MESES_ANO.length}');
   });
 
   it('cada input deve ter aria-label identificando consultor e mês (acessibilidade)', () => {
-    expect(source).toContain('aria-label={`Meta de ${c.nome} para ${m.label}/');
+    expect(tableSource).toContain('aria-label={`Meta de ${c.nome} para ${m.label}/');
   });
 
   it('a página NÃO deve usar state controlado por mês para os valores das metas', () => {
-    // Se houvesse useState por mês (ex: const [metaJan, setMetaJan]), o valor
-    // voltaria ao estado inicial após qualquer re-render. Garante que não existe.
-    // Estados "metasPorConsultor"/"setMetasPorConsultor" são do map, não por mês.
-    const matches = source.match(/useState<[^>]*>\s*\(\s*["']["']\s*\)/g) ?? [];
+    const matches = hookSource.match(/useState<[^>]*>\s*\(\s*["']["']\s*\)/g) ?? [];
     expect(matches).toHaveLength(0);
-    const perMonthState = source.match(/const \[meta[A-Z]\w*,\s*setMeta[A-Z]\w*\]/g) ?? [];
+    const perMonthState = hookSource.match(/const \[meta[A-Z]\w*,\s*setMeta[A-Z]\w*\]/g) ?? [];
     expect(perMonthState).toHaveLength(0);
   });
 });

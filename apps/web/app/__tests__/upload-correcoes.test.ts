@@ -124,14 +124,11 @@ describe("Upload - Detecção de Cabeçalho", () => {
 
     // Verificar lógica de pular linhas vazias
     const linhasValidas = rawData.filter((row) => {
-      const todosVazios =
-        (!row["Data de Referência"] || !row["Data do Pagamento"]) &&
-        (!row["Forma de Pagamento"] || row["Forma de Pagamento"] === "") &&
-        (!row["Total Pago"] || row["Total Pago"] === 0) &&
-        (!row["Paciente"] || row["Paciente"] === "") &&
-        (!row["Procedimento"] || row["Procedimento"] === "");
-
-      return !todosVazios;
+      const keys = Object.keys(row);
+      if (keys.length === 0) return false;
+      return keys.some(
+        (k) => row[k] !== undefined && row[k] !== "" && row[k] !== 0,
+      );
     });
 
     expect(linhasValidas.length).toBe(2); // Apenas 2 linhas com dados

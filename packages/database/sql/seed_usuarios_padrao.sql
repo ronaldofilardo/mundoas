@@ -4,14 +4,6 @@
 -- Senha de todos: 123456
 
 -- ============================================================
--- 0. Garantir que existe o valor 'GESTOR_PJ' no enum TipoUsuario
--- ============================================================
-DO $$ BEGIN
-  ALTER TYPE "TipoUsuario" ADD VALUE IF NOT EXISTS 'GESTOR_PJ';
-EXCEPTION WHEN OTHERS THEN NULL;
-END $$;
-
--- ============================================================
 -- 1. ADMIN: admin@asa.com / 123456
 -- ============================================================
 INSERT INTO usuarios (id, nome, email, senha_hash, tipo, telefone, status, senha_temporaria, papel, criado_em, atualizado_em)

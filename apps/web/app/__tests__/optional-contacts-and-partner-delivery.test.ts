@@ -9,8 +9,8 @@ const parceiroPage = read("app", "(dashboard)", "parceiro", "pontos", "component
 const parceiroApi = read("app", "api", "v1", "parceiro", "pontos", "resgates", "route.ts");
 const comercialForm = read("app", "(dashboard)", "backoffice", "usuarios", "comerciais", "components", "novo-comercial-form.tsx");
 const consultorModal = read("app", "(dashboard)", "lideranca", "equipe", "consultores-pf", "_components", "novo-consultor-pf-modal.tsx");
-const consultorForm = read("app", "(dashboard)", "backoffice", "comissionamento", "equipe", "components", "consultor-pf-form.tsx");
-const equipeApi = read("app", "api", "v1", "backoffice", "equipe", "route.ts");
+const consultorForm = read("app", "(dashboard)", "backoffice", "comissionamento", "equipe", "_components", "ConsultorPfFormFields.tsx");
+const equipeApi = read("app", "api", "v1", "backoffice", "equipe", "mutations-create.ts");
 const consultorApi = read("app", "api", "v1", "lideranca", "consultores-pf", "route.ts");
 const sharedSchema = read("..", "..", "packages", "shared", "src", "schemas.ts");
 

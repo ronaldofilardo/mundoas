@@ -50,27 +50,7 @@ async function main() {
   });
   console.log("OK Backoffice:", backofficeUsuario.email, "papel=BACKOFFICE");
 
-  // 3. Gestor PJ (Pessoa Juridica)
-  const gestorPjUsuario = await prisma.usuario.upsert({
-    where: { email: "gestor-pj@asa.com" },
-    update: {
-      senhaHash: senhaPadrao,
-      senhaTemporaria: false,
-      tipo: "BACKOFFICE",
-      papel: "GESTOR_PJ",
-    },
-    create: {
-      nome: "Gestor PJ",
-      email: "gestor-pj@asa.com",
-      senhaHash: senhaPadrao,
-      tipo: "BACKOFFICE",
-      papel: "GESTOR_PJ",
-      senhaTemporaria: false,
-    },
-  });
-  console.log("OK Gestor PJ:", gestorPjUsuario.email, "papel=GESTOR_PJ");
-
-  // 4. Consultor
+  // 3. Consultor
   const consultorUsuario = await prisma.usuario.upsert({
     where: { email: "consultor@asa.com" },
     update: { senhaHash: senhaPadrao, senhaTemporaria: false },
@@ -93,10 +73,9 @@ async function main() {
   });
   console.log("OK Consultor:", consultorUsuario.email);
 
-  console.log("\n4 usuarios semeados com senha 123456");
+  console.log("\n3 usuarios semeados com senha 123456");
   console.log("   Admin       -> /admin/usuarios");
   console.log("   Backoffice  -> /backoffice/dashboard  (papel=BACKOFFICE)");
-  console.log("   Gestor PJ   -> /gestor/dashboard      (papel=GESTOR_PJ)");
   console.log("   Consultor PF -> /consultor/comissoes");
 }
 

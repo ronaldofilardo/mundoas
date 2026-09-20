@@ -100,20 +100,22 @@ export async function processarGETEquipeList(
       })),
     }));
 
-  const commerciais = membros
+  const comerciais = membros
     .filter((m) => m.tipo === "COMERCIAL")
     .map((l) => ({
       id: l.id,
       nome: l.nome,
       cpf: l.cpf,
       email: l.usuario.email,
+      tipo: l.tipo,
+      tipoLideranca: l.tipoLideranca,
       funcao: l.funcao,
       percentualComissao: l.percentualComissao,
       status: l.status,
       senhaTemporaria: l.usuario.senhaTemporaria,
     }));
 
-  return ok({ liderancas, commerciais });
+  return ok({ liderancas, comerciais });
 }
 
 export async function processarGETEquipeId(

@@ -5,7 +5,8 @@ import { join } from "node:path";
 const root = join(__dirname, "../..");
 const read = (...parts: string[]) => readFileSync(join(root, ...parts), "utf8");
 
-const component = read("app", "(dashboard)", "backoffice", "pontos", "components", "premios-pontos.tsx");
+const component = read("components", "backoffice", "pontos", "components", "premios-form.tsx");
+const premiosPontosWrapper = read("app", "(dashboard)", "backoffice", "pontos", "components", "premios-pontos.tsx");
 const premiosRoute = read("app", "api", "v1", "backoffice", "pontos", "premios", "route.ts");
 const parceiroResgateRoute = read("app", "api", "v1", "parceiro", "pontos", "resgates", "route.ts");
 const consultorResgateRoute = read("app", "api", "v1", "consultor", "bonus", "resgates", "route.ts");
@@ -21,7 +22,7 @@ describe("Prêmios de Indicação — prazo de entrega", () => {
     expect(component).toContain("Prazo de entrega");
     expect(component).toContain("Após a aprovação do resgate");
     expect(component).toContain("xl:grid-cols-4");
-    expect(component).toContain('aria-labelledby="premios-title"');
+    expect(premiosPontosWrapper).toContain('aria-labelledby="premios-title"');
   });
 
   it("valida, persiste e retorna prazoEntregaDias na API de prêmios", () => {

@@ -22,11 +22,6 @@ export function isBackofficeRole(user?: UserRoleLike | null): boolean {
   );
 }
 
-export function isGestorPjRole(user?: UserRoleLike | null): boolean {
-  if (!user) return false;
-  return user.tipo === "GESTOR" && user.papel === "GESTOR_PJ";
-}
-
 export function isLiderancaRole(user?: UserRoleLike | null): boolean {
   return user?.tipo === "LIDERANCA";
 }
@@ -46,7 +41,6 @@ export function isComercialRole(user?: UserRoleLike | null): boolean {
 export function getCanonicalRole(user?: UserRoleLike | null): string {
   if (isAdminRole(user)) return "ADMIN";
   if (isBackofficeRole(user)) return "BACKOFFICE";
-  if (isGestorPjRole(user)) return "GESTOR_PJ";
   if (isLiderancaRole(user)) return "LIDERANCA";
   if (isConsultorRole(user)) return "CONSULTOR_PF";
   if (isParceiroRole(user)) return "PARCEIRO";
@@ -65,7 +59,6 @@ export function hasAnyRole(
 export function dashboardForUser(user?: UserRoleLike | null): string {
   if (isAdminRole(user)) return "/admin/usuarios";
   if (isBackofficeRole(user)) return "/backoffice/dashboard";
-  if (isGestorPjRole(user)) return "/gestor/dashboard";
   if (isParceiroRole(user)) return "/parceiro/indicados";
   if (isComercialRole(user)) return "/comercial/minha-comissao";
   if (isConsultorRole(user)) return "/consultor/comissoes";

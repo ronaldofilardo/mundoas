@@ -13,6 +13,10 @@ vi.mock('@asa/database', () => ({
   prisma: mockPrisma,
 }));
 
+vi.mock('@/lib/db', () => ({
+  prisma: mockPrisma,
+}));
+
 const mockBackofficeId = 'backoffice-id-resgate';
 
 const createMockExcel = (data: any[]) => {

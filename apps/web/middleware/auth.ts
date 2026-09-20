@@ -21,7 +21,6 @@ const ROUTE_RULES = [
     allowedTipos: ["BACKOFFICE", "GESTOR"],
     allowedPapeis: ["BACKOFFICE"],
   },
-  { prefix: "/gestor", allowedTipos: ["GESTOR"], allowedPapeis: ["GESTOR_PJ"] },
   { prefix: "/parceiro", allowedTipos: ["PARCEIRO"] },
   { prefix: "/comercial", allowedTipos: ["COMERCIAL"] },
   { prefix: "/consultor", allowedTipos: ["CONSULTOR", "CONSULTOR_PF"] },

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const root = join(__dirname, "../..");
 const read = (...parts: string[]) => readFileSync(join(root, ...parts), "utf8");
-const singleRoute = read("app", "api", "v1", "backoffice", "pontos", "distribuir", "route.ts");
+const singleRoute = read("app", "api", "v1", "backoffice", "pontos", "distribuir", "service.ts");
 const batchRoute = read("app", "api", "v1", "backoffice", "pontos", "distribuir-todos", "route.ts");
 const bonusRoute = read("app", "api", "v1", "backoffice", "pontos", "bonus", "distribuir", "route.ts");
 const migration = read("../../packages", "database", "prisma", "migrations", "20260821000000_hardening_parceiros_pontos", "migration.sql");

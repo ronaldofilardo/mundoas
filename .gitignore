@@ -55,3 +55,6 @@ Thumbs.db
 query.sql
 query2.js
 query3.js
+
+# Test baseline output
+test-baseline-output.txt

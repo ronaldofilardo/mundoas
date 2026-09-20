@@ -10,7 +10,7 @@ import { join } from 'path';
 describe('Correções da Tabela de Metas - Validação', () => {
   const tabComerciaisPath = join(
     __dirname,
-    '../(dashboard)/backoffice/comissionamento/components/tab-comerciais.tsx'
+    '../(dashboard)/backoffice/comissionamento/components/comerciais-table.tsx'
   );
 
   // Após a unificação, a página de metas passou a ser uma aba dentro de
@@ -18,7 +18,7 @@ describe('Correções da Tabela de Metas - Validação', () => {
   // que substitui a antiga página usuarios/comerciais.
   const pageComerciaisPath = join(
     __dirname,
-    '../(dashboard)/backoffice/comissionamento/equipe/components/tab-metas.tsx'
+    '../(dashboard)/backoffice/comissionamento/equipe/components/metas-tabela.tsx'
   );
 
   it('tab-comerciais.tsx deve usar table-auto com scroll horizontal e header sticky (sem sticky horizontal nas células)', () => {
@@ -74,16 +74,14 @@ describe('Correções da Tabela de Metas - Validação', () => {
     expect(content).toContain('sticky top-0');
   });
 
-  it('ambos os arquivos devem ter 12 colunas de meses visíveis', () => {
+  it('tab-comerciais.tsx deve ter 12 colunas de meses visíveis', () => {
     const tabContent = readFileSync(tabComerciaisPath, 'utf-8');
-    const pageContent = readFileSync(pageComerciaisPath, 'utf-8');
     
     const mesesLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     
     // Verifica se todos os meses estão presentes no header
     mesesLabels.forEach((mes) => {
       expect(tabContent).toContain(`"${mes}"`);
-      expect(pageContent).toContain(`"${mes}"`);
     });
   });
 

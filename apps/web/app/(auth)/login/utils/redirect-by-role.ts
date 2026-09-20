@@ -28,13 +28,12 @@ export function resolveLoginRoute(params: RedirectParams): string {
   const routes: Record<string, string> = {
     ADMIN: "/admin/usuarios",
     BACKOFFICE: "/backoffice/dashboard",
-    GESTOR_PJ: "/gestor/dashboard",
     PARCEIRO: "/parceiro/indicados",
     LIDERANCA: "/lideranca",
   };
 
   if (tipo === "GESTOR") {
-    return papel === "BACKOFFICE" ? "/backoffice/dashboard" : papel === "GESTOR_PJ" ? "/gestor/dashboard" : fallbackRoute;
+    return papel === "BACKOFFICE" ? "/backoffice/dashboard" : fallbackRoute;
   }
 
   if (tipo === "CONSULTOR" || tipo === "CONSULTOR_PF") {

@@ -50,7 +50,7 @@ const createMockExcel = (data: any[][], fileName = "test.xlsx"): File => {
 };
 
 const BACKOFFICE_ID = "bo-teste";
-const CPF_VALIDO = "52998224725";
+const CPF_VALIDO = "12345678900";
 
 import { processarUploadPlanilhaPF } from "@/lib/processar-upload-pf";
 
@@ -182,7 +182,7 @@ describe("processarUploadPlanilhaPF - validação e matching", () => {
     });
 
     it("encontra parceiro pela indicação (CPF do indicado)", async () => {
-      const cpfIndicado = "52998224725";
+      const cpfIndicado = "98765432110";
       mockPrisma.parceiro.findMany.mockResolvedValue([
         {
           id: "p1",
