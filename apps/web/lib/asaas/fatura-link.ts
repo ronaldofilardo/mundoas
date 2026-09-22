@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/db";
-import { buscarOuCriarCustomer, criarCobrancaAvulsa, type BillingType } from "./client";
+import {
+  buscarOuCriarCustomer,
+  buscarPagamento,
+  criarCobrancaAvulsa,
+  type BillingType,
+} from "./client";
 
 export interface GarantirLinkContexto {
   fatura?: {
@@ -11,6 +16,7 @@ export interface GarantirLinkContexto {
     pagoManualmente?: boolean;
     linkFatura?: string | null;
     linkBoleto?: string | null;
+    asaasPaymentId?: string | null;
   };
   assinaturaId?: string;
   asaasCustomerId?: string | null;
@@ -25,6 +31,22 @@ export interface GarantirLinkContexto {
   } | null;
 }
 
+export type GarantirLinkResultado = {
+  link: string | null;
+  error?: string;
+};
+
+function linkDoPagamento(p: {
+  invoiceUrl?: string | null;
+  bankSlipUrl?: string | null;
+  id?: string;
+}): string | null {
+  if (p.invoiceUrl) return p.invoiceUrl;
+  if (p.bankSlipUrl) return p.bankSlipUrl;
+  if (p.id) return `https://www.asaas.com/i/${p.id}`;
+  return null;
+}
+
 /**
  * Garante que uma fatura cadastrada no sistema (mesmo que criada manualmente
  * fora do Asaas) possua uma cobrança correspondente no gateway Asaas e retorna
@@ -33,14 +55,14 @@ export interface GarantirLinkContexto {
 export async function garantirLinkFaturaAsaas(
   faturaId: string,
   contexto?: GarantirLinkContexto,
-): Promise<string | null> {
+): Promise<GarantirLinkResultado> {
   let fatura = contexto?.fatura;
   let bo = contexto?.backoffice;
   let asaasCustomerId = contexto?.asaasCustomerId;
   let assinaturaId = contexto?.assinaturaId;
 
   if (!fatura) {
-    if (!prisma.faturaAsaas?.findUnique) return null;
+    if (!prisma.faturaAsaas?.findUnique) return { link: null, error: "Fatura indisponível." };
     const faturaDb = await prisma.faturaAsaas.findUnique({
       where: { id: faturaId },
       include: {
@@ -62,7 +84,7 @@ export async function garantirLinkFaturaAsaas(
       },
     });
 
-    if (!faturaDb) return null;
+    if (!faturaDb) return { link: null, error: "Fatura não encontrada." };
     fatura = faturaDb;
     bo = faturaDb.assinatura?.backoffice;
     asaasCustomerId = faturaDb.assinatura?.asaasCustomerId;
@@ -75,23 +97,48 @@ export async function garantirLinkFaturaAsaas(
     fatura.statusPagamento === "CONFIRMED" ||
     fatura.statusPagamento === "RECEIVED"
   ) {
-    return fatura.linkFatura ?? null;
+    return { link: fatura.linkFatura ?? fatura.linkBoleto ?? null };
   }
 
   const isSandboxEnv = process.env.ASAAS_SANDBOX === "true";
-  const linkEhSandbox = fatura.linkFatura?.includes("sandbox.asaas.com");
+  const linkEhSandbox =
+    Boolean(fatura.linkFatura?.includes("sandbox.asaas.com")) ||
+    Boolean(fatura.linkBoleto?.includes("sandbox.asaas.com"));
 
   // Se já possui link da fatura no Asaas e condizente com o ambiente, retorna imediatamente
   if (fatura.linkFatura && (!linkEhSandbox || isSandboxEnv)) {
-    return fatura.linkFatura;
+    return { link: fatura.linkFatura };
+  }
+  if (fatura.linkBoleto && (!linkEhSandbox || isSandboxEnv)) {
+    return { link: fatura.linkBoleto };
   }
 
-  // Sem chave configurada do Asaas ou sem dados do backoffice, não é possível criar
-  if (!process.env.ASAAS_API_KEY || !bo) {
-    return null;
+  if (!process.env.ASAAS_API_KEY) {
+    return { link: null, error: "ASAAS_API_KEY não configurada no servidor." };
+  }
+  if (!bo) {
+    return { link: null, error: "Dados da unidade incompletos para gerar cobrança." };
   }
 
   try {
+    // Já existe cobrança no Asaas: reutiliza em vez de criar duplicada
+    if (fatura.asaasPaymentId) {
+      const existente = await buscarPagamento(fatura.asaasPaymentId);
+      const linkExistente = existente ? linkDoPagamento(existente) : null;
+      if (linkExistente) {
+        if (prisma.faturaAsaas?.update) {
+          await prisma.faturaAsaas.update({
+            where: { id: fatura.id },
+            data: {
+              linkFatura: existente!.invoiceUrl ?? fatura.linkFatura ?? null,
+              linkBoleto: existente!.bankSlipUrl ?? fatura.linkBoleto ?? null,
+            },
+          });
+        }
+        return { link: linkExistente };
+      }
+    }
+
     let customer;
     try {
       customer = await buscarOuCriarCustomer({
@@ -142,8 +189,10 @@ export async function garantirLinkFaturaAsaas(
       externalReference: bo.id,
     });
 
+    const link = linkDoPagamento(cobranca);
+
     if (prisma.faturaAsaas?.update) {
-      const atualizada = await prisma.faturaAsaas.update({
+      await prisma.faturaAsaas.update({
         where: { id: fatura.id },
         data: {
           asaasPaymentId: cobranca.id,
@@ -151,12 +200,15 @@ export async function garantirLinkFaturaAsaas(
           linkBoleto: cobranca.bankSlipUrl ?? null,
         },
       });
-      return atualizada.linkFatura;
     }
 
-    return cobranca.invoiceUrl ?? null;
+    if (!link) {
+      return { link: null, error: "Asaas criou a cobrança mas não retornou link de pagamento." };
+    }
+    return { link };
   } catch (err) {
+    const mensagem = err instanceof Error ? err.message : "Falha ao contatar o Asaas.";
     console.error("[garantirLinkFaturaAsaas] Erro ao gerar cobrança no Asaas:", err);
-    return null;
+    return { link: null, error: mensagem };
   }
 }

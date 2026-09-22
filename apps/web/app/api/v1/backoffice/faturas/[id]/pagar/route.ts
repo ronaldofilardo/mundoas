@@ -28,10 +28,19 @@ export async function GET(
     return badRequest("Esta fatura já foi paga.");
   }
 
-  const link = await garantirLinkFaturaAsaas(fatura.id);
+  const { link, error: linkError } = await garantirLinkFaturaAsaas(fatura.id);
 
   if (!link) {
-    return badRequest("Não foi possível obter o link de pagamento do Asaas no momento.");
+    console.error("[backoffice/faturas/pagar] Sem link:", {
+      faturaId: fatura.id,
+      asaasPaymentId: fatura.asaasPaymentId,
+      linkError,
+    });
+    return badRequest(
+      linkError
+        ? `Não foi possível obter o link de pagamento do Asaas no momento: ${linkError}`
+        : "Não foi possível obter o link de pagamento do Asaas no momento.",
+    );
   }
 
   return NextResponse.redirect(link);

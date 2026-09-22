@@ -195,3 +195,12 @@ export async function reenviarNotificacaoCobranca(paymentId: string): Promise<bo
     return false;
   }
 }
+
+export async function buscarPagamento(paymentId: string): Promise<AsaasPayment | null> {
+  try {
+    return await asaasFetch<AsaasPayment>(`/payments/${encodeURIComponent(paymentId)}`);
+  } catch (err) {
+    console.warn(`[asaas] Falha ao buscar pagamento ${paymentId}:`, err);
+    return null;
+  }
+}

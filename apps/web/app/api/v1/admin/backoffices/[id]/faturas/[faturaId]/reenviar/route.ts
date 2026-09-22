@@ -44,8 +44,11 @@ export async function POST(
     // Garante que o link do Asaas esteja disponível
     let linkPagamento = fatura.linkFatura || fatura.linkBoleto;
     if (!linkPagamento || !fatura.asaasPaymentId) {
-      const link = await garantirLinkFaturaAsaas(fatura.id);
-      linkPagamento = link;
+      const resultado = await garantirLinkFaturaAsaas(fatura.id);
+      linkPagamento = resultado.link;
+      if (!linkPagamento && resultado.error) {
+        console.warn("[reenviar] Falha ao obter link Asaas:", resultado.error);
+      }
     }
 
     // Se houver cobrança no Asaas, aciona a API de reenvio de notificações

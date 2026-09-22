@@ -44,12 +44,19 @@ export async function GET() {
       let linkBoleto = f.linkBoleto;
 
       if (!f.pagoManualmente && !["CONFIRMED", "RECEIVED"].includes(f.statusPagamento) && !linkFatura) {
-        linkFatura = await garantirLinkFaturaAsaas(f.id, {
+        const resultado = await garantirLinkFaturaAsaas(f.id, {
           fatura: f,
           assinaturaId: assinatura.id,
           asaasCustomerId: assinatura.asaasCustomerId,
           backoffice,
         });
+        linkFatura = resultado.link;
+        if (!linkFatura && resultado.error) {
+          console.warn("[backoffice/assinatura] Falha ao obter link Asaas:", {
+            faturaId: f.id,
+            error: resultado.error,
+          });
+        }
       }
 
       return {
