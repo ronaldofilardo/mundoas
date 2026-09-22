@@ -51,16 +51,41 @@ describe("API webhooks/asaas — contrato funcional", () => {
 
   it("rejeita token inválido", async () => {
     const response = await POST(buildRequest({ event: "PAYMENT_CONFIRMED" }, "token-errado"));
+    const body = await response.json();
 
     expect(response.status).toBe(401);
+    expect(body.debug).toMatchObject({
+      serverConfigured: true,
+      headerPresent: true,
+      match: false,
+    });
     expect(prismaMock.assinatura.findFirst).not.toHaveBeenCalled();
   });
 
   it("rejeita requisição quando ASAAS_WEBHOOK_TOKEN não configurado", async () => {
     process.env.ASAAS_WEBHOOK_TOKEN = "";
     const response = await POST(buildRequest({ event: "PAYMENT_CONFIRMED" }));
+    const body = await response.json();
 
     expect(response.status).toBe(401);
+    expect(body.debug).toMatchObject({
+      serverConfigured: false,
+      headerPresent: false,
+      match: false,
+    });
+    expect(prismaMock.assinatura.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("rejeita quando header asaas-access-token ausente mas env configurada", async () => {
+    const response = await POST(buildRequest({ event: "PAYMENT_CONFIRMED" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body.debug).toMatchObject({
+      serverConfigured: true,
+      headerPresent: false,
+      match: false,
+    });
     expect(prismaMock.assinatura.findFirst).not.toHaveBeenCalled();
   });
 

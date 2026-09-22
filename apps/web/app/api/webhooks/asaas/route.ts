@@ -141,12 +141,26 @@ async function baixarFaturaAvulsa(
 }
 
 export async function POST(req: NextRequest) {
-  const tokenEsperado = process.env.ASAAS_WEBHOOK_TOKEN;
-  const tokenRecebido = req.headers.get("asaas-access-token");
+  const tokenEsperado = (process.env.ASAAS_WEBHOOK_TOKEN ?? "").trim();
+  const tokenRecebido = (req.headers.get("asaas-access-token") ?? "").trim();
 
   // Segurança crítica: rejeitar se token não estiver configurado no servidor ou se diferir do recebido
-  if (!tokenEsperado || tokenRecebido !== tokenEsperado) {
-    return NextResponse.json({ error: "Token de webhook inválido ou não configurado." }, { status: 401 });
+  if (!tokenEsperado || !tokenRecebido || tokenRecebido !== tokenEsperado) {
+    // Diagnóstico seguro (sem expor o token completo) — visível na resposta do Asaas e nos logs
+    const debug = {
+      serverConfigured: Boolean(tokenEsperado),
+      headerPresent: Boolean(tokenRecebido),
+      serverLen: tokenEsperado.length,
+      headerLen: tokenRecebido.length,
+      serverPrefix: tokenEsperado.slice(0, 12),
+      headerPrefix: tokenRecebido.slice(0, 12),
+      match: Boolean(tokenEsperado) && Boolean(tokenRecebido) && tokenRecebido === tokenEsperado,
+    };
+    console.error("[webhooks/asaas] 401 auth:", JSON.stringify(debug));
+    return NextResponse.json(
+      { error: "Token de webhook inválido ou não configurado.", debug },
+      { status: 401 },
+    );
   }
 
   const body = (await req.json().catch(() => null)) as AsaasWebhookBody | null;
