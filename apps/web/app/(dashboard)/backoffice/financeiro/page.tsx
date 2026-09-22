@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { formatarData } from "@/util/format-data";
-import { isFaturaPaga } from "@/lib/billing/inadimplencia";
+import { isFaturaPaga } from "@/lib/billing/fatura-status";
 
 interface Fatura {
   id: string;

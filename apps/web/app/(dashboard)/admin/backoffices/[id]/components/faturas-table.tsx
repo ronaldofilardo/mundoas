@@ -1,6 +1,6 @@
 import type { Fatura } from "../types";
 import { formatarMoeda, formatarData } from "../utils";
-import { isFaturaPaga } from "@/lib/billing/inadimplencia";
+import { isFaturaPaga } from "@/lib/billing/fatura-status";
 
 // Calcula dias de atraso de forma simples (sem depender do servidor)
 function calcularDiasAtrasoClient(vencimento: string): number {
