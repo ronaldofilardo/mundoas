@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { formatarData } from "@/util/format-data";
 
 interface FinanceiroData {
   porStatus: Record<string, number>;
@@ -25,11 +26,6 @@ interface FinanceiroData {
 
 function formatarMoeda(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
-function formatarData(dateStr: string | null) {
-  if (!dateStr) return "-";
-  return new Date(dateStr).toLocaleDateString("pt-BR");
 }
 
 function StatCard({
@@ -125,7 +121,7 @@ export default function AdminFinanceiroPage() {
                 <tr key={f.id} className="border-b hover:bg-gray-50">
                   <td className="p-2 text-gray-900">{f.unidade}</td>
                   <td className="p-2 text-gray-600">{formatarMoeda(f.valor)}</td>
-                  <td className="p-2 text-red-600">{formatarData(f.vencimento)}</td>
+                  <td className="p-2 text-red-600">{formatarData(f.vencimento, "-")}</td>
                   <td className="p-2">
                     <Link href="/admin/backoffices" className="text-blue-600 hover:underline">
                       Ver unidades
@@ -161,7 +157,7 @@ export default function AdminFinanceiroPage() {
                 <tr key={f.id} className="border-b hover:bg-gray-50">
                   <td className="p-2 text-gray-900">{f.unidade}</td>
                   <td className="p-2 text-gray-600">{formatarMoeda(f.valor)}</td>
-                  <td className="p-2 text-green-600">{formatarData(f.pagoEm)}</td>
+                  <td className="p-2 text-green-600">{formatarData(f.pagoEm, "-")}</td>
                 </tr>
               ))}
               {data.ultimasPagas.length === 0 && (

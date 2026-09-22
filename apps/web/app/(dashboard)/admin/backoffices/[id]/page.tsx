@@ -30,7 +30,9 @@ export default function DetalheBackofficePage() {
     fetchFaturas,
     criarFatura,
     marcarPago,
+    reenviarFatura,
   } = useFaturas(backofficeId, { onAssinaturaPodeMudar: handleAssinaturaMudou });
+
 
   const acaoEmAndamento = acaoAssinatura || acaoFaturas;
 
@@ -97,7 +99,9 @@ export default function DetalheBackofficePage() {
           faturas={faturas}
           acaoEmAndamento={acaoEmAndamento}
           onMarcarPago={marcarPago}
+          onReenviar={reenviarFatura}
         />
+
       </div>
 
       {modalFatura && (

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@asa/database";
 import { requireAdmin, badRequest, notFound, created, ok } from "@/lib/api-helpers";
 import { criarAuditLog } from "@/lib/audit";
+import { buscarOuCriarCustomer, criarCobrancaAvulsa, type BillingType } from "@/lib/asaas/client";
 
 export async function POST(
   req: NextRequest,
@@ -51,8 +52,65 @@ export async function POST(
     // esse aceite.
     if (pago && assinatura.statusAssinatura === "PENDENTE_TERMOS") {
       return badRequest(
-        "Esta unidade ainda não aceitou os termos de uso. Não é possível dar baixa em pagamento antes disso.",
+        "Esta unidade ainda não aceitado os termos de uso. Não é possível dar baixa em pagamento antes disso.",
       );
+    }
+
+    let asaasPaymentId: string | null = null;
+    let linkFatura: string | null = null;
+    let linkBoleto: string | null = null;
+
+    // Se não for pagamento já recebido (offline), gera a cobrança no gateway Asaas
+    // para viabilizar o link de pagamento para a unidade.
+    if (!pago && process.env.ASAAS_API_KEY && prisma.backoffice?.findUnique) {
+      try {
+        const backoffice = await prisma.backoffice.findUnique({
+          where: { id: params.id },
+          select: {
+            nome: true,
+            razaoSocial: true,
+            cpf: true,
+            cnpj: true,
+            telefone: true,
+            usuario: { select: { email: true } },
+          },
+        });
+
+        if (backoffice) {
+          const customer = await buscarOuCriarCustomer({
+            name: backoffice.razaoSocial || backoffice.nome,
+            cpfCnpj: backoffice.cnpj || backoffice.cpf,
+            email: backoffice.usuario.email,
+            phone: backoffice.telefone,
+            externalReference: params.id,
+          });
+
+          if (!assinatura.asaasCustomerId) {
+            await prisma.assinatura.update({
+              where: { id: assinatura.id },
+              data: { asaasCustomerId: customer.id },
+            });
+          }
+
+          const billingType: BillingType =
+            formaPagamento === "PIX" ? "PIX" : formaPagamento === "BOLETO" ? "BOLETO" : "UNDEFINED";
+
+          const cobranca = await criarCobrancaAvulsa({
+            customerId: customer.id,
+            value: valor,
+            dueDate: vencimento.slice(0, 10),
+            billingType,
+            description: `Fatura avulsa — Unidade ${backoffice.nome}`,
+            externalReference: params.id,
+          });
+
+          asaasPaymentId = cobranca.id;
+          linkFatura = cobranca.invoiceUrl ?? null;
+          linkBoleto = cobranca.bankSlipUrl ?? null;
+        }
+      } catch (errAsaas) {
+        console.error("[faturas/route] Erro ao gerar cobrança avulsa no Asaas:", errAsaas);
+      }
     }
 
     const fatura = await prisma.$transaction(async (tx) => {
@@ -67,6 +125,9 @@ export async function POST(
           pagoEm: pago ? new Date() : null,
           marcadoPagoPorUsuarioId: pago ? session!.user.id : null,
           marcadoPagoEm: pago ? new Date() : null,
+          asaasPaymentId,
+          linkFatura,
+          linkBoleto,
         },
       });
 

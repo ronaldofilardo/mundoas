@@ -47,16 +47,26 @@ async function checarAcessoUnidade(
     const data = (await res.json()) as {
       liberado?: boolean;
       etapaOnboarding?: EtapaOnboarding | null;
+      motivo?: string;
+      diasAtraso?: number;
+      faturaId?: string;
     };
     if (data.liberado) return null;
 
     const redirectUrl = req.nextUrl.clone();
     const etapa = data.etapaOnboarding;
-    redirectUrl.pathname =
-      etapa && etapa in ONBOARDING_PATHS
-        ? ONBOARDING_PATHS[etapa]
-        : "/acesso-suspenso";
-    redirectUrl.search = "";
+
+    if (etapa && etapa in ONBOARDING_PATHS) {
+      redirectUrl.pathname = ONBOARDING_PATHS[etapa];
+      redirectUrl.search = "";
+    } else {
+      redirectUrl.pathname = "/acesso-suspenso";
+      const params = new URLSearchParams();
+      if (data.motivo) params.set("motivo", data.motivo);
+      if (data.faturaId) params.set("faturaId", data.faturaId);
+      redirectUrl.search = params.toString() ? `?${params.toString()}` : "";
+    }
+
     return new Response(null, {
       status: 302,
       headers: { Location: redirectUrl.toString() },

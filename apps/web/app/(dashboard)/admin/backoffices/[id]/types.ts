@@ -5,6 +5,8 @@ export interface Fatura {
   statusPagamento: string;
   pagoManualmente: boolean;
   pagoEm: string | null;
+  linkFatura?: string | null;
+  linkBoleto?: string | null;
 }
 
 export type StatusAssinatura =

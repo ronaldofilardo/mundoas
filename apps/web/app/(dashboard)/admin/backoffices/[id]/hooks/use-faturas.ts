@@ -86,5 +86,30 @@ export function useFaturas(backofficeId: string, options?: UseFaturasOptions) {
     }
   }
 
-  return { faturas, acaoEmAndamento, fetchFaturas, criarFatura, marcarPago };
+  async function reenviarFatura(faturaId: string) {
+    setAcaoEmAndamento(true);
+    try {
+      const res = await fetch(
+        `/api/v1/admin/backoffices/${backofficeId}/faturas/${faturaId}/reenviar`,
+        { method: "POST" },
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Erro ao reenviar fatura");
+
+      toast.success("Cobrança reenviada com sucesso!");
+
+      // Abre o link do WhatsApp com o texto formatado se disponível
+      if (json.whatsappUrl) {
+        window.open(json.whatsappUrl, "_blank", "noopener,noreferrer");
+      }
+    } catch (e: unknown) {
+      toast.error(
+        (e instanceof Error ? e.message : "Erro inesperado") || "Erro ao reenviar fatura",
+      );
+    } finally {
+      setAcaoEmAndamento(false);
+    }
+  }
+
+  return { faturas, acaoEmAndamento, fetchFaturas, criarFatura, marcarPago, reenviarFatura };
 }

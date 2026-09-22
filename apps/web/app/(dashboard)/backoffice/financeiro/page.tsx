@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { formatarData } from "@/util/format-data";
 
 interface Fatura {
   id: string;
@@ -10,6 +11,8 @@ interface Fatura {
   statusPagamento: string;
   pago: boolean;
   pagoEm: string | null;
+  linkFatura?: string | null;
+  linkBoleto?: string | null;
 }
 
 interface AssinaturaData {
@@ -51,11 +54,6 @@ const PAGAMENTO_LABEL: Record<string, string> = {
 
 function formatarMoeda(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
-function formatarData(dateStr: string | null | undefined) {
-  if (!dateStr) return "-";
-  return new Date(dateStr).toLocaleDateString("pt-BR");
 }
 
 export default function BackofficeFinanceiroPage() {
@@ -168,12 +166,13 @@ export default function BackofficeFinanceiroPage() {
                 <th className="text-left p-2 font-medium text-gray-600">Valor</th>
                 <th className="text-left p-2 font-medium text-gray-600">Status</th>
                 <th className="text-left p-2 font-medium text-gray-600">Pago em</th>
+                <th className="text-left p-2 font-medium text-gray-600">Ação</th>
               </tr>
             </thead>
             <tbody>
               {faturas.map((f) => (
                 <tr key={f.id} className="border-b hover:bg-gray-50">
-                  <td className="p-2 text-gray-900">{formatarData(f.vencimento)}</td>
+                  <td className="p-2 text-gray-900">{formatarData(f.vencimento, "-")}</td>
                   <td className="p-2 text-gray-600">{formatarMoeda(Number(f.valor))}</td>
                   <td className="p-2">
                     <span
@@ -186,12 +185,26 @@ export default function BackofficeFinanceiroPage() {
                       {f.pago ? "Pago" : "Pendente"}
                     </span>
                   </td>
-                  <td className="p-2 text-gray-600">{formatarData(f.pagoEm)}</td>
+                  <td className="p-2 text-gray-600">{formatarData(f.pagoEm, "-")}</td>
+                  <td className="p-2">
+                    {!f.pago ? (
+                      <a
+                        href={f.linkFatura || f.linkBoleto || `/api/v1/backoffice/faturas/${f.id}/pagar`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold bg-primary-50 text-primary-700 hover:bg-primary-100 border border-primary-200 transition"
+                      >
+                        Pagar fatura ↗
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </td>
                 </tr>
               ))}
               {faturas.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="p-6 text-center text-gray-500">
+                  <td colSpan={5} className="p-6 text-center text-gray-500">
                     Nenhuma fatura registrada ainda
                   </td>
                 </tr>

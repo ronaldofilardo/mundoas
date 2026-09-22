@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { criarAuditLog } from "@/lib/audit";
+import {
+  isFaturaBloqueavel,
+  desbloquearUnidadeSeRegularizada,
+  calcularDiasAtraso,
+} from "@/lib/billing/inadimplencia";
 
 // Webhook do Asaas — recebe eventos de Assinatura (SUBSCRIPTION_*) e de
 // Cobrança (PAYMENT_*). Configurar em: painel Asaas > Integrações > Webhooks.
@@ -104,13 +109,15 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        // Primeira confirmação de pagamento: sai de PENDENTE_PAGAMENTO (ou
-        // de INADIMPLENTE, se estava suspensa) e libera o acesso.
-        if (["PENDENTE_PAGAMENTO", "INADIMPLENTE"].includes(assinatura.statusAssinatura)) {
+        // Confirmação de pagamento: sai de PENDENTE_PAGAMENTO (ou
+        // de INADIMPLENTE, se estava suspensa) e libera o acesso se regularizada.
+        if (assinatura.statusAssinatura === "PENDENTE_PAGAMENTO") {
           await prisma.assinatura.update({
             where: { id: assinatura.id },
-            data: { statusAssinatura: "ATIVA" },
+            data: { statusAssinatura: "ATIVA", bloqueadoEm: null, motivoBloqueio: null },
           });
+        } else if (assinatura.statusAssinatura === "INADIMPLENTE") {
+          await desbloquearUnidadeSeRegularizada(assinatura.id);
         }
         break;
       }
@@ -127,14 +134,22 @@ export async function POST(req: NextRequest) {
           data: { statusPagamento: "OVERDUE" },
         });
 
-        // Só suspende quem já estava ATIVA (unidade em uso normal que
-        // deixou de pagar). Não mexe em quem ainda está no meio do
-        // onboarding (PENDENTE_PAGAMENTO) — lá o próprio middleware já
-        // mantém o acesso bloqueado até o primeiro pagamento confirmar.
-        if (assinatura.statusAssinatura === "ATIVA") {
+        // Só suspende quem já estava ATIVA e se o atraso já ultrapassou os
+        // 15 dias de tolerância (ou seja, a partir do dia 31 / dia 1º).
+        // Não bloqueia imediatamente no primeiro dia de vencimento.
+        const faturaBloqueavel = isFaturaBloqueavel({
+          vencimento: body.payment.dueDate,
+        });
+
+        if (assinatura.statusAssinatura === "ATIVA" && faturaBloqueavel) {
+          const diasAtraso = calcularDiasAtraso(body.payment.dueDate);
           await prisma.assinatura.update({
             where: { id: assinatura.id },
-            data: { statusAssinatura: "INADIMPLENTE" },
+            data: {
+              statusAssinatura: "INADIMPLENTE",
+              bloqueadoEm: new Date(),
+              motivoBloqueio: `Inadimplência: mensalidade vencida há ${diasAtraso} dias`,
+            },
           });
         }
         break;

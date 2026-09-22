@@ -124,6 +124,27 @@ export async function criarSubscription(params: {
   });
 }
 
+export async function criarCobrancaAvulsa(params: {
+  customerId: string;
+  billingType?: BillingType;
+  value: number;
+  dueDate: string; // YYYY-MM-DD
+  description: string;
+  externalReference: string;
+}): Promise<AsaasPayment> {
+  return asaasFetch<AsaasPayment>("/payments", {
+    method: "POST",
+    body: JSON.stringify({
+      customer: params.customerId,
+      billingType: params.billingType || "UNDEFINED",
+      value: params.value,
+      dueDate: params.dueDate,
+      description: params.description,
+      externalReference: params.externalReference,
+    }),
+  });
+}
+
 // Busca a primeira cobrança gerada para a assinatura, para obter o link de
 // pagamento (boleto/invoice) ou os dados do PIX a exibir no checkout.
 export async function buscarPrimeiraFatura(subscriptionId: string): Promise<AsaasPayment | null> {
@@ -138,5 +159,17 @@ export async function buscarQrCodePix(paymentId: string): Promise<{ encodedImage
     return await asaasFetch(`/payments/${paymentId}/pixQrCode`);
   } catch {
     return null;
+  }
+}
+
+export async function reenviarNotificacaoCobranca(paymentId: string): Promise<boolean> {
+  try {
+    await asaasFetch(`/payments/${paymentId}/resendNotifications`, {
+      method: "POST",
+    });
+    return true;
+  } catch (err) {
+    console.warn(`[asaas] Falha ao reenviar notificação da cobrança ${paymentId}:`, err);
+    return false;
   }
 }

@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@asa/database";
+import { prisma } from "@/lib/db";
 import { requireAdmin, badRequest, notFound, ok } from "@/lib/api-helpers";
 import { criarAuditLog } from "@/lib/audit";
+import { isFaturaBloqueavel, calcularDiasAtraso } from "@/lib/billing/inadimplencia";
 
 export async function PATCH(
   req: NextRequest,
@@ -44,14 +45,44 @@ export async function PATCH(
       if (pago) {
         const assinatura = await tx.assinatura.findUnique({
           where: { id: fatura.assinaturaId },
+          include: {
+            faturas: {
+              where: {
+                id: { not: params.faturaId },
+                pagoManualmente: false,
+                statusPagamento: { notIn: ["CONFIRMED", "RECEIVED"] },
+              },
+            },
+          },
         });
-        if (
-          assinatura &&
-          ["PENDENTE_PAGAMENTO", "INADIMPLENTE"].includes(assinatura.statusAssinatura)
-        ) {
+
+        if (assinatura) {
+          const outrasAtrasadas = assinatura.faturas.filter((f) => isFaturaBloqueavel(f));
+          if (
+            outrasAtrasadas.length === 0 &&
+            ["PENDENTE_PAGAMENTO", "INADIMPLENTE"].includes(assinatura.statusAssinatura)
+          ) {
+            await tx.assinatura.update({
+              where: { id: fatura.assinaturaId },
+              data: {
+                statusAssinatura: "ATIVA",
+                bloqueadoEm: null,
+                motivoBloqueio: null,
+              },
+            });
+          }
+        }
+      } else {
+        // Ao desmarcar fatura como não paga, se ela tiver atraso bloqueável, bloqueia
+        if (isFaturaBloqueavel(fatura)) {
+          const diasAtraso = calcularDiasAtraso(fatura.vencimento);
           await tx.assinatura.update({
             where: { id: fatura.assinaturaId },
-            data: { statusAssinatura: "ATIVA" },
+            data: {
+              statusAssinatura: "INADIMPLENTE",
+              bloqueadoEm: new Date(),
+              motivoBloqueio: `Inadimplência: mensalidade vencida há ${diasAtraso} dias`,
+            },
           });
         }
       }

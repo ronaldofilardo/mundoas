@@ -1,5 +1,6 @@
 import { prisma } from "@asa/database";
 import { requireBackoffice, notFound, ok } from "@/lib/api-helpers";
+import { garantirLinkFaturaAsaas } from "@/lib/asaas/fatura-link";
 
 export async function GET() {
   const { session, error } = await requireBackoffice();
@@ -13,6 +14,17 @@ export async function GET() {
   const assinatura = await prisma.assinatura.findUnique({
     where: { backofficeId },
     include: {
+      backoffice: {
+        select: {
+          id: true,
+          nome: true,
+          razaoSocial: true,
+          cpf: true,
+          cnpj: true,
+          telefone: true,
+          usuario: { select: { email: true } },
+        },
+      },
       faturas: {
         orderBy: { vencimento: "desc" },
         take: 24, // últimos ~2 anos, evita retorno gigante
@@ -23,6 +35,35 @@ export async function GET() {
   if (!assinatura) {
     return ok({ semAssinatura: true });
   }
+
+  // Garante que qualquer fatura pendente possua link de pagamento no Asaas
+  const backoffice = (assinatura as { backoffice?: any }).backoffice ?? null;
+  const faturas = await Promise.all(
+    assinatura.faturas.map(async (f) => {
+      let linkFatura = f.linkFatura;
+      let linkBoleto = f.linkBoleto;
+
+      if (!f.pagoManualmente && !["CONFIRMED", "RECEIVED"].includes(f.statusPagamento) && !linkFatura) {
+        linkFatura = await garantirLinkFaturaAsaas(f.id, {
+          fatura: f,
+          assinaturaId: assinatura.id,
+          asaasCustomerId: assinatura.asaasCustomerId,
+          backoffice,
+        });
+      }
+
+      return {
+        id: f.id,
+        valor: f.valor,
+        vencimento: f.vencimento,
+        statusPagamento: f.statusPagamento,
+        pago: f.pagoManualmente,
+        pagoEm: f.pagoEm,
+        linkFatura,
+        linkBoleto,
+      };
+    }),
+  );
 
   // Somente os campos relevantes pra unidade ver — não expõe IDs internos
   // do Asaas nem quem bloqueou/liberou (informação interna do Admin).
@@ -36,13 +77,6 @@ export async function GET() {
         ? assinatura.motivoBloqueio
         : undefined,
     cortesiaExpiraEm: assinatura.cortesiaExpiraEm,
-    faturas: assinatura.faturas.map((f) => ({
-      id: f.id,
-      valor: f.valor,
-      vencimento: f.vencimento,
-      statusPagamento: f.statusPagamento,
-      pago: f.pagoManualmente,
-      pagoEm: f.pagoEm,
-    })),
+    faturas,
   });
 }

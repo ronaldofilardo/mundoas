@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { verificarInadimplenciaUnidade } from "@/lib/billing/inadimplencia";
 
 // Roda em Node runtime (não Edge) porque usa o Prisma Client.
 // Chamada pelo middleware via fetch — ver middleware.ts.
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest) {
 
   const assinatura = await prisma.assinatura.findUnique({
     where: { backofficeId },
-    select: { statusAssinatura: true, cortesiaExpiraEm: true },
+    select: { id: true, statusAssinatura: true, cortesiaExpiraEm: true },
   });
 
   // Sem assinatura cadastrada: por segurança, libera (evita travar unidades
@@ -62,6 +63,21 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // Checagem em tempo de execução de faturas com atraso superior a 15 dias de tolerância
+  const checagemInadimplencia = await verificarInadimplenciaUnidade(backofficeId);
+  if (checagemInadimplencia.bloqueado) {
+    return NextResponse.json(
+      {
+        liberado: false,
+        status: "INADIMPLENTE",
+        motivo: checagemInadimplencia.motivo,
+        diasAtraso: checagemInadimplencia.diasAtraso,
+        faturaId: checagemInadimplencia.fatura?.id,
+      },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
   // Cortesia expirada é tratada como não mais válida.
   const cortesiaValida =
     assinatura.statusAssinatura === "CORTESIA" &&
@@ -72,10 +88,6 @@ export async function GET(req: NextRequest) {
     (assinatura.statusAssinatura === "INADIMPLENTE") ||
     (assinatura.statusAssinatura === "CANCELADA") ||
     (assinatura.statusAssinatura === "CORTESIA" && !cortesiaValida);
-    // ^ nota: cortesia expirada hoje não bloqueia sozinha — ela só deixa de
-    // "salvar" quem já estaria INADIMPLENTE. Como não há Asaas ainda, o único
-    // caminho real de bloqueio nesta fase é BLOQUEADA_MANUAL ou INADIMPLENTE
-    // (setado manualmente ao marcar fatura como não paga/vencida).
 
   return NextResponse.json(
     {
@@ -83,6 +95,6 @@ export async function GET(req: NextRequest) {
       status: assinatura.statusAssinatura,
       motivo: bloqueado ? assinatura.statusAssinatura : undefined,
     },
-    { headers: { "Cache-Control": "public, max-age=30" } },
+    { headers: { "Cache-Control": "no-store" } },
   );
 }

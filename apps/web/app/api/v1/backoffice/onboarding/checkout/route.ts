@@ -9,15 +9,7 @@ import {
   buscarQrCodePix,
   type BillingType,
 } from "@/lib/asaas/client";
-
-function proximoVencimento(dia: number): string {
-  const hoje = new Date();
-  let alvo = new Date(hoje.getFullYear(), hoje.getMonth(), dia);
-  if (alvo <= hoje) {
-    alvo = new Date(hoje.getFullYear(), hoje.getMonth() + 1, dia);
-  }
-  return alvo.toISOString().slice(0, 10);
-}
+import { proximoVencimento } from "@/util/proximo-vencimento";
 
 // POST: Etapa 4 do Plano de Implementação — cria o Customer e a Subscription
 // no Asaas para a unidade, salva os IDs na Assinatura e devolve os dados de
