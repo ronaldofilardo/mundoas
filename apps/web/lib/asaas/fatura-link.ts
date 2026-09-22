@@ -78,8 +78,11 @@ export async function garantirLinkFaturaAsaas(
     return fatura.linkFatura ?? null;
   }
 
-  // Se já possui link da fatura no Asaas, retorna imediatamente
-  if (fatura.linkFatura) {
+  const isSandboxEnv = process.env.ASAAS_SANDBOX === "true";
+  const linkEhSandbox = fatura.linkFatura?.includes("sandbox.asaas.com");
+
+  // Se já possui link da fatura no Asaas e condizente com o ambiente, retorna imediatamente
+  if (fatura.linkFatura && (!linkEhSandbox || isSandboxEnv)) {
     return fatura.linkFatura;
   }
 
@@ -89,15 +92,32 @@ export async function garantirLinkFaturaAsaas(
   }
 
   try {
-    const customer = await buscarOuCriarCustomer({
-      name: bo.razaoSocial || bo.nome,
-      cpfCnpj: bo.cnpj || bo.cpf,
-      email: bo.usuario?.email || "",
-      phone: bo.telefone,
-      externalReference: bo.id,
-    });
+    let customer;
+    try {
+      customer = await buscarOuCriarCustomer({
+        name: bo.razaoSocial || bo.nome,
+        cpfCnpj: bo.cnpj || bo.cpf,
+        email: bo.usuario?.email || "",
+        phone: bo.telefone,
+        externalReference: bo.id,
+      });
+    } catch (errPrimeiraTentativa) {
+      // Se falhou e tinha CNPJ e CPF, tenta com o CPF como contingência
+      if (bo.cnpj && bo.cpf) {
+        console.warn("[garantirLinkFaturaAsaas] Falha com CNPJ, tentando com CPF:", errPrimeiraTentativa);
+        customer = await buscarOuCriarCustomer({
+          name: bo.nome,
+          cpfCnpj: bo.cpf,
+          email: bo.usuario?.email || "",
+          phone: bo.telefone,
+          externalReference: bo.id,
+        });
+      } else {
+        throw errPrimeiraTentativa;
+      }
+    }
 
-    if (!asaasCustomerId && assinaturaId && prisma.assinatura?.update) {
+    if (assinaturaId && prisma.assinatura?.update && asaasCustomerId !== customer.id) {
       await prisma.assinatura.update({
         where: { id: assinaturaId },
         data: { asaasCustomerId: customer.id },

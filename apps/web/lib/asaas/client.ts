@@ -71,8 +71,8 @@ export type AsaasPayment = {
 
 export type BillingType = "BOLETO" | "PIX" | "CREDIT_CARD" | "UNDEFINED";
 
-// Busca um customer existente pelo CPF/CNPJ (evita duplicar customer a cada
-// tentativa de checkout da mesma unidade) ou cria um novo.
+// Busca um customer existente pelo externalReference (ID da unidade) ou CPF/CNPJ
+// (evita duplicar customer a cada tentativa de checkout da mesma unidade) ou cria um novo.
 export async function buscarOuCriarCustomer(params: {
   name: string;
   cpfCnpj: string;
@@ -80,15 +80,37 @@ export async function buscarOuCriarCustomer(params: {
   phone?: string | null;
   externalReference: string; // backofficeId — facilita rastrear no painel Asaas
 }): Promise<AsaasCustomer> {
-  const cpfCnpjLimpo = params.cpfCnpj.replace(/\D/g, "");
-
-  const existentes = await asaasFetch<{ data: AsaasCustomer[] }>(
-    `/customers?cpfCnpj=${cpfCnpjLimpo}`,
-  );
-  if (existentes.data.length > 0) {
-    return existentes.data[0];
+  // 1. Tenta buscar primeiro por externalReference (ID único da unidade)
+  if (params.externalReference) {
+    try {
+      const porRef = await asaasFetch<{ data: AsaasCustomer[] }>(
+        `/customers?externalReference=${encodeURIComponent(params.externalReference)}`,
+      );
+      if (porRef.data && porRef.data.length > 0) {
+        return porRef.data[0];
+      }
+    } catch (err) {
+      console.warn("[buscarOuCriarCustomer] Aviso ao buscar por externalReference:", err);
+    }
   }
 
+  const cpfCnpjLimpo = params.cpfCnpj.replace(/\D/g, "");
+
+  // 2. Se não encontrou por externalReference, busca pelo CPF/CNPJ
+  if (cpfCnpjLimpo) {
+    try {
+      const existentes = await asaasFetch<{ data: AsaasCustomer[] }>(
+        `/customers?cpfCnpj=${cpfCnpjLimpo}`,
+      );
+      if (existentes.data && existentes.data.length > 0) {
+        return existentes.data[0];
+      }
+    } catch (err) {
+      console.warn("[buscarOuCriarCustomer] Aviso ao buscar por cpfCnpj:", err);
+    }
+  }
+
+  // 3. Não existe no Asaas: cria novo customer
   return asaasFetch<AsaasCustomer>("/customers", {
     method: "POST",
     body: JSON.stringify({

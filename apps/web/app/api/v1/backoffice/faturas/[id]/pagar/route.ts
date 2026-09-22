@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@asa/database";
+import { prisma } from "@/lib/db";
 import { requireBackoffice, notFound, badRequest } from "@/lib/api-helpers";
 import { garantirLinkFaturaAsaas } from "@/lib/asaas/fatura-link";
 

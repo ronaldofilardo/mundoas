@@ -1,4 +1,4 @@
-import { prisma } from "@asa/database";
+import { prisma } from "@/lib/db";
 import { requireBackoffice, notFound, ok } from "@/lib/api-helpers";
 import { garantirLinkFaturaAsaas } from "@/lib/asaas/fatura-link";
 
@@ -57,7 +57,7 @@ export async function GET() {
         valor: f.valor,
         vencimento: f.vencimento,
         statusPagamento: f.statusPagamento,
-        pago: f.pagoManualmente,
+        pago: f.pagoManualmente || ["CONFIRMED", "RECEIVED"].includes(f.statusPagamento),
         pagoEm: f.pagoEm,
         linkFatura,
         linkBoleto,
