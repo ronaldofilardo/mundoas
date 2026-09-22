@@ -85,39 +85,59 @@ export async function POST(req: NextRequest) {
       // ---- Cobranças: o que de fato ativa/suspende a unidade -------------
       case "PAYMENT_CONFIRMED":
       case "PAYMENT_RECEIVED": {
-        if (!body.payment?.subscription) break;
-        const assinatura = await prisma.assinatura.findFirst({
-          where: { asaasSubscriptionId: body.payment.subscription },
-        });
-        if (!assinatura) break;
-
-        await prisma.faturaAsaas.upsert({
-          where: { asaasPaymentId: body.payment.id },
-          create: {
-            assinaturaId: assinatura.id,
-            asaasPaymentId: body.payment.id,
-            valor: body.payment.value,
-            vencimento: new Date(body.payment.dueDate),
-            statusPagamento: STATUS_PAGAMENTO_ASAAS[body.payment.status] ?? "CONFIRMED",
-            linkFatura: body.payment.invoiceUrl,
-            linkBoleto: body.payment.bankSlipUrl,
-            pagoEm: new Date(),
-          },
-          update: {
-            statusPagamento: STATUS_PAGAMENTO_ASAAS[body.payment.status] ?? "CONFIRMED",
-            pagoEm: new Date(),
-          },
-        });
-
-        // Confirmação de pagamento: sai de PENDENTE_PAGAMENTO (ou
-        // de INADIMPLENTE, se estava suspensa) e libera o acesso se regularizada.
-        if (assinatura.statusAssinatura === "PENDENTE_PAGAMENTO") {
-          await prisma.assinatura.update({
-            where: { id: assinatura.id },
-            data: { statusAssinatura: "ATIVA", bloqueadoEm: null, motivoBloqueio: null },
+        if (body.payment?.subscription) {
+          // ── Cobrança de mensalidade (vinculada a uma subscription) ──────
+          const assinatura = await prisma.assinatura.findFirst({
+            where: { asaasSubscriptionId: body.payment.subscription },
           });
-        } else if (assinatura.statusAssinatura === "INADIMPLENTE") {
-          await desbloquearUnidadeSeRegularizada(assinatura.id);
+          if (!assinatura) break;
+
+          await prisma.faturaAsaas.upsert({
+            where: { asaasPaymentId: body.payment.id },
+            create: {
+              assinaturaId: assinatura.id,
+              asaasPaymentId: body.payment.id,
+              valor: body.payment.value,
+              vencimento: new Date(body.payment.dueDate),
+              statusPagamento: STATUS_PAGAMENTO_ASAAS[body.payment.status] ?? "CONFIRMED",
+              linkFatura: body.payment.invoiceUrl,
+              linkBoleto: body.payment.bankSlipUrl,
+              pagoEm: new Date(),
+            },
+            update: {
+              statusPagamento: STATUS_PAGAMENTO_ASAAS[body.payment.status] ?? "CONFIRMED",
+              pagoEm: new Date(),
+            },
+          });
+
+          // Confirmação de pagamento: sai de PENDENTE_PAGAMENTO (ou
+          // de INADIMPLENTE, se estava suspensa) e libera o acesso se regularizada.
+          if (assinatura.statusAssinatura === "PENDENTE_PAGAMENTO") {
+            await prisma.assinatura.update({
+              where: { id: assinatura.id },
+              data: { statusAssinatura: "ATIVA", bloqueadoEm: null, motivoBloqueio: null },
+            });
+          } else if (assinatura.statusAssinatura === "INADIMPLENTE") {
+            await desbloquearUnidadeSeRegularizada(assinatura.id);
+          }
+        } else {
+          // ── Cobrança avulsa (sem subscription) ─────────────────────────
+          // Atualiza pelo asaasPaymentId se a fatura já existir no banco.
+          // Faturas avulsas criadas pelo admin já têm o asaasPaymentId gravado.
+          const faturaExistente = await prisma.faturaAsaas.findUnique({
+            where: { asaasPaymentId: body.payment!.id },
+          });
+          if (faturaExistente) {
+            await prisma.faturaAsaas.update({
+              where: { asaasPaymentId: body.payment!.id },
+              data: {
+                statusPagamento: STATUS_PAGAMENTO_ASAAS[body.payment!.status] ?? "CONFIRMED",
+                pagoEm: new Date(),
+              },
+            });
+          }
+          // Se não existir no banco (cobrança criada diretamente no Asaas),
+          // não há assinaturaId para vincular — ignora silenciosamente.
         }
         break;
       }
