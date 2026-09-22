@@ -137,7 +137,7 @@ export async function POST(
       if (pago && ["PENDENTE_PAGAMENTO", "INADIMPLENTE"].includes(assinatura!.statusAssinatura)) {
         await tx.assinatura.update({
           where: { id: assinatura!.id },
-          data: { statusAssinatura: "ATIVA" },
+          data: { statusAssinatura: "ATIVA", bloqueadoEm: null, motivoBloqueio: null },
         });
       }
 

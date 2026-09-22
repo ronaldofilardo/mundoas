@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { formatarData } from "@/util/format-data";
+import { isFaturaPaga } from "@/lib/billing/inadimplencia";
 
 interface Fatura {
   id: string;
@@ -170,24 +171,26 @@ export default function BackofficeFinanceiroPage() {
               </tr>
             </thead>
             <tbody>
-              {faturas.map((f) => (
+              {faturas.map((f) => {
+                const paga = isFaturaPaga(f);
+                return (
                 <tr key={f.id} className="border-b hover:bg-gray-50">
                   <td className="p-2 text-gray-900">{formatarData(f.vencimento, "-")}</td>
                   <td className="p-2 text-gray-600">{formatarMoeda(Number(f.valor))}</td>
                   <td className="p-2">
                     <span
                       className={`px-2 py-1 rounded text-xs ${
-                        f.pago
+                        paga
                           ? "bg-green-100 text-green-800"
                           : "bg-amber-100 text-amber-800"
                       }`}
                     >
-                      {f.pago ? "Pago" : "Pendente"}
+                      {paga ? "Pago" : "Pendente"}
                     </span>
                   </td>
                   <td className="p-2 text-gray-600">{formatarData(f.pagoEm, "-")}</td>
                   <td className="p-2">
-                    {!f.pago ? (
+                    {!paga ? (
                       <a
                         href={f.linkFatura || f.linkBoleto || `/api/v1/backoffice/faturas/${f.id}/pagar`}
                         target="_blank"
@@ -201,7 +204,8 @@ export default function BackofficeFinanceiroPage() {
                     )}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
               {faturas.length === 0 && (
                 <tr>
                   <td colSpan={5} className="p-6 text-center text-gray-500">

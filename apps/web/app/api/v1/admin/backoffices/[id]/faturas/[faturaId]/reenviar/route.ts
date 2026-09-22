@@ -4,7 +4,7 @@ import { requireAdmin, badRequest, notFound, ok } from "@/lib/api-helpers";
 import { criarAuditLog } from "@/lib/audit";
 import { reenviarNotificacaoCobranca } from "@/lib/asaas/client";
 import { garantirLinkFaturaAsaas } from "@/lib/asaas/fatura-link";
-import { isFaturaAtrasada15Dias, calcularDiasAtraso } from "@/lib/billing/inadimplencia";
+import { isFaturaAtrasada15Dias, isFaturaPaga, calcularDiasAtraso } from "@/lib/billing/inadimplencia";
 
 export async function POST(
   req: NextRequest,
@@ -29,11 +29,7 @@ export async function POST(
       return notFound("Fatura não encontrada para esta unidade.");
     }
 
-    if (
-      fatura.pagoManualmente ||
-      fatura.statusPagamento === "CONFIRMED" ||
-      fatura.statusPagamento === "RECEIVED"
-    ) {
+    if (isFaturaPaga(fatura)) {
       return badRequest("Esta fatura já consta como paga e não pode ser reenviada.");
     }
 

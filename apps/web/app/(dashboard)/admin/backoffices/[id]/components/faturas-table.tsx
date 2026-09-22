@@ -1,5 +1,6 @@
 import type { Fatura } from "../types";
 import { formatarMoeda, formatarData } from "../utils";
+import { isFaturaPaga } from "@/lib/billing/inadimplencia";
 
 // Calcula dias de atraso de forma simples (sem depender do servidor)
 function calcularDiasAtrasoClient(vencimento: string): number {
@@ -39,18 +40,19 @@ export function FaturasTable({
         </thead>
         <tbody>
           {faturas.map((f) => {
-            const diasAtraso = f.pagoManualmente ? -1 : calcularDiasAtrasoClient(f.vencimento);
+            const paga = isFaturaPaga(f);
+            const diasAtraso = paga ? -1 : calcularDiasAtrasoClient(f.vencimento);
             const atrasada15Dias = diasAtraso >= 15;
             const bloqueavel = diasAtraso > 15;
             const linkPagar = f.linkFatura || f.linkBoleto;
 
             return (
-              <tr key={f.id} className={`border-b hover:bg-gray-50 ${bloqueavel ? "bg-red-50/40" : ""}`}>
+              <tr key={f.id} className={`border-b hover:bg-gray-50 ${!paga && bloqueavel ? "bg-red-50/40" : ""}`}>
                 <td className="p-2 text-gray-900">{formatarMoeda(Number(f.valor))}</td>
                 <td className="p-2 text-gray-600">
                   <div className="flex flex-col gap-0.5">
                     <span>{formatarData(f.vencimento)}</span>
-                    {!f.pagoManualmente && diasAtraso > 0 && (
+                    {!paga && diasAtraso > 0 && (
                       <span
                         className={`text-[10px] font-medium ${
                           bloqueavel ? "text-red-600" : "text-amber-600"
@@ -65,16 +67,16 @@ export function FaturasTable({
                   <div className="flex flex-col gap-1">
                     <span
                       className={`px-2 py-1 rounded text-xs w-fit ${
-                        f.pagoManualmente
+                        paga
                           ? "bg-green-100 text-green-800"
                           : bloqueavel
                           ? "bg-red-100 text-red-800"
                           : "bg-amber-100 text-amber-800"
                       }`}
                     >
-                      {f.pagoManualmente ? "Pago" : bloqueavel ? "⚠️ Inadimplente" : "Pendente"}
+                      {paga ? "Pago" : bloqueavel ? "⚠️ Inadimplente" : "Pendente"}
                     </span>
-                    {!f.pagoManualmente && atrasada15Dias && (
+                    {!paga && atrasada15Dias && (
                       <span className="text-[10px] text-red-600 font-semibold">
                         ≥ 15 dias — elegível p/ reenvio
                       </span>
@@ -86,17 +88,17 @@ export function FaturasTable({
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={f.pagoManualmente}
-                        disabled={acaoEmAndamento}
+                        checked={paga}
+                        disabled={acaoEmAndamento || (!f.pagoManualmente && ["RECEIVED", "CONFIRMED"].includes(f.statusPagamento))}
                         onChange={(e) => onMarcarPago(f.id, e.target.checked)}
                         className="w-4 h-4 accent-green-600"
                       />
                       <span className="text-xs text-gray-500">
-                        {f.pagoManualmente ? "Pago" : "Dar baixa"}
+                        {paga ? "Pago" : "Dar baixa"}
                       </span>
                     </label>
 
-                    {!f.pagoManualmente && atrasada15Dias && onReenviar && (
+                    {!paga && atrasada15Dias && onReenviar && (
                       <button
                         type="button"
                         disabled={acaoEmAndamento}
@@ -107,7 +109,7 @@ export function FaturasTable({
                       </button>
                     )}
 
-                    {!f.pagoManualmente && linkPagar && (
+                    {!paga && linkPagar && (
                       <a
                         href={linkPagar}
                         target="_blank"

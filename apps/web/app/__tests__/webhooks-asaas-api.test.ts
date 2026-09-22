@@ -8,7 +8,7 @@ import { criarAuditLog } from "@/lib/audit";
 vi.mock("@/lib/db", () => {
   const mPrisma = {
     assinatura: { findFirst: vi.fn(), update: vi.fn() },
-    faturaAsaas: { upsert: vi.fn(), updateMany: vi.fn() },
+    faturaAsaas: { upsert: vi.fn(), updateMany: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn() },
     asaasWebhookEvent: { findUnique: vi.fn(), create: vi.fn() },
   };
   return { prisma: mPrisma };
@@ -17,7 +17,7 @@ vi.mock("@/lib/db", () => {
 vi.mock("@asa/database", () => {
   const mPrisma = {
     assinatura: { findFirst: vi.fn(), update: vi.fn() },
-    faturaAsaas: { upsert: vi.fn(), updateMany: vi.fn() },
+    faturaAsaas: { upsert: vi.fn(), updateMany: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn() },
     asaasWebhookEvent: { findUnique: vi.fn(), create: vi.fn() },
   };
   return { prisma: mPrisma };
@@ -126,7 +126,7 @@ describe("API webhooks/asaas — contrato funcional", () => {
     );
     expect(prismaMock.assinatura.update).toHaveBeenCalledWith({
       where: { id: "assinatura-1" },
-      data: { statusAssinatura: "ATIVA" },
+      data: { statusAssinatura: "ATIVA", bloqueadoEm: null, motivoBloqueio: null },
     });
   });
 
@@ -160,7 +160,7 @@ describe("API webhooks/asaas — contrato funcional", () => {
       buildRequest(
         {
           event: "PAYMENT_OVERDUE",
-          payment: { id: "payment-1", subscription: "subscription-1", status: "OVERDUE" },
+          payment: { id: "payment-1", subscription: "subscription-1", status: "OVERDUE", dueDate: "2026-01-01", value: 350 },
         },
         "whsec_test",
       ),
@@ -173,7 +173,7 @@ describe("API webhooks/asaas — contrato funcional", () => {
     });
     expect(prismaMock.assinatura.update).toHaveBeenCalledWith({
       where: { id: "assinatura-1" },
-      data: { statusAssinatura: "INADIMPLENTE" },
+      data: expect.objectContaining({ statusAssinatura: "INADIMPLENTE" }),
     });
   });
 
@@ -205,6 +205,161 @@ describe("API webhooks/asaas — contrato funcional", () => {
     expect(auditMock).toHaveBeenCalledWith(
       expect.objectContaining({ acao: "ASAAS_WEBHOOK_UNKNOWN_EVENT" }),
     );
+  });
+
+  it("PAYMENT_RECEIVED avulsa atualiza fatura pelo asaasPaymentId", async () => {
+    prismaMock.faturaAsaas.findUnique.mockResolvedValue({
+      id: "fatura-1",
+      asaasPaymentId: "payment-avulsa",
+      statusPagamento: "PENDING",
+      pagoManualmente: false,
+      vencimento: new Date("2026-10-15"),
+      valor: 100,
+    } as never);
+
+    const response = await POST(
+      buildRequest(
+        {
+          event: "PAYMENT_RECEIVED",
+          payment: {
+            id: "payment-avulsa",
+            status: "RECEIVED",
+            value: 100,
+            dueDate: "2026-10-15",
+            externalReference: "backoffice-1",
+          },
+        },
+        "whsec_test",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(prismaMock.faturaAsaas.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "fatura-1" },
+        data: expect.objectContaining({
+          statusPagamento: "RECEIVED",
+          asaasPaymentId: "payment-avulsa",
+          pagoEm: expect.any(Date),
+        }),
+      }),
+    );
+  });
+
+  it("PAYMENT_RECEIVED avulsa faz fallback por externalReference quando findUnique falha", async () => {
+    prismaMock.faturaAsaas.findUnique.mockResolvedValue(null as never);
+    prismaMock.assinatura.findFirst.mockResolvedValue({ id: "assinatura-1" } as never);
+    prismaMock.faturaAsaas.findMany.mockResolvedValue([
+      {
+        id: "fatura-orfa",
+        asaasPaymentId: null,
+        statusPagamento: "PENDING",
+        pagoManualmente: false,
+        valor: 100,
+        vencimento: new Date("2026-10-15"),
+      },
+    ] as never);
+
+    const response = await POST(
+      buildRequest(
+        {
+          event: "PAYMENT_RECEIVED",
+          payment: {
+            id: "payment-avulsa",
+            status: "RECEIVED",
+            value: 100,
+            dueDate: "2026-10-15",
+            externalReference: "backoffice-1",
+          },
+        },
+        "whsec_test",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(prismaMock.assinatura.findFirst).toHaveBeenCalledWith({
+      where: { backofficeId: "backoffice-1" },
+    });
+    expect(prismaMock.faturaAsaas.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "fatura-orfa" },
+        data: expect.objectContaining({
+          statusPagamento: "RECEIVED",
+          asaasPaymentId: "payment-avulsa",
+        }),
+      }),
+    );
+  });
+
+  it("PAYMENT_UPDATED avulsa com status RECEIVED baixa a fatura", async () => {
+    prismaMock.faturaAsaas.findUnique.mockResolvedValue({
+      id: "fatura-1",
+      asaasPaymentId: "payment-avulsa",
+      statusPagamento: "PENDING",
+      pagoManualmente: false,
+      vencimento: new Date("2026-10-15"),
+      valor: 100,
+    } as never);
+
+    const response = await POST(
+      buildRequest(
+        {
+          event: "PAYMENT_UPDATED",
+          payment: {
+            id: "payment-avulsa",
+            status: "RECEIVED",
+            value: 100,
+            dueDate: "2026-10-15",
+            externalReference: "backoffice-1",
+          },
+        },
+        "whsec_test",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(prismaMock.faturaAsaas.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          statusPagamento: "RECEIVED",
+          pagoEm: expect.any(Date),
+        }),
+      }),
+    );
+  });
+
+  it("não regride fatura já paga para PENDING em PAYMENT_CREATED avulsa", async () => {
+    prismaMock.faturaAsaas.findUnique.mockResolvedValue({
+      id: "fatura-1",
+      asaasPaymentId: "payment-avulsa",
+      statusPagamento: "RECEIVED",
+      pagoManualmente: false,
+      vencimento: new Date("2026-10-15"),
+      valor: 100,
+    } as never);
+
+    const response = await POST(
+      buildRequest(
+        {
+          event: "PAYMENT_CREATED",
+          payment: {
+            id: "payment-avulsa",
+            status: "PENDING",
+            value: 100,
+            dueDate: "2026-10-15",
+            externalReference: "backoffice-1",
+            invoiceUrl: "https://go.asaas.com/x",
+          },
+        },
+        "whsec_test",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    const updateCall = prismaMock.faturaAsaas.update.mock.calls[0]?.[0];
+    expect(updateCall?.data?.statusPagamento).toBeUndefined();
+    expect(updateCall?.data?.linkFatura).toBe("https://go.asaas.com/x");
+    expect(updateCall?.data?.pagoEm).toBeUndefined();
   });
 
   it("retorna 200 mesmo quando ocorre erro interno", async () => {

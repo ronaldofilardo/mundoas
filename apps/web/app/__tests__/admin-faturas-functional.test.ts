@@ -14,23 +14,25 @@ vi.mock("@/lib/api-helpers", () => ({
   ok: (data: unknown) => Response.json(data),
 }));
 
-vi.mock("@asa/database", () => {
+const { prismaMockShape } = vi.hoisted(() => {
   const faturaCreate = vi.fn();
   const assinaturaUpdate = vi.fn();
-
-  const tx = {
-    faturaAsaas: { create: faturaCreate },
-    assinatura: { update: assinaturaUpdate },
+  const transactionClient = {
+    faturaAsaas: { create: faturaCreate, update: vi.fn() },
+    assinatura: { update: assinaturaUpdate, findUnique: vi.fn() },
   };
-
-  return {
-    prisma: {
-      assinatura: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
-      faturaAsaas: { findUnique: vi.fn(), findMany: vi.fn(), create: faturaCreate },
-      $transaction: vi.fn(async (cb: (client: typeof tx) => Promise<unknown>) => cb(tx)),
-    },
+  const prismaMockShape = {
+    assinatura: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
+    faturaAsaas: { findUnique: vi.fn(), findMany: vi.fn(), create: faturaCreate },
+    $transaction: vi.fn(async (cb: (client: typeof transactionClient) => Promise<unknown>) =>
+      cb(transactionClient),
+    ),
   };
+  return { prismaMockShape };
 });
+
+vi.mock("@asa/database", () => ({ prisma: prismaMockShape }));
+vi.mock("@/lib/db", () => ({ prisma: prismaMockShape }));
 
 vi.mock("@/lib/audit", () => ({ criarAuditLog: vi.fn().mockResolvedValue(undefined) }));
 
@@ -215,7 +217,7 @@ describe("APIs admin/backoffices/:id/faturas — contrato funcional", () => {
         update: vi.fn().mockResolvedValue({ id: "fatura-1", statusPagamento: "CONFIRMED" }),
       },
       assinatura: {
-        findUnique: vi.fn().mockResolvedValue({ statusAssinatura: "ATIVA" }),
+        findUnique: vi.fn().mockResolvedValue({ statusAssinatura: "ATIVA", faturas: [] }),
         update: vi.fn(),
       },
     };

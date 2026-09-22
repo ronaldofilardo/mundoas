@@ -5,6 +5,7 @@ import {
   isFaturaBloqueavel,
   desbloquearUnidadeSeRegularizada,
   calcularDiasAtraso,
+  extrairDataBrasilia,
 } from "@/lib/billing/inadimplencia";
 
 // Webhook do Asaas — recebe eventos de Assinatura (SUBSCRIPTION_*) e de
@@ -32,6 +33,7 @@ type AsaasWebhookBody = {
     billingType?: string;
     invoiceUrl?: string;
     bankSlipUrl?: string;
+    externalReference?: string;
   };
   subscription?: {
     id: string;
@@ -39,7 +41,9 @@ type AsaasWebhookBody = {
   };
 };
 
-const STATUS_PAGAMENTO_ASAAS: Record<string, "PENDING" | "RECEIVED" | "CONFIRMED" | "OVERDUE" | "REFUNDED" | "DELETED"> = {
+type StatusPagamento = "PENDING" | "RECEIVED" | "CONFIRMED" | "OVERDUE" | "REFUNDED" | "DELETED";
+
+const STATUS_PAGAMENTO_ASAAS: Record<string, StatusPagamento> = {
   PENDING: "PENDING",
   RECEIVED: "RECEIVED",
   CONFIRMED: "CONFIRMED",
@@ -47,6 +51,94 @@ const STATUS_PAGAMENTO_ASAAS: Record<string, "PENDING" | "RECEIVED" | "CONFIRMED
   REFUNDED: "REFUNDED",
   DELETED: "DELETED",
 };
+
+function isStatusPago(status: StatusPagamento): boolean {
+  return status === "RECEIVED" || status === "CONFIRMED";
+}
+
+/**
+ * Localiza a fatura avulsa de um pagamento sem subscription.
+ * 1) Tenta pelo asaasPaymentId gravado na criação da fatura.
+ * 2) Fallback: externalReference (= backofficeId) → assinatura → fatura
+ *    pendente sem paymentId vinculado (ou com o mesmo paymentId), casando
+ *    por valor/vencimento quando houver mais de uma candidata.
+ */
+async function localizarFaturaAvulsa(payment: NonNullable<AsaasWebhookBody["payment"]>) {
+  const porPaymentId = await prisma.faturaAsaas.findUnique({
+    where: { asaasPaymentId: payment.id },
+  });
+  if (porPaymentId) return porPaymentId;
+
+  if (!payment.externalReference) return null;
+
+  const assinatura = await prisma.assinatura.findFirst({
+    where: { backofficeId: payment.externalReference },
+  });
+  if (!assinatura) return null;
+
+  const candidatas = await prisma.faturaAsaas.findMany({
+    where: {
+      assinaturaId: assinatura.id,
+      pagoManualmente: false,
+      statusPagamento: { notIn: ["CONFIRMED", "RECEIVED"] },
+      OR: [{ asaasPaymentId: null }, { asaasPaymentId: payment.id }],
+    },
+    orderBy: { vencimento: "asc" },
+  });
+  if (candidatas.length === 0) return null;
+
+  const vencimentoAlvo = payment.dueDate?.slice(0, 10);
+  const casamentoExato = candidatas.find((f) => {
+    if (f.asaasPaymentId === payment.id) return true;
+    if (Math.abs(Number(f.valor) - payment.value) >= 0.005) return false;
+    if (!vencimentoAlvo) return true;
+    return (
+      f.vencimento.toISOString().slice(0, 10) === vencimentoAlvo ||
+      extrairDataBrasilia(f.vencimento) === vencimentoAlvo
+    );
+  });
+
+  return casamentoExato ?? candidatas[0];
+}
+
+async function baixarFaturaAvulsa(
+  payment: NonNullable<AsaasWebhookBody["payment"]>,
+  status: StatusPagamento,
+) {
+  const fatura = await localizarFaturaAvulsa(payment);
+  if (!fatura) return false;
+
+  const jaPaga =
+    isStatusPago((fatura.statusPagamento as StatusPagamento) ?? "PENDING") ||
+    fatura.pagoManualmente;
+
+  // Nunca regride de paga → pendente (ex.: PAYMENT_CREATED reentregue após
+  // o RECEIVED). Nesse caso só propaga links, se vierem.
+  if (jaPaga && !isStatusPago(status)) {
+    if (payment.invoiceUrl || payment.bankSlipUrl) {
+      await prisma.faturaAsaas.update({
+        where: { id: fatura.id },
+        data: {
+          linkFatura: payment.invoiceUrl ?? undefined,
+          linkBoleto: payment.bankSlipUrl ?? undefined,
+        },
+      });
+    }
+    return true;
+  }
+
+  await prisma.faturaAsaas.update({
+    where: { id: fatura.id },
+    data: {
+      statusPagamento: status,
+      asaasPaymentId: fatura.asaasPaymentId ?? payment.id,
+      linkFatura: payment.invoiceUrl ?? undefined,
+      linkBoleto: payment.bankSlipUrl ?? undefined,
+      ...(isStatusPago(status) ? { pagoEm: new Date() } : {}),
+    },
+  });
+  return true;
+}
 
 export async function POST(req: NextRequest) {
   const tokenEsperado = process.env.ASAAS_WEBHOOK_TOKEN;
@@ -122,22 +214,11 @@ export async function POST(req: NextRequest) {
           }
         } else {
           // ── Cobrança avulsa (sem subscription) ─────────────────────────
-          // Atualiza pelo asaasPaymentId se a fatura já existir no banco.
-          // Faturas avulsas criadas pelo admin já têm o asaasPaymentId gravado.
-          const faturaExistente = await prisma.faturaAsaas.findUnique({
-            where: { asaasPaymentId: body.payment!.id },
-          });
-          if (faturaExistente) {
-            await prisma.faturaAsaas.update({
-              where: { asaasPaymentId: body.payment!.id },
-              data: {
-                statusPagamento: STATUS_PAGAMENTO_ASAAS[body.payment!.status] ?? "CONFIRMED",
-                pagoEm: new Date(),
-              },
-            });
-          }
-          // Se não existir no banco (cobrança criada diretamente no Asaas),
-          // não há assinaturaId para vincular — ignora silenciosamente.
+          // Tenta pelo asaasPaymentId; se não achar, faz fallback pelo
+          // externalReference (backofficeId) para achar a fatura pendente.
+          const status =
+            STATUS_PAGAMENTO_ASAAS[body.payment!.status] ?? "CONFIRMED";
+          await baixarFaturaAvulsa(body.payment!, status);
         }
         break;
       }
@@ -177,29 +258,47 @@ export async function POST(req: NextRequest) {
 
       case "PAYMENT_CREATED":
       case "PAYMENT_UPDATED": {
-        if (!body.payment?.subscription) break;
-        const assinatura = await prisma.assinatura.findFirst({
-          where: { asaasSubscriptionId: body.payment.subscription },
-        });
-        if (!assinatura) break;
+        if (!body.payment) break;
 
-        await prisma.faturaAsaas.upsert({
-          where: { asaasPaymentId: body.payment.id },
-          create: {
-            assinaturaId: assinatura.id,
-            asaasPaymentId: body.payment.id,
-            valor: body.payment.value,
-            vencimento: new Date(body.payment.dueDate),
-            statusPagamento: STATUS_PAGAMENTO_ASAAS[body.payment.status] ?? "PENDING",
-            linkFatura: body.payment.invoiceUrl,
-            linkBoleto: body.payment.bankSlipUrl,
-          },
-          update: {
-            statusPagamento: STATUS_PAGAMENTO_ASAAS[body.payment.status] ?? "PENDING",
-            linkFatura: body.payment.invoiceUrl,
-            linkBoleto: body.payment.bankSlipUrl,
-          },
-        });
+        if (body.payment.subscription) {
+          const assinatura = await prisma.assinatura.findFirst({
+            where: { asaasSubscriptionId: body.payment.subscription },
+          });
+          if (!assinatura) break;
+
+          await prisma.faturaAsaas.upsert({
+            where: { asaasPaymentId: body.payment.id },
+            create: {
+              assinaturaId: assinatura.id,
+              asaasPaymentId: body.payment.id,
+              valor: body.payment.value,
+              vencimento: new Date(body.payment.dueDate),
+              statusPagamento: STATUS_PAGAMENTO_ASAAS[body.payment.status] ?? "PENDING",
+              linkFatura: body.payment.invoiceUrl,
+              linkBoleto: body.payment.bankSlipUrl,
+            },
+            update: {
+              statusPagamento: STATUS_PAGAMENTO_ASAAS[body.payment.status] ?? "PENDING",
+              linkFatura: body.payment.invoiceUrl,
+              linkBoleto: body.payment.bankSlipUrl,
+            },
+          });
+          break;
+        }
+
+        // ── Cobrança avulsa: PAYMENT_UPDATED pode trazer a baixa do PIX
+        // quando o evento RECEIVED/CONFIRMED não chegou. Só baixa se o
+        // status mapeado for pago (ou se for só atualização de link).
+        const statusAvulsa = STATUS_PAGAMENTO_ASAAS[body.payment.status];
+        if (!statusAvulsa) break;
+        if (
+          body.event === "PAYMENT_UPDATED" ||
+          isStatusPago(statusAvulsa) ||
+          body.payment.invoiceUrl ||
+          body.payment.bankSlipUrl
+        ) {
+          await baixarFaturaAvulsa(body.payment, statusAvulsa);
+        }
         break;
       }
 

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { GET } from "@/app/api/v1/backoffice/assinatura/route";
 import { requireBackoffice } from "@/lib/api-helpers";
-import { prisma } from "@asa/database";
+import { prisma } from "@/lib/db";
 
 vi.mock("@/lib/api-helpers", () => ({
   requireBackoffice: vi.fn(),
@@ -11,7 +11,7 @@ vi.mock("@/lib/api-helpers", () => ({
   ok: (data: unknown) => Response.json(data),
 }));
 
-vi.mock("@asa/database", () => ({
+vi.mock("@/lib/db", () => ({
   prisma: { assinatura: { findUnique: vi.fn() } },
 }));
 

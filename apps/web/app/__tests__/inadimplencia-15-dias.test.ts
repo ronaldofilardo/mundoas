@@ -14,6 +14,7 @@ import {
   calcularDiasAtraso,
   isFaturaAtrasada15Dias,
   isFaturaBloqueavel,
+  isFaturaPaga,
   extrairDataBrasilia,
 } from "@/lib/billing/inadimplencia";
 
@@ -97,6 +98,29 @@ describe("isFaturaAtrasada15Dias", () => {
 
   it("atraso de 16 dias → true", () => {
     expect(isFaturaAtrasada15Dias(pendente15, "2026-10-01")).toBe(true);
+  });
+});
+
+describe("isFaturaPaga", () => {
+  it("pagoManualmente → true", () => {
+    expect(isFaturaPaga({ pagoManualmente: true, statusPagamento: "PENDING" })).toBe(true);
+  });
+
+  it("statusPagamento RECEIVED → true", () => {
+    expect(isFaturaPaga({ pagoManualmente: false, statusPagamento: "RECEIVED" })).toBe(true);
+  });
+
+  it("statusPagamento CONFIRMED → true", () => {
+    expect(isFaturaPaga({ pagoManualmente: false, statusPagamento: "CONFIRMED" })).toBe(true);
+  });
+
+  it("statusPagamento PENDING → false", () => {
+    expect(isFaturaPaga({ pagoManualmente: false, statusPagamento: "PENDING" })).toBe(false);
+  });
+
+  it("statusPagamento null/undefined → false", () => {
+    expect(isFaturaPaga({ statusPagamento: null })).toBe(false);
+    expect(isFaturaPaga({})).toBe(false);
   });
 });
 

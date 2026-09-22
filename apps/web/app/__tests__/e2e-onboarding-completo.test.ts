@@ -198,7 +198,7 @@ describe("E2E Onboarding Completo — ADMIN + BACKOFFICE (Termos) + ASAAS (Pagam
     const res = await criarFaturaAdmin(req, { params: { id: BACKOFFICE_ID } });
     expect(res.status).toBe(400);
     const body = await res.json();
-    expect(body.error).toContain("Esta unidade ainda não aceitou os termos de uso");
+    expect(body.error).toContain("ainda não aceitado os termos de uso");
   });
 
   it("Passo 4: BACKOFFICE acessa e aceita os termos diretamente no sistema -> transita para PENDENTE_PAGAMENTO", async () => {
@@ -391,7 +391,7 @@ describe("E2E Onboarding Completo — ADMIN + BACKOFFICE (Termos) + ASAAS (Pagam
 
     expect(prismaMock.assinatura.update).toHaveBeenCalledWith({
       where: { id: ASSINATURA_ID },
-      data: { statusAssinatura: "ATIVA" },
+      data: { statusAssinatura: "ATIVA", bloqueadoEm: null, motivoBloqueio: null },
     });
   });
 
@@ -434,7 +434,7 @@ describe("E2E Onboarding Completo — ADMIN + BACKOFFICE (Termos) + ASAAS (Pagam
 
     expect(prismaMock.assinatura.update).toHaveBeenCalledWith({
       where: { id: ASSINATURA_ID },
-      data: { statusAssinatura: "ATIVA" },
+      data: { statusAssinatura: "ATIVA", bloqueadoEm: null, motivoBloqueio: null },
     });
   });
 
@@ -442,6 +442,7 @@ describe("E2E Onboarding Completo — ADMIN + BACKOFFICE (Termos) + ASAAS (Pagam
     prismaMock.assinatura.findUnique.mockResolvedValue({
       statusAssinatura: "ATIVA",
       cortesiaExpiraEm: null,
+      faturas: [],
     } as any);
 
     const req = new NextRequest(

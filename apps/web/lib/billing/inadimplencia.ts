@@ -45,6 +45,24 @@ export function calcularDiasAtraso(
 }
 
 /**
+ * Status de fatura que o sistema considera "paga" (baixa manual ou gateway).
+ * RECEIVED = PIX/boleto compensado no Asaas; CONFIRMED = baixa manual ou
+ * confirmação de settlement. Qualquer um dos dois libera a unidade.
+ */
+export const STATUS_FATURA_PAGA = ["CONFIRMED", "RECEIVED"] as const;
+
+export function isFaturaPaga(fatura: {
+  pagoManualmente?: boolean;
+  statusPagamento?: string | null;
+}): boolean {
+  if (fatura.pagoManualmente) return true;
+  return (
+    fatura.statusPagamento === "CONFIRMED" ||
+    fatura.statusPagamento === "RECEIVED"
+  );
+}
+
+/**
  * Verifica se a fatura já possui atraso >= 15 dias (elegível para reenvio pelo admin).
  * Exemplo: vencimento dia 15 -> dia 30 em diante já tem >= 15 dias de diferença.
  */
@@ -53,8 +71,7 @@ export function isFaturaAtrasada15Dias(fatura: {
   pagoManualmente?: boolean;
   statusPagamento?: string;
 }, dataReferencia?: Date | string): boolean {
-  if (fatura.pagoManualmente) return false;
-  if (fatura.statusPagamento === "CONFIRMED" || fatura.statusPagamento === "RECEIVED") return false;
+  if (isFaturaPaga(fatura)) return false;
 
   const atraso = calcularDiasAtraso(fatura.vencimento, dataReferencia);
   return atraso >= 15;
@@ -71,8 +88,7 @@ export function isFaturaBloqueavel(fatura: {
   pagoManualmente?: boolean;
   statusPagamento?: string;
 }, dataReferencia?: Date | string): boolean {
-  if (fatura.pagoManualmente) return false;
-  if (fatura.statusPagamento === "CONFIRMED" || fatura.statusPagamento === "RECEIVED") return false;
+  if (isFaturaPaga(fatura)) return false;
 
   const atraso = calcularDiasAtraso(fatura.vencimento, dataReferencia);
   return atraso > 15;
