@@ -140,7 +140,9 @@ describe("API admin/backoffices — contrato funcional", () => {
 
     const transactionClient: TransactionClient = {
       usuario: { create: vi.fn().mockResolvedValue({ id: "usuario-1" }) },
-      backoffice: { create: vi.fn().mockResolvedValue({ id: "backoffice-1" }) },
+      backoffice: {
+        create: vi.fn().mockResolvedValue({ id: "backoffice-1", emailCobranca: null }),
+      },
       assinatura: {
         create: vi.fn().mockResolvedValue({ statusAssinatura: "CORTESIA" }),
       },
@@ -162,10 +164,73 @@ describe("API admin/backoffices — contrato funcional", () => {
       cpf: "12345678901",
       statusAssinatura: "CORTESIA",
       senhaTemporaria: "senha-teste",
+      emailCobranca: null,
     });
     expect(transactionClient.usuario.create).toHaveBeenCalledOnce();
     expect(transactionClient.backoffice.create).toHaveBeenCalledOnce();
+    expect(transactionClient.backoffice.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ emailCobranca: null }),
+      }),
+    );
     expect(transactionClient.assinatura.create).toHaveBeenCalledOnce();
+  });
+
+  it("grava emailCobranca quando informado", async () => {
+    authAsAdmin();
+    prismaMock.usuario.findUnique.mockResolvedValue(null);
+    prismaMock.backoffice.findUnique.mockResolvedValue(null);
+
+    const transactionClient: TransactionClient = {
+      usuario: { create: vi.fn().mockResolvedValue({ id: "usuario-1" }) },
+      backoffice: {
+        create: vi
+          .fn()
+          .mockResolvedValue({ id: "backoffice-1", emailCobranca: "pagador@empresa.com" }),
+      },
+      assinatura: {
+        create: vi.fn().mockResolvedValue({ statusAssinatura: "PENDENTE_TERMOS" }),
+      },
+    };
+    prismaMock.$transaction.mockImplementation(async (callback) => callback(transactionClient));
+
+    const response = await POST(
+      requestWithBody({
+        nome: "Unidade Centro",
+        email: "acesso@empresa.com",
+        cpf: "123.456.789-01",
+        emailCobranca: "pagador@empresa.com",
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(transactionClient.backoffice.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ emailCobranca: "pagador@empresa.com" }),
+      }),
+    );
+    expect(await responseBody(response)).toMatchObject({
+      emailCobranca: "pagador@empresa.com",
+    });
+  });
+
+  it("retorna 400 para emailCobranca inválido", async () => {
+    authAsAdmin();
+
+    const response = await POST(
+      requestWithBody({
+        nome: "Unidade",
+        email: "u@teste.com",
+        cpf: "12345678901",
+        emailCobranca: "nao-e-email",
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(await responseBody(response)).toMatchObject({
+      error: "Email para cobrança inválido.",
+    });
+    expect(prismaMock.usuario.findUnique).not.toHaveBeenCalled();
   });
 
   it("lista backoffices para um administrador", async () => {

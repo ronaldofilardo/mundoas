@@ -167,6 +167,82 @@ describe("API admin/usuarios/[id] PATCH — contrato funcional", () => {
       expect(response.status).toBe(200);
     });
 
+    it("atualiza emailCobranca no backoffice", async () => {
+      authenticateAdmin();
+      prismaMock.backoffice.findUnique.mockResolvedValue({ id: "bo-1", usuarioId: "u-1" });
+      prismaMock.usuario.findFirst.mockResolvedValue(null);
+      prismaMock.usuario.update.mockResolvedValue({});
+      prismaMock.backoffice.update.mockResolvedValue({});
+
+      const response = await PATCH(
+        patchRequest("bo-1", "BACKOFFICE", { emailCobranca: "pagador@empresa.com" }),
+        { params: { id: "bo-1" } },
+      );
+
+      expect(response.status).toBe(200);
+      expect(prismaMock.backoffice.update).toHaveBeenCalledWith({
+        where: { id: "bo-1" },
+        data: expect.objectContaining({ emailCobranca: "pagador@empresa.com" }),
+      });
+    });
+
+    it("aceita emailCobranca null para limpar o campo", async () => {
+      authenticateAdmin();
+      prismaMock.backoffice.findUnique.mockResolvedValue({ id: "bo-1", usuarioId: "u-1" });
+      prismaMock.usuario.findFirst.mockResolvedValue(null);
+      prismaMock.usuario.update.mockResolvedValue({});
+      prismaMock.backoffice.update.mockResolvedValue({});
+
+      const response = await PATCH(
+        patchRequest("bo-1", "BACKOFFICE", { emailCobranca: null }),
+        { params: { id: "bo-1" } },
+      );
+
+      expect(response.status).toBe(200);
+      expect(prismaMock.backoffice.update).toHaveBeenCalledWith({
+        where: { id: "bo-1" },
+        data: expect.objectContaining({ emailCobranca: null }),
+      });
+    });
+
+    it("aceita campos opcionais como null (limpar endereço/cobrança)", async () => {
+      authenticateAdmin();
+      prismaMock.backoffice.findUnique.mockResolvedValue({ id: "bo-1", usuarioId: "u-1" });
+      prismaMock.usuario.findFirst.mockResolvedValue(null);
+      prismaMock.usuario.update.mockResolvedValue({});
+      prismaMock.backoffice.update.mockResolvedValue({});
+
+      const response = await PATCH(
+        patchRequest("bo-1", "BACKOFFICE", {
+          nome: "Nova",
+          email: "nova@test.com",
+          telefone: null,
+          razaoSocial: null,
+          cnpj: null,
+          cep: null,
+          logradouro: null,
+          numero: null,
+          complemento: null,
+          bairro: null,
+          cidade: null,
+          uf: null,
+          emailCobranca: null,
+        }),
+        { params: { id: "bo-1" } },
+      );
+
+      expect(response.status).toBe(200);
+      expect(prismaMock.backoffice.update).toHaveBeenCalledWith({
+        where: { id: "bo-1" },
+        data: expect.objectContaining({
+          razaoSocial: null,
+          cnpj: null,
+          emailCobranca: null,
+          telefone: null,
+        }),
+      });
+    });
+
     it("atualiza apenas campos parciais", async () => {
       authenticateAdmin();
       prismaMock.backoffice.findUnique.mockResolvedValue({ id: "bo-1", usuarioId: "u-1" });

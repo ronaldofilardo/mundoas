@@ -43,6 +43,7 @@ const assinatura = {
     cnpj: null,
     telefone: "41999999999",
     email: "alpha@example.com",
+    emailCobranca: "pagador@empresa.com",
   },
   faturas: [
     {
@@ -126,6 +127,8 @@ describe("BackofficeFinanceiroPage — abas", () => {
     expect(screen.getByText("Dados da conta")).toBeTruthy();
     expect(screen.getByText("Alpha Backoffice")).toBeTruthy();
     expect(screen.getByText("alpha@example.com")).toBeTruthy();
+    expect(screen.getByText("E-mail para cobrança")).toBeTruthy();
+    expect(screen.getByText("pagador@empresa.com")).toBeTruthy();
     expect(screen.getByText(/aceitos em/i)).toBeTruthy();
     expect(
       screen.getByRole("button", { name: /Termos de Uso da Plataforma mundoAS/i }),

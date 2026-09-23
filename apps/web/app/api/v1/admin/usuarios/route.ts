@@ -111,6 +111,7 @@ export async function GET() {
       criadoEm: bo.usuario.criadoEm?.toISOString(),
       // Backoffice-specific fields
       razaoSocial: bo.razaoSocial,
+      emailCobranca: bo.emailCobranca,
       cnpj: bo.cnpj,
       cep: bo.cep,
       logradouro: bo.logradouro,

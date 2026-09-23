@@ -26,6 +26,7 @@ export function getStatusColor(status: string): string {
 export function buildBackofficePayload(form: UsuarioForm): Record<string, unknown> {
   return {
     razaoSocial: form.razaoSocial || null,
+    emailCobranca: form.emailCobranca || null,
     cnpj: form.cnpj || null,
     cep: form.cep || null,
     logradouro: form.logradouro || null,

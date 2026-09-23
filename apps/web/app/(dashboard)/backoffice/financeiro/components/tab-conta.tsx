@@ -101,10 +101,19 @@ export function TabConta({ data }: TabContaProps) {
           )}
           {conta.email && (
             <div>
-              <dt className="text-xs text-gray-500">E-mail</dt>
+              <dt className="text-xs text-gray-500">E-mail de acesso</dt>
               <dd className="text-gray-900">{conta.email}</dd>
             </div>
           )}
+          <div>
+            <dt className="text-xs text-gray-500">E-mail para cobrança</dt>
+            <dd className="text-gray-900">
+              {conta.emailCobranca || conta.email || "—"}
+              {!conta.emailCobranca && conta.email && (
+                <span className="text-gray-400"> (usa o e-mail de acesso)</span>
+              )}
+            </dd>
+          </div>
         </dl>
 
         <div className="border-t border-gray-100 pt-3 text-xs text-gray-600">

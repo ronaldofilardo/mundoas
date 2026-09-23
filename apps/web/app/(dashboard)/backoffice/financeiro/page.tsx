@@ -101,6 +101,7 @@ export interface AssinaturaData {
     cnpj?: string | null;
     telefone?: string | null;
     email?: string | null;
+    emailCobranca?: string | null;
   } | null;
   faturas?: Fatura[];
 }

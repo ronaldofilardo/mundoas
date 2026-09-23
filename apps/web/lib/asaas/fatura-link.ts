@@ -27,6 +27,7 @@ export interface GarantirLinkContexto {
     cpf: string;
     cnpj?: string | null;
     telefone?: string | null;
+    emailCobranca?: string | null;
     usuario?: { email: string };
   } | null;
 }
@@ -76,6 +77,7 @@ export async function garantirLinkFaturaAsaas(
                 cpf: true,
                 cnpj: true,
                 telefone: true,
+                emailCobranca: true,
                 usuario: { select: { email: true } },
               },
             },
@@ -144,7 +146,7 @@ export async function garantirLinkFaturaAsaas(
       customer = await buscarOuCriarCustomer({
         name: bo.razaoSocial || bo.nome,
         cpfCnpj: bo.cnpj || bo.cpf,
-        email: bo.usuario?.email || "",
+        email: bo.emailCobranca || bo.usuario?.email || "",
         phone: bo.telefone,
         externalReference: bo.id,
       });
@@ -155,7 +157,7 @@ export async function garantirLinkFaturaAsaas(
         customer = await buscarOuCriarCustomer({
           name: bo.nome,
           cpfCnpj: bo.cpf,
-          email: bo.usuario?.email || "",
+          email: bo.emailCobranca || bo.usuario?.email || "",
           phone: bo.telefone,
           externalReference: bo.id,
         });

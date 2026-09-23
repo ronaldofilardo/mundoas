@@ -1,32 +1,33 @@
 import { z } from "zod";
 
 export const backofficeSchema = z.object({
-  nome: z.string().optional(),
-  email: z.string().email().optional(),
-  telefone: z.string().optional(),
-  razaoSocial: z.string().optional(),
-  cnpj: z.string().optional(),
-  cep: z.string().optional(),
-  logradouro: z.string().optional(),
-  numero: z.string().optional(),
+  nome: z.string().nullable().optional(),
+  email: z.string().email().nullable().optional(),
+  emailCobranca: z.string().email().nullable().optional(),
+  telefone: z.string().nullable().optional(),
+  razaoSocial: z.string().nullable().optional(),
+  cnpj: z.string().nullable().optional(),
+  cep: z.string().nullable().optional(),
+  logradouro: z.string().nullable().optional(),
+  numero: z.string().nullable().optional(),
   complemento: z.string().nullable().optional(),
   bairro: z.string().nullable().optional(),
-  cidade: z.string().optional(),
-  uf: z.string().optional(),
-  percentualComissaoDefault: z.number().optional(),
-  percentualComissaoMax: z.number().optional(),
+  cidade: z.string().nullable().optional(),
+  uf: z.string().nullable().optional(),
+  percentualComissaoDefault: z.number().nullable().optional(),
+  percentualComissaoMax: z.number().nullable().optional(),
 });
 
 export const consultorSchema = z.object({
-  nome: z.string().optional(),
-  email: z.string().email().optional(),
-  telefone: z.string().optional(),
+  nome: z.string().nullable().optional(),
+  email: z.string().email().nullable().optional(),
+  telefone: z.string().nullable().optional(),
 });
 
 export const gestorSchema = z.object({
-  nome: z.string().optional(),
-  email: z.string().email().optional(),
-  telefone: z.string().optional(),
+  nome: z.string().nullable().optional(),
+  email: z.string().email().nullable().optional(),
+  telefone: z.string().nullable().optional(),
 });
 
 export type BackofficeSchema = z.infer<typeof backofficeSchema>;

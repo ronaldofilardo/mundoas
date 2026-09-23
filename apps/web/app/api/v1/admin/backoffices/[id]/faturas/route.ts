@@ -73,6 +73,7 @@ export async function POST(
             cpf: true,
             cnpj: true,
             telefone: true,
+            emailCobranca: true,
             usuario: { select: { email: true } },
           },
         });
@@ -81,7 +82,7 @@ export async function POST(
           const customer = await buscarOuCriarCustomer({
             name: backoffice.razaoSocial || backoffice.nome,
             cpfCnpj: backoffice.cnpj || backoffice.cpf,
-            email: backoffice.usuario.email,
+            email: backoffice.emailCobranca || backoffice.usuario.email,
             phone: backoffice.telefone,
             externalReference: params.id,
           });

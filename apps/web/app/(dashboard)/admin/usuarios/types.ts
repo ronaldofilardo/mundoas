@@ -11,6 +11,7 @@ export interface Usuario {
   status: UsuarioStatus;
   hierarquia: UsuarioTipo;
   telefone?: string | null;
+  emailCobranca?: string | null;
   razaoSocial?: string | null;
   cnpj?: string | null;
   cep?: string | null;
@@ -32,6 +33,7 @@ export interface DeleteInfo {
 export interface UsuarioForm {
   nome: string;
   email: string;
+  emailCobranca: string;
   telefone: string;
   razaoSocial: string;
   cnpj: string;

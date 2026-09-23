@@ -12,6 +12,7 @@ export default function NovoBackofficePage() {
     nome: "",
     email: "",
     cpf: "",
+    emailCobranca: "",
     razaoSocial: "",
     cnpj: "",
     cep: "",
@@ -107,6 +108,23 @@ export default function NovoBackofficePage() {
             className="w-full border rounded px-3 py-2 text-sm"
             placeholder="unidade@exemplo.com"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="emailCobranca">
+            Email para cobrança
+          </label>
+          <input id="emailCobranca"
+            name="emailCobranca"
+            type="email"
+            value={formData.emailCobranca}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2 text-sm"
+            placeholder="financeiro@exemplo.com"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Receberá os avisos de cobrança do Asaas. Se em branco, será usado o email de acesso.
+          </p>
         </div>
 
         <div>

@@ -18,22 +18,9 @@
  *   import { prisma } from "@/lib/db";
  */
 import { createRequire } from "node:module";
-import { isAbsolute, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-
-console.log("[db.ts] import.meta.url:", import.meta.url);
-console.log("[db.ts] import.meta.url type:", typeof import.meta.url);
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = resolve(__filename, "..");
+import { isAbsolute } from "node:path";
 
 const EXPECTED_PRISMA_VERSION = "6.19.2";
-const MONOREPO_ROOT = resolve(__dirname, "../../..");
-
-console.log("[db.ts] MONOREPO_ROOT:", MONOREPO_ROOT);
-console.log(
-  "[db.ts] pkgPath:",
-  resolve(MONOREPO_ROOT, "apps/web/package.json"),
-);
 const requireFromMonorepo = createRequire(import.meta.url);
 
 type PrismaModule = typeof import("@prisma/client");

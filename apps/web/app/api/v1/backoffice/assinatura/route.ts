@@ -23,6 +23,7 @@ export async function GET() {
           cpf: true,
           cnpj: true,
           telefone: true,
+          emailCobranca: true,
           usuario: { select: { email: true } },
         },
       },
@@ -109,6 +110,7 @@ export async function GET() {
           cnpj: assinatura.backoffice.cnpj ?? null,
           telefone: assinatura.backoffice.telefone ?? null,
           email: assinatura.backoffice.usuario?.email ?? null,
+          emailCobranca: assinatura.backoffice.emailCobranca ?? null,
         }
       : null,
     faturas,

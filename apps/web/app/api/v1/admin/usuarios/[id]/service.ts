@@ -8,6 +8,7 @@ export async function updateBackofficeService(
   const {
     nome,
     email,
+    emailCobranca,
     telefone,
     razaoSocial,
     cnpj,
@@ -48,6 +49,7 @@ export async function updateBackofficeService(
       data: {
         ...(nome && { nome }),
         ...(razaoSocial !== undefined && { razaoSocial }),
+        ...(emailCobranca !== undefined && { emailCobranca }),
         ...(cnpj !== undefined && { cnpj }),
         ...(cep !== undefined && { cep }),
         ...(logradouro !== undefined && { logradouro }),

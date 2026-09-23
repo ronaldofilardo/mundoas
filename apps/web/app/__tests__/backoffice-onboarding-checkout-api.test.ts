@@ -133,6 +133,7 @@ describe("API backoffice/onboarding/checkout — contrato funcional", () => {
       razaoSocial: "Unidade Teste",
       cnpj: "12345678000199",
       telefone: "(11) 99999-9999",
+      emailCobranca: null,
       usuario: { email: "teste@asa.test" },
       assinatura: { id: "assinatura-1", statusAssinatura: "PENDENTE_PAGAMENTO", planoAssinatura: "MENSAL" },
     } as never);
@@ -176,6 +177,78 @@ describe("API backoffice/onboarding/checkout — contrato funcional", () => {
     expect(body.metodoPagamento).toBe("PIX");
     expect(body.fatura?.linkBoleto).toBe("https://asaas.com/boleto/1");
     expect(body.pix?.payload).toBe("pix-copia-cola");
+  });
+
+  it("usa emailCobranca no customer do Asaas quando preenchido", async () => {
+    authenticate();
+    prismaMock.backoffice.findUnique.mockResolvedValue({
+      id: "backoffice-1",
+      razaoSocial: "Unidade Teste",
+      cnpj: "12345678000199",
+      telefone: "(11) 99999-9999",
+      emailCobranca: "pagador@empresa.com",
+      usuario: { email: "acesso@empresa.com" },
+      assinatura: { id: "assinatura-1", statusAssinatura: "PENDENTE_PAGAMENTO", planoAssinatura: "MENSAL" },
+    } as never);
+
+    buscarOuCriarCustomerMock.mockResolvedValue({ id: "customer-1", name: "Unidade Teste", cpfCnpj: "12345678000199" } as never);
+    criarSubscriptionMock.mockResolvedValue({ id: "subscription-1", status: "ACTIVE" } as never);
+    buscarPrimeiraFaturaMock.mockResolvedValue({
+      id: "payment-1",
+      value: 350,
+      dueDate: "2026-10-15",
+      invoiceUrl: "https://asaas.com/invoice/1",
+      bankSlipUrl: "https://asaas.com/boleto/1",
+    } as never);
+    buscarQrCodePixMock.mockResolvedValue(null);
+
+    const request = new NextRequest("http://localhost", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ metodoPagamento: "PIX" }),
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    expect(buscarOuCriarCustomerMock).toHaveBeenCalledWith(
+      expect.objectContaining({ email: "pagador@empresa.com" }),
+    );
+  });
+
+  it("usa email de acesso no customer quando emailCobranca está vazio", async () => {
+    authenticate();
+    prismaMock.backoffice.findUnique.mockResolvedValue({
+      id: "backoffice-1",
+      razaoSocial: "Unidade Teste",
+      cnpj: "12345678000199",
+      telefone: "(11) 99999-9999",
+      emailCobranca: null,
+      usuario: { email: "acesso@empresa.com" },
+      assinatura: { id: "assinatura-1", statusAssinatura: "PENDENTE_PAGAMENTO", planoAssinatura: "MENSAL" },
+    } as never);
+
+    buscarOuCriarCustomerMock.mockResolvedValue({ id: "customer-1", name: "Unidade Teste", cpfCnpj: "12345678000199" } as never);
+    criarSubscriptionMock.mockResolvedValue({ id: "subscription-1", status: "ACTIVE" } as never);
+    buscarPrimeiraFaturaMock.mockResolvedValue({
+      id: "payment-1",
+      value: 350,
+      dueDate: "2026-10-15",
+      invoiceUrl: "https://asaas.com/invoice/1",
+      bankSlipUrl: "https://asaas.com/boleto/1",
+    } as never);
+    buscarQrCodePixMock.mockResolvedValue(null);
+
+    const request = new NextRequest("http://localhost", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ metodoPagamento: "PIX" }),
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    expect(buscarOuCriarCustomerMock).toHaveBeenCalledWith(
+      expect.objectContaining({ email: "acesso@empresa.com" }),
+    );
   });
 
   it("retorna dados de fatura para boleto sem QR PIX", async () => {

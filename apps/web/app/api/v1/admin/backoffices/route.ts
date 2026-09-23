@@ -11,10 +11,11 @@ export async function POST(req: NextRequest) {
     if (error) return error;
 
     const body = await req.json();
-    const { nome, email, cpf, razaoSocial, cnpj, cep, logradouro, numero, complemento, bairro, cidade, uf, telefone } = body as {
+    const { nome, email, cpf, emailCobranca, razaoSocial, cnpj, cep, logradouro, numero, complemento, bairro, cidade, uf, telefone } = body as {
       nome?: string;
       email?: string;
       cpf?: string;
+      emailCobranca?: string;
       razaoSocial?: string;
       cnpj?: string;
       cep?: string;
@@ -29,6 +30,11 @@ export async function POST(req: NextRequest) {
 
     if (!nome || !email || !cpf) {
       return badRequest("Informe nome, email e CPF da unidade.");
+    }
+
+    const emailCobrancaLimpo = (emailCobranca || "").trim() || null;
+    if (emailCobrancaLimpo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailCobrancaLimpo)) {
+      return badRequest("Email para cobrança inválido.");
     }
 
     const cpfClean = cpf.replace(/\D/g, "");
@@ -66,6 +72,7 @@ export async function POST(req: NextRequest) {
           usuarioId: usuario.id,
           nome,
           cpf: cpfClean,
+          emailCobranca: emailCobrancaLimpo,
           razaoSocial,
           cnpj,
           logradouro,
@@ -101,7 +108,7 @@ export async function POST(req: NextRequest) {
       acao: "CRIAR_BACKOFFICE",
       entidade: "backoffice",
       entidadeId: result.backoffice.id,
-      detalhes: { nome, email, cpf: cpfClean },
+      detalhes: { nome, email, emailCobranca: emailCobrancaLimpo, cpf: cpfClean },
     });
 
     return created({
@@ -109,6 +116,7 @@ export async function POST(req: NextRequest) {
       usuarioId: result.usuario.id,
       nome,
       email,
+      emailCobranca: result.backoffice.emailCobranca,
       cpf: cpfClean,
       statusAssinatura: result.assinatura.statusAssinatura,
       senhaTemporaria,

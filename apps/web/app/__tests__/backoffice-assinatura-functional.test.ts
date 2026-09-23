@@ -84,6 +84,7 @@ describe("API backoffice/assinatura — contrato funcional", () => {
         cpf: "12345678900",
         cnpj: null,
         telefone: null,
+        emailCobranca: "pagador@alpha.com",
         usuario: { email: "alpha@example.com" },
       },
       faturas: [
@@ -111,7 +112,12 @@ describe("API backoffice/assinatura — contrato funcional", () => {
       motivoBloqueio: string;
       termosAceitosEm: string | null;
       termosVersao: string | null;
-      backoffice: { nome: string; cpf: string; email: string } | null;
+      backoffice: {
+        nome: string;
+        cpf: string;
+        email: string;
+        emailCobranca: string | null;
+      } | null;
       faturas: Array<Record<string, unknown>>;
     };
 
@@ -130,6 +136,7 @@ describe("API backoffice/assinatura — contrato funcional", () => {
       cnpj: null,
       telefone: null,
       email: "alpha@example.com",
+      emailCobranca: "pagador@alpha.com",
     });
     expect(body.faturas[0]).toEqual(
       expect.objectContaining({

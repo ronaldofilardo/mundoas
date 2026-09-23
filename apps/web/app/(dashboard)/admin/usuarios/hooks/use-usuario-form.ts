@@ -6,6 +6,7 @@ import type { Usuario, UsuarioForm } from "../types";
 const emptyForm: UsuarioForm = {
   nome: "",
   email: "",
+  emailCobranca: "",
   telefone: "",
   razaoSocial: "",
   cnpj: "",
@@ -27,6 +28,7 @@ export function useUsuarioForm() {
     setForm({
       nome: usuario.nome || "",
       email: usuario.email || "",
+      emailCobranca: usuario.emailCobranca || "",
       telefone: usuario.telefone || "",
       razaoSocial: usuario.razaoSocial || "",
       cnpj: usuario.cnpj || "",

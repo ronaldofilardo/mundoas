@@ -62,6 +62,16 @@ export function UsuarioEditModal({
               />
             </div>
 
+            {isBackoffice && (
+              <EditFormField
+                id="edit-email-cobranca"
+                label="Email para cobrança"
+                type="email"
+                value={form.emailCobranca}
+                onChange={(v) => onFieldChange("emailCobranca", v)}
+              />
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <EditFormField
                 id="edit-telefone"
