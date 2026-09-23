@@ -32,6 +32,7 @@ export default function DetalheBackofficePage() {
     criarFatura,
     marcarPago,
     reenviarFatura,
+    removerFatura,
   } = useFaturas(backofficeId, { onAssinaturaPodeMudar: handleAssinaturaMudou });
 
 
@@ -102,6 +103,7 @@ export default function DetalheBackofficePage() {
           acaoEmAndamento={acaoEmAndamento}
           onMarcarPago={marcarPago}
           onReenviar={reenviarFatura}
+          onRemoverFatura={removerFatura}
           onErroRecibo={(mensagem) => toast.error(mensagem)}
         />
 

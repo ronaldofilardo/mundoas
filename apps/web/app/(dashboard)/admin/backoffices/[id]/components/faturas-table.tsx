@@ -25,6 +25,7 @@ interface FaturasTableProps {
   acaoEmAndamento: boolean;
   onMarcarPago: (faturaId: string, pago: boolean) => void;
   onReenviar?: (faturaId: string) => void;
+  onRemoverFatura?: (faturaId: string) => void;
   onErroRecibo?: (mensagem: string) => void;
 }
 
@@ -34,6 +35,7 @@ export function FaturasTable({
   acaoEmAndamento,
   onMarcarPago,
   onReenviar,
+  onRemoverFatura,
   onErroRecibo,
 }: FaturasTableProps) {
   return (
@@ -165,6 +167,22 @@ export function FaturasTable({
                       >
                         Ver link ↗
                       </a>
+                    )}
+                    
+                    {!paga && onRemoverFatura && (
+                      <button
+                        type="button"
+                        disabled={acaoEmAndamento}
+                        onClick={() => {
+                          const ok = window.confirm(
+                            "Tem certeza que deseja remover esta fatura?\n\nIMPORTANTE: Não se esqueça de deletar também no painel do Asaas, caso ela exista lá!",
+                          );
+                          if (ok) onRemoverFatura(f.id);
+                        }}
+                        className="text-[11px] text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 px-2 py-1 rounded font-medium transition w-fit"
+                      >
+                        🗑️ Excluir
+                      </button>
                     )}
                   </div>
                 </td>

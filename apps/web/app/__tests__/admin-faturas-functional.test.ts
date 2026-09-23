@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { POST, GET } from "@/app/api/v1/admin/backoffices/[id]/faturas/route";
-import { PATCH } from "@/app/api/v1/admin/backoffices/[id]/faturas/[faturaId]/route";
+import { PATCH, DELETE } from "@/app/api/v1/admin/backoffices/[id]/faturas/[faturaId]/route";
 import { requireAdmin } from "@/lib/api-helpers";
 import { prisma } from "@asa/database";
 
@@ -23,7 +23,7 @@ const { prismaMockShape } = vi.hoisted(() => {
   };
   const prismaMockShape = {
     assinatura: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
-    faturaAsaas: { findUnique: vi.fn(), findMany: vi.fn(), create: faturaCreate },
+    faturaAsaas: { findUnique: vi.fn(), findMany: vi.fn(), create: faturaCreate, delete: vi.fn() },
     $transaction: vi.fn(async (cb: (client: typeof transactionClient) => Promise<unknown>) =>
       cb(transactionClient),
     ),
@@ -241,5 +241,48 @@ describe("APIs admin/backoffices/:id/faturas — contrato funcional", () => {
         data: expect.objectContaining({ statusPagamento: "CONFIRMED", pagoManualmente: true }),
       }),
     );
+  });
+
+  it("retorna 404 quando tenta remover fatura que não pertence à unidade", async () => {
+    authenticate();
+    prismaMock.faturaAsaas.findUnique.mockResolvedValue({
+      id: "fatura-1",
+      assinaturaId: "assinatura-1",
+      assinatura: { backofficeId: "outro-backoffice" },
+    } as Awaited<ReturnType<typeof prisma.faturaAsaas.findUnique>>);
+
+    const response = await DELETE(
+      new NextRequest("http://localhost/api/v1/admin/backoffices/backoffice-1/faturas/fatura-1", {
+        method: "DELETE",
+      }),
+      faturaParams,
+    );
+
+    expect(response.status).toBe(404);
+  });
+
+  it("remove a fatura com sucesso", async () => {
+    authenticate();
+    prismaMock.faturaAsaas.findUnique.mockResolvedValue({
+      id: "fatura-1",
+      assinaturaId: "assinatura-1",
+      asaasPaymentId: "pay_123",
+      assinatura: { backofficeId: "backoffice-1" },
+    } as Awaited<ReturnType<typeof prisma.faturaAsaas.findUnique>>);
+    prismaMock.faturaAsaas.delete.mockResolvedValue({
+      id: "fatura-1",
+    } as Awaited<ReturnType<typeof prisma.faturaAsaas.delete>>);
+
+    const response = await DELETE(
+      new NextRequest("http://localhost/api/v1/admin/backoffices/backoffice-1/faturas/fatura-1", {
+        method: "DELETE",
+      }),
+      faturaParams,
+    );
+
+    expect(response.status).toBe(200);
+    expect(prismaMock.faturaAsaas.delete).toHaveBeenCalledWith({
+      where: { id: "fatura-1" },
+    });
   });
 });

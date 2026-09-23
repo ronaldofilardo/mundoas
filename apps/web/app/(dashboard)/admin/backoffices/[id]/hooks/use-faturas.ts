@@ -111,5 +111,27 @@ export function useFaturas(backofficeId: string, options?: UseFaturasOptions) {
     }
   }
 
-  return { faturas, acaoEmAndamento, fetchFaturas, criarFatura, marcarPago, reenviarFatura };
+  async function removerFatura(faturaId: string) {
+    setAcaoEmAndamento(true);
+    try {
+      const res = await fetch(
+        `/api/v1/admin/backoffices/${backofficeId}/faturas/${faturaId}`,
+        { method: "DELETE" },
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Erro ao remover fatura");
+
+      toast.success("Fatura removida com sucesso!");
+      fetchFaturas();
+      options?.onAssinaturaPodeMudar?.();
+    } catch (e: unknown) {
+      toast.error(
+        (e instanceof Error ? e.message : "Erro inesperado") || "Erro ao remover fatura",
+      );
+    } finally {
+      setAcaoEmAndamento(false);
+    }
+  }
+
+  return { faturas, acaoEmAndamento, fetchFaturas, criarFatura, marcarPago, reenviarFatura, removerFatura };
 }

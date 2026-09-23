@@ -104,3 +104,39 @@ export async function PATCH(
     return badRequest((err instanceof Error ? err.message : "Erro interno ao atualizar fatura."));
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string; faturaId: string } },
+) {
+  try {
+    const { session, error } = await requireAdmin();
+    if (error) return error;
+
+    const fatura = await prisma.faturaAsaas.findUnique({
+      where: { id: params.faturaId },
+      include: { assinatura: true },
+    });
+    
+    if (!fatura || fatura.assinatura.backofficeId !== params.id) {
+      return notFound("Fatura não encontrada para esta unidade.");
+    }
+
+    await prisma.faturaAsaas.delete({
+      where: { id: params.faturaId },
+    });
+
+    await criarAuditLog({
+      usuarioId: session!.user.id,
+      acao: "FATURA_REMOVER",
+      entidade: "fatura_asaas",
+      entidadeId: params.faturaId,
+      detalhes: { backofficeId: params.id, asaasPaymentId: fatura.asaasPaymentId },
+    });
+
+    return ok({ success: true });
+  } catch (err: unknown) {
+    console.error("[admin/backoffices/[id]/faturas/[faturaId]] DELETE Erro:", err);
+    return badRequest((err instanceof Error ? err.message : "Erro interno ao remover fatura."));
+  }
+}
