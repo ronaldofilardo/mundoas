@@ -67,6 +67,9 @@ export type AsaasPayment = {
   invoiceUrl?: string;
   bankSlipUrl?: string;
   pixTransaction?: unknown;
+  paidDate?: string | null;
+  paymentDate?: string | null;
+  clientPaymentDate?: string | null;
 };
 
 export type BillingType = "BOLETO" | "PIX" | "CREDIT_CARD" | "UNDEFINED";

@@ -36,6 +36,10 @@ vi.mock("@/lib/db", () => ({ prisma: prismaMockShape }));
 
 vi.mock("@/lib/audit", () => ({ criarAuditLog: vi.fn().mockResolvedValue(undefined) }));
 
+vi.mock("@/lib/asaas/sync-pull", () => ({
+  sincronizarStatusComAsaas: vi.fn(async (faturas: unknown) => faturas),
+}));
+
 type AdminAuth = {
   session: { user: { id: string; tipo: "ADMIN" } } | null;
   error: Response | null;

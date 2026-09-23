@@ -15,6 +15,14 @@ vi.mock("@/lib/db", () => ({
   prisma: { assinatura: { findUnique: vi.fn() } },
 }));
 
+vi.mock("@/lib/asaas/sync-pull", () => ({
+  sincronizarStatusComAsaas: vi.fn(async (faturas: unknown) => faturas),
+}));
+
+vi.mock("@/lib/asaas/fatura-link", () => ({
+  garantirLinkFaturaAsaas: vi.fn(async () => ({ link: null, error: null })),
+}));
+
 const requireBackofficeMock = vi.mocked(requireBackoffice);
 const prismaMock = vi.mocked(prisma);
 

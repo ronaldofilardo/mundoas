@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { requireBackoffice, notFound, ok } from "@/lib/api-helpers";
 import { garantirLinkFaturaAsaas } from "@/lib/asaas/fatura-link";
+import { sincronizarStatusComAsaas } from "@/lib/asaas/sync-pull";
 
 export async function GET() {
   const { session, error } = await requireBackoffice();
@@ -36,10 +37,14 @@ export async function GET() {
     return ok({ semAssinatura: true });
   }
 
+  // Fallback do webhook: se o evento de pagamento não chegou (401), puxa
+  // o status real no Asaas antes de responder.
+  const faturasSincronizadas = await sincronizarStatusComAsaas(assinatura.faturas);
+
   // Garante que qualquer fatura pendente possua link de pagamento no Asaas
   const backoffice = (assinatura as { backoffice?: any }).backoffice ?? null;
   const faturas = await Promise.all(
-    assinatura.faturas.map(async (f) => {
+    faturasSincronizadas.map(async (f) => {
       let linkFatura = f.linkFatura;
       let linkBoleto = f.linkBoleto;
 

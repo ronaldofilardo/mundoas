@@ -3,6 +3,7 @@ import { prisma } from "@asa/database";
 import { requireAdmin, badRequest, notFound, created, ok } from "@/lib/api-helpers";
 import { criarAuditLog } from "@/lib/audit";
 import { buscarOuCriarCustomer, criarCobrancaAvulsa, type BillingType } from "@/lib/asaas/client";
+import { sincronizarStatusComAsaas } from "@/lib/asaas/sync-pull";
 
 export async function POST(
   req: NextRequest,
@@ -187,5 +188,8 @@ export async function GET(
     orderBy: { vencimento: "desc" },
   });
 
-  return ok(faturas);
+  // Fallback do webhook: baixa pendências já pagas no Asaas antes de listar
+  const faturasSincronizadas = await sincronizarStatusComAsaas(faturas);
+
+  return ok(faturasSincronizadas);
 }
