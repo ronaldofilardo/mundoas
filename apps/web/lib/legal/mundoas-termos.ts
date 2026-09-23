@@ -22,6 +22,8 @@ const CONTRATANTE = {
   representanteEndereco: "Av. República Argentina, 2773, ap 44 bl A, Curitiba/PR",
 } as const;
 
+export const EMITENTE = CONTRATANTE;
+
 export const PLANOS = {
   MENSAL: { label: "Mensal", valor: 350, valorFormatado: "R$ 350,00/mês" },
   ANUAL: { label: "Anual", valor: 3500, valorFormatado: "R$ 3.500,00/ano (2 meses grátis)" },

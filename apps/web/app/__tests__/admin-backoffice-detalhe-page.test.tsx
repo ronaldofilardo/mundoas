@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 // Baseline de regressão para apps/web/app/(dashboard)/admin/backoffices/[id]/page.tsx
 // Cobre os fluxos principais antes da refatoração (política § Seam 0).
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
@@ -40,10 +40,21 @@ const assinaturaAtiva = {
 const faturaPendente = {
   id: "fat-1",
   valor: 350,
-  vencimento: "2026-02-10T00:00:00.000Z",
-  statusPagamento: "PENDENTE",
+  vencimento: "2026-12-10T00:00:00.000Z",
+  statusPagamento: "PENDING",
   pagoManualmente: false,
   pagoEm: null,
+};
+
+const faturaPaga = {
+  id: "fat-2",
+  valor: 350,
+  vencimento: "2026-10-15T00:00:00.000Z",
+  statusPagamento: "CONFIRMED",
+  pagoManualmente: true,
+  pagoEm: "2026-09-22T19:34:07.628Z",
+  marcadoPagoEm: "2026-09-22T19:34:07.628Z",
+  formaPagamento: "PIX",
 };
 
 function mockFetch(assinatura: unknown = assinaturaAtiva, faturas: unknown[] = [faturaPendente]) {
@@ -128,12 +139,28 @@ describe("DetalheBackofficePage — regressão", () => {
     await waitFor(() => screen.getByText("Nenhuma fatura cadastrada"));
   });
 
-  it("marcarPago envia PATCH e refaz fetch de assinatura e faturas", async () => {
+  it("exibe data/hora da baixa e botão de recibo para fatura paga", async () => {
+    vi.stubGlobal("fetch", mockFetch(assinaturaAtiva, [faturaPaga]));
+    render(<DetalheBackofficePage />);
+    await waitFor(() => expect(screen.getAllByText("Pago").length).toBeGreaterThan(0));
+    expect(screen.getByText(/Pago em \d{2}\/\d{2}\/\d{4}/)).toBeTruthy();
+    expect(screen.getByText(/Origem: Baixa manual/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Baixar recibo PDF/i })).toBeTruthy();
+    const checkbox = screen.getByRole("checkbox", { name: /Pago/i });
+    expect(checkbox).toBeDisabled();
+  });
+
+  it("baixa manual pede confirmação e só então envia PATCH", async () => {
     const fetchMock = mockFetch();
     vi.stubGlobal("fetch", fetchMock);
+    const confirmMock = vi.fn(() => true);
+    vi.stubGlobal("confirm", confirmMock);
     render(<DetalheBackofficePage />);
     const checkbox = await screen.findByRole("checkbox", { name: /Dar baixa/i });
     fireEvent.click(checkbox);
+    expect(confirmMock).toHaveBeenCalledWith(
+      expect.stringContaining("Confirmar baixa manual"),
+    );
     await waitFor(() =>
       expect(toast.success).toHaveBeenCalledWith("Fatura marcada como paga"),
     );
@@ -142,6 +169,22 @@ describe("DetalheBackofficePage — regressão", () => {
     );
     expect(patch).toBeTruthy();
     expect(JSON.parse((patch![1] as RequestInit).body as string)).toEqual({ pago: true });
+  });
+
+  it("cancelar a confirmação da baixa não envia PATCH", async () => {
+    const fetchMock = mockFetch();
+    vi.stubGlobal("fetch", fetchMock);
+    const confirmMock = vi.fn(() => false);
+    vi.stubGlobal("confirm", confirmMock);
+    render(<DetalheBackofficePage />);
+    const checkbox = await screen.findByRole("checkbox", { name: /Dar baixa/i });
+    fireEvent.click(checkbox);
+    expect(confirmMock).toHaveBeenCalled();
+    const patch = fetchMock.mock.calls.find(
+      ([url, init]) => String(url).includes("/faturas/fat-1") && (init as RequestInit | undefined)?.method === "PATCH",
+    );
+    expect(patch).toBeUndefined();
+    expect(toast.success).not.toHaveBeenCalled();
   });
 
   it("criar fatura exige valor e vencimento", async () => {

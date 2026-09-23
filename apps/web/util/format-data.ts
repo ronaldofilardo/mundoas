@@ -1,3 +1,13 @@
+export function formatarDataHora(
+  dateVal: string | Date | null | undefined,
+  fallback: string = "—",
+): string {
+  if (!dateVal) return fallback;
+  const d = typeof dateVal === "string" ? new Date(dateVal) : dateVal;
+  if (isNaN(d.getTime())) return fallback;
+  return `${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })} às ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
 export function formatarData(
   dateVal: string | Date | null | undefined,
   fallback: string = "",

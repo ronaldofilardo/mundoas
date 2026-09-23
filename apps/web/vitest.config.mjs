@@ -24,13 +24,17 @@ export default defineConfig({
       'components/__tests__/*.{test.ts,test.tsx}',
     ],
     pool: 'threads',
-    poolOptions: {
-      threads: { minThreads: 1, maxThreads: 4 },
-    },
     testTimeout: 30000,
     server: {
       deps: {
-        inline: [/@exodus\/bytes/, /html-encoding-sniffer/],
+        inline: [/@exodus\/bytes/, /html-encoding-sniffer/, /jsdom/, /whatwg-encoding/, /entities/],
+      },
+    },
+    deps: {
+      optimizer: {
+        ssr: {
+          include: [/@exodus\/bytes/, /html-encoding-sniffer/],
+        },
       },
     },
     coverage: {

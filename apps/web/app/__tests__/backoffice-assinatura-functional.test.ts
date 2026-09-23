@@ -75,6 +75,17 @@ describe("API backoffice/assinatura — contrato funcional", () => {
       planoAssinatura: "MENSAL",
       motivoBloqueio: "Pendência",
       cortesiaExpiraEm: null,
+      termosAceitosEm: new Date("2026-01-10T10:00:00.000Z"),
+      termosVersao: "2026-09-02-v1",
+      backoffice: {
+        id: "backoffice-1",
+        nome: "Alpha",
+        razaoSocial: "Alpha LTDA",
+        cpf: "12345678900",
+        cnpj: null,
+        telefone: null,
+        usuario: { email: "alpha@example.com" },
+      },
       faturas: [
         {
           id: "fatura-1",
@@ -84,6 +95,7 @@ describe("API backoffice/assinatura — contrato funcional", () => {
           formaPagamento: "PIX",
           pagoManualmente: false,
           pagoEm: null,
+          marcadoPagoEm: null,
           asaasPaymentId: "interno-nao-expor",
         },
       ],
@@ -97,6 +109,9 @@ describe("API backoffice/assinatura — contrato funcional", () => {
       planoAssinatura: string | null;
       metodoPagamento: string | null;
       motivoBloqueio: string;
+      termosAceitosEm: string | null;
+      termosVersao: string | null;
+      backoffice: { nome: string; cpf: string; email: string } | null;
       faturas: Array<Record<string, unknown>>;
     };
 
@@ -106,8 +121,25 @@ describe("API backoffice/assinatura — contrato funcional", () => {
     expect(body.planoAssinatura).toBe("MENSAL");
     expect(body.metodoPagamento).toBe("PIX");
     expect(body.motivoBloqueio).toBe("Pendência");
+    expect(body.termosAceitosEm).toBeTruthy();
+    expect(body.termosVersao).toBe("2026-09-02-v1");
+    expect(body.backoffice).toEqual({
+      nome: "Alpha",
+      razaoSocial: "Alpha LTDA",
+      cpf: "12345678900",
+      cnpj: null,
+      telefone: null,
+      email: "alpha@example.com",
+    });
     expect(body.faturas[0]).toEqual(
-      expect.objectContaining({ id: "fatura-1", pago: false, statusPagamento: "PENDING" }),
+      expect.objectContaining({
+        id: "fatura-1",
+        pago: false,
+        statusPagamento: "PENDING",
+        formaPagamento: "PIX",
+        pagoManualmente: false,
+        origemPagamento: "—",
+      }),
     );
     expect(body.faturas[0]).not.toHaveProperty("asaasPaymentId");
     expect(body).not.toHaveProperty("asaasCustomerId");

@@ -13,5 +13,5 @@ export function formatarMoeda(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-export { formatarData } from "@/util/format-data";
+export { formatarData, formatarDataHora } from "@/util/format-data";
 

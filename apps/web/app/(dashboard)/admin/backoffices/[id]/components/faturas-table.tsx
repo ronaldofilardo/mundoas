@@ -1,6 +1,11 @@
 import type { Fatura } from "../types";
 import { formatarMoeda, formatarData } from "../utils";
 import { isFaturaPaga } from "@/lib/billing/fatura-status";
+import {
+  baixarReciboFaturaPdf,
+  dataPagamentoFatura,
+  origemPagamentoFatura,
+} from "../utils/recibo-fatura";
 
 // Calcula dias de atraso de forma simples (sem depender do servidor)
 function calcularDiasAtrasoClient(vencimento: string): number {
@@ -16,16 +21,20 @@ function calcularDiasAtrasoClient(vencimento: string): number {
 interface FaturasTableProps {
   faturas: Fatura[];
   backofficeId?: string;
+  unidade?: { nome: string; cpf: string };
   acaoEmAndamento: boolean;
   onMarcarPago: (faturaId: string, pago: boolean) => void;
   onReenviar?: (faturaId: string) => void;
+  onErroRecibo?: (mensagem: string) => void;
 }
 
 export function FaturasTable({
   faturas,
+  unidade,
   acaoEmAndamento,
   onMarcarPago,
   onReenviar,
+  onErroRecibo,
 }: FaturasTableProps) {
   return (
     <div className="overflow-x-auto">
@@ -76,6 +85,16 @@ export function FaturasTable({
                     >
                       {paga ? "Pago" : bloqueavel ? "⚠️ Inadimplente" : "Pendente"}
                     </span>
+                    {paga && dataPagamentoFatura(f) && (
+                      <span className="text-[10px] text-gray-600">
+                        Pago em {dataPagamentoFatura(f)}
+                      </span>
+                    )}
+                    {paga && (
+                      <span className="text-[10px] text-gray-500">
+                        Origem: {origemPagamentoFatura(f)}
+                      </span>
+                    )}
                     {!paga && atrasada15Dias && (
                       <span className="text-[10px] text-red-600 font-semibold">
                         ≥ 15 dias — elegível p/ reenvio
@@ -89,14 +108,42 @@ export function FaturasTable({
                       <input
                         type="checkbox"
                         checked={paga}
-                        disabled={acaoEmAndamento || (!f.pagoManualmente && ["RECEIVED", "CONFIRMED"].includes(f.statusPagamento))}
-                        onChange={(e) => onMarcarPago(f.id, e.target.checked)}
+                        disabled={
+                          acaoEmAndamento ||
+                          paga ||
+                          (!f.pagoManualmente &&
+                            ["RECEIVED", "CONFIRMED"].includes(f.statusPagamento))
+                        }
+                        onChange={(e) => {
+                          if (!e.target.checked) return;
+                          const ok = window.confirm(
+                            "Confirmar baixa manual desta fatura?\n\nApós confirmar, não será possível desmarcar.",
+                          );
+                          if (ok) onMarcarPago(f.id, true);
+                        }}
                         className="w-4 h-4 accent-green-600"
                       />
                       <span className="text-xs text-gray-500">
                         {paga ? "Pago" : "Dar baixa"}
                       </span>
                     </label>
+
+                    {paga && unidade && (
+                      <button
+                        type="button"
+                        disabled={acaoEmAndamento}
+                        onClick={() => {
+                          baixarReciboFaturaPdf(f, { unidade }).catch((e) => {
+                            onErroRecibo?.(
+                              e instanceof Error ? e.message : "Erro ao gerar recibo",
+                            );
+                          });
+                        }}
+                        className="text-[11px] text-white bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 px-2 py-1 rounded font-medium transition w-fit"
+                      >
+                        🧾 Baixar recibo PDF
+                      </button>
+                    )}
 
                     {!paga && atrasada15Dias && onReenviar && (
                       <button

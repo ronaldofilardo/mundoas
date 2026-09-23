@@ -5,8 +5,13 @@ export interface Fatura {
   statusPagamento: string;
   pagoManualmente: boolean;
   pagoEm: string | null;
+  marcadoPagoEm?: string | null;
+  marcadoPagoPorUsuarioId?: string | null;
+  formaPagamento?: string | null;
+  asaasPaymentId?: string | null;
   linkFatura?: string | null;
   linkBoleto?: string | null;
+  criadoEm?: string;
 }
 
 export type StatusAssinatura =

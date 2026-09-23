@@ -55,7 +55,7 @@ export function calcularDiasAtraso(
 export const STATUS_FATURA_PAGA = ["CONFIRMED", "RECEIVED"] as const;
 
 export function isFaturaPaga(fatura: {
-  pagoManualmente?: boolean;
+  pagoManualmente?: boolean | null;
   statusPagamento?: string | null;
 }): boolean {
   if (fatura.pagoManualmente) return true;

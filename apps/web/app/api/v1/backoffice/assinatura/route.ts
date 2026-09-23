@@ -46,7 +46,7 @@ export async function GET() {
   const faturas = await Promise.all(
     faturasSincronizadas.map(async (f) => {
       let linkFatura = f.linkFatura;
-      let linkBoleto = f.linkBoleto;
+      const linkBoleto = f.linkBoleto;
 
       if (!f.pagoManualmente && !["CONFIRMED", "RECEIVED"].includes(f.statusPagamento) && !linkFatura) {
         const resultado = await garantirLinkFaturaAsaas(f.id, {
@@ -71,6 +71,16 @@ export async function GET() {
         statusPagamento: f.statusPagamento,
         pago: f.pagoManualmente || ["CONFIRMED", "RECEIVED"].includes(f.statusPagamento),
         pagoEm: f.pagoEm,
+        marcadoPagoEm: f.marcadoPagoEm ?? null,
+        formaPagamento: f.formaPagamento ?? null,
+        pagoManualmente: Boolean(f.pagoManualmente),
+        origemPagamento: f.pagoManualmente
+          ? "Baixa manual"
+          : ["CONFIRMED", "RECEIVED"].includes(f.statusPagamento)
+            ? f.asaasPaymentId
+              ? "Asaas"
+              : "Pagamento registrado"
+            : "—",
         linkFatura,
         linkBoleto,
       };
@@ -89,6 +99,18 @@ export async function GET() {
         ? assinatura.motivoBloqueio
         : undefined,
     cortesiaExpiraEm: assinatura.cortesiaExpiraEm,
+    termosAceitosEm: assinatura.termosAceitosEm ?? null,
+    termosVersao: assinatura.termosVersao ?? null,
+    backoffice: assinatura.backoffice
+      ? {
+          nome: assinatura.backoffice.nome,
+          razaoSocial: assinatura.backoffice.razaoSocial ?? null,
+          cpf: assinatura.backoffice.cpf,
+          cnpj: assinatura.backoffice.cnpj ?? null,
+          telefone: assinatura.backoffice.telefone ?? null,
+          email: assinatura.backoffice.usuario?.email ?? null,
+        }
+      : null,
     faturas,
   });
 }

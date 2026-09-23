@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 import { useAssinatura } from "./hooks/use-assinatura";
 import { useFaturas } from "./hooks/use-faturas";
 import { StatusCard } from "./components/status-card";
@@ -97,9 +98,11 @@ export default function DetalheBackofficePage() {
 
         <FaturasTable
           faturas={faturas}
+          unidade={assinatura.backoffice}
           acaoEmAndamento={acaoEmAndamento}
           onMarcarPago={marcarPago}
           onReenviar={reenviarFatura}
+          onErroRecibo={(mensagem) => toast.error(mensagem)}
         />
 
       </div>
