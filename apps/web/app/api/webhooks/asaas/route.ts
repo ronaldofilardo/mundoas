@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { safeCompareTokens } from "@/lib/asaas/webhook-auth";
 import { criarAuditLog } from "@/lib/audit";
 import {
   isFaturaBloqueavel,
@@ -145,20 +146,23 @@ export async function POST(req: NextRequest) {
   const tokenRecebido = (req.headers.get("asaas-access-token") ?? "").trim();
 
   // Segurança crítica: rejeitar se token não estiver configurado no servidor ou se diferir do recebido
-  if (!tokenEsperado || !tokenRecebido || tokenRecebido !== tokenEsperado) {
-    // Diagnóstico seguro (sem expor o token completo) — visível na resposta do Asaas e nos logs
-    const debug = {
-      serverConfigured: Boolean(tokenEsperado),
-      headerPresent: Boolean(tokenRecebido),
-      serverLen: tokenEsperado.length,
-      headerLen: tokenRecebido.length,
-      serverPrefix: tokenEsperado.slice(0, 12),
-      headerPrefix: tokenRecebido.slice(0, 12),
-      match: Boolean(tokenEsperado) && Boolean(tokenRecebido) && tokenRecebido === tokenEsperado,
-    };
-    console.error("[webhooks/asaas] 401 auth:", JSON.stringify(debug));
+  const isAutenticado =
+    Boolean(tokenEsperado) &&
+    Boolean(tokenRecebido) &&
+    safeCompareTokens(tokenRecebido, tokenEsperado);
+
+  if (!isAutenticado) {
+    // Diagnóstico em log interno apenas (nunca expor prefixos ou partes do segredo na resposta HTTP pública)
+    console.error(
+      "[webhooks/asaas] 401 auth:",
+      JSON.stringify({
+        serverConfigured: Boolean(tokenEsperado),
+        headerPresent: Boolean(tokenRecebido),
+        match: false,
+      }),
+    );
     return NextResponse.json(
-      { error: "Token de webhook inválido ou não configurado.", debug },
+      { error: "Token de webhook inválido ou não configurado." },
       { status: 401 },
     );
   }

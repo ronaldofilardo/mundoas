@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { POST } from "@/app/api/webhooks/asaas/route";
+import { safeCompareTokens } from "@/lib/asaas/webhook-auth";
 import { prisma } from "@/lib/db";
 import { criarAuditLog } from "@/lib/audit";
 
@@ -49,16 +50,13 @@ describe("API webhooks/asaas — contrato funcional", () => {
     prismaMock.asaasWebhookEvent.create.mockResolvedValue({} as never);
   });
 
-  it("rejeita token inválido", async () => {
+  it("rejeita token inválido sem vazar segredos", async () => {
     const response = await POST(buildRequest({ event: "PAYMENT_CONFIRMED" }, "token-errado"));
     const body = await response.json();
 
     expect(response.status).toBe(401);
-    expect(body.debug).toMatchObject({
-      serverConfigured: true,
-      headerPresent: true,
-      match: false,
-    });
+    expect(body.error).toBe("Token de webhook inválido ou não configurado.");
+    expect(body.debug).toBeUndefined();
     expect(prismaMock.assinatura.findFirst).not.toHaveBeenCalled();
   });
 
@@ -68,11 +66,8 @@ describe("API webhooks/asaas — contrato funcional", () => {
     const body = await response.json();
 
     expect(response.status).toBe(401);
-    expect(body.debug).toMatchObject({
-      serverConfigured: false,
-      headerPresent: false,
-      match: false,
-    });
+    expect(body.error).toBe("Token de webhook inválido ou não configurado.");
+    expect(body.debug).toBeUndefined();
     expect(prismaMock.assinatura.findFirst).not.toHaveBeenCalled();
   });
 
@@ -81,12 +76,18 @@ describe("API webhooks/asaas — contrato funcional", () => {
     const body = await response.json();
 
     expect(response.status).toBe(401);
-    expect(body.debug).toMatchObject({
-      serverConfigured: true,
-      headerPresent: false,
-      match: false,
-    });
+    expect(body.error).toBe("Token de webhook inválido ou não configurado.");
+    expect(body.debug).toBeUndefined();
     expect(prismaMock.assinatura.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("safeCompareTokens valida igualdade estrita e rejeita discrepâncias com segurança", () => {
+    expect(safeCompareTokens("token_secreto_123", "token_secreto_123")).toBe(true);
+    expect(safeCompareTokens("token_secreto_123", "token_secreto_456")).toBe(false);
+    expect(safeCompareTokens("token_curto", "token_bem_mais_longo_123456789")).toBe(false);
+    expect(safeCompareTokens("", "token_secreto_123")).toBe(false);
+    expect(safeCompareTokens("token_secreto_123", "")).toBe(false);
+    expect(safeCompareTokens("", "")).toBe(false);
   });
 
   it("retorna ok idempotente para evento repetido", async () => {
